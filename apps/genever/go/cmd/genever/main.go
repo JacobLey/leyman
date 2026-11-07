@@ -84,6 +84,8 @@ func newFlagSet(parsed *flags, stderr io.Writer, getenv func(string) string) *fl
 	set.BoolVar(&options.NoStrict, "no-strict", false, "Accept likely mistakes in the schema, such as unknown keywords")
 	set.BoolVar(&options.OpenAPI30, "open-api-30", false, "Read the schema as an OpenAPI 3.0 schema, which allows "+
 		"nullable and example. An OpenAPI document's own version is used instead")
+	set.BoolVar(&options.ParameterDefaults, "parameter-defaults", false, "With an OpenAPI document, also write each "+
+		"operation's Request type: what a handler gets once a validator fills in parameters' defaults")
 	set.BoolVar(&options.NoFetch, "no-fetch", false, "Load only files the schema references, not URLs")
 	set.Func("fetch-host", "Load only URLs of this host, e.g. example.com, localhost:8080, or *.example.com for its "+
 		"subdomains. Repeat for more hosts", func(host string) error {

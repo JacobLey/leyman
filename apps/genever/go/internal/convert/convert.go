@@ -133,7 +133,7 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 		return cmp.Compare(a.Name, b.Name)
 	})
 
-	return append(types, operationTypes(conv.names, operations)...), nil
+	return append(types, operationTypes(conv.names, operations, options.ParameterDefaults)...), nil
 }
 
 // dialectOf is the dialect of the schema at a JSON Pointer: the document's, or that of the file it is in.

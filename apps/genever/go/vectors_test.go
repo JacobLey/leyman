@@ -143,7 +143,7 @@ func TestSamplesRoundTrip(t *testing.T) {
 
 	// generate writes a schema's package
 	generate := func(name, pkg string, schema json.RawMessage) {
-		source, err := genever.Generate(schema, genever.Options{Name: "", Package: pkg, BaseURI: "", OpenAPI30: false, NoStrict: true})
+		source, err := genever.Generate(schema, genever.Options{Name: "", Package: pkg, BaseURI: "", OpenAPI30: false, NoStrict: true, ParameterDefaults: false})
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
 		}

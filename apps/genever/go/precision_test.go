@@ -103,7 +103,7 @@ func TestFixturePrecision(t *testing.T) {
 			t.Parallel()
 
 			source, err := genever.Generate(fixtures[name].Schema, genever.Options{
-				Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: true,
+				Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: true, ParameterDefaults: false,
 			})
 			if err != nil {
 				t.Fatal(err)
@@ -319,7 +319,7 @@ func TestDocumentPrecision(t *testing.T) {
 
 	for version, document := range documents {
 		source, err := genever.Generate(document.Document, genever.Options{
-			Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false,
+			Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
 		})
 		if err != nil {
 			t.Fatalf("%s: %v", version, err)
@@ -343,7 +343,7 @@ func TestOperationPrecision(t *testing.T) {
 			"put": {
 				"operationId": "update-user",
 				"parameters": [
-					{"name": "dryRun", "in": "query", "schema": {"type": "boolean"}},
+					{"name": "dryRun", "in": "query", "schema": {"type": "boolean", "default": false}},
 					{"name": "X-Trace", "in": "header", "required": true, "schema": {"type": "string"}}
 				],
 				"requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}},
@@ -356,17 +356,24 @@ func TestOperationPrecision(t *testing.T) {
 		"components": {"schemas": {"User": {
 			"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": false
 		}}}
-	}`), genever.Options{Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false})
+	}`), genever.Options{
+		Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: true,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expected := map[string]string{
-		"User":                      "{Name *string}",
-		"UpdateUserInput":           "{Body *User; Path UpdateUserInputPath; Query *UpdateUserInputQuery; Header UpdateUserInputHeader}",
-		"UpdateUserInputPath":       "{ID string}",
-		"UpdateUserInputQuery":      "{DryRun *bool}",
-		"UpdateUserInputHeader":     "{XTrace string}",
+		"User":                  "{Name *string}",
+		"UpdateUserInput":       "{Body *User; Path UpdateUserInputPath; Query *UpdateUserInputQuery; Header UpdateUserInputHeader}",
+		"UpdateUserInputPath":   "{ID string}",
+		"UpdateUserInputQuery":  "{DryRun *bool}",
+		"UpdateUserInputHeader": "{XTrace string}",
+		// dryRun has a default, so a handler always gets it
+		"UpdateUserRequest":         "{Body *User; Path UpdateUserRequestPath; Query UpdateUserRequestQuery; Header UpdateUserRequestHeader}",
+		"UpdateUserRequestPath":     "{ID string}",
+		"UpdateUserRequestQuery":    "{DryRun bool}",
+		"UpdateUserRequestHeader":   "{XTrace string}",
 		"UpdateUserResponse200":     "= User",
 		"UpdateUserResponseDefault": "string",
 	}

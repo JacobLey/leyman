@@ -9,7 +9,8 @@
 // An OpenAPI 3.0 or 3.1 document (one with an `openapi` version) is read too: each of its `components.schemas` becomes
 // a type named after its key, and its schemas are in the document's dialect. Each operation with an `operationId` has
 // a struct of what a call to it sends (e.g. GetUserInput, with its JSON Body and its parameters by location), and a
-// type for the JSON body of each of its responses (e.g. GetUserResponse200).
+// type for the JSON body of each of its responses (e.g. GetUserResponse200). An operation without an `operationId` is
+// named after its method and path (e.g. GetUsersIdInput).
 //
 // The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with
 // a validator, such as github.com/santhosh-tekuri/jsonschema.
@@ -37,6 +38,10 @@ type Options struct {
 	// NoStrict accepts schemas that are valid, but most likely mistakes, such as an unknown keyword. The types then
 	// follow what a validator accepts, and are never narrower.
 	NoStrict bool
+	// ParameterDefaults also generates, for each operation of an OpenAPI document, a Request type (e.g.
+	// GetUserRequest): what a handler gets once a validator filled in parameters' defaults, so a parameter with a
+	// default is always set.
+	ParameterDefaults bool
 }
 
 // An Error is a problem with a schema, at a JSON Pointer. Match its kind with errors.Is: ErrInvalidSchema,
@@ -62,16 +67,56 @@ var (
 // reads one document, and loads nothing: a `$ref` to another document fails with ErrUnsupported. GenerateFile loads
 // the files and URLs a schema refers to.
 func Generate(schema []byte, options Options) ([]byte, error) {
+	source, err := GenerateSource(schema, options)
+
+	return source.Text, err
+}
+
+// A Name is a type's or field's name in the source GenerateSource generates, and what it is generated from.
+type Name struct {
+	// Name is the identifier in the source.
+	Name string
+	// Pointer is the JSON Pointer to what the name is generated from in the document: a type's schema (e.g.
+	// `#/$defs/Note`), an operation for its Input (`#/paths/~1notes/post`), a response for its body's type, and a
+	// field's schema under `properties` (`#/$defs/Note/properties/body`). The same form as an Error's Pointer.
+	Pointer string
+	// Offset is the name's byte offset in the source, where the type or field is declared.
+	Offset int
+}
+
+// Source is what GenerateSource generates.
+type Source struct {
+	// Text is the Go source Generate returns.
+	Text []byte
+	// Names are each named type, and each field of a property under `properties`, in the order they are in the
+	// source. Helper types, and types and fields that aren't generated from part of the document (such as an
+	// operation input's Path), aren't listed.
+	Names []Name
+}
+
+// GenerateSource generates Go types as Generate does, with where each type's and field's name is, such as for an
+// editor to go from a name to the schema it is generated from.
+func GenerateSource(schema []byte, options Options) (Source, error) {
 	root, err := jsonv.Parse(schema)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // ErrSyntax is the error, already saying what is wrong
+		return Source{Text: nil, Names: nil}, err //nolint:wrapcheck // ErrSyntax is the error, saying what is wrong
 	}
 
-	return generate(root, options, nil)
+	output, err := generate(root, options, nil)
+	if err != nil {
+		return Source{Text: nil, Names: nil}, err
+	}
+
+	names := make([]Name, len(output.Names))
+	for i, name := range output.Names {
+		names[i] = Name(name)
+	}
+
+	return Source{Text: output.Source, Names: names}, nil
 }
 
 // generate generates Go types from a schema or OpenAPI document, with the files it refers to, as Load returns them.
-func generate(root jsonv.Value, options Options, files map[string]convert.OpenAPIFile) ([]byte, error) {
+func generate(root jsonv.Value, options Options, files map[string]convert.OpenAPIFile) (golang.Output, error) {
 	name := options.Name
 	if name == "" {
 		name = "Schema"
@@ -89,7 +134,7 @@ func generate(root jsonv.Value, options Options, files map[string]convert.OpenAP
 
 	documentDialect, isDocument, err := convert.DocumentDialect(root)
 	if err != nil {
-		return nil, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
+		return golang.Output{Source: nil, Names: nil}, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
 	}
 
 	dialect := convert.Draft202012
@@ -101,7 +146,10 @@ func generate(root jsonv.Value, options Options, files map[string]convert.OpenAP
 		dialect = documentDialect
 	}
 
-	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Files: files, Strict: !options.NoStrict}
+	convertOptions := convert.Options{
+		BaseURI: baseURI, Dialect: dialect, Files: files, Strict: !options.NoStrict,
+		ParameterDefaults: options.ParameterDefaults,
+	}
 
 	var types []convert.NamedType
 	if isDocument {
@@ -111,7 +159,7 @@ func generate(root jsonv.Value, options Options, files map[string]convert.OpenAP
 	}
 
 	if err != nil {
-		return nil, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
+		return golang.Output{Source: nil, Names: nil}, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
 	}
 
 	return golang.Generate(types, pkg) //nolint:wrapcheck // Only fails on a bug in genever, which the error says

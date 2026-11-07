@@ -32,6 +32,8 @@ type parameter struct {
 	name     string
 	location string
 	required bool
+	// hasDefault is whether its schema, or one its schema refers to, has a `default`, which a validator fills in.
+	hasDefault bool
 }
 
 // located is an OpenAPI object, and the JSON Pointer to it.
@@ -48,19 +50,25 @@ type body struct {
 	pointer string
 }
 
-// An operation with an `operationId`, as its types need it.
+// An operation, as its types need it.
 type operation struct {
 	doc *model.Doc
 	// requestBody is nil without one.
 	requestBody *body
-	id          string
-	pointer     string
+	// id is its `operationId`, if hasID.
+	id string
+	// method and path are where it is in `paths`.
+	method  string
+	path    string
+	pointer string
 	// parameters are the path item's and the operation's, each once: a later one replaces an earlier one of the same
 	// name and location, where the earlier one was.
 	parameters []parameter
 	responses  []response
 	// isBodyRequired is the request body's `required`.
 	isBodyRequired bool
+	// hasID is whether it has an `operationId`. One that is not a string is none, as in the TypeScript genever.
+	hasID bool
 }
 
 // A response of an operation, by status.
@@ -130,7 +138,7 @@ func (b *operationBuilder) build(paths jsonv.Value) error {
 			return err
 		}
 
-		if err := b.pathItem(item); err != nil {
+		if err := b.pathItem(path, item); err != nil {
 			return err
 		}
 	}
@@ -221,9 +229,9 @@ func (b *operationBuilder) content(object located) (*model.Type, error) {
 	return jsonType, nil
 }
 
-// checkDefault follows a parameter's schema's `$ref`s to one with a `default`, as the TypeScript genever does to find
-// the parameters a validator fills in, so a broken reference fails there, as it does in TypeScript.
-func (b *operationBuilder) checkDefault(object located) error {
+// hasDefault follows a parameter's schema's `$ref`s to one with a `default`, as the TypeScript genever does to find the
+// parameters a validator fills in. It fails on a reference that doesn't resolve.
+func (b *operationBuilder) hasDefault(object located) (bool, error) {
 	schema, _ := object.value.Get("schema")
 	schemaPointer := childPointer(object.pointer, "schema")
 	seen := map[string]bool{}
@@ -232,23 +240,23 @@ func (b *operationBuilder) checkDefault(object located) error {
 		seen[schemaPointer] = true
 
 		if _, hasDefault := schemaObject.Get("default"); hasDefault {
-			return nil
+			return true, nil
 		}
 
 		ref, isReference := schemaObject.Get("$ref")
 		if !isReference {
-			return nil
+			return false, nil
 		}
 
 		found, err := b.conv.resolve(ref, childPointer(schemaPointer, "$ref"))
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		schema, schemaPointer = found.schema, found.pointer
 	}
 
-	return nil
+	return false, nil
 }
 
 // valueType is the type of a parameter or header: its `schema`'s, or that of its first `content` entry, or unknown
@@ -327,7 +335,8 @@ func (b *operationBuilder) parameter(found located) (parameter, error) {
 		)
 	}
 
-	if err := b.checkDefault(found); err != nil {
+	hasDefault, err := b.hasDefault(found)
+	if err != nil {
 		return parameter{}, err
 	}
 
@@ -344,7 +353,8 @@ func (b *operationBuilder) parameter(found located) (parameter, error) {
 		name:     nameString,
 		location: locationString,
 		// Path parameters are always required
-		required: locationString == locationPath || required == true,
+		required:   locationString == locationPath || required == true,
+		hasDefault: hasDefault,
 	}, nil
 }
 
@@ -442,9 +452,8 @@ func (b *operationBuilder) responses(object located) ([]response, error) {
 	return responses, nil
 }
 
-// method reads the operation of a path item's method, if it has one, and keeps it if it has an `operationId`. It fails
-// if the `operationId` is already used.
-func (b *operationBuilder) method(method string, item located, pathParameters []parameter) error {
+// method reads the operation of a path item's method, if it has one. It fails if its `operationId` is already used.
+func (b *operationBuilder) method(method, path string, item located, pathParameters []parameter) error {
 	raw, hasMethod := item.value.Get(method)
 	if !hasMethod {
 		return nil
@@ -475,41 +484,43 @@ func (b *operationBuilder) method(method string, item located, pathParameters []
 		return err
 	}
 
-	id, hasID := object.Get("operationId")
+	id, _ := object.Get("operationId")
+	idString, hasID := id.(string)
 
-	idString, isString := id.(string)
-	if !hasID || !isString {
-		return nil
+	if hasID {
+		if b.ids[idString] {
+			return gerr.Invalid("operationId "+quote(idString)+" is used by more than one operation",
+				childPointer(pointer, "operationId"))
+		}
+
+		b.ids[idString] = true
 	}
 
-	if b.ids[idString] {
-		return gerr.Invalid("operationId "+quote(idString)+" is used by more than one operation",
-			childPointer(pointer, "operationId"))
-	}
-
-	b.ids[idString] = true
 	b.operations = append(b.operations, operation{
 		doc:            operationDoc(object),
 		requestBody:    requestBody,
 		id:             idString,
+		method:         method,
+		path:           path,
 		pointer:        pointer,
 		parameters:     uniqueParameters(append(slices.Clip(pathParameters), own...)),
 		responses:      responses,
 		isBodyRequired: isBodyRequired,
+		hasID:          hasID,
 	})
 
 	return nil
 }
 
 // pathItem reads the operations of a path item.
-func (b *operationBuilder) pathItem(item located) error {
+func (b *operationBuilder) pathItem(path string, item located) error {
 	pathParameters, err := b.parameters(item)
 	if err != nil {
 		return err
 	}
 
 	for _, method := range methods {
-		if err := b.method(method, item, pathParameters); err != nil {
+		if err := b.method(method, path, item, pathParameters); err != nil {
 			return err
 		}
 	}
@@ -517,8 +528,8 @@ func (b *operationBuilder) pathItem(item located) error {
 	return nil
 }
 
-// operations finds the operations with an `operationId` in a document's `paths`, converting every schema the paths
-// use. None without `paths`.
+// operations finds the operations in a document's `paths`, converting every schema the paths use. None without
+// `paths`.
 func (c *converter) operations(document jsonv.Value) ([]operation, error) {
 	// An OpenAPI document is always an object
 	paths, hasPaths := document.(*jsonv.Object).Get("paths") //nolint:forcetypeassert // A document's an object
@@ -534,32 +545,69 @@ func (c *converter) operations(document jsonv.Value) ([]operation, error) {
 	return builder.operations, nil
 }
 
-// operationTypes are the named types of operations: for each, what a call to it sends (`<Id>Input`), and the JSON
-// body of each of its responses with one (`<Id>Response<Status>`).
+// label is how an operation's types' documentation refers to it: its `operationId`, or else its method and path, e.g.
+// "GET /users/{id}".
+func (o operation) label() string {
+	if o.hasID {
+		return o.id
+	}
+
+	return strings.ToUpper(o.method) + " " + o.path
+}
+
+// baseName is what an operation's types are named after: its `operationId`, or else its method and path, e.g.
+// "get /users/{id}", which is GetUsersId.
+func (o operation) baseName() string {
+	if o.hasID {
+		return o.id
+	}
+
+	return o.method + " " + o.path
+}
+
+// operationTypes are the named types of operations: for each, what a call to it sends (`<Id>Input`), with
+// parameterDefaults what its handler gets (`<Id>Request`), and the JSON body of each of its responses with one
+// (`<Id>Response<Status>`). An operation without an `operationId` is named after its method and path, e.g.
+// `GetUsersIdInput`.
 //
-// They are what the TypeScript genever's `OperationInput` and `OperationResult` give for an operation, as Go can't key
-// a type by an `operationId`.
-func operationTypes(names *typeNames, operations []operation) []NamedType {
+// They are what the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult` give for an
+// operation, as Go can't key a type by an `operationId`.
+func operationTypes(names *typeNames, operations []operation, parameterDefaults bool) []NamedType {
 	var types []NamedType
 
 	for _, item := range operations {
-		inputName := names.reserve(item.id + " Input")
+		label := item.label()
+		inputName := names.reserve(item.baseName() + " Input")
 		types = append(types, NamedType{
-			Doc:     operationTypeDoc(inputName+" is what a call to operation "+quote(item.id)+" sends.", item.doc),
-			Type:    inputType(item),
+			Doc:     operationTypeDoc(inputName+" is what a call to operation "+quote(label)+" sends.", item.doc),
+			Type:    inputType(item, false),
 			Name:    inputName,
 			Pointer: item.pointer,
 		})
+
+		if parameterDefaults {
+			requestName := names.reserve(item.baseName() + " Request")
+			types = append(types, NamedType{
+				Doc: operationTypeDoc(
+					requestName+" is what a handler of operation "+quote(label)+
+						" gets, once a validator filled in its parameters' defaults.",
+					item.doc,
+				),
+				Type:    inputType(item, true),
+				Name:    requestName,
+				Pointer: item.pointer,
+			})
+		}
 
 		for _, each := range item.responses {
 			if each.json == nil {
 				continue
 			}
 
-			name := names.reserve(item.id + " Response " + each.status)
+			name := names.reserve(item.baseName() + " Response " + each.status)
 			types = append(types, NamedType{
 				Doc: operationTypeDoc(
-					name+" is the JSON body of operation "+quote(item.id)+"'s "+each.status+" response.", each.doc,
+					name+" is the JSON body of operation "+quote(label)+"'s "+each.status+" response.", each.doc,
 				),
 				Type:    each.json,
 				Name:    name,
@@ -586,8 +634,9 @@ func operationTypeDoc(title string, own *model.Doc) *model.Doc {
 }
 
 // inputType is what a call to an operation sends: its JSON `body`, and its parameters by location, each only if it has
-// them. A body or location is optional if the request body, or every parameter there, is.
-func inputType(item operation) *model.Type {
+// them. A body or location is optional if the request body, or every parameter there, is. With defaulted, a parameter
+// with a default is required, as a validator fills it in.
+func inputType(item operation, defaulted bool) *model.Type {
 	var properties []model.Property
 
 	if item.requestBody != nil && item.requestBody.json != nil {
@@ -611,10 +660,11 @@ func inputType(item operation) *model.Type {
 				continue
 			}
 
+			required := each.required || (defaulted && each.hasDefault)
 			located = append(located, model.Property{
-				Doc: each.doc, Type: each.typ, Name: each.name, Pointer: "", Optional: !each.required,
+				Doc: each.doc, Type: each.typ, Name: each.name, Pointer: "", Optional: !required,
 			})
-			isOptional = isOptional && !each.required
+			isOptional = isOptional && !required
 		}
 
 		if located != nil {

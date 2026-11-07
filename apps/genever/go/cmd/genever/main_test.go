@@ -103,6 +103,26 @@ func TestOptions(t *testing.T) {
 	}
 }
 
+// --parameter-defaults changes the output, so an output written without it is not up to date with it.
+func TestParameterDefaults(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeSchema(t, dir, "api.json", `{"openapi": "3.1.0", "info": {"title": "API", "version": "1"}, "paths": {"/a": {
+		"get": {"parameters": [{"name": "n", "in": "query", "schema": {"type": "integer", "default": 1}}]}
+	}}}`)
+
+	if code, _, stderr := command(t, noEnv, "--cwd", dir, "api.json", "--manifest", "manifest.json"); code != 0 {
+		t.Fatalf("got %d, %q", code, stderr)
+	}
+
+	code, _, stderr := command(t, noEnv, "--cwd", dir, "api.json", "--manifest", "manifest.json", "--parameter-defaults",
+		"--ci")
+	if code != 1 || !strings.Contains(stderr, "not up to date") {
+		t.Errorf("got %d, %q", code, stderr)
+	}
+}
+
 func TestUsageErrors(t *testing.T) {
 	t.Parallel()
 

@@ -17,7 +17,7 @@ import (
 // fileOptions are the defaults of GenerateFile, in a directory.
 func fileOptions(cwd string) genever.FileOptions {
 	return genever.FileOptions{
-		Options:    genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false},
+		Options:    genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false},
 		Client:     nil,
 		Cwd:        cwd,
 		Output:     "",

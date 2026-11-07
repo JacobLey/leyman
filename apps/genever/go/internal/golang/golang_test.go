@@ -284,14 +284,14 @@ func allCases() []testCase {
 func compile(t *testing.T, schemaTypes []convert.NamedType) (*types.Package, *ast.File) {
 	t.Helper()
 
-	source, err := golang.Generate(schemaTypes, "schema")
+	output, err := golang.Generate(schemaTypes, "schema")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	fset := token.NewFileSet()
 
-	file, err := parser.ParseFile(fset, "schema.go", source, parser.ParseComments)
+	file, err := parser.ParseFile(fset, "schema.go", output.Source, parser.ParseComments)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +300,7 @@ func compile(t *testing.T, schemaTypes []convert.NamedType) (*types.Package, *as
 
 	pkg, err := config.Check("schema", fset, []*ast.File{file}, nil)
 	if err != nil {
-		t.Fatalf("%v\n%s", err, source)
+		t.Fatalf("%v\n%s", err, output.Source)
 	}
 
 	return pkg, file
@@ -563,12 +563,12 @@ func TestGeneratedJSON(t *testing.T) {
 	var imports, calls strings.Builder
 
 	for _, item := range allCases() {
-		source, err := golang.Generate(item.types, item.name)
+		output, err := golang.Generate(item.types, item.name)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		writeFile(t, filepath.Join(dir, item.name, "schema.go"), source)
+		writeFile(t, filepath.Join(dir, item.name, "schema.go"), output.Source)
 
 		imports.WriteString("\t\"harness/" + item.name + "\"\n")
 		calls.WriteString("\tcheck[" + item.name + ".Schema](\"" + item.name + "\", " + goStrings(item.accept) + ", " +

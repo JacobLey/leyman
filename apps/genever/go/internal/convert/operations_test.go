@@ -10,6 +10,7 @@ import (
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/gerr"
+	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/model"
 )
 
@@ -92,7 +93,8 @@ const usersComponents = `
 	"requestBodies": {"Update": {"required": true, "content": {"application/json": {"schema": {"type": "boolean"}}}}}
 `
 
-// Each operation with an operationId has a type for its input, and one for each of its JSON responses.
+// Each operation has a type for its input, and one for each of its JSON responses, named after its operationId, or else
+// its method and path.
 func TestOperationTypes(t *testing.T) {
 	t.Parallel()
 
@@ -100,6 +102,8 @@ func TestOperationTypes(t *testing.T) {
 		"Page", "User",
 		"GetUserInput", "GetUserResponse200", "GetUserResponseDefault",
 		"UpdateUserInput", "UpdateUserResponse2XX",
+		// Without an operationId, or with one that is not a string
+		"PostUsersIdInput", "PostUsersIdResponse201", "DeleteUsersIdInput",
 		"UploadInput", "AddNoteInput",
 	}, map[string]*model.Type{
 		"GetUserInput": object(
@@ -123,8 +127,13 @@ func TestOperationTypes(t *testing.T) {
 			field("header", object(field("trace", model.StringType, true)), true),
 		),
 		"UpdateUserResponse2XX": model.Reference("User"),
-		"AddNoteInput":          object(field("body", model.UnknownType, true)),
-		"UploadInput":           object(),
+		"PostUsersIdInput": object(
+			field("path", object(field("id", model.StringType, false)), false),
+			field("header", object(field("trace", model.StringType, true)), true),
+		),
+		"PostUsersIdResponse201": model.UnknownType,
+		"AddNoteInput":           object(field("body", model.UnknownType, true)),
+		"UploadInput":            object(),
 	})
 }
 
@@ -245,4 +254,88 @@ func errorVectors(t *testing.T) []byte {
 	}
 
 	return data
+}
+
+// requestTypes converts a document with ParameterDefaults, and returns its types by name.
+func requestTypes(t *testing.T, text string) map[string]convert.NamedType {
+	t.Helper()
+
+	value, err := jsonv.Parse([]byte(text))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := strict()
+	options.Dialect = convert.OpenAPI31
+	options.ParameterDefaults = true
+
+	converted, err := convert.Document(value, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	types := make(map[string]convert.NamedType, len(converted))
+	for _, named := range converted {
+		types[named.Name] = named
+	}
+
+	return types
+}
+
+// With ParameterDefaults, each operation also has a Request type, documented like its input.
+func TestOperationRequestDocs(t *testing.T) {
+	t.Parallel()
+
+	types := requestTypes(t, operationsDocument(usersPaths, usersComponents))
+
+	request, input := types["GetUserRequest"], types["GetUserInput"]
+	if request.Pointer != input.Pointer || !request.Doc.Deprecated || request.Doc.Title != `GetUserRequest is what a `+
+		`handler of operation "getUser" gets, once a validator filled in its parameters' defaults.` {
+		t.Errorf("got %+v at %s", request.Doc, request.Pointer)
+	}
+
+	// page has a default, by reference, but was already required
+	if request.Type.Key() != input.Type.Key() {
+		t.Errorf("got %s, expected %s", request.Type.Key(), input.Type.Key())
+	}
+}
+
+// In a Request type, a parameter whose schema has a default is always set.
+func TestOperationRequestDefaults(t *testing.T) {
+	t.Parallel()
+
+	types := requestTypes(t, operationsDocument(`{"/a": {"get": {"operationId": "a", "parameters": [
+		{"name": "limit", "in": "query", "schema": {"type": "integer", "default": 10}},
+		{"name": "q", "in": "query", "schema": {"type": "string"}}
+	]}}}`, `"schemas": {}`))
+
+	expected := object(field("query", object(
+		field("limit", model.IntegerType, false),
+		field("q", model.StringType, true),
+	), false))
+	if got := types["ARequest"].Type; got.Key() != expected.Key() {
+		t.Errorf("got %s, expected %s", got.Key(), expected.Key())
+	}
+
+	if limit := types["AInput"].Type.Properties[0].Type.Properties[0]; !limit.Optional {
+		t.Errorf("got %+v", limit)
+	}
+}
+
+// An operation without an operationId is documented by its method and path, and an empty operationId is still one.
+func TestOperationWithoutID(t *testing.T) {
+	t.Parallel()
+
+	types := namedTypes(t, operationsDocument(usersPaths, usersComponents))
+	if title := types["PostUsersIdInput"].Doc.Title; title != `PostUsersIdInput is what a call to operation "POST /users/{id}" sends.` {
+		t.Errorf("got %q", title)
+	}
+
+	expectDocumentTypes(t, operationsDocument(`{"/a": {"get": {"operationId": ""}}, "/": {"get": {}}}`, `"schemas": {}`),
+		[]string{"Input", "GetInput"}, nil)
+
+	_, err := convertDocument(t, operationsDocument(`{"/a": {"get": {"operationId": ""}, "put": {"operationId": ""}}}`, `"schemas": {}`))
+	if !errors.Is(err, gerr.ErrInvalidSchema) {
+		t.Errorf("got %v", err)
+	}
 }

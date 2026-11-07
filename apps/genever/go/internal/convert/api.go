@@ -35,6 +35,8 @@ type Options struct {
 	Files map[string]OpenAPIFile
 	// Strict fails on schemas that are valid but likely mistakes.
 	Strict bool
+	// ParameterDefaults also generates each operation's `<Id>Request`, whose parameters with a default are always set.
+	ParameterDefaults bool
 }
 
 // An OpenAPIFile is an OpenAPI document, or a file of OpenAPI objects, that a document refers to.

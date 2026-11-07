@@ -44,6 +44,19 @@ type generator struct {
 	// holds are the fields that hold a named type by value, written as placeholders until every type is declared.
 	holds []hold
 	decls []string
+	// pointers are the JSON Pointers that named types, and the fields of properties, are generated from.
+	pointers      map[string]string
+	fieldPointers map[fieldKey]string
+}
+
+// Output is the generated source, and its names.
+type Output struct {
+	// Source is formatted as gofmt does.
+	Source []byte
+	// Names are those of the named types, and of the fields of properties under `properties`, in the order they are in
+	// the source. Helper types, and the types and fields genever adds (such as an operation input's Path), aren't
+	// listed.
+	Names []Name
 }
 
 // hold is a struct's field that holds a named type by value.
@@ -51,8 +64,8 @@ type hold struct {
 	owner, goType string
 }
 
-// Generate writes Go source for the named types, in package pkg, formatted as gofmt does.
-func Generate(types []convert.NamedType, pkg string) ([]byte, error) {
+// Generate writes Go source for the named types, in package pkg.
+func Generate(types []convert.NamedType, pkg string) (Output, error) {
 	gen := &generator{
 		named:     map[string]*model.Type{},
 		names:     newNamespace(helperOptional, helperNull, helperNever),
@@ -63,14 +76,17 @@ func Generate(types []convert.NamedType, pkg string) ([]byte, error) {
 		markers:   map[string][]string{},
 		resolving: map[string]bool{},
 		// Filled as types are declared
-		aliasTargets: map[string]string{},
-		holds:        nil,
-		decls:        nil,
+		aliasTargets:  map[string]string{},
+		holds:         nil,
+		decls:         nil,
+		pointers:      map[string]string{},
+		fieldPointers: map[fieldKey]string{},
 	}
 
 	for _, named := range types {
 		gen.named[named.Name] = named.Type
 		gen.names.used[named.Name] = true
+		gen.pointers[named.Name] = named.Pointer
 	}
 
 	for _, named := range types {
@@ -85,10 +101,10 @@ func Generate(types []convert.NamedType, pkg string) ([]byte, error) {
 
 	formatted, err := format.Source([]byte(source))
 	if err != nil {
-		return nil, fmt.Errorf("format generated source: %w\n%s", err, source)
+		return Output{Source: nil, Names: nil}, fmt.Errorf("format generated source: %w\n%s", err, source)
 	}
 
-	return formatted, nil
+	return Output{Source: formatted, Names: sourceNames(formatted, gen.pointers, gen.fieldPointers)}, nil
 }
 
 // isAliasForm reports whether a named type is written as an alias, as declareNamed and declareBasic write it.
@@ -603,6 +619,8 @@ func (g *generator) declareObject(name string, doc *model.Doc, properties []mode
 		fieldName := fieldNames.reserve(Identifier(property.Name, "Field"))
 		result := g.fieldOf(name, fieldName, property.Name, property.Type, property.Optional)
 		result.doc = property.Doc
+		g.fieldPointers[fieldKey{owner: name, field: fieldName}] = property.Pointer
+
 		fields = append(fields, result)
 	}
 

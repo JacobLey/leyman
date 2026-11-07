@@ -74,17 +74,19 @@ type identity struct {
 // generatorIdentity is genever's version, and a hash of the options that change the output, with defaults resolved.
 func generatorIdentity(options FileOptions) identity {
 	resolved := struct {
-		Name      string `json:"name"`
-		Package   string `json:"package"`
-		OpenAPI30 bool   `json:"openApi30"`
-		Signed    bool   `json:"signed"`
-		Strict    bool   `json:"strict"`
+		Name              string `json:"name"`
+		Package           string `json:"package"`
+		OpenAPI30         bool   `json:"openApi30"`
+		ParameterDefaults bool   `json:"parameterDefaults"`
+		Signed            bool   `json:"signed"`
+		Strict            bool   `json:"strict"`
 	}{
-		Name:      options.Name,
-		Package:   options.Package,
-		OpenAPI30: options.OpenAPI30,
-		Signed:    options.Signed,
-		Strict:    !options.NoStrict,
+		Name:              options.Name,
+		Package:           options.Package,
+		OpenAPI30:         options.OpenAPI30,
+		ParameterDefaults: options.ParameterDefaults,
+		Signed:            options.Signed,
+		Strict:            !options.NoStrict,
 	}
 
 	if resolved.Name == "" {
@@ -297,10 +299,10 @@ func generateFromFile(ctx context.Context, inputPath string, options FileOptions
 	generateOptions := options.Options
 	generateOptions.BaseURI = baseURI
 
-	content, err := generate(bundle.Input, generateOptions, bundle.Files)
+	output, err := generate(bundle.Input, generateOptions, bundle.Files)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return content, sources, nil
+	return output.Source, sources, nil
 }

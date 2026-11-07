@@ -43,21 +43,22 @@ Versions are listed in the [changelog](./CHANGELOG.md).
 
 Writes `openapi.go` beside the input, and prints its path when it changed. Flags may come before or after the input:
 
-| Flag             | Default                | Description                                                                                                                                 |
-| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-o`, `--output` | input path, with `.go` | Path of the Go file to write                                                                                                                |
-| `--name`         | `Schema`               | Name of the root schema type. Not used for an OpenAPI document                                                                              |
-| `--package`      | `schema`               | Package of the Go file                                                                                                                      |
-| `--no-strict`    |                        | Accept likely mistakes in the schema, such as unknown keywords                                                                              |
-| `--open-api-30`  |                        | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead                                                 |
-| `--no-fetch`     |                        | Load only files the schema references, not URLs                                                                                             |
-| `--fetch-host`   | every host             | Load only URLs of this host, e.g. `example.com`, `localhost:8080` or `*.example.com`. Repeat for more                                       |
-| `--ci`           | in CI                  | Fail if the output is not up to date, without writing                                                                                       |
-| `--dry-run`      |                        | Do not write the output                                                                                                                     |
-| `--signed`       |                        | Sign the output, and refuse to overwrite it if it was edited or is not signed                                                               |
-| `--force`        |                        | With `--signed`, overwrite the output even if it was edited                                                                                 |
-| `--manifest`     |                        | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output still matching it is up to date without fetching URLs |
-| `--cwd`          | `.`                    | Directory the paths are relative to                                                                                                         |
+| Flag                   | Default                | Description                                                                                                                                 |
+| ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-o`, `--output`       | input path, with `.go` | Path of the Go file to write                                                                                                                |
+| `--name`               | `Schema`               | Name of the root schema type. Not used for an OpenAPI document                                                                              |
+| `--package`            | `schema`               | Package of the Go file                                                                                                                      |
+| `--no-strict`          |                        | Accept likely mistakes in the schema, such as unknown keywords                                                                              |
+| `--open-api-30`        |                        | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead                                                 |
+| `--parameter-defaults` |                        | With an OpenAPI document, also write each operation's [`<Id>Request`](#operations): what a handler gets once a validator fills in defaults  |
+| `--no-fetch`           |                        | Load only files the schema references, not URLs                                                                                             |
+| `--fetch-host`         | every host             | Load only URLs of this host, e.g. `example.com`, `localhost:8080` or `*.example.com`. Repeat for more                                       |
+| `--ci`                 | in CI                  | Fail if the output is not up to date, without writing                                                                                       |
+| `--dry-run`            |                        | Do not write the output                                                                                                                     |
+| `--signed`             |                        | Sign the output, and refuse to overwrite it if it was edited or is not signed                                                               |
+| `--force`              |                        | With `--signed`, overwrite the output even if it was edited                                                                                 |
+| `--manifest`           |                        | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output still matching it is up to date without fetching URLs |
+| `--cwd`                | `.`                    | Directory the paths are relative to                                                                                                         |
 
 It exits with 1 on any error, printed to stderr.
 
@@ -67,11 +68,11 @@ It exits with 1 on any error, printed to stderr.
 import genever "github.com/JacobLey/leyman/apps/genever/go"
 
 source, err := genever.Generate(schema, genever.Options{
-    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false,
+    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
 })
 ```
 
-`Generate(schema, options)` converts one JSON document, and loads nothing. `GenerateFile(ctx, input, options)` is the command line as a function: it reads a file, loads what it references, and writes the output, returning its path and whether it changed.
+`Generate(schema, options)` converts one JSON document, and loads nothing. `GenerateSource(schema, options)` returns the same source with where each name is: each named type and each field of a property under `properties`, with its byte `Offset` and the JSON `Pointer` it is generated from (e.g. `#/$defs/Note/properties/body`), such as for an editor to go from a name to its schema. `GenerateFile(ctx, input, options)` is the command line as a function: it reads a file, loads what it references, and writes the output, returning its path and whether it changed.
 
 Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported`, `ErrLoad` and `ErrSyntax`, each an `*Error` with the JSON Pointer of the problem. `GenerateFile` also fails with [populate-files'](../../populate-files/go/) `ErrCheck` and `ErrOwnership`.
 
@@ -94,14 +95,15 @@ The root schema is a type named `--name`, and each definition in its `$defs` (or
 
 ### Operations
 
-Each operation of an OpenAPI document with an `operationId` has two kinds of types, named after it:
+Each operation of an OpenAPI document has these types, named after its `operationId`, or else its method and path (`post /users/{id}` is `PostUsersId`):
 
 | Type                                                                        | Holds                                                                                                                                                                                                                                   |
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<Id>Input`, e.g. `GetUserInput`                                            | What a call sends: `Body`, its `application/json` request body, and `Path`, `Query`, `Header` and `Cookie`, each a struct of its parameters. A field is left out when the operation has none of it, and is a pointer when it's optional |
+| `<Id>Request`, e.g. `GetUserRequest`, only with `--parameter-defaults`      | What a handler gets, once a validator filled in parameters' defaults: the input, with each parameter whose schema has a `default` always set                                                                                            |
 | `<Id>Response<Status>`, e.g. `GetUserResponse200`, `GetUserResponseDefault` | The `application/json` body of each response that has one                                                                                                                                                                               |
 
-They are the TypeScript genever's `OperationInput` and `OperationResult`, as Go can't key a type by an `operationId`. A path item's parameters apply to each of its operations, and an operation's own parameter replaces one of the same name and location. Operations without an `operationId`, other media types and response headers have no types, but their schemas are checked like any other.
+They are the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult`, as Go can't key a type by an `operationId`. A path item's parameters apply to each of its operations, and an operation's own parameter replaces one of the same name and location. Other media types and response headers have no types, but their schemas are checked like any other.
 
 The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with a validator.
 
@@ -112,7 +114,7 @@ Go can't express every type TypeScript can, so some types are wider:
 - A `pattern`, or a template of strings, is a `string`. Patterns are still checked for strict mode, by a lenient parser, as Go's regexp doesn't read ECMAScript's lookarounds and backreferences.
 - An enum's constants don't restrict its type.
 - `encoding/json` matches keys case-insensitively, so `{"A": 1}` fills the field for `"a"`.
-- An OpenAPI document has no `Paths` or `Operations` types, only each operation's input and response bodies (see [Operations](#operations)), and genever's TypeScript-only options (`--parameter-defaults`, `--typed-min-items`) don't apply.
+- An OpenAPI document has no `Paths` or `Operations` types, only each operation's types (see [Operations](#operations)), and `--typed-min-items` doesn't apply.
 - Manifests record the generator as `genever-go`, so the Go and TypeScript genever never take each other's output as up to date. They are written unformatted.
 
 ## Development

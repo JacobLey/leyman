@@ -601,7 +601,7 @@ func TestLoadIntoDocument(t *testing.T) {
 		}}}}}}},
 		"components": {"schemas": {"User": {"type": "object", "properties": {"home": {"$ref": "address.json"}}}}}
 	}`, base+"api.json")
-	expectTypeNames(t, types, "User", "Address", "Id")
+	expectTypeNames(t, types, "User", "Address", "Id", "GetAInput", "GetAResponse200")
 
 	// Given components to embed in
 	types = loadAndConvert(t, `{"openapi": "3.0.3", "paths": {"/a": {"parameters": [

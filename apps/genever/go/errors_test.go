@@ -18,7 +18,7 @@ type errorCase struct {
 }
 
 func (c errorCase) options(strict bool) genever.Options {
-	return genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: c.Options.OpenAPI30, NoStrict: !strict}
+	return genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: c.Options.OpenAPI30, NoStrict: !strict, ParameterDefaults: false}
 }
 
 // Every implementation rejects the vectors' error cases with the same kind of error, at the same pointer.

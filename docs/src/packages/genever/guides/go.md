@@ -23,15 +23,17 @@ package api
 
 `go install …@latest` doesn't work: the module's `go.mod` points its dependencies at their copies in genever's repository, which `go install` refuses and `go get -tool` ignores.
 
-The command takes genever's flags, apart from the TypeScript-only `--parameter-defaults` and `--typed-min-items`, plus `--package` for the Go package. As a library:
+The command takes genever's flags, apart from the TypeScript-only `--typed-min-items`, plus `--package` for the Go package. As a library:
 
 ```go
 import genever "github.com/JacobLey/leyman/apps/genever/go"
 
 source, err := genever.Generate(schema, genever.Options{
-    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false,
+    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
 })
 ```
+
+`GenerateSource` also returns where each type's and field's name is, with the JSON Pointer it is generated from, as `geneverSource` does.
 
 ## Types
 
@@ -47,7 +49,7 @@ Every type holds every value the schema accepts, and can tell apart the values t
 | `oneOf`/`anyOf`, several `type`s            | a struct holding one of its variants                                                                        |
 | `true`, `false`                             | `json.RawMessage`, `Never`                                                                                  |
 
-Each operation with an `operationId` gets `<Id>Input`, what a call sends (its JSON body, and its path, query, header and cookie parameters), and `<Id>Response<Status>`, each JSON response body.
+Each operation gets `<Id>Input`, what a call sends (its JSON body, and its path, query, header and cookie parameters), and `<Id>Response<Status>`, each JSON response body. With `--parameter-defaults`, it also gets `<Id>Request`, what a handler gets once a validator filled in defaults. An operation without an `operationId` is named after its method and path: `post /users/{id}` is `PostUsersIdInput`.
 
 Decoding fails only when a value's shape doesn't fit, such as the wrong JSON kind or no branch of a union. Like genever, it doesn't validate: `pattern`, bounds and lengths are a validator's job.
 

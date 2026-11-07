@@ -38,7 +38,7 @@ func TestGenerateDefaults(t *testing.T) {
 	t.Parallel()
 
 	source, err := genever.Generate([]byte(`{"type": "object", "properties": {"a": {"type": "string"}}}`),
-		genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false})
+		genever.Options{Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,6 +53,7 @@ func TestGenerateOptions(t *testing.T) {
 
 	source, err := genever.Generate([]byte(`{"$id": "item.json", "type": "string", "nullable": true}`), genever.Options{
 		Name: "Root", Package: "api", BaseURI: "https://example.com/schemas/", OpenAPI30: true, NoStrict: false,
+		ParameterDefaults: false,
 	})
 	if err != nil {
 		t.Fatal(err)
