@@ -1,8 +1,8 @@
 # populate-files-test-vectors
 
-Scenarios shared by every [populate-files](../populate-files/) implementation.
+Scenarios shared by every [populate-files](../ts/) implementation.
 
-Each implementation runs every scenario in an empty directory and asserts that it gives exactly these results, errors and files. So the TypeScript package and the [Go implementation](../go-impl/) decide the same writes, refusals and check failures, and each reads the files and manifests the other writes.
+Each implementation runs every scenario in an empty directory and asserts that it gives exactly these results, errors and files. So the TypeScript package and the [Go implementation](../go/) decide the same writes, refusals and check failures, and each reads the files and manifests the other writes.
 
 ```ts
 import testVectors from '@leyman/populate-files-test-vectors/test-vectors.json' with { type: 'json' };
@@ -16,7 +16,7 @@ import testvectors "github.com/JacobLey/leyman/apps/populate-files/test-vectors"
 json.Unmarshal(testvectors.JSON, &vectors)
 ```
 
-The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go-impl/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
+The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
 
 ## Format
 

@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
-	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
+	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 

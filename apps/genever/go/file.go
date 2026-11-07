@@ -13,7 +13,7 @@ import (
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
-	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
+	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 

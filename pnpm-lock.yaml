@@ -407,7 +407,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
@@ -666,7 +666,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
@@ -1049,7 +1049,7 @@ importers:
         version: file:tools/pg-dolly
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -1131,7 +1131,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
@@ -1191,7 +1191,13 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  apps/populate-files/populate-files:
+  apps/populate-files/test-vectors:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+
+  apps/populate-files/ts:
     dependencies:
       ci-info:
         specifier: 'catalog:'
@@ -1201,7 +1207,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -1220,7 +1226,7 @@ importers:
         version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
@@ -1229,7 +1235,7 @@ importers:
         version: file:apps/populate-files/test-vectors
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.20(@swc/helpers@0.5.23)
@@ -1250,7 +1256,7 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.14.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@10.2.2)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1263,12 +1269,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
-
-  apps/populate-files/test-vectors:
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.6.4
 
   apps/trusted-tsc:
     devDependencies:
@@ -2132,7 +2132,7 @@ importers:
         version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       redis:
         specifier: 'catalog:'
         version: 6.3.1
@@ -2670,7 +2670,7 @@ importers:
         version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       punycode-esm:
         specifier: workspace:^
         version: file:tools/punycode-esm
@@ -10252,8 +10252,8 @@ packages:
     resolution: {integrity: sha512-M7LhCsdNbNgiLYiP4WjsfLUuFmCfnjdF6jKe2R9NKl4WFN+HZPGHJZ9lnLP7f9ZnKe3U9nuWD0szirmj+migUg==}
     engines: {node: '>=12.0.0'}
 
-  populate-files@file:apps/populate-files/populate-files:
-    resolution: {directory: apps/populate-files/populate-files, type: directory}
+  populate-files@file:apps/populate-files/ts:
+    resolution: {directory: apps/populate-files/ts, type: directory}
     engines: {node: '>=24'}
 
   possible-typed-array-names@1.1.0:
@@ -15774,7 +15774,7 @@ snapshots:
       entry-script: file:tools/entry-script
       ignore: 7.0.14
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby: 0.2.17
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
@@ -17184,7 +17184,7 @@ snapshots:
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -17883,7 +17883,7 @@ snapshots:
       juniper: file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.14.0(supports-color@10.2.2)))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -17899,7 +17899,7 @@ snapshots:
       juniper: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.14.0(supports-color@8.1.1)))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -18807,7 +18807,7 @@ snapshots:
     dependencies:
       entry-script: file:tools/entry-script
       pg-dolly: file:tools/pg-dolly
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -18893,7 +18893,7 @@ snapshots:
 
   pony-cause@2.1.11: {}
 
-  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10):
+  populate-files@file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
@@ -18906,7 +18906,7 @@ snapshots:
       - eslint
       - prettier
 
-  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
+  populate-files@file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)

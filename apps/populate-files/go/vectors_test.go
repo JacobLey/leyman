@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
+	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
 	testvectors "github.com/JacobLey/leyman/apps/populate-files/test-vectors"
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )

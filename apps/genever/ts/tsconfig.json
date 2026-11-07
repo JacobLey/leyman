@@ -11,7 +11,7 @@
   ],
   "references": [
     {
-      "path": "../../populate-files/populate-files"
+      "path": "../../populate-files/ts"
     },
     {
       "path": "../../../tools/parse-cwd"

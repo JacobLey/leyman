@@ -6,7 +6,7 @@ Generate Go types from JSON Schema files, with strict schema checks: the Go para
 - **Types that hold every valid value**: unions, tuples, `null` and absent properties each get a Go type that tells them apart, with the `MarshalJSON`/`UnmarshalJSON` they need written into the file.
 - **No runtime dependency**: the few helpers the types use (`Optional`, `Null`, `Never`) are written into the generated file.
 - **Loads what schemas reference**: files and URLs (with a host allowlist), JSON or YAML, and OpenAPI 3.0 and 3.1 documents.
-- **Kept in sync**: writes through the [Go populate-files](../../populate-files/go-impl/), optionally signed and listed in a manifest, compatible with the TypeScript tools.
+- **Kept in sync**: writes through the [Go populate-files](../../populate-files/go/), optionally signed and listed in a manifest, compatible with the TypeScript tools.
 
 It is not published as a Go module (yet), and lives in this repository only.
 
@@ -57,7 +57,7 @@ source, err := genever.Generate(schema, genever.Options{
 
 `Generate(schema, options)` converts one JSON document, and loads nothing. `GenerateFile(ctx, input, options)` is the command line as a function: it reads a file, loads what it references, and writes the output, returning its path and whether it changed.
 
-Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported`, `ErrLoad` and `ErrSyntax`, each an `*Error` with the JSON Pointer of the problem. `GenerateFile` also fails with [populate-files'](../../populate-files/go-impl/) `ErrCheck` and `ErrOwnership`.
+Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported`, `ErrLoad` and `ErrSyntax`, each an `*Error` with the JSON Pointer of the problem. `GenerateFile` also fails with [populate-files'](../../populate-files/go/) `ErrCheck` and `ErrOwnership`.
 
 ## Types
 

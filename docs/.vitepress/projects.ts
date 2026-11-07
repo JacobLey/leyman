@@ -363,7 +363,7 @@ export const packages: readonly Package[] = [
         title: 'populate-files',
         category: 'Generated files and monorepo tooling',
         pitch: 'Write generated files from code, and fail CI when they are out of date or were edited by hand, with editable manual sections.',
-        sources: ['apps/populate-files/populate-files', 'apps/populate-files/load-populate-files'],
+        sources: ['apps/populate-files/ts', 'apps/populate-files/load-populate-files'],
         related: ['generated-signature'],
         pages: [
             { text: 'Overview', link: '' },

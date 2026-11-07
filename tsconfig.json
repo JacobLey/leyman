@@ -8,7 +8,7 @@
       "path": "./apps/populate-files/load-populate-files"
     },
     {
-      "path": "./apps/populate-files/populate-files"
+      "path": "./apps/populate-files/ts"
     },
     {
       "path": "./tools/normalized-react-query"

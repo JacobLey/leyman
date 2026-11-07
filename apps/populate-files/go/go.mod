@@ -1,4 +1,4 @@
-module github.com/JacobLey/leyman/apps/populate-files/go-impl
+module github.com/JacobLey/leyman/apps/populate-files/go
 
 go 1.26
 
