@@ -3,13 +3,14 @@ package convert_test
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/gerr"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/model"
-	testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
 )
 
 // field is a property with its type first, as an operation's types are read.
@@ -206,7 +207,7 @@ func TestDocumentErrorVectors(t *testing.T) {
 		Schema  json.RawMessage `json:"schema"`
 		Pointer string          `json:"pointer"`
 	}
-	if err := json.Unmarshal(testvectors.Errors, &cases); err != nil {
+	if err := json.Unmarshal(errorVectors(t), &cases); err != nil {
 		t.Fatal(err)
 	}
 
@@ -232,4 +233,16 @@ func TestDocumentErrorVectors(t *testing.T) {
 			})
 		}
 	}
+}
+
+// errorVectors reads the error cases of the shared test vectors.
+func errorVectors(t *testing.T) []byte {
+	t.Helper()
+
+	data, err := os.ReadFile(filepath.Join("..", "..", "..", "test-vectors", "out", "errors.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return data
 }

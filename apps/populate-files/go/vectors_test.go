@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
-	testvectors "github.com/JacobLey/leyman/apps/populate-files/test-vectors"
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
@@ -85,7 +84,7 @@ func readScenarios(t *testing.T) []scenario {
 	var vectors struct {
 		Scenarios []scenario `json:"scenarios"`
 	}
-	if err := json.Unmarshal(testvectors.JSON, &vectors); err != nil {
+	if err := json.Unmarshal(readVectors(t), &vectors); err != nil {
 		t.Fatal(err)
 	}
 
@@ -339,4 +338,16 @@ func TestScenarioVectors(t *testing.T) {
 			expectManifest(t, cwd, vector)
 		}
 	}
+}
+
+// readVectors reads the shared test vectors, which every implementation reads.
+func readVectors(t *testing.T) []byte {
+	t.Helper()
+
+	data, err := os.ReadFile(filepath.Join("..", "test-vectors", "data", "test-vectors.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return data
 }

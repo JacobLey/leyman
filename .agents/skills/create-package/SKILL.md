@@ -55,7 +55,7 @@ A worked example under `demos/` shows how to use open-source projects and servic
 A package implemented in more than one language is a directory named after the package, holding one project per language, beside the vectors they share (e.g. `tools/constant-consistent-hash/`, `apps/genever/`):
 
 - `ts/`, `go/`, `rust/`: one implementation each. `wasm/` is a TypeScript package calling the Rust one.
-- `test-vectors/`: inputs and expected results every implementation runs, as an npm package and a Go module (and a crate, for Rust). The TypeScript implementation computes the expected values once, and they are committed. An implementation never regenerates the values it is tested against.
+- `test-vectors/`: inputs and expected results every implementation runs, as an npm package. Other languages read its JSON by path (a Go module or crate wrapping it is fine while the implementation is unpublished; see below). The TypeScript implementation computes the expected values once, and they are committed. An implementation never regenerates the values it is tested against.
 - Other packages built on it, such as `weighted-rendezvous-hash` or `load-populate-files`, stay beside them under their own names.
 - `README.md`: what every implementation promises, whatever its language (the format it reads and writes, its rules), and a table of the projects. Each project still has its own README.
 
@@ -67,7 +67,7 @@ Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go`. Go is
 
 - No `package.json`: pnpm doesn't need to know about it. Add a `project.json` named `@leyman/<name>` for the targets gonx doesn't infer.
 - `go.mod`: module `github.com/JacobLey/leyman/<path>`, with a `go` directive no newer than the pinned Go version (Dagger sets `GOTOOLCHAIN=local`, so it never downloads a newer toolchain).
-- Depend on another workspace Go module with `require <module> v0.0.0` plus `replace <module> => ../<path>`, and import it. gonx infers the Nx dependency from the import. To share data with TypeScript, give the other project a `go.mod` too, and `//go:embed` the data (see `tools/constant-consistent-hash/test-vectors`).
+- Depend on another workspace Go module with `require <module> v0.0.0` plus `replace <module> => ../<path>`, and import it. gonx infers the Nx dependency from the import. To share data with TypeScript, read the file by relative path from the tests, and list the project holding it under `implicitDependencies` in `project.json`, so `go-test` (which hashes `^dependency-files`) reruns when it changes (see `apps/genever/go`). A published module can't require an unpublished one, so this is the way for a released module. An unreleased one may instead give the other project a `go.mod` and `//go:embed` the data (see `tools/constant-consistent-hash/test-vectors`).
 - Source and `_test.go` files at the project root.
 - `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-lint` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
 - Not published: nothing deploys Go modules yet.

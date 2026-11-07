@@ -4,6 +4,9 @@
   "metadata": {
     "description": "Go implementation of generated-signature, tested against the shared test vectors."
   },
+  "implicitDependencies": [
+    "@leyman/generated-signature-test-vectors"
+  ],
   "targets": {
     "biome": {},
     "gofmt": {},

@@ -8,16 +8,7 @@ The [TypeScript genever](../ts/) checks that each fixture's generated type is th
 import { invalidSchemas, juniperSchemas, openApiSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-test-vectors';
 ```
 
-It is also a Go module, embedding the JSON:
-
-```go
-import testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
-
-data, err := testvectors.Fixtures.ReadFile("out/fixtures/tuple.json")
-errorCases := testvectors.Errors // out/errors.json
-```
-
-The module is not published, so require it with a `replace` pointing at this directory.
+Implementations in other languages read the JSON files under [`out/`](./out/) by path, from the working copy, so the published Go module needs no module of vectors.
 
 ## Format
 

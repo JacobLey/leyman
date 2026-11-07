@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"maps"
+	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
-	testvectors "github.com/JacobLey/leyman/tools/generated-signature/test-vectors"
 )
 
 type style struct {
@@ -115,7 +116,7 @@ func readVectors(t *testing.T) testVectors {
 	t.Helper()
 
 	var vectors testVectors
-	if err := json.Unmarshal(testvectors.JSON, &vectors); err != nil {
+	if err := json.Unmarshal(readVectorsFile(t), &vectors); err != nil {
 		t.Fatal(err)
 	}
 
@@ -348,4 +349,16 @@ func TestSerializeManifestVectors(t *testing.T) {
 			t.Errorf("%s: got %q, expected %q", vector.Description, got, vector.Text)
 		}
 	}
+}
+
+// readVectorsFile reads the shared test vectors, which every implementation reads.
+func readVectorsFile(t *testing.T) []byte {
+	t.Helper()
+
+	data, err := os.ReadFile(filepath.Join("..", "test-vectors", "data", "test-vectors.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return data
 }

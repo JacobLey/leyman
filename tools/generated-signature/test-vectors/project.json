@@ -3,7 +3,6 @@
   "name": "@leyman/generated-signature-test-vectors",
   "targets": {
     "biome": {},
-    "gofmt": {},
     "sync-injected": {},
     "install:_": {},
     "install": {},

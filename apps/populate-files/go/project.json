@@ -4,6 +4,9 @@
   "metadata": {
     "description": "Go implementation of populate-files, tested against the shared test vectors."
   },
+  "implicitDependencies": [
+    "@leyman/populate-files-test-vectors"
+  ],
   "targets": {
     "biome": {},
     "gofmt": {},

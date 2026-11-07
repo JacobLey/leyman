@@ -32,4 +32,4 @@ Run through Nx, like any other project:
 nx run @leyman/populate-files-go:verify
 ```
 
-It has no `package.json`. The [test vectors](../test-vectors/) and generated-signature are Go dependencies: `go.mod` requires their modules, with `replace` directives pointing at the workspace copies, and the code imports them. Nx (through the gonx plugin) infers the dependencies from those imports, so `go test ./...` also works directly.
+It has no `package.json`. generated-signature is a Go dependency: `go.mod` requires its module, with a `replace` pointing at the workspace copy, and Nx (through the gonx plugin) infers the dependency from the import. The tests read the [test vectors](../test-vectors/) by path, an implicit dependency in `project.json`, so `go test ./...` also works directly.

@@ -3,7 +3,6 @@
   "name": "@leyman/populate-files-test-vectors",
   "targets": {
     "biome": {},
-    "gofmt": {},
     "sync-injected": {},
     "install:_": {},
     "install": {},

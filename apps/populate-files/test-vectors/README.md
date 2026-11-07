@@ -8,15 +8,7 @@ Each implementation runs every scenario in an empty directory and asserts that i
 import testVectors from '@leyman/populate-files-test-vectors/test-vectors.json' with { type: 'json' };
 ```
 
-It is also a Go module, embedding the same file:
-
-```go
-import testvectors "github.com/JacobLey/leyman/apps/populate-files/test-vectors"
-
-json.Unmarshal(testvectors.JSON, &vectors)
-```
-
-The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
+Implementations in other languages, such as the [Go implementation](../go/), read [`data/test-vectors.json`](./data/test-vectors.json) by path, from the working copy, so a published module needs no module of vectors.
 
 ## Format
 

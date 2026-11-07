@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
-	testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
 )
 
 type fixture struct {
@@ -22,7 +21,7 @@ type fixture struct {
 func readFixtures(t *testing.T) map[string]fixture {
 	t.Helper()
 
-	entries, err := fs.ReadDir(testvectors.Fixtures, "out/fixtures")
+	entries, err := fs.ReadDir(testVectors(), "out/fixtures")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +29,7 @@ func readFixtures(t *testing.T) map[string]fixture {
 	fixtures := map[string]fixture{}
 
 	for _, entry := range entries {
-		data, err := testvectors.Fixtures.ReadFile(path.Join("out/fixtures", entry.Name()))
+		data, err := fs.ReadFile(testVectors(), path.Join("out/fixtures", entry.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,7 +54,7 @@ type documentFixture struct {
 func readDocuments(t *testing.T) map[string]documentFixture {
 	t.Helper()
 
-	entries, err := fs.ReadDir(testvectors.OpenAPI, "out/openapi")
+	entries, err := fs.ReadDir(testVectors(), "out/openapi")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +62,7 @@ func readDocuments(t *testing.T) map[string]documentFixture {
 	documents := map[string]documentFixture{}
 
 	for _, entry := range entries {
-		data, err := testvectors.OpenAPI.ReadFile(path.Join("out/openapi", entry.Name()))
+		data, err := fs.ReadFile(testVectors(), path.Join("out/openapi", entry.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -209,4 +208,21 @@ func writeFile(t *testing.T, name string, data []byte) {
 	if err := os.WriteFile(name, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// testVectors are the files of the shared test vectors, which every implementation reads.
+func testVectors() fs.FS {
+	return os.DirFS(filepath.Join("..", "test-vectors"))
+}
+
+// readVectors reads a file of the shared test vectors.
+func readVectors(t *testing.T, name string) []byte {
+	t.Helper()
+
+	data, err := fs.ReadFile(testVectors(), name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return data
 }

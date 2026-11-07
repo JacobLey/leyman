@@ -4,6 +4,9 @@
   "metadata": {
     "description": "Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of genever."
   },
+  "implicitDependencies": [
+    "@leyman/genever-test-vectors"
+  ],
   "targets": {
     "biome": {},
     "gofmt": {},

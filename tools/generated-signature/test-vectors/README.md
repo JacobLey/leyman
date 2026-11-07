@@ -8,15 +8,7 @@ Each implementation depends on this package, through its own package manager, an
 import testVectors from '@leyman/generated-signature-test-vectors/test-vectors.json' with { type: 'json' };
 ```
 
-It is also a Go module, embedding the same file:
-
-```go
-import testvectors "github.com/JacobLey/leyman/tools/generated-signature/test-vectors"
-
-json.Unmarshal(testvectors.JSON, &vectors)
-```
-
-The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
+Implementations in other languages, such as the [Go implementation](../go/), read [`data/test-vectors.json`](./data/test-vectors.json) by path, from the working copy, so a published module needs no module of vectors.
 
 ## Format
 

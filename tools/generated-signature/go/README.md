@@ -49,4 +49,4 @@ Run through Nx, like any other project:
 nx run @leyman/generated-signature-go:verify
 ```
 
-It has no `package.json`. The [test vectors](../test-vectors/) are a Go dependency: `go.mod` requires their module, with a `replace` pointing at the workspace copy, and the tests import it. Nx (through the gonx plugin) infers the dependency from that import, so `go test ./...` also works directly.
+It has no `package.json` and no dependencies. The tests read the [test vectors](../test-vectors/) by path, an implicit dependency in `project.json`, so `go test ./...` also works directly.
