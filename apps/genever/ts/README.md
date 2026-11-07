@@ -425,3 +425,4 @@ The same tools are tested side by side every night: see the [comparison page](ht
 
 - [juniper](https://www.npmjs.com/package/juniper) — build JSON Schemas in TypeScript, with their types. genever reads them back.
 - [populate-files](https://www.npmjs.com/package/populate-files) — writes genever's output, and checks it in CI.
+- [genever for Go](https://jacobley.github.io/leyman/packages/genever/guides/go) — the same schemas and checks, generating Go types, held to the same test vectors.

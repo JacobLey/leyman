@@ -70,7 +70,7 @@ Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go`. Go is
 - Depend on another workspace Go module with `require <module> v0.0.0` plus `replace <module> => ../<path>`, and import it. gonx infers the Nx dependency from the import. To share data with TypeScript, read the file by relative path from the tests, and list the project holding it under `implicitDependencies` in `project.json`, so `go-test` (which hashes `^dependency-files`) reruns when it changes (see `apps/genever/go`). A published module can't require an unpublished one, so this is the way for a released module. An unreleased one may instead give the other project a `go.mod` and `//go:embed` the data (see `tools/constant-consistent-hash/test-vectors`).
 - Source and `_test.go` files at the project root.
 - `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-lint` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
-- Not published: nothing deploys Go modules yet.
+- Not released by default. To release one, add a `VERSION` and `CHANGELOG.md` and the `check-go-release` target (see the [versioning skill](../versioning/SKILL.md#go-modules)); every workspace module it requires must be released too.
 
 ## Rust projects
 

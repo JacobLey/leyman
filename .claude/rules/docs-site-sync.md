@@ -67,6 +67,9 @@ paths:
   - "tools/test-chain/test-chain-core/src/**"
   - "tools/local-ingress/README.md"
   - "infra/*/*/*.tf"
+  - "apps/genever/go/README.md"
+  - "apps/populate-files/go/README.md"
+  - "tools/generated-signature/go/README.md"
   # @manual-end paths
 ---
 

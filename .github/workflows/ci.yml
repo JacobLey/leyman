@@ -220,6 +220,30 @@ jobs:
           # Only the tag step pushes, with its own token
           persist-credentials: false
 
+      # A Go module is released by its tag, `<directory>/v<VERSION>`: tags each module with a VERSION whose tag doesn't
+      # exist yet. `check-go-release` (in `test`) made sure each requires its workspace dependencies at their VERSIONs,
+      # which are tagged in the same push. Before publishing to npm, so a failure there doesn't hold them back
+      - name: Tag Go modules
+        env:
+          # See `Tag releases`
+          TAG_TOKEN: ${{ secrets.RELEASE_TAG_TOKEN }}
+        run: |
+          remote="https://x-access-token:${TAG_TOKEN}@github.com/${GITHUB_REPOSITORY}"
+          existing=$(git ls-remote --tags "$remote" | sed 's|.*refs/tags/||')
+          tags=()
+          for file in $(git ls-files '*/VERSION'); do
+            directory=$(dirname "$file")
+            tag="$directory/v$(cat "$file")"
+            if [ -f "$directory/go.mod" ] && ! printf '%s\n' "$existing" | grep -qxF "$tag"; then
+              git tag "$tag"
+              tags+=("refs/tags/$tag")
+            fi
+          done
+          if [ "${#tags[@]}" -gt 0 ]; then
+            git push "$remote" "${tags[@]}"
+            printf 'tagged %s\n' "${tags[@]#refs/tags/}"
+          fi
+
       # npm runs inside Dagger, so hand it the GitHub Actions environment it uses for OIDC and provenance
       - name: Capture GitHub environment
         run: |

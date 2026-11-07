@@ -39,6 +39,9 @@
       "{projectRoot}/package.json",
       "dependency-files"
     ],
+    "go-release-files": [
+      "{projectRoot}/VERSION"
+    ],
     "dependency-files": [
       "{projectRoot}/executors.json",
       "{projectRoot}/*.(c|m)?js",
@@ -121,6 +124,7 @@
       "{projectRoot}/go.mod",
       "{projectRoot}/go.sum",
       "{projectRoot}/**/*.go",
+      "{projectRoot}/VERSION",
       "{workspaceRoot}/go.work",
       "{workspaceRoot}/go.work.sum"
     ]
@@ -270,6 +274,29 @@
         "{workspaceRoot}/leyman/main/scripts/check-workspace-dependencies.mjs",
         "{workspaceRoot}/pnpm-workspace.yaml",
         "{workspaceRoot}/**/package.json"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
+    "check-go-release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/check-go-release.mjs"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{workspaceRoot}/leyman/main/scripts/check-go-release.mjs",
+        "{projectRoot}/go.mod",
+        "{projectRoot}/VERSION",
+        "{projectRoot}/CHANGELOG.md",
+        "^go-release-files"
       ],
       "outputs": [],
       "dependsOn": [
@@ -954,6 +981,7 @@
         "check-workspace-dependencies",
         "drizzle-kit-check",
         "go-lint",
+        "check-go-release",
         "rust-clippy",
         "tofu-validate",
         "check-version"

@@ -2,6 +2,7 @@ package genever
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,8 +18,13 @@ import (
 	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
+//go:embed VERSION
+var versionFile string
+
 // Version is genever's, recorded in manifests so a new version regenerates its files.
-const Version = "0.0.0"
+func Version() string {
+	return strings.TrimSpace(versionFile)
+}
 
 // FileOptions of GenerateFile.
 type FileOptions struct {
@@ -91,7 +97,7 @@ func generatorIdentity(options FileOptions) identity {
 
 	encoded, _ := json.Marshal(resolved) //nolint:errchkjson // Only strings and booleans
 
-	return identity{generator: "genever-go@" + Version, options: generatedsignature.ContentHash(encoded)}
+	return identity{generator: "genever-go@" + Version(), options: generatedsignature.ContentHash(encoded)}
 }
 
 // inputKey is how an input is recorded: a file relative to the manifest (starting with "."), or else its URI.

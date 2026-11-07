@@ -185,6 +185,7 @@ export const packages: readonly Package[] = [
                     { text: 'OpenAPI documents', link: 'guides/openapi' },
                     { text: 'References to other files', link: 'guides/references' },
                     { text: 'Juniper round trip', link: 'guides/juniper-round-trip' },
+                    { text: 'Go', link: 'guides/go' },
                 ],
             },
             {
@@ -374,6 +375,7 @@ export const packages: readonly Package[] = [
                     { text: 'Config modules and the CLI', link: 'guides/config-modules' },
                     { text: 'Signed files', link: 'guides/signed-files' },
                     { text: 'Manifest', link: 'guides/manifest' },
+                    { text: 'Go', link: 'guides/go' },
                 ],
             },
             {
@@ -394,7 +396,13 @@ export const packages: readonly Package[] = [
         pages: [
             { text: 'Overview', link: '' },
             { text: 'Getting started', link: 'getting-started' },
-            { text: 'Guides', items: [{ text: 'ESLint', link: 'guides/eslint' }] },
+            {
+                text: 'Guides',
+                items: [
+                    { text: 'ESLint', link: 'guides/eslint' },
+                    { text: 'Go', link: 'guides/go' },
+                ],
+            },
             {
                 text: 'Reference',
                 items: [

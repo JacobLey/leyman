@@ -135,7 +135,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer, getenv fu
 	case err != nil:
 		return 1
 	case parsed.version:
-		_, _ = fmt.Fprintln(stdout, "genever-go", genever.Version)
+		_, _ = fmt.Fprintln(stdout, "genever-go", genever.Version())
 
 		return 0
 	case len(parsed.positionals) != 1:

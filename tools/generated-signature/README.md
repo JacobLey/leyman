@@ -16,6 +16,6 @@ A valid signature means nobody edited the file, not that regenerating it would p
 | Implementation | Status |
 |----------------|--------|
 | [`ts`](./ts/) | Published to npm as [`generated-signature`](https://www.npmjs.com/package/generated-signature), with an ESLint rule |
-| [`go`](./go/) | In this repository only |
+| [`go`](./go/) | Released as the Go module `github.com/JacobLey/leyman/tools/generated-signature/go` |
 
 Each implementation is held to the shared [test vectors](./test-vectors/): exactly the same signatures, verify results, sections, merges, hashes and manifests.

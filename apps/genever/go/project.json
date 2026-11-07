@@ -11,6 +11,7 @@
     "biome": {},
     "gofmt": {},
     "go-coverage-report": {},
+    "check-go-release": {},
     "install:_": {},
     "install": {},
     "prepare:_": {},

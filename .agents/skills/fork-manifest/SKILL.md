@@ -147,6 +147,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 |------|-----|
 | `scripts/nx/go-coverage-report.sh` | the go-coverage-report target |
 | `scripts/nx/gofmt.sh` | the gofmt target |
+| `leyman/main/scripts/check-go-release.mjs` | the check-go-release target |
 | `.golangci.yml` | the go-lint target's rules |
 
 ### `local-ingress`: serves worktrees at https://<worktree>.<repo>.localhost

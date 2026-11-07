@@ -15,7 +15,7 @@ Every implementation follows the same rules, so files and manifests written by o
 | Package | Status |
 |---------|--------|
 | [`ts`](./ts/) | Published to npm as [`populate-files`](https://www.npmjs.com/package/populate-files) |
-| [`go`](./go/) | The Go implementation, in this repository only |
+| [`go`](./go/) | The Go implementation, released as the Go module `github.com/JacobLey/leyman/apps/populate-files/go` |
 | [`load-populate-files`](./load-populate-files/) | Published to npm as [`load-populate-files`](https://www.npmjs.com/package/load-populate-files): reads the files to populate from a config file, and runs the TypeScript implementation |
 
 The TypeScript and Go implementations run the same [test vectors](./test-vectors/): scenarios run in an empty directory, with exactly the results, errors and files each must give.

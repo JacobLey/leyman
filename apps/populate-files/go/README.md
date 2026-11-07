@@ -2,6 +2,12 @@
 
 Go implementation of [populate-files](../ts/), tested against the shared [test vectors](../test-vectors/).
 
+```sh
+go get github.com/JacobLey/leyman/apps/populate-files/go@latest
+```
+
+It needs Go 1.26 or later. Versions are listed in the [changelog](./CHANGELOG.md).
+
 It writes generated files and keeps them in sync, with the same rules as the TypeScript package: a check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go/), so the files and manifests it writes are read the same way by the TypeScript tools.
 
 ```go
@@ -21,8 +27,6 @@ Compared to the TypeScript package:
 - Content is bytes. Nothing is formatted: JSON content is the caller's to write, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
 - `Check` is a plain option, where the TypeScript package defaults it to whether it runs in CI.
 - Stale files without a manifest are found in sorted order.
-
-It is not published as a Go module (yet).
 
 ## Development
 

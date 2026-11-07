@@ -8,10 +8,9 @@ Generate Go types from JSON Schema files, with strict schema checks: the Go para
 - **Loads what schemas reference**: files and URLs (with a host allowlist), JSON or YAML, OpenAPI 3.0 and 3.1 documents, and the files of path items, parameters and responses an OpenAPI document refers to.
 - **Kept in sync**: writes through the [Go populate-files](../../populate-files/go/), optionally signed and listed in a manifest, compatible with the TypeScript tools.
 
-It is not published as a Go module (yet), and lives in this repository only.
-
 ## Contents
 
+- [Install](#install)
 - [Command line](#command-line)
 - [API](#api)
 - [Types](#types)
@@ -19,11 +18,27 @@ It is not published as a Go module (yet), and lives in this repository only.
 - [Compared to genever](#compared-to-genever)
 - [Development](#development)
 
+## Install
+
+It needs Go 1.26 or later; the code it generates builds with Go 1.24 or later. As a tool of your module, at a version recorded in its `go.mod`:
+
+```sh
+go get -tool github.com/JacobLey/leyman/apps/genever/go/cmd/genever@latest
+go tool genever api/openapi.yaml --package api --signed
+```
+
+`go install …@latest` doesn't work, since this module's `go.mod` points its workspace dependencies at their copies in this repository. As a library:
+
+```sh
+go get github.com/JacobLey/leyman/apps/genever/go@latest
+```
+
+Versions are listed in the [changelog](./CHANGELOG.md).
+
 ## Command line
 
 ```sh
-# From apps/genever/go
-go run ./cmd/genever ../../../api/openapi.yaml --package api --signed
+//go:generate go tool genever openapi.yaml --package api --signed
 ```
 
 Writes `openapi.go` beside the input, and prints its path when it changed. Flags may come before or after the input:

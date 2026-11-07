@@ -197,6 +197,14 @@ Fails if `tools/local-ingress`'s image or compose file changed without a `VERSIO
 
 ---
 
+### `check-go-release`
+
+Fails unless a released Go module's `VERSION` is `X.Y.Z` and heads its `CHANGELOG.md`, fits its module path's major version, and every workspace module it requires (through a local `replace`) is released and required at its `VERSION` (`leyman/main/scripts/check-go-release.mjs`). Runs in `check:lint`.
+
+**Add when:** a Go module is released, with its `VERSION` and `CHANGELOG.md` (see the [versioning skill](../versioning/SKILL.md#go-modules)).
+
+---
+
 ### `go-lint`
 
 Runs `golangci-lint run ./...` with the workspace's `.golangci.yml`, where every linter is on (`go vet` is one of them). Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).
@@ -383,7 +391,7 @@ Validates 100% coverage using only the C8 data from this project's own test targ
 
 ## Go projects
 
-The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project. It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed.
+The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project. It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed, except for a project whose files a Go project reads by path (shared test vectors): then `go-test` reruns when they change, as it hashes `^dependency-files`.
 
 Its inferred targets are renamed with a `go-` prefix, so they don't collide with lifecycle targets like `build` and `test`. Only `go-lint` and `go-test` are bound in `lifecycle.json`, configured through name-keyed `targetDefaults` (inputs, `dependsOn`, and options such as `golangci-lint run` instead of gonx's default `go fmt`). Keep those defaults without an `executor`: a default naming a different executor than the inferred target is ignored. The others (`go-build`, `go-tidy`, `go-generate`, `go-serve`, `go-release-publish`) are unbound, and only run when called directly.
 

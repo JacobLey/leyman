@@ -2,6 +2,12 @@
 
 Go implementation of [generated-signature](../ts/), tested against the shared [test vectors](../test-vectors/).
 
+```sh
+go get github.com/JacobLey/leyman/tools/generated-signature/go@latest
+```
+
+It needs Go 1.26 or later. Versions are listed in the [changelog](./CHANGELOG.md).
+
 A file signed by either implementation verifies with the other, manual sections merge the same way, and both read and write the same manifests, so a Go generator (like the Go port of [genever](../../../apps/genever/)) can share files with TypeScript tooling.
 
 ```go
@@ -38,8 +44,6 @@ The API follows the TypeScript package's, with Go's conventions:
 Errors match with `errors.Is`: `ErrMalformed` (a `*MalformedError` with its `Reason` and `Line`), `ErrNoCommentStyle`, `ErrUnknownCommentStyle`, `ErrSectionID` and `ErrManifest`.
 
 Strings are UTF-8, where JavaScript's are UTF-16, so the whitespace, case and ordering rules that the format takes from JavaScript are reproduced rather than taken from Go: manual section markers and blank checks use JavaScript's whitespace, and manifests sort paths by UTF-16 code unit. Text with invalid UTF-8 is hashed as it is.
-
-It is not published as a Go module (yet).
 
 ## Development
 

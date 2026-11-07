@@ -39,6 +39,7 @@ Commit the output. In CI, the same command checks instead of writing, and fails 
 - **Manual sections**: parts of a signed file can be left for people to edit. Their content survives regeneration.
 - **A manifest for everything else**: files that can't hold a comment, like JSON, are hashed in a [manifest](/packages/populate-files/guides/manifest) instead. It also makes `clean` remove only files a previous run wrote.
 - **Two packages**: `populate-files` is the API. `load-populate-files` adds a CLI that loads the files from a [config module](/packages/populate-files/guides/config-modules).
+- **Go too**: a Go implementation writes and checks files with the same rules. See [Go](/packages/populate-files/guides/go).
 
 ## Compared to
 

@@ -41,6 +41,7 @@ export const custom = 1;
 - **ESLint rule**: `generated-signature/eslint` reports hand-edited files in the editor. See [ESLint](/packages/generated-signature/guides/eslint).
 - **Manifest**: files that can't hold a comment, like JSON, are hashed in a [manifest](/packages/generated-signature/reference/format#manifest) instead.
 - **Zero dependencies**: only `node:crypto`. `eslint` is an optional peer, for the ESLint entry point only.
+- **Go too**: a Go implementation signs and verifies exactly the same way. See [Go](/packages/generated-signature/guides/go).
 
 [populate-files](/packages/populate-files/) is the intended writer: with `signed: true` it does the signing and merging for you. This package works on plain strings, for generators that write their own files, and for tools that only check them.
 

@@ -58,6 +58,7 @@ Commit the result, and run `genever --ci` in CI to fail when it is out of date.
 - **One file from many**: `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says. See [References to other files](/packages/genever/guides/references).
 - **OpenAPI documents**: every `components.schemas` entry of an OpenAPI 3.0 or 3.1 document becomes a type, and its operations become `Paths` and `Operations` types, shaped like openapi-typescript's. See [OpenAPI documents](/packages/genever/guides/openapi).
 - **Types only**: the output is plain TypeScript, with no runtime dependency.
+- **Go too**: genever-go reads the same schemas, with the same checks, and writes Go types. See [Go](/packages/genever/guides/go).
 
 ## Compared to
 

@@ -70,6 +70,7 @@
     "check-workspace-dependencies": "check:lint",
     "drizzle-kit-check": "check:lint",
     "go-lint": "check:lint",
+    "check-go-release": "check:lint",
     "rust-clippy": "check:lint",
     "tofu-validate": "check:lint",
     "check-version": "check:lint",

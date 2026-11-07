@@ -15,6 +15,6 @@ genever reads a schema the way a validator does, and writes the narrowest types 
 | Implementation | Writes | Status |
 |----------------|--------|--------|
 | [`ts`](./ts/) | TypeScript, the same types Juniper infers | Published to npm as [`genever`](https://www.npmjs.com/package/genever) |
-| [`go`](./go/) | Go structs, with the JSON code unions and tuples need | In this repository only |
+| [`go`](./go/) | Go structs, with the JSON code unions and tuples need | Released as the Go module `github.com/JacobLey/leyman/apps/genever/go` |
 
 Each implementation runs the shared [test vectors](./test-vectors/): Juniper's fixtures with sample values every generated type must accept, and the schemas genever rejects, with the pointer of each error. A language's types can be wider than another's where the language can't say more (Go has no union types), but never narrower than what the schema accepts.

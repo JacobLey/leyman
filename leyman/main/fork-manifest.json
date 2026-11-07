@@ -272,6 +272,11 @@
       "why": "the gofmt target"
     },
     {
+      "path": "leyman/main/scripts/check-go-release.mjs",
+      "when": "go",
+      "why": "the check-go-release target"
+    },
+    {
       "path": "scripts/nx/rust-coverage-report.sh",
       "when": "rust",
       "why": "the rust-coverage-report target"
@@ -546,6 +551,7 @@
         "drizzle-kit-check"
       ],
       "go": [
+        "check-go-release",
         "go-coverage-report",
         "go-lint",
         "go-test",

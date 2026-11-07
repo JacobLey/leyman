@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	genever "github.com/JacobLey/leyman/apps/genever/go"
 )
 
 // noEnv is an environment without variables.
@@ -124,7 +126,7 @@ func TestHelpAndVersion(t *testing.T) {
 		t.Errorf("got %d, %q", code, stderr)
 	}
 
-	if code, stdout, _ := command(t, noEnv, "--version"); code != 0 || !strings.HasPrefix(stdout, "genever-go ") {
+	if code, stdout, _ := command(t, noEnv, "--version"); code != 0 || stdout != "genever-go "+genever.Version()+"\n" {
 		t.Errorf("got %d, %q", code, stdout)
 	}
 }
