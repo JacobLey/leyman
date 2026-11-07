@@ -1,6 +1,9 @@
 {
   "version": 1,
   "files": {
+    "errors.json": {
+      "hash": "v1:e2152447bf1b83ff106259f16fa21850"
+    },
     "fixtures/allOf.json": {
       "hash": "v1:c3edf2023c9d6396a63c98fbcf5988e3"
     },

@@ -1,7 +1,7 @@
 {
   "name": "@leyman/genever-vectors",
   "version": "0.0.1",
-  "description": "Schemas and sample values shared by every genever implementation: Juniper fixtures as TypeScript, and as JSON for the Go implementation.",
+  "description": "Schemas and sample values shared by every genever implementation: Juniper fixtures and schemas genever rejects, as TypeScript, and as JSON for the Go implementation.",
   "private": true,
   "type": "module",
   "author": "JacobLey",

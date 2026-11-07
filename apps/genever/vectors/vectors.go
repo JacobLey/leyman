@@ -9,3 +9,8 @@ import "embed"
 //
 //go:embed out/fixtures/*.json
 var Fixtures embed.FS
+
+// Errors is out/errors.json: schemas genever rejects, by kind of error, with the pointer to the fault.
+//
+//go:embed out/errors.json
+var Errors []byte

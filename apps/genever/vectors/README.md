@@ -1,11 +1,11 @@
 # genever-vectors
 
-Schemas and sample values shared by every genever implementation: Juniper fixtures as TypeScript, and as JSON for the Go implementation.
+Schemas and sample values shared by every genever implementation: Juniper fixtures and schemas genever rejects, as TypeScript, and as JSON for the Go implementation.
 
-The [TypeScript genever](../) checks that each fixture's generated type is the type Juniper infers, and accepts every sample. The [Go implementation](../go/) can't run Juniper, so it reads the same fixtures as JSON, and checks that every sample decodes into its generated types and encodes back unchanged. Both are held to the same schemas, not to each other.
+The [TypeScript genever](../) checks that each fixture's generated type is the type Juniper infers, and accepts every sample. The [Go implementation](../go/) can't run Juniper, so it reads the same fixtures as JSON, and checks that every sample decodes into its generated types and encodes back unchanged. Both are held to the same schemas, not to each other. Both also reject the same error cases with the same kind of error, at the same JSON Pointer.
 
 ```ts
-import { juniperSchemas, openApiSchemas } from '@leyman/genever-vectors';
+import { invalidSchemas, juniperSchemas, openApiSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-vectors';
 ```
 
 It is also a Go module, embedding the JSON:
@@ -14,6 +14,7 @@ It is also a Go module, embedding the JSON:
 import "github.com/JacobLey/leyman/apps/genever/vectors"
 
 data, err := vectors.Fixtures.ReadFile("out/fixtures/tuple.json")
+errorCases := vectors.Errors // out/errors.json
 ```
 
 The module is not published, so require it with a `replace` pointing at this directory.
@@ -30,6 +31,24 @@ The `populate-files` target writes `out/fixtures/<name>.json` for each export of
 ```
 
 `schema` is the fixture's `toJSON()`, and `samples` are values it accepts, from [juniper-arbitrary](../../juniper-arbitrary/) with a fixed seed, so the files only change when the fixtures (or juniper-arbitrary) do. A fixture that accepts nothing (`never`) has none.
+
+It also writes `out/errors.json` from [`src/error-schemas.ts`](./src/error-schemas.ts): each kind of error (`invalid`, `strict` or `unsupported`) maps a case's name to the schema, any options, and the pointer to the fault:
+
+```json
+{
+    "invalid": {
+        "type is unknown": { "schema": { "type": "date" }, "pointer": "#/type" }
+    },
+    "strict": {
+        "unknown keyword": { "schema": { "type": "string", "foo": 1 }, "pointer": "#/foo" }
+    },
+    "unsupported": {
+        "$dynamicRef": { "options": { "strict": false }, "schema": { "$dynamicRef": "#node" }, "pointer": "#/$dynamicRef" }
+    }
+}
+```
+
+`options` takes `openApi30` and `strict`, as genever's options do. Each `strict` case is accepted with strict mode off.
 
 ## Development
 

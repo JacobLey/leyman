@@ -5,7 +5,7 @@ import packageJson from './package.json' with { type: 'json' };
 export default [
     ...configGenerator({ configUrl: import.meta.url, plugins: [juniper], packageJson }),
     {
-        files: ['src/juniper-schemas.ts', 'src/openapi-schemas.ts'],
+        files: ['src/error-schemas.ts', 'src/juniper-schemas.ts', 'src/openapi-schemas.ts'],
         rules: {
             // Fixtures are data: each bound is only there to show up in the schema
             '@typescript-eslint/no-magic-numbers': 'off',
