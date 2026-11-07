@@ -751,6 +751,7 @@
         "goSource",
         "^goSource",
         "^dependency-files",
+        "^rustSource",
         {
           "runtime": "go version"
         }

@@ -12,6 +12,7 @@ export const name = 'leyman-rust';
 
 const packageSection = /^\[package\]$(?<section>[^\[]*)/mv;
 const packageName = /^name\s*=\s*"(?<name>[^"]+)"/mv;
+const cdylib = /^crate-type\s*=\s*\[[^\]]*"cdylib"/mv;
 
 const runCommands = options => ({
     executor: 'nx:run-commands',
@@ -66,19 +67,23 @@ const testTarget = crate =>
     });
 
 /**
- * Builds a crate to WebAssembly, and its bindings to JavaScript, in `dist`.
+ * Builds a crate to WebAssembly in `dist`: with its bindings to JavaScript when it uses `wasm-bindgen`, and otherwise as
+ * the bare `.wasm`, for hosts that call its exported functions themselves (such as Go through wazero).
  *
  * @param crate - for cargo's `--package`
+ * @param hasBindings - whether it uses `wasm-bindgen`
  * @returns how Nx runs it
  */
-const webAssemblyTarget = crate =>
+const webAssemblyTarget = (crate, hasBindings) =>
     runCommands({
         commands: [
             'rm -rf ./dist',
             // Panic messages name standard library files, under the sysroot when the `rust-src` component is installed, and
             // otherwise as `/rustc/<commit>`. Always the latter, for the same bytes wherever this builds
             `RUSTFLAGS="--remap-path-prefix=$(rustc --print sysroot)/lib/rustlib/src/rust=/rustc/$(rustc -vV | sed -n 's/commit-hash: //p')" cargo build --locked --release --target wasm32-unknown-unknown --package ${crate}`,
-            `wasm-bindgen --target web --out-dir ./dist "$NX_WORKSPACE_ROOT/target/wasm32-unknown-unknown/release/${crate.replaceAll('-', '_')}.wasm"`,
+            hasBindings
+                ? `wasm-bindgen --target web --out-dir ./dist "$NX_WORKSPACE_ROOT/target/wasm32-unknown-unknown/release/${crate.replaceAll('-', '_')}.wasm"`
+                : `mkdir -p ./dist && cp "$NX_WORKSPACE_ROOT/target/wasm32-unknown-unknown/release/${crate.replaceAll('-', '_')}.wasm" ./dist`,
         ],
         parallel: false,
     });
@@ -97,12 +102,14 @@ const manifestNodes = (workspaceRoot, manifestPath) => {
     if (!crate) {
         return [];
     }
-    const isWebAssembly = manifest.includes('wasm-bindgen');
+    const hasBindings = manifest.includes('wasm-bindgen');
+    // A `cdylib` is what compiles to a `.wasm`, and `wasm-bindgen` reads one too
+    const isWebAssembly = hasBindings || cdylib.test(manifest);
     const hasTests = existsSync(path.join(workspaceRoot, root, 'tests'));
     const targets = {
         'rust-clippy': clippyTarget(crate, isWebAssembly),
         ...(hasTests && { 'rust-test': testTarget(crate) }),
-        ...(isWebAssembly && { 'rust-wasm': webAssemblyTarget(crate) }),
+        ...(isWebAssembly && { 'rust-wasm': webAssemblyTarget(crate, hasBindings) }),
     };
     return [[manifestPath, { projects: { [root]: { targets } } }]];
 };

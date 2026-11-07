@@ -1,0 +1,25 @@
+[package]
+name = "demo-blake3-go"
+version = "0.0.1"
+description = "BLAKE3 from the blake3 crate, compiled to WASM with SIMD behind a C ABI, for the blake3-go demo."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+# `cdylib` is the `.wasm` that Go loads, `rlib` is what the tests link
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+blake3 = { version = "=1.8.7", default-features = false }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# Hand-written SIMD, for 4 chunks at a time. The feature needs no compiler flags: only these functions use it
+blake3 = { version = "=1.8.7", default-features = false, features = ["wasm32_simd"] }
+
+[dev-dependencies]
+serde_json = "1.0.154"
+
+[lints]
+workspace = true

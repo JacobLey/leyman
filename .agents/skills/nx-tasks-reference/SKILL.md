@@ -335,9 +335,9 @@ The shared config runs pre-compiled tests with native `import` and the `threads`
 
 ### `rust-wasm`
 
-Builds the crate for `wasm32-unknown-unknown`, then writes the `.wasm` and its JavaScript bindings to `dist/` with `wasm-bindgen --target web`. Runs in `build:run`, like `tsc`. The build removes the toolchain's path from the output, so it gives the same bytes wherever it runs. Inferred (see [Rust projects](#rust-projects)).
+Builds the crate for `wasm32-unknown-unknown` into `dist/`: with its JavaScript bindings (`wasm-bindgen --target web`) when the crate depends on `wasm-bindgen`, and otherwise the bare `.wasm`, for a host that calls its exports itself, such as Go through wazero (see `demos/blake3-go`). Runs in `build:run`, like `tsc`. The build removes the toolchain's path from the output, so it gives the same bytes wherever it runs. Inferred (see [Rust projects](#rust-projects)).
 
-**Add when:** Never: inferred for a crate that depends on `wasm-bindgen`.
+**Add when:** Never: inferred for a crate that depends on `wasm-bindgen` or builds a `cdylib`.
 
 ---
 
@@ -351,7 +351,7 @@ Runs the crate's tests under `cargo llvm-cov`, writing a summary to `coverage/ll
 
 ### `go-test`
 
-Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes `^dependency-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover.
+Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes `^dependency-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover, and `^rustSource`, for a crate's `.wasm` it embeds from `dist/` (see `demos/blake3-go`).
 
 **Add when:** Never: inferred for every Go project.
 
@@ -391,7 +391,7 @@ Its inferred targets are renamed with a `go-` prefix, so they don't collide with
 
 ## Rust projects
 
-No maintained plugin supports this repo's Nx yet, so `leyman/main/scripts/nx-rust-plugin.mjs` (in `nx.json` `plugins`) does what gonx does for Go. It adds `rust-clippy`, `rust-test` and `rust-wasm` to every `Cargo.toml` with a `[package]`, and infers dependencies between crates from their `path` dependencies, through `cargo metadata --no-deps`. The rest of a target (inputs, `dependsOn`, outputs) is in name-keyed `targetDefaults`, so keep those without an `executor`. Replace the plugin with an upstream one once one supports the repo's Nx.
+No maintained plugin supports this repo's Nx yet, so `leyman/main/scripts/nx-rust-plugin.mjs` (in `nx.json` `plugins`) does what gonx does for Go. It adds `rust-clippy` to every `Cargo.toml` with a `[package]`, `rust-test` when it has `tests/`, and `rust-wasm` when it depends on `wasm-bindgen` or builds a `cdylib`, and infers dependencies between crates from their `path` dependencies, through `cargo metadata --no-deps`. The rest of a target (inputs, `dependsOn`, outputs) is in name-keyed `targetDefaults`, so keep those without an `executor`. Replace the plugin with an upstream one once one supports the repo's Nx.
 
 With no `cargo` on `PATH`, as in a devcontainer not yet rebuilt, the plugin infers no dependencies instead of failing, so every other project still works. Only Rust's own targets need them, and those can't run there anyway.
 

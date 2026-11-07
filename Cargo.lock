@@ -68,6 +68,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "demo-blake3-go"
+version = "0.0.1"
+dependencies = [
+ "blake3",
+ "serde_json",
+]
+
+[[package]]
 name = "demo-blake3-wasm"
 version = "0.0.1"
 dependencies = [

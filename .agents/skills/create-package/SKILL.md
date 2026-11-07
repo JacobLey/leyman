@@ -69,7 +69,7 @@ Copy `tools/constant-consistent-hash/rust-impl`, or `test-vectors` for a crate w
 - Depend on another crate of the workspace with `name = { path = "../name" }`. The plugin infers the Nx dependency from that. To share data with TypeScript, give the other project a `Cargo.toml` too, and `include_str!` the data (see `tools/constant-consistent-hash/test-vectors`).
 - Source in `src/`, tests in `tests/`.
 - `project.json`, named `@leyman/<name>`, targets: `biome` (formats `project.json`), `rustfmt`, and `rust-coverage-report` when it has tests (see the [Rust template](../nx-tasks-reference/SKILL.md#rust-project)). `rust-clippy`, `rust-test` and `rust-wasm` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
-- No `unsafe`: it is denied across the workspace. Only `#[wasm_bindgen]`'s generated code allows it, in a file that holds nothing else.
+- No `unsafe`: it is denied across the workspace. Only bindings allow it, in a file that holds nothing else: `#[wasm_bindgen]`'s generated code, or a C ABI's raw pointers.
 - No `package.json`, unless TypeScript uses it.
 - Not published: nothing deploys crates yet.
 
@@ -78,3 +78,10 @@ Copy `tools/constant-consistent-hash/rust-impl`, or `test-vectors` for a crate w
 A crate that depends on `wasm-bindgen` also gets `rust-wasm`, which builds `dist/`. Keep it on `wasm32` only, under `[target.'cfg(target_arch = "wasm32")'.dependencies]`, with the bindings in a logic-free `src/wasm.rs`: `cargo llvm-cov` runs natively and never sees that file, so tests through TypeScript are what cover it. Pin it exactly, to the `wasm-bindgen-cli` version in the toolchain.
 
 Give that crate a minimal `package.json` exporting `dist/` (with `sync-injected` in its targets, and `dist` in `files`), and wrap it in a regular TypeScript package with a `workspace:^` dependency, which also gives Nx the build order. Copy `tools/constant-consistent-hash/wasm-impl`: its `node` and `browser` entry points each load the `.wasm` their own way. To run it on a frontend, copy `e2e/constant-consistent-hash-wasm-browser`. For a dependency on a crate, a worker and tests in browsers, see `demos/blake3-wasm`.
+
+### Calling Rust from Go
+
+Go runs the same `wasm32` build through [wazero](https://wazero.io), with no cgo. Copy `demos/blake3-go`:
+
+- The crate builds a `cdylib` with no `wasm-bindgen`, so `rust-wasm` copies the bare `.wasm` to `dist/`. Its exports are a C ABI (`alloc`, `dealloc` and the functions themselves, over pointers into WASM's memory) in a logic-free `src/ffi.rs`, on `wasm32` only, which tests through Go cover.
+- The crate's directory is a Go module too, whose one file `//go:embed`s `dist/`'s `.wasm`. A Go project that imports it gets the Nx dependency from gonx, so the crate builds first, and `go-test` hashes `^rustSource`, so it reruns when the crate changes.

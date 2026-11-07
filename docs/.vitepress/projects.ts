@@ -493,6 +493,21 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
+        slug: 'blake3-go',
+        title: 'BLAKE3 from Go through WASM',
+        pitch: 'The same Rust crate called from Go with no cgo: a C ABI built to bare WASM, run by wazero, and measured against BLAKE3 in Go and native Rust to find where it pays off.',
+        source: 'demos/blake3-go',
+        files: [
+            { label: 'The C ABI', path: 'demos/blake3-go/rust/src/ffi.rs' },
+            { label: 'Embedding the WASM', path: 'demos/blake3-go/rust/wasm.go' },
+            { label: 'Calling it from Go', path: 'demos/blake3-go/go/blake3.go' },
+            { label: 'The bench', path: 'demos/blake3-go/go/bench_test.go' },
+        ],
+        uses: [],
+        related: ['blake3-wasm'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'read-through-cache',
         title: 'Read-through cache',
         pitch: 'BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances, and sharding over several nodes with weighted rendezvous hashing.',
