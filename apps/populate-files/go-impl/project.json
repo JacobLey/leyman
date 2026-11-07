@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/populate-files-go",
+  "metadata": {
+    "description": "Go implementation of populate-files, tested against the shared test vectors."
+  },
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

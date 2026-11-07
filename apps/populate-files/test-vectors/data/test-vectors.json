@@ -1,0 +1,2872 @@
+{
+  "scenarios": [
+    {
+      "description": "Writes a new file",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Writes a new file in a new directory",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "nested/c.txt",
+          "content": "hello\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/nested/c.txt",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/nested/c.txt": "hello\n"
+      }
+    },
+    {
+      "description": "Writes in the cwd without a target directory",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {},
+      "results": [
+        {
+          "filePath": "a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Skips an up to date file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Updates a changed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":2}\n"
+      }
+    },
+    {
+      "description": "Updates a file written by hand",
+      "writes": {
+        "out/a.json": "handwritten\n"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Dry run does not write",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Dry run does not create",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {}
+    },
+    {
+      "description": "Check fails on a changed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "out/a.json",
+            "reason": "content-changed"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Check fails on a missing file",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "out/a.json",
+            "reason": "file-not-exist"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Check passes on an up to date file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Bytes are compared as they are",
+      "writes": {
+        "out/a.json": "{\"a\":1}\r\n"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Signs a new file",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Signs a new file with a shebang",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "run.sh",
+          "content": "#!/bin/sh\necho hi\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/run.sh",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/run.sh": "#!/bin/sh\n# @generated-signature v1:8ee96b6e5b7e880dcefd646d6eadb66b Generated file. Do not edit outside of manual sections.\necho hi\n"
+      }
+    },
+    {
+      "description": "Skips an up to date signed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Passes check when only a manual section was edited",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "custom = 1",
+          "to": "custom = 2"
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 2;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Keeps manual sections when regenerating",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "custom = 1",
+          "to": "custom = 2"
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 2;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:9493a67ddd60653808b41b208d9b2ee6 Generated file. Do not edit outside of manual sections.\nexport const generated = 2;\n// @manual-start custom\nexport const custom = 2;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Check fails on a regenerated signed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 2;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "out/b.ts",
+            "reason": "content-changed"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Refuses to overwrite an edited signed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "generated = 1",
+          "to": "generated = 3"
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 2;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "Refuses to overwrite an unsigned file",
+      "writes": {
+        "out/b.ts": "handwritten\n"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "not-owned"
+      }
+    },
+    {
+      "description": "Refuses to overwrite a malformed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "// @manual-end custom\n",
+          "to": ""
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "malformed"
+      }
+    },
+    {
+      "description": "Refuses to drop an edited section",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start renamed\nexport const custom = 1;\n// @manual-end renamed\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "orphaned-section"
+      }
+    },
+    {
+      "description": "Drops an empty orphaned section",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "export const custom = 1;\n",
+          "to": ""
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start renamed\nexport const custom = 1;\n// @manual-end renamed\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:c6557b6963e9e57a72e19b19ca69f050 Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start renamed\nexport const custom = 1;\n// @manual-end renamed\n"
+      }
+    },
+    {
+      "description": "Ownership is checked before a check",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "generated = 1",
+          "to": "generated = 3"
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 2;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "Force overwrites an edited signed file, keeping manual sections",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "generated = 1",
+          "to": "generated = 3"
+        },
+        {
+          "filePath": "out/b.ts",
+          "from": "custom = 1",
+          "to": "custom = 2"
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 2;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Force overwrites a malformed file",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "// @manual-end custom\n",
+          "to": ""
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Force overwrites an unsigned file",
+      "writes": {
+        "out/b.ts": "handwritten\n"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Force drops orphaned sections",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start renamed\nexport const custom = 1;\n// @manual-end renamed\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:c6557b6963e9e57a72e19b19ca69f050 Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start renamed\nexport const custom = 1;\n// @manual-end renamed\n"
+      }
+    },
+    {
+      "description": "Force is passed through populateFiles",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "generated = 1",
+          "to": "generated = 3"
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Writes new files",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        },
+        {
+          "filePath": "nested/c.txt",
+          "content": "hello\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/b.ts",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/nested/c.txt",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+        "out/nested/c.txt": "hello\n"
+      }
+    },
+    {
+      "description": "Writes no files",
+      "call": "populateFiles",
+      "files": [],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [],
+      "after": {}
+    },
+    {
+      "description": "Updates some files",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        },
+        {
+          "filePath": "nested/c.txt",
+          "content": "hello\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "out/nested/c.txt",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":2}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+        "out/nested/c.txt": "hello\n"
+      }
+    },
+    {
+      "description": "Dry run writes nothing",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        },
+        {
+          "filePath": "nested/c.txt",
+          "content": "hello\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/nested/c.txt",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Check lists every outdated file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 2;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        },
+        {
+          "filePath": "nested/c.txt",
+          "content": "hello\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "out/a.json",
+            "reason": "content-changed"
+          },
+          {
+            "filePath": "out/b.ts",
+            "reason": "content-changed"
+          },
+          {
+            "filePath": "out/nested/c.txt",
+            "reason": "file-not-exist"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Check passes when up to date",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Rejects the same file twice",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "duplicate-file"
+      }
+    },
+    {
+      "description": "Rejects the same file by two paths",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "./x/../a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out"
+      },
+      "error": {
+        "kind": "duplicate-file"
+      }
+    },
+    {
+      "description": "Clean removes stale files",
+      "writes": {
+        "out/stale.txt": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/stale.txt",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Clean removes nested stale files",
+      "writes": {
+        "out/deep/er/stale.txt": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/deep/er/stale.txt",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Clean keeps files outside the target directory",
+      "writes": {
+        "other.txt": "mine\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "other.txt": "mine\n",
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Clean dry run keeps stale files",
+      "writes": {
+        "out/stale.txt": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true,
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/stale.txt",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {
+        "out/stale.txt": "old\n"
+      }
+    },
+    {
+      "description": "Clean check fails on a stale file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "writes": {
+        "out/stale.txt": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true,
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "out/stale.txt",
+            "reason": "stale-file"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Clean with no target directory",
+      "call": "populateFiles",
+      "files": [],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "results": [],
+      "after": {}
+    },
+    {
+      "description": "Clean with nothing stale",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true,
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      }
+    },
+    {
+      "description": "Lists every file, relative to the manifest",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/b.ts",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Records inputs",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n",
+          "manifestInputs": {
+            "generator": "x@1",
+            "z": "1",
+            "b": "2"
+          }
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd",
+          "inputs": {
+            "b": "2",
+            "generator": "x@1",
+            "z": "1"
+          }
+        }
+      }
+    },
+    {
+      "description": "Records empty inputs",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n",
+          "manifestInputs": {}
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd",
+          "inputs": {}
+        }
+      }
+    },
+    {
+      "description": "Manifest outside the target directory",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out/deep",
+        "manifest": "meta/manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/deep/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "meta/manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/deep/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "../out/deep/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        }
+      }
+    },
+    {
+      "description": "Manifest inside the target directory",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "out/manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        }
+      }
+    },
+    {
+      "description": "Nothing changes on a second run",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "check": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Check fails when only the manifest would change",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n",
+          "manifestInputs": {
+            "generator": "x@2"
+          }
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "manifest.json",
+            "reason": "content-changed"
+          }
+        ]
+      }
+    },
+    {
+      "description": "Dry run does not write the manifest",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "out/b.ts",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {},
+      "manifest": null
+    },
+    {
+      "description": "Rejects an invalid manifest",
+      "writes": {
+        "manifest.json": "{}"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Reads a manifest in any JSON layout",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "writes": {
+        "manifest.json": "{\"files\":{\"out/a.json\":{\"hash\":\"v1:e346432021b04179518d9614f3560ccd\"}},\"version\":1}"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        }
+      }
+    },
+    {
+      "description": "Refuses to overwrite an edited file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"edited\": true}\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/a.json",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "Refuses to overwrite a file it did not write",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"handwritten\": true}\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/a.json",
+        "reason": "not-owned"
+      }
+    },
+    {
+      "description": "Adopts an unlisted file that is already up to date",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Overwrites an edited file with force",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"edited\": true}\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean removes files the manifest lists that are no longer written",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            },
+            {
+              "filePath": "nested/c.txt",
+              "content": "hello\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/a.json",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/nested/c.txt",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean keeps files the manifest does not list",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/other.txt": "mine\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+        "out/other.txt": "mine\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean keeps a manifest inside the target directory",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "out/manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        },
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "out/manifest.json",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "updated": false
+        },
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "out/manifest.json",
+          "updated": false
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean ignores listed files that are already gone",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": null
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean refuses to remove an edited file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"edited\": true}\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/a.json",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "Clean refuses to remove an edited signed file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "edits": [
+        {
+          "filePath": "out/b.ts",
+          "from": "generated = 1",
+          "to": "generated = 3"
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/b.ts",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "Clean removes an edited file with force",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"edited\": true}\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true,
+        "force": true
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "updated": false
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/a.json",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "Clean check fails on a stale listed file",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            },
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true,
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "manifest.json",
+            "reason": "content-changed"
+          },
+          {
+            "filePath": "out/a.json",
+            "reason": "stale-file"
+          }
+        ]
+      }
+    },
+    {
+      "description": "populateFile keeps the entries of other files",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "b.ts",
+          "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+          "signed": true
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/b.ts",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "populateFile updates its own entry",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        },
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "b.ts",
+              "content": "export const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n",
+              "signed": true
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n",
+          "manifestInputs": {
+            "v": "2"
+          }
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "content-changed",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":2}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:0f117a2ab60ad469a0ac81c31e1a5a9b",
+          "inputs": {
+            "v": "2"
+          }
+        },
+        "out/b.ts": {
+          "signature": "inline"
+        }
+      }
+    },
+    {
+      "description": "populateFile checks ownership",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/a.json": "{\"edited\": true}\n"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":2}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/a.json",
+        "reason": "edited"
+      }
+    },
+    {
+      "description": "populateFile check fails when the manifest would change",
+      "setup": [
+        {
+          "call": "populateFile",
+          "files": [
+            {
+              "filePath": "a.json",
+              "content": "{\"a\":1}\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out"
+          }
+        }
+      ],
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "check": true
+      },
+      "error": {
+        "kind": "check",
+        "files": [
+          {
+            "filePath": "manifest.json",
+            "reason": "file-not-exist"
+          }
+        ]
+      }
+    },
+    {
+      "description": "populateFile dry run does not write the manifest",
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "dryRun": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {},
+      "manifest": null
+    }
+  ]
+}
