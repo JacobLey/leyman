@@ -34,6 +34,8 @@ npm i -D @leyman/eslint-config eslint typescript
 
 `eslint` (10) and `typescript` (a version typescript-eslint supports) are peers.
 
+The package ships a skill for coding agents, `skills/eslint-config/SKILL.md`: the options, what each directory is held to, and when to disable a rule. Link it where your agent reads skills, e.g. `ln -s ../../node_modules/@leyman/eslint-config/skills/eslint-config .agents/skills/eslint-config`, or with [`leyman-framework skills`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills).
+
 ## Example
 
 `eslint.config.js` next to the package's `package.json` and `tsconfig.json`:

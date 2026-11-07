@@ -29,21 +29,10 @@ Biome is not cached by Nx (it is fast enough), ESLint is.
 
 ## ESLint config
 
-Every package's `eslint.config.js` calls the shared generator, which derives rules from the package's `package.json`:
+How to use `@leyman/eslint-config` (its options, what each directory is held to, disabling a rule, running ESLint): the [`eslint-config` skill](../eslint-config/SKILL.md), which the package ships. In this repository:
 
-```js
-import configGenerator from '@leyman/eslint-config';
-import packageJson from './package.json' with { type: 'json' };
-export default configGenerator({ configUrl: import.meta.url, packageJson });
-```
-
-By default only the globals Node.js shares with browsers are defined (`fetch`, `URL`, `console`...), so a package that also runs elsewhere can't use a Node.js one by accident. A package whose code only runs on Node.js passes `node: true` for the rest (`process`, `Buffer`...). Tests always have them. Other globals, like the DOM's, go in the package's own `languageOptions.globals`.
-
-Rules are adopted liberally (often every rule a plugin offers) and then disabled where they don't fit. If a rule is wrong for this repo, change it in `@leyman/eslint-config` for every package rather than overriding it locally. Test files (`test/**`) have a relaxed rule set.
-
-Every `eslint-disable` comment gives its reason after `--` (`@eslint-community/eslint-comments/require-description`), and an unused one is an error. Before disabling, try fixing what the rule found: a disable often hides a simpler way to write it. When a rule clashes with what a whole package does, rather than with one line, turn it off in that package's `eslint.config.js` with a comment saying why (e.g. `unicorn/no-thenable` in juniper and genever, where `then` is a JSON Schema keyword, and `no-bitwise` in iso-crypto and punycode-esm).
-
-The `eslint` target runs from the workspace root. ESLint looks up the config from each file, so each file uses its package's config, with patterns relative to the package. Running from the root lets `eslint-plugin-sonarjs` find `pnpm-workspace.yaml` and resolve `catalog:` versions, which it only looks for up to ESLint's working directory. Running `eslint .` inside a package still works, but prints `could not be resolved for catalog` for each catalog dependency.
+- If a rule is wrong for this repo, change it in [`@leyman/eslint-config`](../../../leyman/eslint-config/) for every package rather than overriding it locally. Examples of package-wide disables: `unicorn/no-thenable` in juniper and genever, where `then` is a JSON Schema keyword, and `no-bitwise` in iso-crypto and punycode-esm.
+- The `eslint` target runs from the workspace root, for `eslint-plugin-sonarjs`'s catalog lookup.
 
 ## Go
 
