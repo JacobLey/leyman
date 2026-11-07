@@ -436,6 +436,20 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     cacheDir: 'node_modules/.vitepress',
     cleanUrls: true,
     lastUpdated: false,
+    head: [
+        // Proves ownership of the site to Google Search Console. Not a secret: it only works for the
+        // Google account that made it.
+        [
+            'meta',
+            {
+                name: 'google-site-verification',
+                content: 'kpt0sH4Vqc3ICu7HCEQyGQESqJ3OfiKaGGSbo2VCu18',
+            },
+        ],
+    ],
+    // `sitemap.xml` at the site's root (under `base`), listing every page by its full URL. Redirect
+    // pages aren't pages, so they aren't in it.
+    sitemap: { hostname: siteUrl },
     markdown: {
         codeTransformers: [
             transformerTwoslash({
