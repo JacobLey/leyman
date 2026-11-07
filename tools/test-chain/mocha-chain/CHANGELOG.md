@@ -1,5 +1,11 @@
 # mocha-chain
 
+## 1.2.0
+
+### Minor Changes
+
+- 5e50afa: Ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: how hooks pass typed context, which hooks chain from which, and why a chained hook still runs for every test in its suite.
+
 ## 1.1.0
 
 ### Minor Changes
