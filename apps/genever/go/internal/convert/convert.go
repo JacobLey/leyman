@@ -113,7 +113,7 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 	}
 
 	// A document is not a schema, but each of its components is
-	conv.index, err = indexFiles(document, documentSchemas(document, true), options.Files, options.BaseURI, false)
+	conv.index, err = indexFiles(document, documentParts(document, true).schemas, options.Files, options.BaseURI, false)
 	if err != nil {
 		return nil, err
 	}

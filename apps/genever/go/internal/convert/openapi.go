@@ -80,9 +80,24 @@ const (
 	kindPathItem
 )
 
-// documentSchemas lists the schemas of an OpenAPI document, in its components, and its operations if includePaths:
-// component schemas first. A reference object has none of its own.
-func documentSchemas(document jsonv.Value, includePaths bool) []target {
+// An objectReference is a reference object: an OpenAPI object that is only a `$ref` to one elsewhere.
+type objectReference struct {
+	ref jsonv.Value
+	// pointer is the JSON Pointer to the reference object.
+	pointer string
+	// kind is what it refers to: a path item, or another object with schemas.
+	kind objectKind
+}
+
+// openAPIParts are the schemas of OpenAPI objects, and the reference objects among them, which have none of their own.
+type openAPIParts struct {
+	schemas    []target
+	references []objectReference
+}
+
+// documentParts lists the schemas of an OpenAPI document, in its components, and its operations if includePaths, and
+// the reference objects in it: component schemas first.
+func documentParts(document jsonv.Value, includePaths bool) openAPIParts {
 	root, _ := document.(*jsonv.Object)
 	components, _ := root.Get("components")
 	componentsObject, _ := components.(*jsonv.Object)
@@ -96,15 +111,15 @@ func documentSchemas(document jsonv.Value, includePaths bool) []target {
 		return members(value, childPointer(childPointer("#", "components"), name))
 	}
 
-	var schemas []target
+	parts := &openAPIParts{schemas: nil, references: nil}
 
 	for _, schema := range component("schemas") {
-		schemas = collectSchemas(schema, kindSchema, schemas)
+		parts.collect(schema, kindSchema)
 	}
 
 	for _, name := range []string{"parameters", "headers", "requestBodies", "responses"} {
 		for _, object := range component(name) {
-			schemas = collectSchemas(object, kindObject, schemas)
+			parts.collect(object, kindObject)
 		}
 	}
 
@@ -116,29 +131,43 @@ func documentSchemas(document jsonv.Value, includePaths bool) []target {
 	}
 
 	for _, item := range items {
-		schemas = collectSchemas(item, kindPathItem, schemas)
+		parts.collect(item, kindPathItem)
 	}
 
-	return schemas
+	return *parts
 }
 
-// collectSchemas adds the schemas of an OpenAPI object to schemas.
+// objectParts lists the schemas of an OpenAPI object, and the reference objects in it. A schema is its own only schema.
+func objectParts(object target, kind objectKind) openAPIParts {
+	parts := &openAPIParts{schemas: nil, references: nil}
+	parts.collect(object, kind)
+
+	return *parts
+}
+
+// collect adds the schemas of an OpenAPI object, or the object itself if it is a schema, and its reference objects.
 //
 // A parameter, header, request body or response has its `schema`, the `schema` of each `content` media type, and those
 // of its `headers`. A path item has those of its parameters, and of each operation's parameters, request body and
 // responses.
-func collectSchemas(object target, kind objectKind, schemas []target) []target {
+func (p *openAPIParts) collect(object target, kind objectKind) {
 	if kind == kindSchema {
-		return append(schemas, object)
+		if object.schema != nil {
+			p.schemas = append(p.schemas, object)
+		}
+
+		return
 	}
 
 	value, isObject := object.schema.(*jsonv.Object)
 	if !isObject {
-		return schemas
+		return
 	}
 
-	if _, isReference := value.Get("$ref"); isReference {
-		return schemas
+	if ref, isReference := value.Get("$ref"); isReference {
+		p.references = append(p.references, objectReference{ref: ref, pointer: object.pointer, kind: kind})
+
+		return
 	}
 
 	child := func(key string) target {
@@ -148,31 +177,28 @@ func collectSchemas(object target, kind objectKind, schemas []target) []target {
 	}
 
 	if kind == kindPathItem {
-		return collectPathItem(child, schemas)
+		p.collectPathItem(child)
+
+		return
 	}
 
-	if schema := child("schema"); schema.schema != nil {
-		schemas = append(schemas, schema)
-	}
+	p.collect(child("schema"), kindSchema)
 
 	for _, media := range members(child("content").schema, child("content").pointer) {
 		if mediaObject, ok := media.schema.(*jsonv.Object); ok {
-			if schema, hasSchema := mediaObject.Get("schema"); hasSchema {
-				schemas = append(schemas, target{schema: schema, pointer: childPointer(media.pointer, "schema")})
-			}
+			schema, _ := mediaObject.Get("schema")
+			p.collect(target{schema: schema, pointer: childPointer(media.pointer, "schema")}, kindSchema)
 		}
 	}
 
 	for _, header := range members(child("headers").schema, child("headers").pointer) {
-		schemas = collectSchemas(header, kindObject, schemas)
+		p.collect(header, kindObject)
 	}
-
-	return schemas
 }
 
-func collectPathItem(child func(string) target, schemas []target) []target {
+func (p *openAPIParts) collectPathItem(child func(string) target) {
 	for _, parameter := range members(child("parameters").schema, child("parameters").pointer) {
-		schemas = collectSchemas(parameter, kindObject, schemas)
+		p.collect(parameter, kindObject)
 	}
 
 	for _, method := range methods {
@@ -197,9 +223,7 @@ func collectPathItem(child func(string) target, schemas []target) []target {
 		objects = append(objects, members(responses, responsesPointer)...)
 
 		for _, object := range objects {
-			schemas = collectSchemas(object, kindObject, schemas)
+			p.collect(object, kindObject)
 		}
 	}
-
-	return schemas
 }

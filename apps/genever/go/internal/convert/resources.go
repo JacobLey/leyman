@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/gerr"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
@@ -85,7 +86,8 @@ type documentReference struct {
 }
 
 // resolveURI resolves a reference against a base URI, as the WHATWG URL parser does, and splits off its decoded
-// fragment. It returns the URI, the fragment, and whether both are valid.
+// fragment. It returns the URI, the fragment, and whether both are valid: a fragment must decode to UTF-8, as
+// JavaScript's decodeURIComponent requires.
 func resolveURI(reference, baseURI string) (string, string, bool) {
 	base, err := url.Parse(baseURI)
 	if err != nil {
@@ -101,7 +103,7 @@ func resolveURI(reference, baseURI string) (string, string, bool) {
 	fragment := resolved.Fragment
 	resolved.Fragment, resolved.RawFragment = "", ""
 
-	return resolved.String(), fragment, true
+	return resolved.String(), fragment, utf8.ValidString(fragment)
 }
 
 // addTarget adds a target to a map, unless another target is already there.

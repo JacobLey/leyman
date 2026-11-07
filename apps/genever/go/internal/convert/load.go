@@ -59,6 +59,8 @@ type pendingReference struct {
 	documentReference
 
 	referencedFrom string
+	// kind is what it refers to: a schema, or an OpenAPI object (in a reference object).
+	kind objectKind
 }
 
 // A loader loads every file and URL an input references.
@@ -78,7 +80,9 @@ type loader struct {
 	files map[string]*loadingFile
 	// pending are the references still to load, as a stack: the last is next. Each file's are pushed in reverse, so
 	// references load in the order they appear, each followed by what it refers to.
-	pending        []pendingReference
+	pending []pendingReference
+	// inputDialect is the input's dialect, which a file of OpenAPI objects it references has.
+	inputDialect   Dialect
 	isInputDraft04 bool
 }
 
@@ -86,8 +90,14 @@ type loader struct {
 type loadingFile struct {
 	OpenAPIFile
 
-	// walked are the targets whose schemas have been found, by JSON Pointer.
-	walked map[string]bool
+	// walked are the objects whose schemas have been found, by kind and JSON Pointer.
+	walked map[walkedObject]bool
+}
+
+// A walkedObject is an object of an OpenAPI file whose schemas have been found.
+type walkedObject struct {
+	pointer string
+	kind    objectKind
 }
 
 // A Bundle is an input, and every file and URL it references.
@@ -120,7 +130,7 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 		return none, err
 	}
 
-	_, isDocument, err := DocumentDialect(input)
+	inputDialect, isDocument, err := DocumentDialect(input)
 	if err != nil {
 		return none, err
 	}
@@ -139,17 +149,18 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 
 	load := &loader{
 		ctx: ctx, options: options, isAllowed: isAllowed, client: client,
-		known: map[string]bool{}, attempted: map[string]bool{}, isInputDraft04: isInputDraft04,
+		known: map[string]bool{}, attempted: map[string]bool{}, inputDialect: inputDialect,
+		isInputDraft04: isInputDraft04,
 		// Found as references are loaded
 		resources: nil, failures: nil, files: map[string]*loadingFile{}, pending: nil,
 	}
 
-	index, err := indexInput(input, isDocument, options.BaseURI)
+	index, references, err := indexInput(input, isDocument, options.BaseURI)
 	if err != nil {
 		return none, err
 	}
 
-	load.queue(index, options.BaseURI)
+	load.queue(index, references, options.BaseURI)
 
 	if err := load.run(); err != nil {
 		return none, err
@@ -175,29 +186,56 @@ func noRedirects() *http.Client {
 }
 
 // indexInput indexes the schemas of an input: itself, or an OpenAPI document's, whose components must be an object to
-// embed schemas in.
-func indexInput(input jsonv.Value, isDocument bool, baseURI string) (documentIndex, error) {
+// embed schemas in. It also returns the reference objects of a document.
+func indexInput(input jsonv.Value, isDocument bool, baseURI string) (documentIndex, []objectReference, error) {
 	if !isDocument {
-		return indexDocument(input, baseURI, false)
+		index, err := indexDocument(input, baseURI, false)
+
+		return index, nil, err
 	}
 
 	if components, ok := input.(*jsonv.Object).Get("components"); ok { //nolint:forcetypeassert // A document's an object
 		if _, err := readObject(components, "#/components"); err != nil {
-			return documentIndex{}, err
+			return documentIndex{}, nil, err
 		}
 	}
 
-	return indexSchemas(input, documentSchemas(input, true), baseURI, false)
+	parts := documentParts(input, true)
+	index, err := indexSchemas(input, parts.schemas, baseURI, false)
+
+	return index, parts.references, err
 }
 
-// queue adds the references of a file's schemas to load.
-func (l *loader) queue(index documentIndex, referencedFrom string) {
+// queue adds the references of a file's schemas, then of its reference objects, to load. A reference object's `$ref`
+// resolves against the file's URI, and one that is invalid is reported where it's used.
+func (l *loader) queue(index documentIndex, objects []objectReference, referencedFrom string) {
 	for uri := range index.resources {
 		l.known[uri] = true
 	}
 
-	for _, reference := range slices.Backward(index.references) {
-		l.pending = append(l.pending, pendingReference{documentReference: reference, referencedFrom: referencedFrom})
+	references := make([]pendingReference, 0, len(index.references)+len(objects))
+	for _, reference := range index.references {
+		references = append(references,
+			pendingReference{documentReference: reference, referencedFrom: referencedFrom, kind: kindSchema})
+	}
+
+	for _, object := range objects {
+		ref, isString := object.ref.(string)
+		if !isString {
+			continue
+		}
+
+		if uri, fragment, isValid := resolveURI(ref, referencedFrom); isValid {
+			references = append(references, pendingReference{
+				documentReference: documentReference{uri: uri, fragment: fragment, pointer: childPointer(object.pointer, "$ref")},
+				referencedFrom:    referencedFrom,
+				kind:              object.kind,
+			})
+		}
+	}
+
+	for _, reference := range slices.Backward(references) {
+		l.pending = append(l.pending, reference)
 	}
 }
 
@@ -272,8 +310,8 @@ func (l *loader) load(reference pendingReference) error {
 		return nil //nolint:nilerr // A failure, only reported if no other schema declares the URI
 	}
 
-	if isDocument {
-		return l.loadDocument(reference, parsed, dialect)
+	if isDocument || reference.kind != kindSchema {
+		return l.loadDocument(reference, parsed, dialect, isDocument)
 	}
 
 	resource, why := schemaResource(parsed, readURI, l.isInputDraft04)
@@ -307,30 +345,40 @@ func (l *loader) load(reference pendingReference) error {
 
 	// Referred to by its URL, even if its `$id` is another
 	l.known[reference.uri] = true
-	l.queue(index, reference.uri)
+	l.queue(index, nil, reference.uri)
 
 	return nil
 }
 
-// loadDocument adds a loaded OpenAPI document to the files, with its components' schemas, and the schema the
-// reference refers to. Its references resolve against the URI it was referenced by, even if redirected, so it has one
-// URI.
-func (l *loader) loadDocument(reference pendingReference, document jsonv.Value, dialect Dialect) error {
+// loadDocument adds a loaded OpenAPI file to the files: an OpenAPI document, with its components' schemas, or a file
+// of OpenAPI objects a reference object refers to, whose schemas are in the dialect of the file that refers to it.
+// Then it adds the schemas of the object the reference refers to. Its references resolve against the URI it was
+// referenced by, even if redirected, so it has one URI.
+func (l *loader) loadDocument(reference pendingReference, document jsonv.Value, dialect Dialect, isDocument bool) error {
+	if !isDocument {
+		dialect = l.inputDialect
+		if from, ok := l.files[reference.referencedFrom]; ok {
+			dialect = from.dialect
+		}
+	}
+
 	file := &loadingFile{
 		OpenAPIFile: OpenAPIFile{document: document, schemas: nil, dialect: dialect},
-		walked:      map[string]bool{},
+		walked:      map[walkedObject]bool{},
 	}
 	l.files[reference.uri] = file
 	l.known[reference.uri] = true
 
-	if err := l.addSchemas(reference.uri, file, documentSchemas(document, false)); err != nil {
-		return err
+	if isDocument {
+		if err := l.addParts(reference.uri, file, documentParts(document, false)); err != nil {
+			return err
+		}
 	}
 
 	return l.walk(file, reference)
 }
 
-// walk adds the schema a reference refers to in an OpenAPI document. A reference to nothing, or to an anchor, is
+// walk adds the schemas of the object a reference refers to in an OpenAPI file. A reference to nothing, or to an anchor, is
 // reported where it's used, if it doesn't resolve.
 func (l *loader) walk(file *loadingFile, reference pendingReference) error {
 	if !isPointer(reference.fragment) {
@@ -338,19 +386,21 @@ func (l *loader) walk(file *loadingFile, reference pendingReference) error {
 	}
 
 	found, ok := followPointer(target{schema: file.document, pointer: "#"}, reference.fragment)
-	if !ok || file.walked[found.pointer] {
+	walked := walkedObject{pointer: found.pointer, kind: reference.kind}
+
+	if !ok || file.walked[walked] {
 		return nil
 	}
 
-	file.walked[found.pointer] = true
+	file.walked[walked] = true
 
-	return l.addSchemas(reference.uri, file, []target{found})
+	return l.addParts(reference.uri, file, objectParts(found, reference.kind))
 }
 
-// addSchemas adds schemas found in an OpenAPI document, and queues their references. One inside a schema already found
-// is indexed with it, under the right base URI.
-func (l *loader) addSchemas(uri string, file *loadingFile, schemas []target) error {
-	added := slices.DeleteFunc(schemas, func(schema target) bool {
+// addParts adds schemas found in an OpenAPI file, and queues their references, and those of the reference objects
+// found. A schema inside one already found is indexed with it, under the right base URI.
+func (l *loader) addParts(uri string, file *loadingFile, parts openAPIParts) error {
+	added := slices.DeleteFunc(parts.schemas, func(schema target) bool {
 		return slices.ContainsFunc(file.schemas, func(found target) bool {
 			return schema.pointer == found.pointer || strings.HasPrefix(schema.pointer, found.pointer+"/")
 		})
@@ -362,7 +412,7 @@ func (l *loader) addSchemas(uri string, file *loadingFile, schemas []target) err
 		return err
 	}
 
-	l.queue(index, uri)
+	l.queue(index, parts.references, uri)
 
 	return nil
 }
