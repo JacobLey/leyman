@@ -66,7 +66,7 @@ body:
       label: Environment
       description: Node.js version, TypeScript version, OS, bundler, and anything else that may be relevant.
       placeholder: |
-        Node.js: 24.x
+        Node.js: 26.x
         TypeScript: 5.x
         OS: macOS 15
   - type: textarea

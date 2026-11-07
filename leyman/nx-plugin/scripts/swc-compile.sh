@@ -18,8 +18,9 @@ target=$(node -e '
     const { readFileSync } = require("node:fs");
     const range = JSON.parse(readFileSync("package.json", "utf8")).engines?.node;
     const floor = Number(/^>=\s*(\d+)/v.exec(range ?? "")?.[1]);
-    // SWC has no target past es2024 yet
-    const targets = { 22: "es2024" };
+    // SWC has no target past es2024 yet. Node.js 24 runs all the syntax SWC compiles (ES2025, and `using`), so its
+    // floor keeps `esnext`: es2024 would compile away `using`
+    const targets = { 22: "es2024", 24: "esnext" };
     if (range === undefined || floor >= Number(process.versions.node.split(".")[0])) {
         console.log("esnext");
     } else if (floor in targets) {

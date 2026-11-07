@@ -7,7 +7,7 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13@sha256:1f851004adcd3dff3776b4a1da86727cf52280b0fdc9d5b0568c9c7d74274286
 # The same image as `nodeImage` in `dagger/main.go`
-ARG NODE_IMAGE=node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea
+ARG NODE_IMAGE=node:26.13.0-trixie-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39
 # The same Go minor as the Dagger engine, see `goImage` in `dagger/main.go`
 ARG GO_IMAGE=golang:1.27.3-trixie@sha256:fbb7ae40b62ff8afe31662df570d39b4f5052ac32b90dae8e60d7657a20a74f4
 ARG RUST_IMAGE=rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137

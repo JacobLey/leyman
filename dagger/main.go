@@ -28,8 +28,8 @@ const (
 	// debian:trixie-slim, the Debian release the Node and Go images are built on. The CI image starts from it and copies
 	// in Node, pnpm and Go last, so bumping one doesn't rerun the apt installs.
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
-	// node:24.22.1-trixie-slim.
-	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
+	// node:26.13.0-trixie-slim.
+	nodeImage = "node:26.13.0-trixie-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39"
 	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` in
 	// `e2e/published-entrypoints`). Only its `node` binary is used.
 	node22Image = "node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f"
