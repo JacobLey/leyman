@@ -22,7 +22,7 @@ const (
 )
 
 // harnessGoMod is the module the generated source is built in. Every tool's types only need the standard library.
-const harnessGoMod = "module harness\n\ngo 1.26\n"
+const harnessGoMod = "module harness\n\ngo 1.24\n"
 
 // harnessMain decodes each value into the subject, encodes it back, and prints what happened to each.
 const harnessMain = `package main

@@ -112,8 +112,9 @@ func parseArray(decoder *json.Decoder) ([]Value, error) {
 		values = append(values, value)
 	}
 
-	// The closing bracket: the decoder already rejected anything else
-	_, _ = decoder.Token()
+	if err := closeDelim(decoder); err != nil {
+		return nil, err
+	}
 
 	return values, nil
 }
@@ -134,9 +135,21 @@ func parseObject(decoder *json.Decoder) (*Object, error) {
 		object.Set(keyString, value)
 	}
 
-	_, _ = decoder.Token()
+	if err := closeDelim(decoder); err != nil {
+		return nil, err
+	}
 
 	return object, nil
+}
+
+// closeDelim reads an array's or object's closing delimiter, failing when it is the other kind or the input ends first
+// (which Go 1.24's decoder only reports here).
+func closeDelim(decoder *json.Decoder) error {
+	if _, err := decoder.Token(); err != nil {
+		return fmt.Errorf("%w: %w", ErrSyntax, err)
+	}
+
+	return nil
 }
 
 // Stringify encodes a value as JavaScript's JSON.stringify does without indentation, for messages and documentation

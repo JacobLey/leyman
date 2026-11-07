@@ -6,7 +6,7 @@ Go implementation of [populate-files](../ts/), tested against the shared [test v
 go get github.com/JacobLey/leyman/apps/populate-files/go@latest
 ```
 
-It needs Go 1.26 or later. Versions are listed in the [changelog](./CHANGELOG.md).
+It needs Go 1.24 or later. Versions are listed in the [changelog](./CHANGELOG.md).
 
 It writes generated files and keeps them in sync, with the same rules as the TypeScript package: a check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go/), so the files and manifests it writes are read the same way by the TypeScript tools.
 
@@ -14,10 +14,8 @@ It writes generated files and keeps them in sync, with the same rules as the Typ
 import populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
 
 results, err := populatefiles.PopulateFiles([]populatefiles.File{
-    {ManifestInputs: nil, Path: "types.go", Content: []byte(source), Signed: true},
-}, populatefiles.Options{
-    Cwd: "", TargetDir: "gen", Manifest: "gen/manifest.json", Check: false, DryRun: false, Force: false, Clean: true,
-})
+    {Path: "types.go", Content: []byte(source), Signed: true},
+}, populatefiles.Options{TargetDir: "gen", Manifest: "gen/manifest.json", Clean: true})
 ```
 
 `PopulateFile` writes one file, keeping the manifest's other entries. `PopulateFiles` writes a set of files, and its manifest lists exactly those. Errors match with `errors.Is`: `ErrCheck` (a `*CheckError` listing the outdated files), `ErrOwnership` (an `*OwnershipError` with its `Reason`) and `ErrDuplicateFile`, plus generatedsignature's errors for malformed content or manifests.

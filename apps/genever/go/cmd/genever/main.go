@@ -101,7 +101,7 @@ func newFlagSet(parsed *flags, stderr io.Writer, getenv func(string) string) *fl
 	set.BoolVar(&options.Force, "force", false, "With --signed, overwrite the output file even if it was edited")
 	set.StringVar(&options.Manifest, "manifest", "", "Record the output, and hashes of its inputs, in this manifest. "+
 		"With --ci, an output still matching it is up to date without fetching URLs")
-	set.StringVar(&options.Cwd, "cwd", ".", "Current working directory")
+	set.StringVar(&options.Cwd, "cwd", ".", "Directory the paths are relative to")
 	set.BoolVar(&parsed.version, "version", false, "Print the version")
 
 	return set

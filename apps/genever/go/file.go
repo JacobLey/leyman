@@ -58,7 +58,8 @@ type FileOptions struct {
 // A FileResult is the output of GenerateFile, and whether it was (or would be) written.
 type FileResult struct {
 	// Output is its absolute path.
-	Output  string
+	Output string
+	// Updated is whether it was (or, with DryRun, would be) written. With Check, an outdated output fails instead.
 	Updated bool
 }
 

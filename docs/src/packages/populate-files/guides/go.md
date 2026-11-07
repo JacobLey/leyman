@@ -4,7 +4,7 @@ description: The Go implementation of populate-files, which writes and checks ge
 
 # Go
 
-populate-files has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/apps/populate-files/test-vectors) as the TypeScript package. It decides the same writes, refusals and check failures, and each reads the files and manifests the other writes. It needs Go 1.26 or later.
+populate-files has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/apps/populate-files/test-vectors) as the TypeScript package. It decides the same writes, refusals and check failures, and each reads the files and manifests the other writes. It needs Go 1.24 or later.
 
 ```sh
 go get github.com/JacobLey/leyman/apps/populate-files/go@latest
@@ -14,10 +14,8 @@ go get github.com/JacobLey/leyman/apps/populate-files/go@latest
 import populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
 
 results, err := populatefiles.PopulateFiles([]populatefiles.File{
-    {ManifestInputs: nil, Path: "types.go", Content: []byte(source), Signed: true},
-}, populatefiles.Options{
-    Cwd: "", TargetDir: "gen", Manifest: "gen/manifest.json", Check: false, DryRun: false, Force: false, Clean: true,
-})
+    {Path: "types.go", Content: []byte(source), Signed: true},
+}, populatefiles.Options{TargetDir: "gen", Manifest: "gen/manifest.json", Clean: true})
 ```
 
 `PopulateFile` writes one file, keeping the manifest's other entries, and `PopulateFiles` writes a set whose manifest lists exactly those files. Compared to the TypeScript package:

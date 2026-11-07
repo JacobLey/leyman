@@ -45,8 +45,10 @@ type Options struct {
 	ParameterDefaults bool
 }
 
-// An Error is a problem with a schema, at a JSON Pointer. Match its kind with errors.Is: ErrInvalidSchema,
-// ErrStrictMode, ErrUnsupported or ErrLoad.
+// An Error is a problem with a schema, at a JSON Pointer. Match its Kind with errors.Is: ErrInvalidSchema,
+// ErrStrictMode, ErrUnsupported or ErrLoad. Its Message says what is wrong, Pointer where (in another file, starting
+// with that file's URI), Cause is the underlying error if there is one, such as the file system's, and ReferencedFrom
+// is the file or URL whose `$ref` needed a file that failed to load.
 type Error = gerr.Error
 
 // Kinds of Error.
@@ -60,8 +62,11 @@ var (
 	ErrUnsupported = gerr.ErrUnsupported
 	// ErrLoad is a file or URL the schema references that could not be loaded.
 	ErrLoad = gerr.ErrLoad
-	// ErrSyntax is input that is not JSON.
+	// ErrSyntax is input that is not JSON. It is not an Error, as there is no schema to point into.
 	ErrSyntax = jsonv.ErrSyntax
+	// ErrYAML is a .yaml or .yml input of GenerateFile that is not a YAML document JSON can hold, e.g. a syntax error
+	// or more than one document. It is not an Error either.
+	ErrYAML = convert.ErrYAML
 )
 
 // Generate generates Go types from a JSON Schema, and returns the source of a Go file, formatted as gofmt does. It

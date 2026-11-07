@@ -20,7 +20,7 @@ Generate Go types from JSON Schema files, with strict schema checks: the Go para
 
 ## Install
 
-It needs Go 1.26 or later; the code it generates builds with Go 1.24 or later. As a tool of your module, at a version recorded in its `go.mod`:
+It needs Go 1.24 or later, as does the code it generates. As a tool of your module, at a version recorded in its `go.mod`:
 
 ```sh
 go get -tool github.com/JacobLey/leyman/apps/genever/go/cmd/genever@latest
@@ -37,7 +37,7 @@ Versions are listed in the [changelog](./CHANGELOG.md).
 
 ## Command line
 
-```sh
+```go
 //go:generate go tool genever openapi.yaml --package api --signed
 ```
 
@@ -67,14 +67,12 @@ It exits with 1 on any error, printed to stderr.
 ```go
 import genever "github.com/JacobLey/leyman/apps/genever/go"
 
-source, err := genever.Generate(schema, genever.Options{
-    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
-})
+source, err := genever.Generate(schema, genever.Options{Name: "Pet", Package: "api"})
 ```
 
-`Generate(schema, options)` converts one JSON document, and loads nothing. `GenerateSource(schema, options)` returns the same source with where each name is: each named type and each field of a property under `properties`, with its byte `Offset` and the JSON `Pointer` it is generated from (e.g. `#/$defs/Note/properties/body`), such as for an editor to go from a name to its schema. `GenerateFile(ctx, input, options)` is the command line as a function: it reads a file, loads what it references, and writes the output, returning its path and whether it changed.
+`Generate(schema, options)` converts one JSON document, and loads nothing. `GenerateSource(schema, options)` returns the same source with where each name is: each named type and each field of a property under `properties`, with its byte `Offset` and the JSON `Pointer` it is generated from (e.g. `#/$defs/Note/properties/body`), such as for an editor to go from a name to its schema. `GenerateFile(ctx, input, options)` is the command line as a function: it reads a file, loads what it references, and writes the output, returning its path and whether it changed. `Version()` is the module's version, as `--version` prints it.
 
-Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported`, `ErrLoad` and `ErrSyntax`, each an `*Error` with the JSON Pointer of the problem. `GenerateFile` also fails with [populate-files'](../../populate-files/go/) `ErrCheck` and `ErrOwnership`.
+Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported` and `ErrLoad`, each an `*Error` with the JSON Pointer of the problem, and `ErrSyntax` (input that isn't JSON) and `ErrYAML` (a `.yaml` or `.yml` input that isn't YAML JSON can hold), which have no pointer. `GenerateFile` also fails with [populate-files'](../../populate-files/go/) `ErrCheck` and `ErrOwnership`.
 
 ## Types
 

@@ -8,7 +8,7 @@ genever-go is genever for Go: it reads the same JSON Schema files and OpenAPI do
 
 ## Install
 
-It needs Go 1.26 or later, and the code it writes builds with Go 1.24 or later. Add it as a tool of your module, so its version is pinned in `go.mod`:
+It needs Go 1.24 or later, as does the code it writes. Add it as a tool of your module, so its version is pinned in `go.mod`:
 
 ```sh
 go get -tool github.com/JacobLey/leyman/apps/genever/go/cmd/genever@latest
@@ -28,9 +28,7 @@ The command takes genever's flags, apart from the TypeScript-only `--typed-min-i
 ```go
 import genever "github.com/JacobLey/leyman/apps/genever/go"
 
-source, err := genever.Generate(schema, genever.Options{
-    Name: "Pet", Package: "api", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
-})
+source, err := genever.Generate(schema, genever.Options{Name: "Pet", Package: "api"})
 ```
 
 `GenerateSource` also returns where each type's and field's name is, with the JSON Pointer it is generated from, as `geneverSource` does.

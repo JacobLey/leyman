@@ -57,7 +57,8 @@ type Result struct {
 	// Path is absolute.
 	Path string
 	// Reason is set when Updated.
-	Reason  Reason
+	Reason Reason
+	// Updated is whether it was (or, with Check or DryRun, would be) written or removed.
 	Updated bool
 }
 

@@ -130,6 +130,7 @@ func TestGenerateFileErrors(t *testing.T) {
 
 	for input, kind := range map[string]error{
 		"syntax.json":  genever.ErrSyntax,
+		"syntax.yaml":  genever.ErrYAML,
 		"missing.json": genever.ErrLoad,
 		"strict.json":  genever.ErrInvalidSchema,
 		"version.json": genever.ErrUnsupported,
@@ -138,10 +139,6 @@ func TestGenerateFileErrors(t *testing.T) {
 		if _, err := genever.GenerateFile(t.Context(), input, fileOptions(dir)); !errors.Is(err, kind) {
 			t.Errorf("%s: got %v, expected %v", input, err, kind)
 		}
-	}
-
-	if _, err := genever.GenerateFile(t.Context(), "syntax.yaml", fileOptions(dir)); err == nil {
-		t.Error("expected invalid YAML to fail")
 	}
 
 	if _, err := genever.GenerateFile(t.Context(), "valid.json", check); !errors.Is(err, populatefiles.ErrCheck) {

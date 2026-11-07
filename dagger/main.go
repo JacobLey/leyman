@@ -33,6 +33,9 @@ const (
 	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` in
 	// `e2e/published-entrypoints`). Only its `node` binary is used.
 	node22Image = "node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f"
+	// golang:1.24.13-trixie, the oldest Go a released Go module may support (see `goFloorTest`). Only its Go
+	// toolchain is used.
+	go124Image = "golang:1.24.13-trixie@sha256:5835f052b784aa39f2fe9070def3568605c8bc3fcd810f10402066348b61e716"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
 	pnpmVersion = "12.15.0"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
@@ -215,8 +218,30 @@ func (m *Ci) Test(
 		return err
 	})
 
+	group.Go(func() error {
+		// Tests each released Go module on Go 1.24, the oldest its `go` directive allows. Everything else stays on the
+		// toolchain's Go.
+		_, err := built.
+			WithDirectory("/opt/go-1.24", dag.Container().From(go124Image).Directory(goRoot)).
+			WithExec([]string{"sh", "-c", goFloorTest}).
+			Sync(ctx)
+
+		return err
+	})
+
 	return group.Wait()
 }
+
+// goFloorTest runs the tests of each released Go module (one with a VERSION) whose `go` directive is 1.24 with Go
+// 1.24, since vetting with a newer Go doesn't catch a newer standard library's APIs and behaviour.
+const goFloorTest = `set -e
+for version in $(find . -name VERSION -not -path '*/node_modules/*'); do
+	directory=$(dirname "$version")
+	if [ -f "$directory/go.mod" ] && grep -qx 'go 1.24' "$directory/go.mod"; then
+		echo "Testing $directory on Go 1.24"
+		(cd "$directory" && /opt/go-1.24/bin/go test ./...)
+	fi
+done`
 
 // Build the documentation site (`docs/`), type-checking every example, ready to deploy as static files.
 //

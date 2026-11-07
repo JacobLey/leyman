@@ -55,7 +55,7 @@ func TestParseNumbers(t *testing.T) {
 func TestParseErrors(t *testing.T) {
 	t.Parallel()
 
-	for _, input := range []string{``, `{`, `[1,`, `{"a": }`, `1 2`, `[}`} {
+	for _, input := range []string{``, `{`, `[`, `[1`, `{"a": 1`, `{"a": 1]`, `[1,`, `{"a": }`, `1 2`, `[}`} {
 		if _, err := jsonv.Parse([]byte(input)); !errors.Is(err, jsonv.ErrSyntax) {
 			t.Errorf("%q: got %v", input, err)
 		}

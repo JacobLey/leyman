@@ -1,6 +1,6 @@
 module github.com/JacobLey/leyman/apps/genever/go
 
-go 1.26
+go 1.24
 
 require (
 	github.com/JacobLey/leyman/apps/populate-files/go v0.1.0

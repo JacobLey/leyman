@@ -6,7 +6,7 @@ Go implementation of [generated-signature](../ts/), tested against the shared [t
 go get github.com/JacobLey/leyman/tools/generated-signature/go@latest
 ```
 
-It needs Go 1.26 or later. Versions are listed in the [changelog](./CHANGELOG.md).
+It needs Go 1.24 or later. Versions are listed in the [changelog](./CHANGELOG.md).
 
 A file signed by either implementation verifies with the other, manual sections merge the same way, and both read and write the same manifests, so a Go generator (like the Go port of [genever](../../../apps/genever/)) can share files with TypeScript tooling.
 
