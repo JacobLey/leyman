@@ -117,6 +117,34 @@ suite('external references', () => {
         });
     });
 
+    withTmpDir.test('an OpenAPI document without components', async ctx => {
+        await ctx.writeJson('tree.json', {
+            type: 'object',
+            properties: { value: { type: 'number' } },
+        });
+        await ctx.writeJson('api.json', {
+            openapi: '3.1.0',
+            info: { title: 'API', version: '1.0.0' },
+            paths: {
+                '/tree': {
+                    get: {
+                        responses: {
+                            200: {
+                                description: 'A tree',
+                                content: {
+                                    'application/json': { schema: { $ref: './tree.json' } },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const source = await generateTo(ctx.resolve('api.json'), ctx.resolve('api.ts'));
+
+        expectTypes(source, { Tree: '{ value?: number }' });
+    });
+
     withTmpDir.test('files referenced by the schemas of operations', async ctx => {
         const json = (name: string): Record<string, unknown> => ({
             content: { 'application/json': { schema: { $ref: `./${name}.json` } } },

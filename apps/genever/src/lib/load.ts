@@ -321,7 +321,8 @@ const embed = (
     resources: readonly SchemaObject[],
     isDocument: boolean
 ): SchemaObject => {
-    const components = (isDocument ? input.components : null) as SchemaObject | null;
+    // A document without components is given them, as only its components can hold schemas
+    const components = (isDocument ? (input.components ?? {}) : null) as SchemaObject | null;
     const container = ((components ? components.schemas : input.$defs) ?? {}) as SchemaObject;
     const taken = new Set(Object.keys(container));
     const added: Record<string, SchemaObject> = {};
