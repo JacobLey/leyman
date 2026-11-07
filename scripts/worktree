@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Manage git worktrees in <main checkout>-worktrees/, each opened in its own devcontainer.
-# Intended to run on the HOST (macOS bash 3.2 compatible). See .claude/skills/worktrees/SKILL.md.
+# Intended to run on the HOST (macOS bash 3.2 compatible). See .agents/skills/worktrees/SKILL.md.
 
 set -euo pipefail
 

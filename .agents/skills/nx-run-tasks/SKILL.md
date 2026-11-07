@@ -11,7 +11,7 @@ nx run-many -t <target> [-p <project1> <project2>]
 nx affected -t <target>        # vs main
 ```
 
-Run the high-level target you care about (`build`, `test`, `check`, `verify`). Its dependencies run first and are usually cache hits. With everything cached, `nx run-many -t verify` takes about 40s and `nx run <project>:verify` about 3s, on 14 cores. Most of what remains is Nx hashing the outputs of dependencies: the uncached tasks, such as `biome` and `sync-injected`, take about 50ms each. See the [lifecycle skill](../../../leyman/main/.claude/skills/lifecycle/SKILL.md) for the ordering.
+Run the high-level target you care about (`build`, `test`, `check`, `verify`). Its dependencies run first and are usually cache hits. With everything cached, `nx run-many -t verify` takes about 40s and `nx run <project>:verify` about 3s, on 14 cores. Most of what remains is Nx hashing the outputs of dependencies: the uncached tasks, such as `biome` and `sync-injected`, take about 50ms each. See the [lifecycle skill](../../../leyman/main/.agents/skills/lifecycle/SKILL.md) for the ordering.
 
 `test` only tests the project itself. To test everything, use `nx run-many -t test` or `nx affected -t test`.
 

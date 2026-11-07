@@ -27,7 +27,7 @@ install → prepare ┬→ check ─────────┬→ verify
 
 `prepare` targets must write by default and only check (failing on drift) when `CI` is set. Formatting before `build` keeps its cache inputs stable.
 
-What each work target does: [nx-tasks-reference](../../../../../.claude/skills/nx-tasks-reference/SKILL.md).
+What each work target does: [nx-tasks-reference](../../../../../.agents/skills/nx-tasks-reference/SKILL.md).
 
 ## Adding a work target
 
@@ -35,6 +35,6 @@ What each work target does: [nx-tasks-reference](../../../../../.claude/skills/n
 2. Bind it to a stage hook in `lifecycle.json`.
 3. Run `nx run @leyman/main:lifecycle` to regenerate `dependsOn`.
 4. Add it as `{}` to the `project.json` of every project that uses it (this is not automatic).
-5. Document it in [nx-tasks-reference](../../../../../.claude/skills/nx-tasks-reference/SKILL.md).
+5. Document it in [nx-tasks-reference](../../../../../.agents/skills/nx-tasks-reference/SKILL.md).
 
 Don't hand-edit orchestration `dependsOn`. If a target needs to run before another, express that with stages/hooks (adding a hook if needed).

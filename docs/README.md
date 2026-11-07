@@ -9,7 +9,7 @@ Documentation site for the packages in this repo, built with [VitePress](https:/
 Documents [`barrelify`](../apps/barrelify), [`entry-script`](../tools/entry-script), [`generated-signature`](../tools/generated-signature/generated-signature), [`genever`](../apps/genever), [`haywire`](../tools/haywire), [`haywire-launcher`](../tools/haywire-launcher), [`juniper`](../apps/juniper), [`juniper-arbitrary`](../apps/juniper-arbitrary), [`juniper-validator`](../apps/juniper-validator), [`lease-cache`](../tools/lease-cache), [`load-populate-files`](../apps/populate-files/load-populate-files), [`mocha-chain`](../tools/test-chain/mocha-chain), [`normalized-react-query`](../tools/normalized-react-query), [`nx-lifecycle`](../apps/nx-lifecycle), [`pg-dolly`](../tools/pg-dolly), [`pg-dolly-schema`](../apps/pg-dolly-schema), [`populate-files`](../apps/populate-files/populate-files), [`unknown-error`](../tools/unknown-error) and [`vitest-chain`](../tools/test-chain/vitest-chain) so far, plus the demos.
 
 <!-- @manual-start rest -->
-Keep their pages in sync with the packages: see the [docs-site skill](../.claude/skills/docs-site/SKILL.md).
+Keep their pages in sync with the packages: see the [docs-site skill](../.agents/skills/docs-site/SKILL.md).
 
 ## Type-checked examples
 

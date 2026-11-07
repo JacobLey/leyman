@@ -7,6 +7,17 @@ import Path from 'node:path';
  */
 export type Files = Readonly<Record<string, unknown>>;
 
+/**
+ * A symbolic link to `target`, as the value of a file.
+ *
+ * @param target - where it points, relative to the link
+ * @returns what {@link writeRepo} writes as a link
+ */
+export const link = (target: string): { readonly link: string } => ({ link: target });
+
+const isLink = (content: unknown): content is { readonly link: string } =>
+    typeof content === 'object' && content !== null && 'link' in content;
+
 const tsconfig = (floor: number): string =>
     `{
     // Comments and trailing commas, as tsconfig.json allows
@@ -85,11 +96,13 @@ FROM scratch
     'dagger/dagger.json': {},
     '.github/workflows/ci.yml': 'on: push\n',
     'AGENTS.md': '# Agents\n',
-    '.claude/skills/principles/SKILL.md': '# Principles\n',
+    '.agents/skills/principles/SKILL.md': '# Principles\n',
+    '.claude/skills': link('../.agents/skills'),
 };
 
 /**
- * Writes a repository to a new temporary directory. `CLAUDE.md` is a link to `AGENTS.md` unless the files set it.
+ * Writes a repository to a new temporary directory. `CLAUDE.md` is a link to `AGENTS.md` unless the files set it, or
+ * there is no `AGENTS.md`.
  *
  * @param files - each file, over {@link fullRepo} when `base` is it
  * @param base - the files to start from
@@ -100,17 +113,20 @@ export const writeRepo = async (
     base: Files = fullRepo
 ): Promise<{ root: string; remove: () => Promise<void> }> => {
     const root = await mkdtemp(Path.join(Os.tmpdir(), 'framework-audit-'));
-    const merged: Files = { 'CLAUDE.md': Symbol.for('link'), ...base, ...files };
+    const given: Files = { ...base, ...files };
+    const merged: Files = {
+        ...(given['AGENTS.md'] !== undefined &&
+            given['AGENTS.md'] !== null && { 'CLAUDE.md': link('AGENTS.md') }),
+        ...given,
+    };
     for (const [path, content] of Object.entries(merged)) {
         if (content === null) {
             continue;
         }
         const absolute = Path.join(root, path);
         await mkdir(Path.dirname(absolute), { recursive: true });
-        if (content === Symbol.for('link')) {
-            if (merged['AGENTS.md'] !== null) {
-                await symlink('AGENTS.md', absolute);
-            }
+        if (isLink(content)) {
+            await symlink(content.link, absolute);
         } else {
             await writeFile(
                 absolute,

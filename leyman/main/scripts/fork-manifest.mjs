@@ -582,7 +582,7 @@ const printDrift = ({ from, to, changed, added }) => {
     );
 };
 
-const skillFile = path.join(workspaceRoot, '.claude/skills/fork-manifest/SKILL.md');
+const skillFile = path.join(workspaceRoot, '.agents/skills/fork-manifest/SKILL.md');
 const skillStart = '<!-- fork-manifest:start -->';
 const skillEnd = '<!-- fork-manifest:end -->';
 

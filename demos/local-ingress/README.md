@@ -17,7 +17,7 @@ A worked example, not a package: it is never published. It is the proof that a f
 
 ## Running it
 
-In a devcontainer, whose `leyman` service is labeled for the ingress (see the [worktrees skill](../../.claude/skills/worktrees/SKILL.md#urls)):
+In a devcontainer, whose `leyman` service is labeled for the ingress (see the [worktrees skill](../../.agents/skills/worktrees/SKILL.md#urls)):
 
 ```sh
 serve   # scripts/commands/serve: nx run @leyman/demo-local-ingress:dev --tui=false

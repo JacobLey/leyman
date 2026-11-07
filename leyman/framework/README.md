@@ -92,13 +92,13 @@ A tier is met when every check of it, and of each tier before it, passes. A skip
 | 4    | `images-pinned` | Each image a `.devcontainer` Dockerfile or Compose file uses is pinned by `@sha256:` digest, after `ARG` defaults are substituted.                                                                  |
 | 4    | `ci`            | There is a Dagger module and a GitHub Actions workflow.                                                                                                                                             |
 | 4    | `workarounds`   | Each patch, override, package extension and peer rule in `pnpm-workspace.yaml` has a comment, above it or above the run of entries it belongs to. None are in `package.json`, which can't hold one. |
-| 4    | `agents`        | `AGENTS.md` exists, `CLAUDE.md` is a link to it, and `.claude/skills` has a skill.                                                                                                                  |
+| 4    | `agents`        | `AGENTS.md` exists, `CLAUDE.md` is a link to it, `.agents/skills` has a skill, and `.claude/skills` is a link to `../.agents/skills`.                                                               |
 
 The packages are those `pnpm-workspace.yaml` (or `package.json` `workspaces`) lists, or the root package in a repository of one.
 
 ## The agent audit
 
-The package ships a skill, `skills/framework-audit/SKILL.md`, for a coding agent to run in the repository. It starts with this CLI, then checks what needs judgment against the principles, and reports each finding with the principle it misses. The CLI prints the skill's path. Copy it into your agent's skills (`.claude/skills/framework-audit/`), or point the agent at it.
+The package ships a skill, `skills/framework-audit/SKILL.md`, for a coding agent to run in the repository. It starts with this CLI, then checks what needs judgment against the principles, and reports each finding with the principle it misses. The CLI prints the skill's path. Copy it into your agent's skills (`.agents/skills/framework-audit/`), or point the agent at it.
 
 ## API
 

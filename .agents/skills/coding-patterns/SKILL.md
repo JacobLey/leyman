@@ -31,7 +31,7 @@ What needs a comment is *why* a particular approach was chosen, especially if a 
 This applies at multiple levels:
 - **Inline comments** for non-obvious implementation choices
 - **README.md** for public API usage and behavior
-- **WHY-\<PACKAGE\>.md** for motivation and design rationale (see [`.claude/skills/writing-readmes/SKILL.md`](../writing-readmes/SKILL.md))
+- **WHY-\<PACKAGE\>.md** for motivation and design rationale (see [`.agents/skills/writing-readmes/SKILL.md`](../writing-readmes/SKILL.md))
 - **SKILL.md files** for conventions, workflows, and context that agents or contributors need
 
 If you write a workaround, a subtle ordering constraint, or a counter-intuitive data structure, leave a comment. Future readers (and agents) will thank you.

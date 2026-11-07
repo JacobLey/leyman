@@ -26,7 +26,7 @@ Development happens in the [DevContainer](./.devcontainer/), which installs the 
    pnpm i
    ```
 
-Day-to-day work happens in git worktrees, each with its own devcontainer. See the [worktrees skill](./.claude/skills/worktrees/SKILL.md) for how to create and open them.
+Day-to-day work happens in git worktrees, each with its own devcontainer. See the [worktrees skill](./.agents/skills/worktrees/SKILL.md) for how to create and open them.
 
 To run a single test from VS Code, see [`vscode-tests`](./leyman/vscode-tests/README.md).
 
@@ -36,12 +36,12 @@ To run a single test from VS Code, see [`vscode-tests`](./leyman/vscode-tests/RE
 
 The repo is an [Nx](https://nx.dev) monorepo. Published packages live in [`apps/`](./apps) and [`tools/`](./tools), though a few there are private. Shared configs and tools are in [`leyman/`](./leyman), where `@leyman/configs`, `@leyman/eslint-config`, `@leyman/expect` and `@leyman/nx-plugin` are published. The rest is never published: checks across packages in [`e2e/`](./e2e), worked examples in [`demos/`](./demos), the docs site in [`docs/`](./docs) and deployed infrastructure in [`infra/`](./infra). The [README](./README.md#packages) lists each package and where it lives.
 
-Conventions are documented as skills in [`.claude/skills/`](./.claude/skills), indexed in [`AGENTS.md`](./AGENTS.md). They are written for coding agents but are just as useful to people. The most relevant ones are:
+Conventions are documented as skills in [`.agents/skills/`](./.agents/skills), indexed in [`AGENTS.md`](./AGENTS.md). They are written for coding agents but are just as useful to people. The most relevant ones are:
 
-- [Coding patterns](./.claude/skills/coding-patterns/SKILL.md): package design, types, dependency injection and docs
-- [Testing](./.claude/skills/testing/SKILL.md): Mocha, Sinon and 100% coverage with C8
-- [Linting and formatting](./.claude/skills/linting-formatting/SKILL.md): ESLint and Biome
-- [Writing READMEs](./.claude/skills/writing-readmes/SKILL.md) and [docs site pages](./.claude/skills/docs-site/SKILL.md)
+- [Coding patterns](./.agents/skills/coding-patterns/SKILL.md): package design, types, dependency injection and docs
+- [Testing](./.agents/skills/testing/SKILL.md): Mocha, Sinon and 100% coverage with C8
+- [Linting and formatting](./.agents/skills/linting-formatting/SKILL.md): ESLint and Biome
+- [Writing READMEs](./.agents/skills/writing-readmes/SKILL.md) and [docs site pages](./.agents/skills/docs-site/SKILL.md)
 
 Some things to keep in mind:
 
@@ -65,7 +65,7 @@ CI runs the same pipeline in [Dagger](https://dagger.io). To run it locally befo
 dagger-test
 ```
 
-See the [Nx tasks skill](./.claude/skills/nx-run-tasks/SKILL.md) for running tasks on a single package.
+See the [Nx tasks skill](./.agents/skills/nx-run-tasks/SKILL.md) for running tasks on a single package.
 
 ## Changesets
 
@@ -77,12 +77,12 @@ changeset
 
 Follow the prompts to pick the affected packages and the semver bump, then write a short description for the changelog. Commit the generated file in `.changeset/` along with your change.
 
-Changes that only touch tests, dev tooling, configs, CI, devDependencies or the private `leyman/` packages don't need a changeset. See the [versioning skill](./.claude/skills/versioning/SKILL.md) for details.
+Changes that only touch tests, dev tooling, configs, CI, devDependencies or the private `leyman/` packages don't need a changeset. See the [versioning skill](./.agents/skills/versioning/SKILL.md) for details.
 
 ## Submitting a pull request
 
 1. Create a branch from `main`.
-2. Keep each commit focused on one thing, with a short subject and the reasoning in the body. See the [commit messages skill](./.claude/skills/commit-messages/SKILL.md).
+2. Keep each commit focused on one thing, with a short subject and the reasoning in the body. See the [commit messages skill](./.agents/skills/commit-messages/SKILL.md).
 3. Make sure `test-ci` passes and you've added a changeset if one is needed.
 4. Open a pull request against `main` and fill out the template.
 

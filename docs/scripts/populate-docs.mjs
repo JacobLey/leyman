@@ -248,7 +248,7 @@ ${manual(filePath, 'rest')}
 };
 
 const projectsSkill = () => {
-    const filePath = '.claude/skills/projects/SKILL.md';
+    const filePath = '.agents/skills/projects/SKILL.md';
     const tables = sections.map(section => {
         const rows = projects
             .filter(project => section.folders.includes(project.folder))
@@ -279,7 +279,7 @@ ${tables.join('\n\n')}
 };
 
 const docsSiteSkill = () => {
-    const filePath = '.claude/skills/docs-site/SKILL.md';
+    const filePath = '.agents/skills/docs-site/SKILL.md';
     const showcaseTable = (heading, kind, entries) =>
         table(
             [heading, 'Page'],
@@ -346,7 +346,7 @@ ${manual(filePath, 'body')}
  * Paths Dagger leaves out of CI's source (`New` in `dagger/main.go`). A file under one that is
  * absent is skipped rather than reported missing; any full checkout still generates and checks it.
  */
-const ciExcluded = ['.claude', 'README.md'];
+const ciExcluded = ['.agents', '.claude', 'README.md'];
 const excludedHere = filePath =>
     ciExcluded.some(
         excluded =>
@@ -357,8 +357,8 @@ const excludedHere = filePath =>
 const files = [
     { filePath: 'README.md', content: readme },
     { filePath: 'docs/README.md', content: docsReadme },
-    { filePath: '.claude/skills/projects/SKILL.md', content: projectsSkill },
-    { filePath: '.claude/skills/docs-site/SKILL.md', content: docsSiteSkill },
+    { filePath: '.agents/skills/projects/SKILL.md', content: projectsSkill },
+    { filePath: '.agents/skills/docs-site/SKILL.md', content: docsSiteSkill },
     { filePath: '.claude/rules/docs-site-sync.md', content: docsSiteRule },
 ];
 const results = await populateFiles(

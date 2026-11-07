@@ -4,7 +4,7 @@ description: "The principles behind this repository's setup, and why: the bar fo
 
 # Principles
 
-The repository's skills say how things are done. This page says why, so a judgment call that no skill covers still lands in the same place. When a design or review question has no rule, decide it by these. Code-level conventions (types, DI, tests, errors) are in the [coding-patterns skill](https://github.com/JacobLey/leyman/blob/main/.claude/skills/coding-patterns/SKILL.md).
+The repository's skills say how things are done. This page says why, so a judgment call that no skill covers still lands in the same place. When a design or review question has no rule, decide it by these. Code-level conventions (types, DI, tests, errors) are in the [coding-patterns skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/coding-patterns/SKILL.md).
 
 ## The bar for a package
 
@@ -25,13 +25,13 @@ Audits and reviews flag anything that misses one of these.
 - Data written by an earlier version stays readable.
 - A change limited to something not yet released isn't breaking. Before calling something breaking, check what has actually shipped.
 
-How changes are recorded: the [versioning skill](https://github.com/JacobLey/leyman/blob/main/.claude/skills/versioning/SKILL.md).
+How changes are recorded: the [versioning skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/versioning/SKILL.md).
 
 ## Newest toolchain, lowest floor
 
 Development and CI run the newest runtimes and tools. Each published package supports the oldest runtime it can **without losing functionality**: never swap a newer API for a weaker stand-in to reach a lower floor. A package's floor is never below any of its runtime dependencies' floors. Upgrading the toolchain doesn't raise a package's floor. Only that package needing something newer does.
 
-How floors are declared and checked: [Support floors](https://github.com/JacobLey/leyman/blob/main/.claude/skills/typescript/SKILL.md#support-floors).
+How floors are declared and checked: [Support floors](https://github.com/JacobLey/leyman/blob/main/.agents/skills/typescript/SKILL.md#support-floors).
 
 ## Lean where it ships, free where it doesn't
 
@@ -45,7 +45,7 @@ Rules push code onto one well-aligned path and end debates over style. So:
 - Every disable gives its reason (`-- reason`) at the narrowest scope that works: the line, then the file, then config. A disable whose reason has gone away is removed.
 - Fix the code in its own commits first, each passing both the old and the new rules. The version bump goes in a separate commit with only the version, lockfile and config.
 
-How to run and fix: the [linting-formatting skill](https://github.com/JacobLey/leyman/blob/main/.claude/skills/linting-formatting/SKILL.md).
+How to run and fix: the [linting-formatting skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/linting-formatting/SKILL.md).
 
 ## Generate what can be derived
 
@@ -64,4 +64,4 @@ A patch, dependency override, pinned version or disabled check carries a note na
 - Split multi-part work into steps and commit each one once it works. A local commit that hasn't reached a shared branch costs nothing to rework.
 - Run the narrowest check while iterating (one spec, lint on the changed files). Run full verification often, and always before anything that is hard to undo: a merge, a push, a release, or work that builds on top of what you just did.
 
-How to verify: the [nx-run-tasks skill](https://github.com/JacobLey/leyman/blob/main/.claude/skills/nx-run-tasks/SKILL.md). How to write the commit: the [commit-messages skill](https://github.com/JacobLey/leyman/blob/main/.claude/skills/commit-messages/SKILL.md).
+How to verify: the [nx-run-tasks skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/nx-run-tasks/SKILL.md). How to write the commit: the [commit-messages skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/commit-messages/SKILL.md).

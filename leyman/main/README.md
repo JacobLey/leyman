@@ -10,7 +10,7 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 
 ## Lifecycle
 
-[`lifecycle.json`](./lifecycle.json) declares the workspace's task stages and binds work targets to them. `nx run @leyman/main:lifecycle` turns that into the no-op lifecycle targets and their `dependsOn` in every `project.json`. See the [lifecycle skill](./.claude/skills/lifecycle/SKILL.md).
+[`lifecycle.json`](./lifecycle.json) declares the workspace's task stages and binds work targets to them. `nx run @leyman/main:lifecycle` turns that into the no-op lifecycle targets and their `dependsOn` in every `project.json`. See the [lifecycle skill](./.agents/skills/lifecycle/SKILL.md).
 
 ## Scripts
 

@@ -1,6 +1,6 @@
 {
   // Worktree tasks run on the HOST: use them from a window opened locally
-  // (not "Reopen in Container"). See .claude/skills/worktrees/SKILL.md.
+  // (not "Reopen in Container"). See .agents/skills/worktrees/SKILL.md.
   "version": "2.0.0",
   "tasks": [
     {

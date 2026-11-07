@@ -2,13 +2,13 @@
 
 This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx documentation.
 
-This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files and list them under [Skills](#skills).
+This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files under `.agents/skills/` (or a package's own `.agents/skills/`) and list them under [Skills](#skills). Each `.claude/skills` is a link to the `.agents/skills` beside it, for Claude Code, which reads only that.
 
-Commit messages have a short subject and the reasoning in the body: see [`.claude/skills/commit-messages/SKILL.md`](./.claude/skills/commit-messages/SKILL.md).
+Commit messages have a short subject and the reasoning in the body: see [`.agents/skills/commit-messages/SKILL.md`](./.agents/skills/commit-messages/SKILL.md).
 
 ## Worktrees
 
-All development happens in git worktrees (kept in `<main checkout>-worktrees/`), each with its own devcontainer. The pnpm store and Nx cache are shared; `node_modules` is not. See [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md).
+All development happens in git worktrees (kept in `<main checkout>-worktrees/`), each with its own devcontainer. The pnpm store and Nx cache are shared; `node_modules` is not. See [`.agents/skills/worktrees/SKILL.md`](./.agents/skills/worktrees/SKILL.md).
 
 ## Nx in This Repo
 
@@ -24,37 +24,37 @@ Focused guides for common workflows in this repo:
 
 | Task | Skill |
 |------|-------|
-| Running Nx tasks (build, test, check, etc.) | [`.claude/skills/nx-run-tasks/SKILL.md`](./.claude/skills/nx-run-tasks/SKILL.md) |
-| Understanding the various projects/packages available | [`.claude/skills/projects/SKILL.md`](./.claude/skills/projects/SKILL.md) |
-| Creating a new package in the monorepo | [`.claude/skills/create-package/SKILL.md`](./.claude/skills/create-package/SKILL.md) |
-| Installing a package dependency | [`.claude/skills/install-package/SKILL.md`](./.claude/skills/install-package/SKILL.md) |
-| What each `nx.json` target does and when to add it to `project.json` | [`.claude/skills/nx-tasks-reference/SKILL.md`](./.claude/skills/nx-tasks-reference/SKILL.md) |
-| Task lifecycle wiring (how prepare, check, build, test and verify connect) | [`leyman/main/.claude/skills/lifecycle/SKILL.md`](./leyman/main/.claude/skills/lifecycle/SKILL.md) |
-| DevContainer runtimes, CLI tools, and version parity with Dagger | [`.claude/skills/devcontainer/SKILL.md`](./.claude/skills/devcontainer/SKILL.md) |
-| Worktree layout, setup, and creating/opening/removing worktrees | [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md) |
-| Writing and maintaining package READMEs | [`.claude/skills/writing-readmes/SKILL.md`](./.claude/skills/writing-readmes/SKILL.md) |
-| Which infrastructure files a fork takes, and classifying a new one | [`.claude/skills/fork-manifest/SKILL.md`](./.claude/skills/fork-manifest/SKILL.md) |
-| Writing docs site pages, and keeping them in sync with package changes | [`.claude/skills/docs-site/SKILL.md`](./.claude/skills/docs-site/SKILL.md) |
+| Running Nx tasks (build, test, check, etc.) | [`.agents/skills/nx-run-tasks/SKILL.md`](./.agents/skills/nx-run-tasks/SKILL.md) |
+| Understanding the various projects/packages available | [`.agents/skills/projects/SKILL.md`](./.agents/skills/projects/SKILL.md) |
+| Creating a new package in the monorepo | [`.agents/skills/create-package/SKILL.md`](./.agents/skills/create-package/SKILL.md) |
+| Installing a package dependency | [`.agents/skills/install-package/SKILL.md`](./.agents/skills/install-package/SKILL.md) |
+| What each `nx.json` target does and when to add it to `project.json` | [`.agents/skills/nx-tasks-reference/SKILL.md`](./.agents/skills/nx-tasks-reference/SKILL.md) |
+| Task lifecycle wiring (how prepare, check, build, test and verify connect) | [`leyman/main/.agents/skills/lifecycle/SKILL.md`](./leyman/main/.agents/skills/lifecycle/SKILL.md) |
+| DevContainer runtimes, CLI tools, and version parity with Dagger | [`.agents/skills/devcontainer/SKILL.md`](./.agents/skills/devcontainer/SKILL.md) |
+| Worktree layout, setup, and creating/opening/removing worktrees | [`.agents/skills/worktrees/SKILL.md`](./.agents/skills/worktrees/SKILL.md) |
+| Writing and maintaining package READMEs | [`.agents/skills/writing-readmes/SKILL.md`](./.agents/skills/writing-readmes/SKILL.md) |
+| Which infrastructure files a fork takes, and classifying a new one | [`.agents/skills/fork-manifest/SKILL.md`](./.agents/skills/fork-manifest/SKILL.md) |
+| Writing docs site pages, and keeping them in sync with package changes | [`.agents/skills/docs-site/SKILL.md`](./.agents/skills/docs-site/SKILL.md) |
 
 ### Coding Standards
 
 | Topic | Skill |
 |-------|-------|
-| The principles behind the setup, and why (the package bar, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying) | [`.claude/skills/principles/SKILL.md`](./.claude/skills/principles/SKILL.md) |
-| Coding patterns and conventions (package design, types, DI, docs) | [`.claude/skills/coding-patterns/SKILL.md`](./.claude/skills/coding-patterns/SKILL.md) |
+| The principles behind the setup, and why (the package bar, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying) | [`.agents/skills/principles/SKILL.md`](./.agents/skills/principles/SKILL.md) |
+| Coding patterns and conventions (package design, types, DI, docs) | [`.agents/skills/coding-patterns/SKILL.md`](./.agents/skills/coding-patterns/SKILL.md) |
 
 ### Development Workflows
 
 | Task | Skill |
 |------|-------|
-| Building a package's CLI (yargs commands, haywire list, launcher) | [`.claude/skills/cli/SKILL.md`](./.claude/skills/cli/SKILL.md) |
-| Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`.claude/skills/testing/SKILL.md`](./.claude/skills/testing/SKILL.md) |
-| Building TypeScript packages (SWC, tsconfig, ESM) | [`.claude/skills/typescript/SKILL.md`](./.claude/skills/typescript/SKILL.md) |
-| Linting and formatting (ESLint, Biome, auto-fix) | [`.claude/skills/linting-formatting/SKILL.md`](./.claude/skills/linting-formatting/SKILL.md) |
-| Running CI locally with Dagger, and releasing to npm | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md) |
-| Patching an older major version of a package (e.g. a security fix for v1 after v2 shipped) | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md#patching-an-older-major) |
-| Versioning packages with changesets | [`.claude/skills/versioning/SKILL.md`](./.claude/skills/versioning/SKILL.md) |
-| Writing commit messages (subject, body, what goes where) | [`.claude/skills/commit-messages/SKILL.md`](./.claude/skills/commit-messages/SKILL.md) |
-| Updating catalog dependencies to latest minor/patch versions | [`.claude/skills/updating-dependencies/SKILL.md`](./.claude/skills/updating-dependencies/SKILL.md) |
-| Debugging (source maps, cache, test failures) | [`.claude/skills/debugging/SKILL.md`](./.claude/skills/debugging/SKILL.md) |
+| Building a package's CLI (yargs commands, haywire list, launcher) | [`.agents/skills/cli/SKILL.md`](./.agents/skills/cli/SKILL.md) |
+| Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`.agents/skills/testing/SKILL.md`](./.agents/skills/testing/SKILL.md) |
+| Building TypeScript packages (SWC, tsconfig, ESM) | [`.agents/skills/typescript/SKILL.md`](./.agents/skills/typescript/SKILL.md) |
+| Linting and formatting (ESLint, Biome, auto-fix) | [`.agents/skills/linting-formatting/SKILL.md`](./.agents/skills/linting-formatting/SKILL.md) |
+| Running CI locally with Dagger, and releasing to npm | [`.agents/skills/dagger-ci/SKILL.md`](./.agents/skills/dagger-ci/SKILL.md) |
+| Patching an older major version of a package (e.g. a security fix for v1 after v2 shipped) | [`.agents/skills/dagger-ci/SKILL.md`](./.agents/skills/dagger-ci/SKILL.md#patching-an-older-major) |
+| Versioning packages with changesets | [`.agents/skills/versioning/SKILL.md`](./.agents/skills/versioning/SKILL.md) |
+| Writing commit messages (subject, body, what goes where) | [`.agents/skills/commit-messages/SKILL.md`](./.agents/skills/commit-messages/SKILL.md) |
+| Updating catalog dependencies to latest minor/patch versions | [`.agents/skills/updating-dependencies/SKILL.md`](./.agents/skills/updating-dependencies/SKILL.md) |
+| Debugging (source maps, cache, test failures) | [`.agents/skills/debugging/SKILL.md`](./.agents/skills/debugging/SKILL.md) |
 

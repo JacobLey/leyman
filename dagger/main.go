@@ -110,6 +110,7 @@ func New(
 			// (its own `ciExcluded`), so keep the lists in step.
 			Exclude: []string{
 				".git",
+				".agents",
 				".claude",
 				".devcontainer",
 				".github",

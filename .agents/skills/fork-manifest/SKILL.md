@@ -51,21 +51,22 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/coding-patterns` | package design, types and DI conventions |
-| `.claude/skills/commit-messages` | subject and body conventions |
-| `.claude/skills/create-package` | how to add a package |
-| `.claude/skills/debugging` | source maps, the cache and test failures |
-| `.claude/skills/devcontainer` | runtimes, CLI tools and version parity |
-| `.claude/skills/install-package` | how to add a dependency |
-| `.claude/skills/linting-formatting` | ESLint, Biome and auto-fix |
-| `.claude/skills/nx-run-tasks` | how to run Nx tasks |
-| `.claude/skills/nx-tasks-reference` | what each target does and when to add it |
-| `.claude/skills/principles` | the principles behind the setup, and why |
-| `.claude/skills/testing` | Mocha, mocha-chain, Sinon and c8 |
-| `.claude/skills/typescript` | SWC, tsconfig and ESM |
-| `.claude/skills/updating-dependencies` | how to bump the catalog |
-| `.claude/skills/worktrees` | the worktree layout and flow |
-| `.claude/skills/writing-readmes` | the README bar |
+| `.claude/skills` | links Claude Code's skills directory to .agents/skills, which other agents read |
+| `.agents/skills/coding-patterns` | package design, types and DI conventions |
+| `.agents/skills/commit-messages` | subject and body conventions |
+| `.agents/skills/create-package` | how to add a package |
+| `.agents/skills/debugging` | source maps, the cache and test failures |
+| `.agents/skills/devcontainer` | runtimes, CLI tools and version parity |
+| `.agents/skills/install-package` | how to add a dependency |
+| `.agents/skills/linting-formatting` | ESLint, Biome and auto-fix |
+| `.agents/skills/nx-run-tasks` | how to run Nx tasks |
+| `.agents/skills/nx-tasks-reference` | what each target does and when to add it |
+| `.agents/skills/principles` | the principles behind the setup, and why |
+| `.agents/skills/testing` | Mocha, mocha-chain, Sinon and c8 |
+| `.agents/skills/typescript` | SWC, tsconfig and ESM |
+| `.agents/skills/updating-dependencies` | how to bump the catalog |
+| `.agents/skills/worktrees` | the worktree layout and flow |
+| `.agents/skills/writing-readmes` | the README bar |
 | `.devcontainer/.dockerignore` | keeps the image's build context empty |
 | `.devcontainer/Dockerfile` | the image everything runs in; delete the stages of languages the fork lacks |
 | `.devcontainer/devcontainer-lock.json` | pins the devcontainer features |
@@ -77,7 +78,8 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.devcontainer/tag-pinned-images.sh` | keeps digest-pinned images from looking dangling |
 | `.vscode/settings.json` | points the editor at the tools in leyman/main |
 | `.vscode/tasks.json` | worktree commands in the editor |
-| `leyman/main/.claude/skills/lifecycle` | how the lifecycle stages connect |
+| `leyman/main/.claude/skills` | links Claude Code's skills directory to the package's .agents/skills |
+| `leyman/main/.agents/skills/lifecycle` | how the lifecycle stages connect |
 | `leyman/main/README.md` | why the global tools live in this package |
 | `leyman/main/eslint.config.js` | lints the package's own scripts |
 | `leyman/main/lifecycle.json` | declares the stages and binds targets to them |
@@ -114,13 +116,13 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/cli` | yargs commands collected by a haywire list |
+| `.agents/skills/cli` | yargs commands collected by a haywire list |
 
 ### `dagger`: runs CI through the Dagger module
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/dagger-ci` | running CI locally and releasing |
+| `.agents/skills/dagger-ci` | running CI locally and releasing |
 | `scripts/commands/dagger-develop` | regenerates the Dagger module's code |
 | `scripts/commands/dagger-test` | runs CI locally |
 | `scripts/nx/dagger-develop.sh` | the dagger-develop target |
@@ -130,7 +132,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/docs-site` | writing docs pages |
+| `.agents/skills/docs-site` | writing docs pages |
 | `.claude/rules/docs-site-sync.md` | keeps docs pages in step with their packages |
 
 ### `drizzle`: has packages with Drizzle migrations
@@ -158,7 +160,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/versioning` | changesets |
+| `.agents/skills/versioning` | changesets |
 | `.changeset/config.json` | how changesets versions packages |
 
 ### `rust`: has Rust crates
@@ -189,8 +191,8 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.claude/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
-| `.claude/skills/projects` | this repo's table of packages; a fork writes its own |
+| `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
+| `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |
 | `.github/workflows/comparison-report.yml` | reports on genever against other tools, for this repo's docs site |
 | `.github/workflows/adoption-audits.yml` | audits this repo's classification and getting-started page |

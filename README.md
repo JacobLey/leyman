@@ -5,7 +5,7 @@
 
 An Nx monorepo of TypeScript libraries and tools for Node.js ESM environments.
 
-> **First time here?** Open this repo in VSCode — it will prompt you to reopen in the [DevContainer](.devcontainer/), which sets up Node, PNPM, and all tooling automatically. Day-to-day work happens in git worktrees; see the [worktrees skill](./.claude/skills/worktrees/SKILL.md).
+> **First time here?** Open this repo in VSCode — it will prompt you to reopen in the [DevContainer](.devcontainer/), which sets up Node, PNPM, and all tooling automatically. Day-to-day work happens in git worktrees; see the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
 <!-- @manual-end intro -->
 
 ## Packages
@@ -52,7 +52,7 @@ Published to npm:
 | [`weighted-rendezvous-hash`](https://www.npmjs.com/package/weighted-rendezvous-hash) | Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.                                                                                  | [`tools/constant-consistent-hash/weighted-rendezvous-hash`](./tools/constant-consistent-hash/weighted-rendezvous-hash) |
 
 <!-- @manual-start packages -->
-Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.claude/skills/projects/SKILL.md).
+Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.agents/skills/projects/SKILL.md).
 
 Packages that have been removed from the repo but are still on npm are listed in [`DEPRECATED_PACKAGES.md`](./DEPRECATED_PACKAGES.md).
 <!-- @manual-end packages -->
@@ -105,7 +105,7 @@ See all aliased (added to `PATH` by [`devcontainer.json`](./.devcontainer/devcon
 
 ## Coding Agents
 
-Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In the devcontainer, Claude Code config (credentials, settings, memory) lives in `<main checkout>-worktrees/.shared/claude-config`, outside version control and shared by every worktree. See the [worktrees skill](./.claude/skills/worktrees/SKILL.md).
+Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In the devcontainer, Claude Code config (credentials, settings, memory) lives in `<main checkout>-worktrees/.shared/claude-config`, outside version control and shared by every worktree. See the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
 
 (If you use a different coding agent, PRs are welcome to support those directories).
 

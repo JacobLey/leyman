@@ -643,15 +643,21 @@ const agentsCheck: Check = {
     id: 'agents',
     tier: 4,
     title: 'Coding agents find AGENTS.md and the skills',
-    fix: 'Write an AGENTS.md listing the skills, link CLAUDE.md to it (ln -s AGENTS.md CLAUDE.md), and keep the skills in .claude/skills/<name>/SKILL.md',
+    fix: 'Write an AGENTS.md listing the skills, link CLAUDE.md to it (ln -s AGENTS.md CLAUDE.md), keep the skills in .agents/skills/<name>/SKILL.md, and link .claude/skills to them (ln -s ../.agents/skills .claude/skills)',
     run: async workspace => {
         const agents = await workspace.read('AGENTS.md');
         const claude = await workspace.linkTarget('CLAUDE.md');
-        const skills = await workspace.glob(['.claude/skills/*/SKILL.md']);
+        const skills = await workspace.glob(['.agents/skills/*/SKILL.md']);
+        const claudeSkills = await workspace.linkTarget('.claude/skills');
         return [
             ...(agents === undefined ? ['No AGENTS.md'] : []),
             ...(claude === 'AGENTS.md' ? [] : ["CLAUDE.md isn't a link to AGENTS.md"]),
-            ...(skills.length === 0 ? ['No skills in .claude/skills'] : []),
+            ...(skills.length === 0 ? ['No skills in .agents/skills'] : []),
+            ...(claudeSkills === '../.agents/skills'
+                ? []
+                : [
+                      ".claude/skills isn't a link to ../.agents/skills, the only skills Claude Code reads",
+                  ]),
         ];
     },
 };

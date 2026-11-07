@@ -66,7 +66,8 @@ suite('audit', () => {
             agents: [
                 'No AGENTS.md',
                 "CLAUDE.md isn't a link to AGENTS.md",
-                'No skills in .claude/skills',
+                'No skills in .agents/skills',
+                ".claude/skills isn't a link to ../.agents/skills, the only skills Claude Code reads",
             ],
         });
     });

@@ -17,6 +17,7 @@
     "vscode-tests": "wants the editor's test explorer"
   },
   "roots": [
+    ".agents",
     ".claude",
     ".devcontainer",
     ".github",
@@ -27,77 +28,81 @@
   ],
   "entries": [
     {
-      "path": ".claude/skills/coding-patterns",
+      "path": ".claude/skills",
+      "why": "links Claude Code's skills directory to .agents/skills, which other agents read"
+    },
+    {
+      "path": ".agents/skills/coding-patterns",
       "why": "package design, types and DI conventions"
     },
     {
-      "path": ".claude/skills/commit-messages",
+      "path": ".agents/skills/commit-messages",
       "why": "subject and body conventions"
     },
     {
-      "path": ".claude/skills/create-package",
+      "path": ".agents/skills/create-package",
       "why": "how to add a package"
     },
     {
-      "path": ".claude/skills/debugging",
+      "path": ".agents/skills/debugging",
       "why": "source maps, the cache and test failures"
     },
     {
-      "path": ".claude/skills/devcontainer",
+      "path": ".agents/skills/devcontainer",
       "why": "runtimes, CLI tools and version parity"
     },
     {
-      "path": ".claude/skills/install-package",
+      "path": ".agents/skills/install-package",
       "why": "how to add a dependency"
     },
     {
-      "path": ".claude/skills/linting-formatting",
+      "path": ".agents/skills/linting-formatting",
       "why": "ESLint, Biome and auto-fix"
     },
     {
-      "path": ".claude/skills/nx-run-tasks",
+      "path": ".agents/skills/nx-run-tasks",
       "why": "how to run Nx tasks"
     },
     {
-      "path": ".claude/skills/nx-tasks-reference",
+      "path": ".agents/skills/nx-tasks-reference",
       "why": "what each target does and when to add it"
     },
     {
-      "path": ".claude/skills/principles",
+      "path": ".agents/skills/principles",
       "why": "the principles behind the setup, and why"
     },
     {
-      "path": ".claude/skills/testing",
+      "path": ".agents/skills/testing",
       "why": "Mocha, mocha-chain, Sinon and c8"
     },
     {
-      "path": ".claude/skills/typescript",
+      "path": ".agents/skills/typescript",
       "why": "SWC, tsconfig and ESM"
     },
     {
-      "path": ".claude/skills/updating-dependencies",
+      "path": ".agents/skills/updating-dependencies",
       "why": "how to bump the catalog"
     },
     {
-      "path": ".claude/skills/worktrees",
+      "path": ".agents/skills/worktrees",
       "why": "the worktree layout and flow"
     },
     {
-      "path": ".claude/skills/writing-readmes",
+      "path": ".agents/skills/writing-readmes",
       "why": "the README bar"
     },
     {
-      "path": ".claude/skills/cli",
+      "path": ".agents/skills/cli",
       "when": "cli",
       "why": "yargs commands collected by a haywire list"
     },
     {
-      "path": ".claude/skills/dagger-ci",
+      "path": ".agents/skills/dagger-ci",
       "when": "dagger",
       "why": "running CI locally and releasing"
     },
     {
-      "path": ".claude/skills/docs-site",
+      "path": ".agents/skills/docs-site",
       "when": "docs-site",
       "why": "writing docs pages"
     },
@@ -107,7 +112,7 @@
       "why": "keeps docs pages in step with their packages"
     },
     {
-      "path": ".claude/skills/versioning",
+      "path": ".agents/skills/versioning",
       "when": "publishing",
       "why": "changesets"
     },
@@ -171,7 +176,11 @@
       "why": "loads the test explorer from leyman/vscode-tests"
     },
     {
-      "path": "leyman/main/.claude/skills/lifecycle",
+      "path": "leyman/main/.claude/skills",
+      "why": "links Claude Code's skills directory to the package's .agents/skills"
+    },
+    {
+      "path": "leyman/main/.agents/skills/lifecycle",
       "why": "how the lifecycle stages connect"
     },
     {
@@ -363,11 +372,11 @@
   ],
   "repoOnly": [
     {
-      "path": ".claude/skills/fork-manifest",
+      "path": ".agents/skills/fork-manifest",
       "why": "how this repo's classification works; a fork keeps the list of what it took"
     },
     {
-      "path": ".claude/skills/projects",
+      "path": ".agents/skills/projects",
       "why": "this repo's table of packages; a fork writes its own"
     },
     {
