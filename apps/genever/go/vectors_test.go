@@ -46,6 +46,39 @@ func readFixtures(t *testing.T) map[string]fixture {
 	return fixtures
 }
 
+type documentFixture struct {
+	Document json.RawMessage              `json:"document"`
+	Samples  map[string][]json.RawMessage `json:"samples"`
+}
+
+// readDocuments reads the vectors' OpenAPI documents, by version.
+func readDocuments(t *testing.T) map[string]documentFixture {
+	t.Helper()
+
+	entries, err := fs.ReadDir(vectors.OpenAPI, "out/openapi")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	documents := map[string]documentFixture{}
+
+	for _, entry := range entries {
+		data, err := vectors.OpenAPI.ReadFile(path.Join("out/openapi", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var value documentFixture
+		if err := json.Unmarshal(data, &value); err != nil {
+			t.Fatal(err)
+		}
+
+		documents[strings.TrimSuffix(entry.Name(), ".json")] = value
+	}
+
+	return documents
+}
+
 // The harness reads each sample into the generated root type and writes it back, printing a line per sample that
 // doesn't come back as the same JSON.
 const harness = `package main
@@ -92,28 +125,60 @@ func TestSamplesRoundTrip(t *testing.T) {
 
 	var imports, calls strings.Builder
 
-	for name, value := range fixtures {
-		pkg := "f" + strings.ToLower(name)
+	// check adds a call checking the samples of a type of a generated package
+	imported := map[string]bool{}
+	check := func(pkg, typeName, key string, typeSamples []json.RawMessage) {
+		samples[key] = typeSamples
 
-		source, err := genever.Generate(value.Schema, genever.Options{Name: "", Package: pkg, BaseURI: "", OpenAPI30: false, NoStrict: true})
+		if !imported[pkg] {
+			imported[pkg] = true
+
+			imports.WriteString("\t" + pkg + " \"harness/" + pkg + "\"\n")
+		}
+
+		calls.WriteString("\tcheck(\"" + key + "\", fixtures[\"" + key + "\"], func(data []byte) ([]byte, error) {\n" +
+			"\t\tvar value " + pkg + "." + typeName + "\n" +
+			"\t\tif err := json.Unmarshal(data, &value); err != nil {\n\t\t\treturn nil, err\n\t\t}\n" +
+			"\t\treturn json.Marshal(value)\n\t})\n")
+	}
+
+	// generate writes a schema's package
+	generate := func(name, pkg string, schema json.RawMessage) {
+		source, err := genever.Generate(schema, genever.Options{Name: "", Package: pkg, BaseURI: "", OpenAPI30: false, NoStrict: true})
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
 		}
 
 		writeFile(t, filepath.Join(dir, pkg, "schema.go"), source)
-
-		if len(value.Samples) == 0 {
-			continue
-		}
-
-		samples[name] = value.Samples
-
-		imports.WriteString("\t" + pkg + " \"harness/" + pkg + "\"\n")
-		calls.WriteString("\tcheck(\"" + name + "\", fixtures[\"" + name + "\"], func(data []byte) ([]byte, error) {\n" +
-			"\t\tvar value " + pkg + ".Schema\n" +
-			"\t\tif err := json.Unmarshal(data, &value); err != nil {\n\t\t\treturn nil, err\n\t\t}\n" +
-			"\t\treturn json.Marshal(value)\n\t})\n")
+		// Compiled even if no sample checks it
+		imports.WriteString("\t_ \"harness/" + pkg + "\"\n")
 	}
+
+	for name, value := range fixtures {
+		pkg := "f" + strings.ToLower(name)
+		generate(name, pkg, value.Schema)
+
+		// One that accepts nothing is still generated, to compile
+		if len(value.Samples) > 0 {
+			check(pkg, "Schema", name, value.Samples)
+		}
+	}
+
+	for version, document := range readDocuments(t) {
+		pkg := "openapi" + strings.ReplaceAll(version, ".", "")
+		generate(version, pkg, document.Document)
+
+		for typeName, typeSamples := range document.Samples {
+			check(pkg, typeName, version+" "+typeName, typeSamples)
+		}
+	}
+
+	runHarness(t, dir, samples, imports.String(), calls.String())
+}
+
+// runHarness writes the harness into dir, beside the generated packages, and runs it on the samples.
+func runHarness(t *testing.T, dir string, samples map[string][]json.RawMessage, imports, calls string) {
+	t.Helper()
 
 	samplesJSON, err := json.Marshal(samples)
 	if err != nil {
@@ -123,7 +188,7 @@ func TestSamplesRoundTrip(t *testing.T) {
 	writeFile(t, filepath.Join(dir, "go.mod"), []byte("module harness\n\ngo 1.24\n"))
 	writeFile(t, filepath.Join(dir, "samples.json"), samplesJSON)
 	writeFile(t, filepath.Join(dir, "main.go"), []byte(strings.NewReplacer(
-		"{{imports}}", imports.String(), "{{calls}}", calls.String()).Replace(harness)))
+		"{{imports}}", imports, "{{calls}}", calls).Replace(harness)))
 
 	command := exec.CommandContext(t.Context(), "go", "run", ".", "samples.json")
 	command.Dir = dir

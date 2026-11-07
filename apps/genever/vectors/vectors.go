@@ -10,6 +10,12 @@ import "embed"
 //go:embed out/fixtures/*.json
 var Fixtures embed.FS
 
+// OpenAPI holds out/openapi: an OpenAPI document of Juniper fixtures as components, for each version, named after it,
+// with samples of each component.
+//
+//go:embed out/openapi/*.json
+var OpenAPI embed.FS
+
 // Errors is out/errors.json: schemas genever rejects, by kind of error, with the pointer to the fault.
 //
 //go:embed out/errors.json

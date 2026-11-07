@@ -32,6 +32,8 @@ The `populate-files` target writes `out/fixtures/<name>.json` for each export of
 
 `schema` is the fixture's `toJSON()`, and `samples` are values it accepts, from [juniper-arbitrary](../../juniper-arbitrary/) with a fixed seed, so the files only change when the fixtures (or juniper-arbitrary) do. A fixture that accepts nothing (`never`) has none.
 
+It writes `out/openapi/<version>.json` for OpenAPI 3.0.3 and 3.1.0: a `document` with the fixtures of [`src/openapi-schemas.ts`](./src/openapi-schemas.ts) as its `components.schemas`, and `samples` of each component, by name.
+
 It also writes `out/errors.json` from [`src/error-schemas.ts`](./src/error-schemas.ts): each kind of error (`invalid`, `strict` or `unsupported`) maps a case's name to the schema, any options, and the pointer to the fault:
 
 ```json

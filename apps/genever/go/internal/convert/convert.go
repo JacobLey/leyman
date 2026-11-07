@@ -87,6 +87,59 @@ func Convert(root jsonv.Value, rootName string, options Options) ([]NamedType, e
 	return types, nil
 }
 
+// Document converts an OpenAPI document. Each of its `components.schemas`, and any other schema targeted by a
+// `$ref`, becomes a named type, sorted by name, by byte. Schemas only an operation uses aren't converted. The error is
+// a *gerr.Error.
+func Document(document jsonv.Value, options Options) ([]NamedType, error) {
+	conv := &converter{
+		root:           document,
+		names:          newTypeNames(),
+		named:          map[string]string{},
+		pending:        nil,
+		sameValueCache: map[string]map[string]bool{},
+		index:          documentIndex{}, //nolint:exhaustruct_v5 // Set once the components are found valid
+		options:        options,
+	}
+
+	components, err := conv.child(document, "#", "components")
+	if err != nil {
+		return nil, err
+	}
+
+	if components != nil {
+		if err := conv.registerSchemas(components, "#/components", "schemas"); err != nil {
+			return nil, err
+		}
+	}
+
+	// A document is not a schema, but each of its components is
+	conv.index, err = indexSchemas(document, documentSchemas(document), options.BaseURI, false)
+	if err != nil {
+		return nil, err
+	}
+
+	types, err := conv.convertPending()
+	if err != nil {
+		return nil, err
+	}
+
+	slices.SortFunc(types, func(a, b NamedType) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+
+	return types, nil
+}
+
+// child reads a key of an object that, if present, must be an object, and returns it, or nil if absent.
+func (c *converter) child(parent jsonv.Value, pointer, key string) (*jsonv.Object, error) {
+	value, isPresent := parent.(*jsonv.Object).Get(key) //nolint:forcetypeassert // Only called on objects
+	if !isPresent {
+		return nil, nil //nolint:nilnil // Absent
+	}
+
+	return readObject(value, childPointer(pointer, key))
+}
+
 // convertPending converts every named schema, including those found while converting.
 func (c *converter) convertPending() ([]NamedType, error) {
 	var types []NamedType
@@ -155,17 +208,17 @@ func (c *converter) registerContainer(key string) error {
 		return nil
 	}
 
-	value, isPresent := root.Get(key)
-	if !isPresent {
-		return nil
-	}
+	return c.registerSchemas(root, "#", key)
+}
 
-	pointer := childPointer("#", key)
-
-	container, err := readObject(value, pointer)
-	if err != nil {
+// registerSchemas names every schema of a container, a key of parent, if present.
+func (c *converter) registerSchemas(parent *jsonv.Object, parentPointer, key string) error {
+	container, err := c.child(parent, parentPointer, key)
+	if err != nil || container == nil {
 		return err
 	}
+
+	pointer := childPointer(parentPointer, key)
 
 	for _, name := range container.Keys() {
 		schema, _ := container.Get(name)

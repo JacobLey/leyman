@@ -335,6 +335,12 @@ func (x *indexer) resource(
 // indexDocument indexes a schema document, read from baseURI, as draft-04 unless it declares another `$schema` when
 // isDraft04.
 func indexDocument(root jsonv.Value, baseURI string, isDraft04 bool) (documentIndex, error) {
+	return indexSchemas(root, []target{{schema: root, pointer: "#"}}, baseURI, isDraft04)
+}
+
+// indexSchemas indexes the schemas of a document read from baseURI: the document itself, or those of an OpenAPI
+// document, which is not a schema.
+func indexSchemas(root jsonv.Value, schemas []target, baseURI string, isDraft04 bool) (documentIndex, error) {
 	documentURI := documentURIOf(root, baseURI)
 
 	walker := &indexer{index: documentIndex{
@@ -346,8 +352,10 @@ func indexDocument(root jsonv.Value, baseURI string, isDraft04 bool) (documentIn
 		references: nil,
 	}}
 
-	if err := walker.visit(root, "#", documentURI, isDraft04); err != nil {
-		return documentIndex{}, err //nolint:exhaustruct // Unused with an error
+	for _, schema := range schemas {
+		if err := walker.visit(schema.schema, schema.pointer, documentURI, isDraft04); err != nil {
+			return documentIndex{}, err //nolint:exhaustruct // Unused with an error
+		}
 	}
 
 	return walker.index, nil

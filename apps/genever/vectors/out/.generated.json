@@ -138,6 +138,12 @@
     },
     "fixtures/unevaluated.json": {
       "hash": "v1:d111da9625ee3a8f4a025bd691c009b6"
+    },
+    "openapi/3.0.3.json": {
+      "hash": "v1:95a9d6146f14096c182fb929f9e15ef2"
+    },
+    "openapi/3.1.0.json": {
+      "hash": "v1:42e05f7a806aa550619e08151ece2ada"
     }
   }
 }

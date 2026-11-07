@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -337,7 +338,10 @@ func hosts(t *testing.T, handler http.HandlerFunc) *http.Client {
 	plain := httptest.NewServer(handler)
 	t.Cleanup(plain.Close)
 
-	secure := httptest.NewTLSServer(handler)
+	secure := httptest.NewUnstartedServer(handler)
+	// A client that stops reading, as one following a redirect does, isn't the server's error
+	secure.Config.ErrorLog = log.New(io.Discard, "", 0)
+	secure.StartTLS()
 	t.Cleanup(secure.Close)
 
 	return &http.Client{ //nolint:exhaustruct_v5 // Defaults, but for dialing and redirects

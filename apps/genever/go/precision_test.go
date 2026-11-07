@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"maps"
 	"strings"
 	"testing"
 
@@ -296,4 +297,36 @@ var precision = map[string]map[string]string{
 	"unevaluated": {
 		"Schema": "{A json.RawMessage}",
 	},
+}
+
+// Each OpenAPI document has the same components, in its version's dialect, so the same types.
+func TestDocumentPrecision(t *testing.T) {
+	t.Parallel()
+
+	expected := map[string]string{
+		"Address":        "{City string; Zip Optional[*string]; AdditionalProperties map[string]json.RawMessage}",
+		"TreeNode":       "{Value float64; Children []TreeNode; AdditionalProperties map[string]json.RawMessage}",
+		"User":           "{ID string; Home Address; Work Optional[*Address]; Role *UserRole; Tags *[]string}",
+		"UserRole":       "string",
+		"UserRoleAdmin":  `const UserRole "admin"`,
+		"UserRoleMember": `const UserRole "member"`,
+	}
+
+	documents := readDocuments(t)
+	if len(documents) != 2 {
+		t.Fatalf("got %d documents", len(documents))
+	}
+
+	for version, document := range documents {
+		source, err := genever.Generate(document.Document, genever.Options{
+			Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false,
+		})
+		if err != nil {
+			t.Fatalf("%s: %v", version, err)
+		}
+
+		if got := declarations(checkSource(t, source)); !maps.Equal(got, expected) {
+			t.Errorf("%s: got %v", version, got)
+		}
+	}
 }

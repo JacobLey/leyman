@@ -6,6 +6,9 @@
 // tell an absent value from null. The output has no dependency on genever: the few helper types it uses are written
 // into the file.
 //
+// An OpenAPI 3.0 or 3.1 document (one with an `openapi` version) is read too: each of its `components.schemas` becomes
+// a type named after its key, and its schemas are in the document's dialect. Its operations have no types.
+//
 // The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with
 // a validator, such as github.com/santhosh-tekuri/jsonschema.
 package genever
@@ -19,14 +22,15 @@ import (
 
 // Options of Generate. The zero value generates type Schema in package schema, in strict mode.
 type Options struct {
-	// Name of the root schema's type. Defaults to Schema.
+	// Name of the root schema's type. Defaults to Schema. An OpenAPI document has no root schema.
 	Name string
 	// Package of the generated file. Defaults to schema.
 	Package string
 	// BaseURI is where the schema was read from, which relative `$id`s and `$ref`s resolve against. Defaults to a
 	// placeholder, so only references within the document resolve.
 	BaseURI string
-	// OpenAPI30 reads the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`.
+	// OpenAPI30 reads the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document
+	// is read in the version it states.
 	OpenAPI30 bool
 	// NoStrict accepts schemas that are valid, but most likely mistakes, such as an unknown keyword. The types then
 	// follow what a validator accepts, and are never narrower.
@@ -79,16 +83,29 @@ func generate(root jsonv.Value, options Options) ([]byte, error) {
 		baseURI = convert.DefaultBaseURI
 	}
 
+	documentDialect, isDocument, err := convert.DocumentDialect(root)
+	if err != nil {
+		return nil, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
+	}
+
 	dialect := convert.Draft202012
 	if options.OpenAPI30 {
 		dialect = convert.OpenAPI30
 	}
 
-	types, err := convert.Convert(root, name, convert.Options{
-		BaseURI: baseURI,
-		Dialect: dialect,
-		Strict:  !options.NoStrict,
-	})
+	if isDocument {
+		dialect = documentDialect
+	}
+
+	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Strict: !options.NoStrict}
+
+	var types []convert.NamedType
+	if isDocument {
+		types, err = convert.Document(root, convertOptions)
+	} else {
+		types, err = convert.Convert(root, name, convertOptions)
+	}
+
 	if err != nil {
 		return nil, err //nolint:wrapcheck // An Error, whose kind and pointer callers read
 	}

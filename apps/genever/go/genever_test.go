@@ -76,4 +76,9 @@ func TestGenerateErrors(t *testing.T) {
 	if !errors.Is(err, genever.ErrStrictMode) || !errors.As(err, &schemaErr) || schemaErr.Pointer == "" {
 		t.Errorf("got %v", err)
 	}
+
+	_, err = genever.Generate([]byte(`{"openapi": "2.0"}`), genever.Options{}) //nolint:exhaustruct_v5 // Defaults
+	if !errors.Is(err, genever.ErrUnsupported) {
+		t.Errorf("got %v", err)
+	}
 }
