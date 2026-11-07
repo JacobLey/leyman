@@ -3,6 +3,7 @@ package convert
 import (
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -68,6 +69,18 @@ type documentIndex struct {
 	anchors map[string]target
 	// resources are the schemas named by a URI: the document, and each `$id`.
 	resources map[string]target
+	// references are the `$ref`s of the document's schemas, resolved, each once, in the order they appear.
+	references []documentReference
+}
+
+// A documentReference is a `$ref` of a document.
+type documentReference struct {
+	// uri is the absolute URI it refers to, without the fragment.
+	uri string
+	// fragment is the fragment of the URI, decoded, without `#`.
+	fragment string
+	// pointer is the JSON Pointer to the first `$ref` to it.
+	pointer string
 }
 
 // resolveURI resolves a reference against a base URI, as the WHATWG URL parser does, and splits off its decoded
@@ -176,6 +189,7 @@ func (x *indexer) visit(value jsonv.Value, pointer, parentBaseURI string, isPare
 	}
 
 	x.index.baseURIs[pointer] = baseURI
+	x.addReference(schema, pointer, baseURI)
 
 	for _, child := range subschemas(schema, pointer) {
 		if err := x.visit(child.schema, child.pointer, baseURI, isDraft04); err != nil {
@@ -184,6 +198,27 @@ func (x *indexer) visit(value jsonv.Value, pointer, parentBaseURI string, isPare
 	}
 
 	return nil
+}
+
+// addReference records a schema's `$ref`, unless an earlier `$ref` refers to the same URI. An invalid `$ref` is
+// reported where it's used.
+func (x *indexer) addReference(schema *jsonv.Object, pointer, baseURI string) {
+	ref, _ := schema.Get("$ref")
+
+	refString, isString := ref.(string)
+	if !isString {
+		return
+	}
+
+	uri, fragment, isValid := resolveURI(refString, baseURI)
+	if !isValid || slices.ContainsFunc(x.index.references, func(existing documentReference) bool {
+		return existing.uri == uri && existing.fragment == fragment
+	}) {
+		return
+	}
+
+	x.index.references = append(x.index.references,
+		documentReference{uri: uri, fragment: fragment, pointer: childPointer(pointer, "$ref")})
 }
 
 // subschemas lists the schemas directly inside a schema, under keywords whose values are schemas.
@@ -297,8 +332,9 @@ func (x *indexer) resource(
 	return uri, nil
 }
 
-// indexDocument indexes a schema document, read from baseURI.
-func indexDocument(root jsonv.Value, baseURI string) (documentIndex, error) {
+// indexDocument indexes a schema document, read from baseURI, as draft-04 unless it declares another `$schema` when
+// isDraft04.
+func indexDocument(root jsonv.Value, baseURI string, isDraft04 bool) (documentIndex, error) {
 	documentURI := documentURIOf(root, baseURI)
 
 	walker := &indexer{index: documentIndex{
@@ -306,9 +342,11 @@ func indexDocument(root jsonv.Value, baseURI string) (documentIndex, error) {
 		draft04:   map[string]bool{},
 		anchors:   map[string]target{},
 		resources: map[string]target{documentURI: {schema: root, pointer: "#"}},
+		// Found as the document is visited
+		references: nil,
 	}}
 
-	if err := walker.visit(root, "#", documentURI, false); err != nil {
+	if err := walker.visit(root, "#", documentURI, isDraft04); err != nil {
 		return documentIndex{}, err //nolint:exhaustruct // Unused with an error
 	}
 

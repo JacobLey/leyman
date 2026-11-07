@@ -53,7 +53,7 @@ type converter struct {
 // the document, and any other schema targeted by a `$ref`, becomes a named type, and everything else is inlined. It
 // returns the root (named rootName) first, then the rest sorted by name, by byte. The error is a *gerr.Error.
 func Convert(root jsonv.Value, rootName string, options Options) ([]NamedType, error) {
-	index, err := indexDocument(root, options.BaseURI)
+	index, err := indexDocument(root, options.BaseURI, false)
 	if err != nil {
 		return nil, err
 	}
