@@ -77,7 +77,7 @@
       "path": "./tools/unknown-error"
     },
     {
-      "path": "./tools/constant-consistent-hash/constant-consistent-hash"
+      "path": "./tools/constant-consistent-hash/ts"
     },
     {
       "path": "./tools/constant-consistent-hash/weighted-rendezvous-hash"
@@ -134,7 +134,7 @@
       "path": "./apps/trusted-tsc"
     },
     {
-      "path": "./tools/constant-consistent-hash/wasm-impl"
+      "path": "./tools/constant-consistent-hash/wasm"
     },
     {
       "path": "./demos/blake3-wasm/typescript"

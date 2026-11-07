@@ -14,7 +14,7 @@
       "path": "../../test-chain/mocha-chain"
     },
     {
-      "path": "../constant-consistent-hash"
+      "path": "../ts"
     },
     {
       "path": "../../../leyman/expect"

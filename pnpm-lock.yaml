@@ -2171,7 +2171,7 @@ importers:
         version: file:tools/constant-consistent-hash/test-vectors
       '@leyman/constant-consistent-hash-wasm':
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/wasm-impl
+        version: file:tools/constant-consistent-hash/wasm
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2198,7 +2198,7 @@ importers:
         version: 12.0.0
       constant-consistent-hash:
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/constant-consistent-hash
+        version: file:tools/constant-consistent-hash/ts
       eslint:
         specifier: 'catalog:'
         version: 10.14.0(supports-color@8.1.1)
@@ -2598,7 +2598,7 @@ importers:
         version: 12.0.0
       constant-consistent-hash:
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/constant-consistent-hash
+        version: file:tools/constant-consistent-hash/ts
       default-import:
         specifier: workspace:^
         version: file:tools/default-import
@@ -3250,7 +3250,19 @@ importers:
         specifier: 'catalog:'
         version: 5.0.5(@types/node@26.6.6)(happy-dom@21.0.4)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
 
-  tools/constant-consistent-hash/constant-consistent-hash:
+  tools/constant-consistent-hash/rust:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+
+  tools/constant-consistent-hash/test-vectors:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+
+  tools/constant-consistent-hash/ts:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -3263,13 +3275,13 @@ importers:
         version: file:tools/constant-consistent-hash/test-vectors
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.20(@swc/helpers@0.5.23)
@@ -3287,7 +3299,7 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.14.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@10.2.2)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
@@ -3301,23 +3313,11 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  tools/constant-consistent-hash/rust-impl:
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.6.4
-
-  tools/constant-consistent-hash/test-vectors:
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.6.4
-
-  tools/constant-consistent-hash/wasm-impl:
+  tools/constant-consistent-hash/wasm:
     dependencies:
       '@leyman/constant-consistent-hash-rust':
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/rust-impl
+        version: file:tools/constant-consistent-hash/rust
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -3330,13 +3330,13 @@ importers:
         version: file:tools/constant-consistent-hash/test-vectors
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.20(@swc/helpers@0.5.23)
@@ -3354,10 +3354,10 @@ importers:
         version: 12.0.0
       constant-consistent-hash:
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/constant-consistent-hash
+        version: file:tools/constant-consistent-hash/ts
       eslint:
         specifier: 'catalog:'
-        version: 10.14.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@10.2.2)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -3372,7 +3372,7 @@ importers:
     dependencies:
       constant-consistent-hash:
         specifier: workspace:^
-        version: file:tools/constant-consistent-hash/constant-consistent-hash
+        version: file:tools/constant-consistent-hash/ts
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -6024,14 +6024,14 @@ packages:
   '@leyman/configs@file:leyman/configs':
     resolution: {directory: leyman/configs, type: directory}
 
-  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl':
-    resolution: {directory: tools/constant-consistent-hash/rust-impl, type: directory}
+  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust':
+    resolution: {directory: tools/constant-consistent-hash/rust, type: directory}
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors':
     resolution: {directory: tools/constant-consistent-hash/test-vectors, type: directory}
 
-  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm-impl':
-    resolution: {directory: tools/constant-consistent-hash/wasm-impl, type: directory}
+  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm':
+    resolution: {directory: tools/constant-consistent-hash/wasm, type: directory}
     engines: {node: '>=26'}
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp':
@@ -8096,8 +8096,8 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  constant-consistent-hash@file:tools/constant-consistent-hash/constant-consistent-hash:
-    resolution: {directory: tools/constant-consistent-hash/constant-consistent-hash, type: directory}
+  constant-consistent-hash@file:tools/constant-consistent-hash/ts:
+    resolution: {directory: tools/constant-consistent-hash/ts, type: directory}
     engines: {node: '>=22'}
 
   content-disposition@1.0.1:
@@ -13693,13 +13693,13 @@ snapshots:
 
   '@leyman/configs@file:leyman/configs': {}
 
-  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl': {}
+  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust': {}
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
 
-  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm-impl':
+  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm':
     dependencies:
-      '@leyman/constant-consistent-hash-rust': file:tools/constant-consistent-hash/rust-impl
+      '@leyman/constant-consistent-hash-rust': file:tools/constant-consistent-hash/rust
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp(eslint@10.14.0(supports-color@8.1.1))':
     dependencies:
@@ -16018,7 +16018,7 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  constant-consistent-hash@file:tools/constant-consistent-hash/constant-consistent-hash: {}
+  constant-consistent-hash@file:tools/constant-consistent-hash/ts: {}
 
   content-disposition@1.0.1: {}
 
@@ -20142,7 +20142,7 @@ snapshots:
 
   weighted-rendezvous-hash@file:tools/constant-consistent-hash/weighted-rendezvous-hash:
     dependencies:
-      constant-consistent-hash: file:tools/constant-consistent-hash/constant-consistent-hash
+      constant-consistent-hash: file:tools/constant-consistent-hash/ts
 
   whatwg-mimetype@3.0.0: {}
 

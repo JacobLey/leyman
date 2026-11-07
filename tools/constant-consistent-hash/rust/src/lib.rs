@@ -1,7 +1,7 @@
 //! Maps keys to buckets in constant time, with no loops over buckets.
 //!
 //! Implements the specification of the constant-consistent-hash npm package, and returns the same buckets:
-//! <https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/SPEC.md>
+//! <https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md>
 
 use std::error::Error;
 use std::fmt;

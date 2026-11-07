@@ -2,7 +2,7 @@
 
 Back to the [README](https://www.npmjs.com/package/constant-consistent-hash).
 
-This describes `consistentHash(key, range, { seed })` precisely enough for any language to return the same buckets as the JavaScript implementation. For why the algorithm works, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md).
+This describes `consistentHash(key, range, { seed })` precisely enough for any language to return the same buckets as the JavaScript implementation. For why the algorithm works, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md).
 
 ## Conventions
 
@@ -119,6 +119,6 @@ In the first f64 step, the left side is rounded twice, after each multiplication
 
 [`test-vectors.json`](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/test-vectors/data/test-vectors.json) lists `hashKey` and `consistentHash(key, range, { seed })` for keys covering every UTF-8 encoded length, seeds, and ranges up to 2^48. `hash` is `[a, b]`, and `buckets[i]` is the bucket for `ranges[i]`.
 
-This package, the [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl) and the [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust-impl) are all tested against them.
+This package, the [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go) and the [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust) are all tested against them.
 
 A complete implementation should also pass the package's property tests: for many keys, growing `range` by one never moves a key anywhere but the new bucket `range`.

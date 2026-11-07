@@ -1,8 +1,8 @@
 # e2e-constant-consistent-hash-wasm-browser
 
-Checks that [`constant-consistent-hash`](../../tools/constant-consistent-hash/constant-consistent-hash)'s [Rust implementation](../../tools/constant-consistent-hash/rust-impl), compiled to WASM, bundles for a frontend and runs in real browsers.
+Checks that [`constant-consistent-hash`](../../tools/constant-consistent-hash/ts)'s [Rust implementation](../../tools/constant-consistent-hash/rust), compiled to WASM, bundles for a frontend and runs in real browsers.
 
-[Vite](https://vite.dev) builds an application that imports [`@leyman/constant-consistent-hash-wasm`](../../tools/constant-consistent-hash/wasm-impl), resolving the `browser` import conditions. The build fails if anything in it imports a Node.js module, and has to emit the `.wasm` as a file of its own, as any application build would. [Playwright](https://playwright.dev) then hosts that output and opens it in Chromium, Firefox and WebKit.
+[Vite](https://vite.dev) builds an application that imports [`@leyman/constant-consistent-hash-wasm`](../../tools/constant-consistent-hash/wasm), resolving the `browser` import conditions. The build fails if anything in it imports a Node.js module, and has to emit the `.wasm` as a file of its own, as any application build would. [Playwright](https://playwright.dev) then hosts that output and opens it in Chromium, Firefox and WebKit.
 
 The tests check, in every browser, that:
 

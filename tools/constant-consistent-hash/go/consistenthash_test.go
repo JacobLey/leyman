@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	consistenthash "github.com/JacobLey/leyman/tools/constant-consistent-hash/go-impl"
+	consistenthash "github.com/JacobLey/leyman/tools/constant-consistent-hash/go"
 	testvectors "github.com/JacobLey/leyman/tools/constant-consistent-hash/test-vectors"
 )
 

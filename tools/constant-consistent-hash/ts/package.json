@@ -11,9 +11,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JacobLey/leyman.git",
-    "directory": "tools/constant-consistent-hash/constant-consistent-hash"
+    "directory": "tools/constant-consistent-hash/ts"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/constant-consistent-hash#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/ts#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

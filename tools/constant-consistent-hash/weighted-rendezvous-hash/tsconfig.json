@@ -11,7 +11,7 @@
   ],
   "references": [
     {
-      "path": "../constant-consistent-hash"
+      "path": "../ts"
     },
     {
       "path": "../../test-chain/mocha-chain"

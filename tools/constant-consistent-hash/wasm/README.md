@@ -1,6 +1,6 @@
 # constant-consistent-hash-wasm
 
-[constant-consistent-hash](../constant-consistent-hash/) from TypeScript, through its [Rust implementation](../rust-impl/) compiled to WASM, on Node.js and in browsers.
+[constant-consistent-hash](../ts/) from TypeScript, through its [Rust implementation](../rust/) compiled to WASM, on Node.js and in browsers.
 
 ```ts
 import { consistentHash, hashKey } from '@leyman/constant-consistent-hash-wasm';

@@ -52,7 +52,7 @@ A worked example under `demos/` shows how to use open-source projects and servic
 
 ## Go projects
 
-Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. Go is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the gonx plugin makes a project of every `go.mod` (see [Go projects](../nx-tasks-reference/SKILL.md#go-projects)). Compared to a regular package:
+Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go`. Go is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the gonx plugin makes a project of every `go.mod` (see [Go projects](../nx-tasks-reference/SKILL.md#go-projects)). Compared to a regular package:
 
 - No `package.json`: pnpm doesn't need to know about it. Add a `project.json` named `@leyman/<name>` for the targets gonx doesn't infer.
 - `go.mod`: module `github.com/JacobLey/leyman/<path>`, with a `go` directive no newer than the pinned Go version (Dagger sets `GOTOOLCHAIN=local`, so it never downloads a newer toolchain).
@@ -63,7 +63,7 @@ Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. 
 
 ## Rust projects
 
-Copy `tools/constant-consistent-hash/rust-impl`, or `test-vectors` for a crate with only data. Rust is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the repo's plugin makes targets of every `Cargo.toml` (see [Rust projects](../nx-tasks-reference/SKILL.md#rust-projects)). Compared to a regular package:
+Copy `tools/constant-consistent-hash/rust`, or `test-vectors` for a crate with only data. Rust is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the repo's plugin makes targets of every `Cargo.toml` (see [Rust projects](../nx-tasks-reference/SKILL.md#rust-projects)). Compared to a regular package:
 
 - `Cargo.toml`: add the crate to `members` in the root `Cargo.toml`, take `edition`, `rust-version`, `license` and `publish` from the workspace (`edition.workspace = true`), and set `[lints] workspace = true`. There is one `Cargo.lock` and one `target/`, both at the root. After changing dependencies run `cargo check --workspace` and commit `Cargo.lock`.
 - Depend on another crate of the workspace with `name = { path = "../name" }`. The plugin infers the Nx dependency from that. To share data with TypeScript, give the other project a `Cargo.toml` too, and `include_str!` the data (see `tools/constant-consistent-hash/test-vectors`).
@@ -77,7 +77,7 @@ Copy `tools/constant-consistent-hash/rust-impl`, or `test-vectors` for a crate w
 
 A crate that depends on `wasm-bindgen` also gets `rust-wasm`, which builds `dist/`. Keep it on `wasm32` only, under `[target.'cfg(target_arch = "wasm32")'.dependencies]`, with the bindings in a logic-free `src/wasm.rs`: `cargo llvm-cov` runs natively and never sees that file, so tests through TypeScript are what cover it. Pin it exactly, to the `wasm-bindgen-cli` version in the toolchain.
 
-Give that crate a minimal `package.json` exporting `dist/` (with `sync-injected` in its targets, and `dist` in `files`), and wrap it in a regular TypeScript package with a `workspace:^` dependency, which also gives Nx the build order. Copy `tools/constant-consistent-hash/wasm-impl`: its `node` and `browser` entry points each load the `.wasm` their own way. To run it on a frontend, copy `e2e/constant-consistent-hash-wasm-browser`. For a dependency on a crate, a worker and tests in browsers, see `demos/blake3-wasm`.
+Give that crate a minimal `package.json` exporting `dist/` (with `sync-injected` in its targets, and `dist` in `files`), and wrap it in a regular TypeScript package with a `workspace:^` dependency, which also gives Nx the build order. Copy `tools/constant-consistent-hash/wasm`: its `node` and `browser` entry points each load the `.wasm` their own way. To run it on a frontend, copy `e2e/constant-consistent-hash-wasm-browser`. For a dependency on a crate, a worker and tests in browsers, see `demos/blake3-wasm`.
 
 ### Calling Rust from Go
 

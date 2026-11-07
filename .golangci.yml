@@ -75,7 +75,7 @@ linters:
         linters:
           - goconst
       # Its numbers are the hash's specified constants and bit widths, which a name wouldn't explain further
-      - path: tools/constant-consistent-hash/go-impl/
+      - path: tools/constant-consistent-hash/go/
         linters:
           - mnd
 

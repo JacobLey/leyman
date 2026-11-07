@@ -3,7 +3,7 @@ resolver = "3"
 members = [
     "demos/blake3-go/rust",
     "demos/blake3-wasm/rust",
-    "tools/constant-consistent-hash/rust-impl",
+    "tools/constant-consistent-hash/rust",
     "tools/constant-consistent-hash/test-vectors",
 ]
 

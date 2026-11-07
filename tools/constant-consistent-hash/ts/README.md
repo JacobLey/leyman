@@ -5,7 +5,7 @@
 Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.
 
 [![npm package](https://badge.fury.io/js/constant-consistent-hash.svg)](https://www.npmjs.com/package/constant-consistent-hash)
-[![License](https://img.shields.io/npm/l/constant-consistent-hash.svg)](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/LICENSE)
+[![License](https://img.shields.io/npm/l/constant-consistent-hash.svg)](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/LICENSE)
 
 </div>
 
@@ -15,7 +15,7 @@ Consistent hashing in constant time with no loops: stateless, evenly balanced, a
 - **Stateless**: no ring or table to build, store or keep in sync. A key and a bucket count are all it needs.
 - **Portable**: specified over UTF-8 bytes and 32-bit integer operations, with test vectors, so other languages can produce the same buckets.
 
-Not suited to removing arbitrary buckets from the middle, or to keys chosen by an attacker. For the design and the full comparison, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md).
+Not suited to removing arbitrary buckets from the middle, or to keys chosen by an attacker. For the design and the full comparison, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md).
 
 ## Contents
 
@@ -109,7 +109,7 @@ Like `consistentHash`, it is fast but not cryptographic.
 
 ## Other languages
 
-[SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/SPEC.md) describes the algorithm step by step, in terms any language can implement exactly, along with test vectors. A [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl), written from the specification, is tested against the same vectors, as is a [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust-impl). Neither is published.
+[SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md) describes the algorithm step by step, in terms any language can implement exactly, along with test vectors. A [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go), written from the specification, is tested against the same vectors, as is a [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust). Neither is published.
 
 ## Compared to alternatives
 
@@ -120,4 +120,4 @@ Like `consistentHash`, it is fast but not cryptographic.
 | Memory                          | none                     | none                | ring of virtual nodes     | list of nodes    | none      | none                    |
 | Remove any bucket               | ❌                       | ❌                  | ✅                        | ✅               | ❌        | ❌                      |
 
-See the [WHY file](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md#compared-to-alternatives) for the full comparison.
+See the [WHY file](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md#compared-to-alternatives) for the full comparison.

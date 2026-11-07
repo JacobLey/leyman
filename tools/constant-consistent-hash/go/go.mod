@@ -1,4 +1,4 @@
-module github.com/JacobLey/leyman/tools/constant-consistent-hash/go-impl
+module github.com/JacobLey/leyman/tools/constant-consistent-hash/go
 
 go 1.26
 
