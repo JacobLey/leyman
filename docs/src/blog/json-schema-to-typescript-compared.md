@@ -11,9 +11,9 @@ packages: [genever, juniper]
 
 A JSON Schema can say more than most generated TypeScript types do. A tuple of two numbers becomes `number[]`, an ID that must start with `ord_` becomes `string`, and an object that only allows `x-` headers takes any key. The type compiles, and bad data goes straight through it.
 
-<!-- Author to fill: one concrete sentence on what prompted genever (the moment a too-wide generated type let bad data through). -->
+My existing package, [Juniper](/packages/juniper/), avoids this by building the schema in TypeScript at runtime, so its types come straight from the code. That leaves a gap: a schema from somewhere else, like another service's OpenAPI spec or a shared JSON file, can't be _safely_ pulled into TypeScript that way.
 
-I wrote [genever](/packages/genever/) so those would be compile errors. To check that it really is narrower than the alternatives, and stays that way, a nightly job gives it and five other generators the same schema and type-checks what each one produces.
+I wrote [genever](/packages/genever/) for those schemas. It reads the file and writes types narrow enough that the bad data above is a compile error. To check that it really is narrower than the alternatives, and stays that way, a nightly job gives it and five other generators the same schema and type-checks what each one produces.
 
 ## The same schema, two outputs
 
