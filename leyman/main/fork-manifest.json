@@ -372,6 +372,10 @@
   ],
   "repoOnly": [
     {
+      "path": ".agents/skills/framework-audit",
+      "why": "a link to the workspace package's source; a fork links its installed copy with leyman-framework skills"
+    },
+    {
       "path": ".agents/skills/fork-manifest",
       "why": "how this repo's classification works; a fork keeps the list of what it took"
     },

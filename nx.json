@@ -346,6 +346,7 @@
       "cache": true,
       "inputs": [
         "{workspaceRoot}/*",
+        "{workspaceRoot}/.agents/**/*",
         "{workspaceRoot}/.claude/**/*",
         "{workspaceRoot}/.devcontainer/**/*",
         "{workspaceRoot}/.github/**/*",
@@ -357,6 +358,20 @@
         "{workspaceRoot}/tools/local-ingress/**/*"
       ],
       "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
+    "check-skills": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "[ ! -e .agents ] || node {projectRoot}/bin.mjs skills --check"
+        ],
+        "color": true,
+        "cwd": "{workspaceRoot}"
+      },
+      "cache": false,
       "dependsOn": [
         "check:_"
       ]
@@ -927,6 +942,7 @@
         "check-package",
         "check-fork-manifest",
         "check-parity",
+        "check-skills",
         "check-workspace-dependencies",
         "drizzle-kit-check",
         "go-lint",

@@ -157,6 +157,14 @@ Fails if the versions the devcontainer and CI pin separately differ (`leyman/mai
 
 ---
 
+### `check-skills`
+
+Fails if a skill that a framework package ships (`skills/<name>/SKILL.md` in `@leyman/framework`, `nx-lifecycle`...) isn't linked into `.agents/skills/<name>`, a link there names a skill no package ships, or `.claude/skills` isn't a link to `.agents/skills`: `leyman-framework skills --check`, from the built `@leyman/framework`. Runs in `check:lint`. Fix it with `node leyman/framework/bin.mjs skills`. It skips inside Dagger, whose source leaves out `.agents`, so only local runs check it.
+
+**Add when:** Never: only `@leyman/framework` has it.
+
+---
+
 ### `check-workspace-dependencies`
 
 Fails if a `package.json` or catalog takes a package in this workspace from npm rather than `workspace:` (`leyman/main/scripts/check-workspace-dependencies.mjs`), including through an `npm:` alias. pnpm's `disallowWorkspaceCycles` fails on a cycle, and a published copy is the only way around it. Runs in `check:lint`.

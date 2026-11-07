@@ -191,6 +191,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
+| `.agents/skills/framework-audit` | a link to the workspace package's source; a fork links its installed copy with leyman-framework skills |
 | `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |

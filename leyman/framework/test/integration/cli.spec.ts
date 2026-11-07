@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { afterEach, suite, test } from 'mocha-chain';
-import { writeRepo } from '../lib/repo.js';
+import { link, writeRepo } from '../lib/repo.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -71,5 +71,57 @@ suite('cli', () => {
             execFileAsync('./bin.mjs', ['audit', '--cwd', root, '--offline'])
         ).to.be.rejectedWith(Error);
         expect(thrown).to.have.property('stderr').that.includes('No package.json in');
+    });
+
+    suite('skills', () => {
+        const repo = async (files: Record<string, unknown>): Promise<string> => {
+            const written = await writeRepo(
+                {
+                    'package.json': { name: 'workspace', private: true },
+                    'node_modules/@leyman/configs/skills/principles/SKILL.md': '# Principles\n',
+                    'node_modules/extra/skills/extra/SKILL.md': '# Extra\n',
+                    ...files,
+                },
+                {}
+            );
+            removes.push(written.remove);
+            return written.root;
+        };
+
+        test('Checks, links, then finds nothing to change', async () => {
+            const root = await repo({});
+            const args = ['skills', '--cwd', root, '--package', 'extra'];
+
+            const thrown: unknown = await expect(
+                execFileAsync('./bin.mjs', [...args, '--check'])
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('code', 1);
+            expect(thrown)
+                .to.have.property('stdout')
+                .that.includes(
+                    'Would link .agents/skills/extra -> ../../node_modules/extra/skills/extra\n'
+                );
+
+            const linked = await execFileAsync('./bin.mjs', args);
+            expect(linked.stdout).to.include('Linked .claude/skills -> ../.agents/skills\n');
+
+            const again = await execFileAsync('./bin.mjs', args);
+            expect(again.stdout).to.equal('2 package skills linked, nothing to change\n');
+        });
+
+        test('Fails on what it cannot link', async () => {
+            const root = await repo({
+                '.claude/skills': link('elsewhere'),
+                '.agents/skills/principles/SKILL.md': '# Own\n',
+            });
+
+            const thrown: unknown = await expect(
+                execFileAsync('./bin.mjs', ['skills', '--cwd', root])
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('code', 1);
+            expect(thrown)
+                .to.have.property('stderr')
+                .that.includes(".claude/skills isn't a link to ../.agents/skills");
+        });
     });
 });

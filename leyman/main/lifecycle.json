@@ -66,6 +66,7 @@
     "check-package": "check:lint",
     "check-fork-manifest": "check:lint",
     "check-parity": "check:lint",
+    "check-skills": "check:lint",
     "check-workspace-dependencies": "check:lint",
     "drizzle-kit-check": "check:lint",
     "go-lint": "check:lint",
