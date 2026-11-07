@@ -55,8 +55,8 @@ const majorMinor = source => mapped(source, version => version.split('.', 2).joi
 const major = source => mapped(source, version => version.split('.', 1)[0]);
 
 const checks = () => ({
-    'Node version': [dockerArg('NODE_VERSION'), imageVersion(daggerConst('nodeImage'))],
     'Node image': [
+        dockerArg('NODE_IMAGE'),
         daggerConst('nodeImage'),
         composeImage('nx-cache'),
         composeImage('dagger-nx-cache'),
@@ -98,7 +98,7 @@ const checks = () => ({
     ],
     Debian: [
         mapped(dockerArg('BASE_IMAGE'), image =>
-            debianCodenames.get(/debian(?<release>\d+)$/v.exec(image)?.groups?.release)
+            debianCodenames.get(/debian(?<release>\d+)$/v.exec(imageTag(image))?.groups?.release)
         ),
         mapped(daggerConst('debianImage'), image => imageTag(image).split('-', 1)[0]),
         imageVariant(daggerConst('nodeImage')),
