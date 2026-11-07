@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/genever-go",
+  "metadata": {
+    "description": "Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of genever."
+  },
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

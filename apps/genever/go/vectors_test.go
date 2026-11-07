@@ -1,0 +1,147 @@
+package genever_test
+
+import (
+	"encoding/json"
+	"io/fs"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	genever "github.com/JacobLey/leyman/apps/genever/go"
+	"github.com/JacobLey/leyman/apps/genever/vectors"
+)
+
+type fixture struct {
+	Schema  json.RawMessage   `json:"schema"`
+	Samples []json.RawMessage `json:"samples"`
+}
+
+func readFixtures(t *testing.T) map[string]fixture {
+	t.Helper()
+
+	entries, err := fs.ReadDir(vectors.Fixtures, "out/fixtures")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fixtures := map[string]fixture{}
+
+	for _, entry := range entries {
+		data, err := vectors.Fixtures.ReadFile(path.Join("out/fixtures", entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var value fixture
+		if err := json.Unmarshal(data, &value); err != nil {
+			t.Fatal(err)
+		}
+
+		fixtures[strings.TrimSuffix(entry.Name(), ".json")] = value
+	}
+
+	return fixtures
+}
+
+// The harness reads each sample into the generated root type and writes it back, printing a line per sample that
+// doesn't come back as the same JSON.
+const harness = `package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+{{imports}})
+
+func check(name string, samples []json.RawMessage, roundTrip func([]byte) ([]byte, error)) {
+	for _, sample := range samples {
+		out, err := roundTrip(sample)
+		if err != nil {
+			fmt.Printf("%s: %s: %v\n", name, sample, err)
+			continue
+		}
+		var before, after any
+		_ = json.Unmarshal(sample, &before)
+		if err := json.Unmarshal(out, &after); err != nil || !reflect.DeepEqual(before, after) {
+			fmt.Printf("%s: %s came back as %s\n", name, sample, out)
+		}
+	}
+}
+
+func main() {
+	var fixtures map[string][]json.RawMessage
+	data, _ := os.ReadFile(os.Args[1])
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	_ = decoder.Decode(&fixtures)
+{{calls}}}
+`
+
+// Every value a fixture's schema accepts is held by the generated type, and written back as the same JSON: the types
+// are never narrower than the schema, and keep everything they read.
+func TestSamplesRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	fixtures := readFixtures(t)
+	samples := map[string][]json.RawMessage{}
+
+	var imports, calls strings.Builder
+
+	for name, value := range fixtures {
+		pkg := "f" + strings.ToLower(name)
+
+		source, err := genever.Generate(value.Schema, genever.Options{Name: "", Package: pkg, BaseURI: "", OpenAPI30: false, NoStrict: true})
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+
+		writeFile(t, filepath.Join(dir, pkg, "schema.go"), source)
+
+		if len(value.Samples) == 0 {
+			continue
+		}
+
+		samples[name] = value.Samples
+
+		imports.WriteString("\t" + pkg + " \"harness/" + pkg + "\"\n")
+		calls.WriteString("\tcheck(\"" + name + "\", fixtures[\"" + name + "\"], func(data []byte) ([]byte, error) {\n" +
+			"\t\tvar value " + pkg + ".Schema\n" +
+			"\t\tif err := json.Unmarshal(data, &value); err != nil {\n\t\t\treturn nil, err\n\t\t}\n" +
+			"\t\treturn json.Marshal(value)\n\t})\n")
+	}
+
+	samplesJSON, err := json.Marshal(samples)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	writeFile(t, filepath.Join(dir, "go.mod"), []byte("module harness\n\ngo 1.24\n"))
+	writeFile(t, filepath.Join(dir, "samples.json"), samplesJSON)
+	writeFile(t, filepath.Join(dir, "main.go"), []byte(strings.NewReplacer(
+		"{{imports}}", imports.String(), "{{calls}}", calls.String()).Replace(harness)))
+
+	command := exec.CommandContext(t.Context(), "go", "run", ".", "samples.json")
+	command.Dir = dir
+
+	output, err := command.CombinedOutput()
+	if err != nil || len(output) > 0 {
+		t.Fatalf("%v\n%s", err, output)
+	}
+}
+
+func writeFile(t *testing.T, name string, data []byte) {
+	t.Helper()
+
+	if err := os.MkdirAll(filepath.Dir(name), 0o750); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.WriteFile(name, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -36,6 +36,8 @@ linters:
       ignore-package-globs:
         - dagger/ci/internal/dagger
         - golang.org/x/sync/errgroup
+        # genever's own errors, built as errors.New builds one
+        - github.com/JacobLey/leyman/apps/genever/go/internal/gerr
   exclusions:
     generated: lax
     # The error from closing what was only read has nothing to report
@@ -68,6 +70,10 @@ linters:
       - path: dagger/go\.mod
         linters:
           - gomoddirectives
+      # A test's expected values read best written out where they're compared, even when two tests expect the same
+      - path: _test\.go
+        linters:
+          - goconst
       # Its numbers are the hash's specified constants and bit widths, which a name wouldn't explain further
       - path: tools/constant-consistent-hash/go-impl/
         linters:
