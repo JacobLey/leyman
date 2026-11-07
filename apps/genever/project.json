@@ -4,7 +4,11 @@
   "targets": {
     "biome": {},
     "eslint": {},
-    "check-package": {},
+    "check-package": {
+      "options": {
+        "args": "--not-published go vectors"
+      }
+    },
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},

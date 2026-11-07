@@ -35,6 +35,9 @@
       "path": "../juniper"
     },
     {
+      "path": "vectors"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

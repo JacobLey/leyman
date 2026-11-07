@@ -1,0 +1,33 @@
+{
+  "schema": {
+    "type": "string",
+    "pattern": "a\\x2db\\.c"
+  },
+  "samples": [
+    "a-b.cs",
+    "|=Scs RGa-b.c_",
+    "1ZS5RYa-b.capply\"n",
+    "0_a-b.c#o^W",
+    "a-b.c1\"gbu{",
+    "b7&<Hq;Gm7a-b.cD",
+    "#D5Da-b.c|_tY=",
+    "-$#a-b.cfinr",
+    "K}!a-b.cN\"P#|f",
+    "YC|xa-b.cDc",
+    "Lgrua-b.cM2",
+    " ~#j ~W-e)a-b.c\"",
+    ".kkzZa-b.cQKHy*A4",
+    "a-b.cy%g__looku",
+    "V8xNU<sa-b.cyG8x%!y&.6",
+    ":R`a-b.c^v",
+    "fpLa<d(yLa-b.ctd%yLJ",
+    "se~@a-b.c",
+    "Bi?jo\\va-b.ck",
+    "|__la-b.c981,Dy!i|`",
+    "1d!erk\"-a-b.cb|",
+    "a-b.c_;`L!T:wI",
+    "W;a-b.ctoString",
+    "nV%{a-b.c6",
+    "a-b.cl"
+  ]
+}

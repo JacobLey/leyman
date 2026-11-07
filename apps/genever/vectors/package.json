@@ -1,0 +1,46 @@
+{
+  "name": "@leyman/genever-vectors",
+  "version": "0.0.1",
+  "description": "Schemas and sample values shared by every genever implementation: Juniper fixtures as TypeScript, and as JSON for the Go implementation.",
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/genever/vectors#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "out",
+    "!out/.generated.json"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "juniper": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "fast-check": "catalog:",
+    "juniper-arbitrary": "workspace:^",
+    "load-populate-files": "workspace:^",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}

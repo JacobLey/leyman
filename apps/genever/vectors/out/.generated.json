@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "files": {
+    "fixtures/allOf.json": {
+      "hash": "v1:c3edf2023c9d6396a63c98fbcf5988e3"
+    },
+    "fixtures/annotated.json": {
+      "hash": "v1:0d6e248c73da950e967b901de63d5819"
+    },
+    "fixtures/anyOf.json": {
+      "hash": "v1:3e859e939610e0faba690106700f989d"
+    },
+    "fixtures/anything.json": {
+      "hash": "v1:840d56452a984feae68599e507e6bada"
+    },
+    "fixtures/array.json": {
+      "hash": "v1:cbe3eba893d0a68f859aeec12f9aaf37"
+    },
+    "fixtures/arrayContains.json": {
+      "hash": "v1:e3a66a87083746b15b685744936b5682"
+    },
+    "fixtures/boolean.json": {
+      "hash": "v1:cdb02efe8b3946deb5f65d2a8cd16ee7"
+    },
+    "fixtures/contains.json": {
+      "hash": "v1:3c7ba6c13582201baaa8b321b41db67c"
+    },
+    "fixtures/definitions.json": {
+      "hash": "v1:12a335f911a20d92460c2b6f4839c444"
+    },
+    "fixtures/dependentRequired.json": {
+      "hash": "v1:f7f59cbacaa4d55d097306fb76f8fb42"
+    },
+    "fixtures/dependentSchemas.json": {
+      "hash": "v1:e0c41cfc94bf47d8b71e3f5905834371"
+    },
+    "fixtures/describedReference.json": {
+      "hash": "v1:03815b10f5709095b9cacf50f3d92e4f"
+    },
+    "fixtures/discriminatedOneOf.json": {
+      "hash": "v1:c512f808c72cd71b6981951507863df2"
+    },
+    "fixtures/endsWith.json": {
+      "hash": "v1:80cbd61bf84efb8482899b3e1f7a8278"
+    },
+    "fixtures/enumValues.json": {
+      "hash": "v1:64743e1348a2c78cecc8fa7a74e7904e"
+    },
+    "fixtures/extended.json": {
+      "hash": "v1:66c625fa60fd67bcaa42119eec01df4b"
+    },
+    "fixtures/integer.json": {
+      "hash": "v1:a75d2b3641d33a7ca71f1e7dfd4af688"
+    },
+    "fixtures/mergeNotNull.json": {
+      "hash": "v1:7c1563e9ce6350305ab93bf2f2299328"
+    },
+    "fixtures/nestedArray.json": {
+      "hash": "v1:e341894a13270af53d75b5ffcc8a0d45"
+    },
+    "fixtures/never.json": {
+      "hash": "v1:11523b21f5fb31d977cf1b137503225a"
+    },
+    "fixtures/notNull.json": {
+      "hash": "v1:adfb6d6a26f04a5ef5c0b39158911de1"
+    },
+    "fixtures/nullValue.json": {
+      "hash": "v1:e6feb31d9bdd5d68091a84087560aad0"
+    },
+    "fixtures/nullableObject.json": {
+      "hash": "v1:a469591686918aea698b83fac79accf9"
+    },
+    "fixtures/nullableString.json": {
+      "hash": "v1:c55192a86972f6f253b0d42ac3979d7a"
+    },
+    "fixtures/nullableTuple.json": {
+      "hash": "v1:a7686c192401779ba2f2f7806827aa30"
+    },
+    "fixtures/number.json": {
+      "hash": "v1:7d5087e68af26b03fcb4828dc038ebe3"
+    },
+    "fixtures/object.json": {
+      "hash": "v1:d0ef6d065b6cb9ae6ac83b6dfd165cbb"
+    },
+    "fixtures/omitted.json": {
+      "hash": "v1:7c3866bf4b6d8cc24863855fb908147d"
+    },
+    "fixtures/oneOf.json": {
+      "hash": "v1:d731b1664747ed2c105c94f612e9b4eb"
+    },
+    "fixtures/openObject.json": {
+      "hash": "v1:ece5f0ab2f26e15208e62fd8cad96eb5"
+    },
+    "fixtures/optionalPrefixItems.json": {
+      "hash": "v1:23c32f1b928e669688b5a924a2028db1"
+    },
+    "fixtures/partial.json": {
+      "hash": "v1:b1298df71d33fe096ee835ee17b27fb1"
+    },
+    "fixtures/partlyRequiredPrefixItems.json": {
+      "hash": "v1:a977449b5746447497bae21115b030cd"
+    },
+    "fixtures/patternObject.json": {
+      "hash": "v1:140824631a0d26179f772ee1f248d353"
+    },
+    "fixtures/picked.json": {
+      "hash": "v1:7c3866bf4b6d8cc24863855fb908147d"
+    },
+    "fixtures/recordObject.json": {
+      "hash": "v1:2c7806f349ccd176b936f888232a4346"
+    },
+    "fixtures/recordWithPatterns.json": {
+      "hash": "v1:19d68c667ba8ea7cb5dc6481ae521d5a"
+    },
+    "fixtures/recursive.json": {
+      "hash": "v1:42542434dcea048a67e585c50a46ed58"
+    },
+    "fixtures/singleEnum.json": {
+      "hash": "v1:86f2a5d97f176c4f94d72d12385f84d0"
+    },
+    "fixtures/startsAndEndsWith.json": {
+      "hash": "v1:a9c30645c133dfd0ad0c0fa2b5d5ea0e"
+    },
+    "fixtures/startsWith.json": {
+      "hash": "v1:ed35ebd5a70d05b884d8ef39ca4c3616"
+    },
+    "fixtures/string.json": {
+      "hash": "v1:0a16704702070b7bec75b8412a759dd5"
+    },
+    "fixtures/stringAllOf.json": {
+      "hash": "v1:baed66475c0a0f4110f1a8c4140518e8"
+    },
+    "fixtures/tuple.json": {
+      "hash": "v1:22af3fa1c5d19a741a9e05ae863c10e5"
+    },
+    "fixtures/unevaluated.json": {
+      "hash": "v1:d111da9625ee3a8f4a025bd691c009b6"
+    }
+  }
+}

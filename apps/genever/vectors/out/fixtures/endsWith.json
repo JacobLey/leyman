@@ -1,0 +1,33 @@
+{
+  "schema": {
+    "type": "string",
+    "pattern": "\\.json$"
+  },
+  "samples": [
+    ".json",
+    "|=Scs RG.json",
+    "1ZS5RY.json",
+    "0_.json",
+    ".json",
+    "b7&<Hq;Gm7.json",
+    "#D5D.json",
+    "-$#.json",
+    "K}!.json",
+    "YC|x.json",
+    "Lgru.json",
+    " ~#j ~W-e).json",
+    ".kkzZ.json",
+    ".json",
+    "V8xNU<s.json",
+    ":R`.json",
+    "fpLa<d(yL.json",
+    "se~@.json",
+    "Bi?jo\\v.json",
+    "|__l.json",
+    "1d!erk\"-.json",
+    ".json",
+    "W;.json",
+    "nV%{.json",
+    ".json"
+  ]
+}

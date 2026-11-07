@@ -1,6 +1,10 @@
 import type { GeneverOptions } from 'genever';
 import type { Schema } from 'juniper';
 import { expect } from '@leyman/expect';
+import {
+    juniperSchemas as fixtures,
+    openApiSchemas as openApiFixtures,
+} from '@leyman/genever-vectors';
 import { genever } from 'genever';
 import { components, enumSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
@@ -11,8 +15,6 @@ import {
     normalizeModule,
 } from '../lib/expect-generated.js';
 import { typeCheck } from '../lib/type-check.js';
-import * as fixtures from './fixtures/juniper-schemas.js';
-import * as openApiFixtures from './fixtures/openapi-schemas.js';
 
 /**
  * Serialize a Juniper schema, genever it, and check the generated type is equivalent to Juniper's.
@@ -33,7 +35,7 @@ const expectRoundTrip = (
     const assertion = [
         ...assertionImports,
         "import type { SchemaType } from 'juniper';",
-        "import type * as fixtures from '../integration/fixtures/juniper-schemas.js';",
+        "import type { juniperSchemas as fixtures } from '@leyman/genever-vectors';",
         "import type { Schema } from './generated.js';",
         equivalentAssertion('Schema', `SchemaType<typeof fixtures.${name}>`),
     ].join('\n');
@@ -109,7 +111,7 @@ suite('round trip', () => {
                 const assertion = [
                     ...assertionImports,
                     "import type { SchemaType } from 'juniper';",
-                    "import type * as fixtures from '../integration/fixtures/openapi-schemas.js';",
+                    "import type { openApiSchemas as fixtures } from '@leyman/genever-vectors';",
                     "import type { Address, TreeNode, User } from './generated.js';",
                     equivalentAssertion('Address', 'SchemaType<typeof fixtures.address>'),
                     equivalentAssertion('User', 'SchemaType<typeof fixtures.user>'),

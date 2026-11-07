@@ -585,6 +585,9 @@ importers:
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
+      '@leyman/genever-vectors':
+        specifier: workspace:^
+        version: file:apps/genever/vectors(eslint@10.14.0(supports-color@8.1.1))
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -688,6 +691,49 @@ importers:
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  apps/genever/vectors:
+    dependencies:
+      juniper:
+        specifier: workspace:^
+        version: file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.14.0(supports-color@10.2.2)))
+      load-populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -5968,34 +6014,34 @@ packages:
 
   '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm-impl':
     resolution: {directory: tools/constant-consistent-hash/wasm-impl, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp':
     resolution: {directory: demos/agents/mcp, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-blake3-wasm-rust@file:demos/blake3-wasm/rust':
     resolution: {directory: demos/blake3-wasm/rust, type: directory}
 
   '@leyman/demo-openapi-client@file:demos/openapi/client':
     resolution: {directory: demos/openapi/client, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-openapi-database@file:demos/openapi/database':
     resolution: {directory: demos/openapi/database, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-openapi-server@file:demos/openapi/server':
     resolution: {directory: demos/openapi/server, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-openapi-spec@file:demos/openapi/spec':
     resolution: {directory: demos/openapi/spec, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/demo-read-through-cache@file:demos/read-through-cache':
     resolution: {directory: demos/read-through-cache, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
 
   '@leyman/eslint-config@file:leyman/eslint-config':
     resolution: {directory: leyman/eslint-config, type: directory}
@@ -6012,6 +6058,9 @@ packages:
     resolution: {directory: leyman/framework, type: directory}
     engines: {node: '>=22.12.0'}
     hasBin: true
+
+  '@leyman/genever-vectors@file:apps/genever/vectors':
+    resolution: {directory: apps/genever/vectors, type: directory}
 
   '@leyman/nx-plugin@file:leyman/nx-plugin':
     resolution: {directory: leyman/nx-plugin, type: directory}
@@ -8825,7 +8874,7 @@ packages:
 
   genever-content-mapper@file:apps/genever-content-mapper:
     resolution: {directory: apps/genever-content-mapper, type: directory}
-    engines: {node: '>=24.22.1'}
+    engines: {node: '>=26'}
 
   genever@file:apps/genever:
     resolution: {directory: apps/genever, type: directory}
@@ -9865,7 +9914,7 @@ packages:
 
   oauth-dev-server@file:tools/oauth-dev-server:
     resolution: {directory: tools/oauth-dev-server, type: directory}
-    engines: {node: '>=24'}
+    engines: {node: '>=26'}
     peerDependencies:
       '@modelcontextprotocol/client': 'catalog:'
     peerDependenciesMeta:
@@ -10849,7 +10898,7 @@ packages:
 
   trusted-tsc@file:apps/trusted-tsc:
     resolution: {directory: apps/trusted-tsc, type: directory}
-    engines: {node: '>=24.22.1'}
+    engines: {node: '>=26'}
     hasBin: true
 
   ts-algebra@2.0.0:
@@ -13814,6 +13863,12 @@ snapshots:
       tinyglobby: 0.2.17
       yaml: 2.9.1
       yargs: 18.2.0
+
+  '@leyman/genever-vectors@file:apps/genever/vectors(eslint@10.14.0(supports-color@8.1.1))':
+    dependencies:
+      juniper: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
+    transitivePeerDependencies:
+      - eslint
 
   '@leyman/nx-plugin@file:leyman/nx-plugin(eslint@10.14.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:
@@ -17629,6 +17684,14 @@ snapshots:
       array.prototype.flat: 1.3.3
       object.assign: 4.1.7
       object.values: 1.2.1
+
+  juniper-arbitrary@file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))):
+    dependencies:
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      default-import: file:tools/default-import
+      fast-check: 4.10.2
+      juniper: file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))
 
   juniper-arbitrary@file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))):
     dependencies:

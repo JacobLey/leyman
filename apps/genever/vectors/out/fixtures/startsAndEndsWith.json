@@ -1,0 +1,38 @@
+{
+  "schema": {
+    "type": "string",
+    "pattern": "^a",
+    "allOf": [
+      {
+        "pattern": "z$"
+      }
+    ]
+  },
+  "samples": [
+    "az",
+    "a\f2\u000b\tRs\t\tz",
+    "a w5\n\t\nz",
+    "a|&z",
+    "az",
+    "a\nX<  \t\t\u000bl\tz",
+    "a\rTD(z",
+    "a\"\u000b\"z",
+    "a#&\tz",
+    "a\r\f\fSz",
+    "a.\f\f*z",
+    "ax\f#$~\"\n\nNbz",
+    "a\r;z\f\u000bz",
+    "az",
+    "a\f \t8 s'z",
+    "al`)z",
+    "a\rba\t\u000b\rh\rtz",
+    "a\t \f{z",
+    "a\u000b \t\u000b  hz",
+    "a\n\n\r z",
+    "a\t6\rr\r!^ z",
+    "az",
+    "a]lz",
+    "abD\f\fz",
+    "az"
+  ]
+}

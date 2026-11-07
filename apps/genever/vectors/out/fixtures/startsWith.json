@@ -1,0 +1,33 @@
+{
+  "schema": {
+    "type": "string",
+    "pattern": "^usr_"
+  },
+  "samples": [
+    "usr_",
+    "usr_|=Scs RG",
+    "usr_1ZS5RY",
+    "usr_0_",
+    "usr_",
+    "usr_b7&<Hq;Gm7",
+    "usr_#D5D",
+    "usr_-$#",
+    "usr_K}!",
+    "usr_YC|x",
+    "usr_Lgru",
+    "usr_ ~#j ~W-e)",
+    "usr_.kkzZ",
+    "usr_",
+    "usr_V8xNU<s",
+    "usr_:R`",
+    "usr_fpLa<d(yL",
+    "usr_se~@",
+    "usr_Bi?jo\\v",
+    "usr_|__l",
+    "usr_1d!erk\"-",
+    "usr_",
+    "usr_W;",
+    "usr_nV%{",
+    "usr_"
+  ]
+}

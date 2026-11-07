@@ -1,0 +1,75 @@
+{
+  "schema": {
+    "type": [
+      "array",
+      "null"
+    ],
+    "maxItems": 1,
+    "minItems": 1,
+    "items": false,
+    "prefixItems": [
+      {
+        "type": "boolean"
+      }
+    ]
+  },
+  "samples": [
+    [
+      false
+    ],
+    null,
+    null,
+    [
+      false
+    ],
+    [
+      true
+    ],
+    null,
+    null,
+    [
+      false
+    ],
+    [
+      true
+    ],
+    null,
+    null,
+    [
+      false
+    ],
+    [
+      false
+    ],
+    null,
+    [
+      true
+    ],
+    [
+      false
+    ],
+    [
+      true
+    ],
+    [
+      false
+    ],
+    [
+      true
+    ],
+    null,
+    [
+      false
+    ],
+    null,
+    [
+      true
+    ],
+    [
+      false
+    ],
+    [
+      true
+    ]
+  ]
+}

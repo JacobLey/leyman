@@ -156,6 +156,9 @@
     },
     {
       "path": "./leyman/framework"
+    },
+    {
+      "path": "./apps/genever/vectors"
     }
   ]
 }

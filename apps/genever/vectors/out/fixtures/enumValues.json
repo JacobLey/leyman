@@ -1,0 +1,38 @@
+{
+  "schema": {
+    "enum": [
+      "a",
+      "b",
+      1,
+      true,
+      null
+    ]
+  },
+  "samples": [
+    "b",
+    true,
+    true,
+    null,
+    "b",
+    null,
+    true,
+    "b",
+    "a",
+    true,
+    1,
+    null,
+    "b",
+    1,
+    "b",
+    null,
+    "a",
+    "b",
+    null,
+    "a",
+    1,
+    null,
+    "b",
+    1,
+    true
+  ]
+}

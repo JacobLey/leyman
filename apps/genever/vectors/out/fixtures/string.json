@@ -1,0 +1,35 @@
+{
+  "schema": {
+    "type": "string",
+    "format": "email",
+    "minLength": 1,
+    "maxLength": 10
+  },
+  "samples": [
+    "ref@1c2.qx",
+    "b%_@c.ede",
+    "2#'@ac.fy",
+    "b@9.bm",
+    "qcv@d.jv",
+    "&@0.zo",
+    "r@a-gt.ec",
+    "?@cxx.ca",
+    "f.-@4.o.am",
+    "t?@mzkk.ze",
+    "r$13@l2.ii",
+    "y@a.sve",
+    "~#@9.pj",
+    "3.&6r@j.jf",
+    "'cv@e.nsn",
+    "4@fjrq.skf",
+    "^@t.re",
+    "~?iz@o.gfh",
+    "3.7o5@k.pz",
+    "9ro4@y.zd",
+    "9@c.rg",
+    "-%rse@3.iq",
+    "4p@5.raz",
+    "ref@z.key",
+    "kp.9@o.qn"
+  ]
+}

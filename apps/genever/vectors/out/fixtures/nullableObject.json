@@ -1,0 +1,116 @@
+{
+  "schema": {
+    "type": [
+      "object",
+      "null"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "age": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "age"
+    ]
+  },
+  "samples": [
+    {
+      "id": "\u000b",
+      "age": 8108947656947297
+    },
+    null,
+    null,
+    {
+      "id": "",
+      "name": null,
+      "age": -33
+    },
+    {
+      "id": "",
+      "name": null,
+      "age": 0
+    },
+    null,
+    null,
+    {
+      "id": "񗍚𣏪\u0011",
+      "name": "ref",
+      "age": 7.541672990639102e-268
+    },
+    {
+      "id": "񜦫󚝉񵎩",
+      "name": "arguments",
+      "age": 6.793525263854609e135
+    },
+    null,
+    null,
+    {
+      "id": "򹔬񧦽񉾎𯨩𠥇򬋴򿏪񹠓􅸧򌠯",
+      "name": null,
+      "age": 9007199254740944
+    },
+    {
+      "id": "񒭤𨓧񧞙񙪅󐆯󍏶񮺓򏏚",
+      "name": "􄛖",
+      "age": 29
+    },
+    null,
+    {
+      "id": "󍷅򓠒򊓴񹹀󈖃󹮙񕸎",
+      "name": "񪫂",
+      "age": 5939967697759025
+    },
+    {
+      "id": "",
+      "name": "򔂅򚰑󯹞󶆵",
+      "age": -24
+    },
+    {
+      "id": "􀌞񱝙񊵣󳈛𳪯ἂ􋋨􅀬󰶃",
+      "age": 7.231826977131075e243
+    },
+    {
+      "id": "񸞧",
+      "name": "򁺕󱶯𣛧",
+      "age": 7203007282212273
+    },
+    {
+      "id": "򓍬񀳒𕼈꾴󕊯󥷢󇂆򐧶󗌒",
+      "name": "",
+      "age": 1.7976931348623141e308
+    },
+    null,
+    {
+      "id": "name\u000b􂃙",
+      "name": null,
+      "age": -28
+    },
+    null,
+    {
+      "id": "󞱟󖿭",
+      "name": null,
+      "age": 95483417825421
+    },
+    {
+      "id": "򢏢򭻹򻹈󥌤",
+      "name": null,
+      "age": -7375579096000721
+    },
+    {
+      "id": "Ⅰ𨮹𙽧󁢂󂼒",
+      "name": "񞜫",
+      "age": -0.00002476757727875522
+    }
+  ]
+}

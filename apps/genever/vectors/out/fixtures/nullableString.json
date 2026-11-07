@@ -1,0 +1,36 @@
+{
+  "schema": {
+    "type": [
+      "string",
+      "null"
+    ],
+    "pattern": "^a"
+  },
+  "samples": [
+    "a~",
+    null,
+    null,
+    "a",
+    "a",
+    null,
+    null,
+    "a\"z$",
+    "a&KQ",
+    null,
+    null,
+    "a{!Svn<7jU}",
+    "al;D+-'87",
+    null,
+    "aEys8!Tq'",
+    "a",
+    "a$b2dFX#h1",
+    "a\\",
+    "aojRFxbhP,",
+    null,
+    "aname|-",
+    null,
+    "axK",
+    "a2nS%",
+    "a8peuh"
+  ]
+}

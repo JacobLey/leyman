@@ -1,0 +1,26 @@
+{
+  "extends": "@leyman/configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../../juniper"
+    },
+    {
+      "path": "../../populate-files/load-populate-files"
+    },
+    {
+      "path": "../../juniper-arbitrary"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    }
+  ]
+}

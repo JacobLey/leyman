@@ -1,0 +1,37 @@
+{
+  "schema": {
+    "type": "string",
+    "allOf": [
+      {
+        "pattern": "^a"
+      }
+    ]
+  },
+  "samples": [
+    "a",
+    "a|=Scs RG",
+    "a1ZS5RY",
+    "a0_",
+    "a",
+    "ab7&<Hq;Gm7",
+    "a#D5D",
+    "a-$#",
+    "aK}!",
+    "aYC|x",
+    "aLgru",
+    "a ~#j ~W-e)",
+    "a.kkzZ",
+    "a",
+    "aV8xNU<s",
+    "a:R`",
+    "afpLa<d(yL",
+    "ase~@",
+    "aBi?jo\\v",
+    "a|__l",
+    "a1d!erk\"-",
+    "a",
+    "aW;",
+    "anV%{",
+    "a"
+  ]
+}
