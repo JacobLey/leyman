@@ -487,6 +487,13 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
             fail(loaded);
             return;
         }
+        const [{ $id: id }] = loaded.schemas as [SchemaObject];
+        if (known.has(id as string)) {
+            // Already loaded, by a URI that redirects to the same place, or declared by another schema's `$id`
+            resources.push({ $id: uri, $ref: id });
+            known.add(uri);
+            return;
+        }
         resources.push(...loaded.schemas);
         // Referred to by its URL, even if its `$id` is another
         known.add(uri);

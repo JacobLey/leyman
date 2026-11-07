@@ -375,6 +375,35 @@ suite('external references', () => {
             }
         });
 
+        withTmpDir.test('a URL that redirects to a schema already loaded', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/moved.json': 'https://example.test/b.json' },
+                schemas: {
+                    'https://example.test/a.json': '{ "$ref": "b.json" }',
+                    'https://example.test/b.json': '{ "type": "string" }',
+                },
+            });
+            try {
+                await ctx.writeJson('input.json', {
+                    type: 'object',
+                    properties: {
+                        a: { $ref: 'https://example.test/a.json' },
+                        moved: { $ref: 'https://example.test/moved.json' },
+                    },
+                });
+                await geneverFile(ctx.resolve('input.json'), {
+                    output: ctx.resolve('input.ts'),
+                    fetch: ['example.test'],
+                });
+                expectTypes(await ctx.read('input.ts'), {
+                    Schema: '{ a?: B; moved?: B }',
+                    B: 'string',
+                });
+            } finally {
+                fake.restore();
+            }
+        });
+
         withTmpDir.test('does not follow redirects to other hosts', async ctx => {
             const fake = fakeFetch({
                 redirects: { 'https://example.test/a.json': 'https://elsewhere.test/a.json' },
