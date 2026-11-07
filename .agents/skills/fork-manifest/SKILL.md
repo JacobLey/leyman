@@ -87,7 +87,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/package.json` | the global tools |
 | `leyman/main/project.json` | the lifecycle targets of the tools package |
 | `patches/nx@23.3.1.patch` | the Nx planner patch that keeps daemon-less runs fast |
-| `patches/@typescript-eslint__eslint-plugin@8.72.0.patch` | a wrong autofix under the v flag, which the eslint config's rules reach |
+| `patches/@typescript-eslint__eslint-plugin@8.72.1.patch` | a wrong autofix under the v flag, which the eslint config's rules reach |
 | `scripts/commands/test-and-fix` | verify with auto-fix |
 | `scripts/commands/test-ci` | verify |
 | `scripts/commands/test-only` | test |
