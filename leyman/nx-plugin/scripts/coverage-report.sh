@@ -16,7 +16,19 @@ rm -rf "$COVERAGE_TMP"
 mkdir -p "$COVERAGE_TMP"
 find "$COVERAGE_DIR/tmp" -maxdepth 2 -name "*.json" -exec cp {} "$COVERAGE_TMP/" \;
 
+# A project nested inside this one (a directory with its own project.json) has its own coverage, and `--all` would
+# count its files here too. c8 replaces the config's `exclude` with any given on the command line, so those go too.
+nested=()
+while IFS= read -r project; do
+    nested+=("--exclude=$(dirname "${project#./}")/**")
+done < <(find . -mindepth 2 -name project.json -not -path '*/node_modules/*')
+if [ ${#nested[@]} -gt 0 ]; then
+    while IFS= read -r pattern; do
+        nested+=("--exclude=$pattern")
+    done < <(node -e 'for (const p of JSON.parse(require("node:fs").readFileSync(process.argv[1])).exclude ?? []) console.log(p)' "$config_file")
+fi
+
 # lcov paths are from the workspace root: Coverage Gutters matches a file by the end of its path, so
 # `src/index.ts`, relative to the package, would show this package's coverage on every package's index.ts.
 c8 --temp-directory="$COVERAGE_TMP" -o "$COVERAGE_DIR/report" -c "$config_file" \
-    --reporter-options.lcovonly.projectRoot="$NX_WORKSPACE_ROOT" report --all --check-coverage --merge-async "$@"
+    --reporter-options.lcovonly.projectRoot="$NX_WORKSPACE_ROOT" report --all --check-coverage --merge-async "${nested[@]}" "$@"

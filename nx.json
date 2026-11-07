@@ -116,6 +116,13 @@
       {
         "externalDependencies": []
       }
+    ],
+    "goSource": [
+      "{projectRoot}/go.mod",
+      "{projectRoot}/go.sum",
+      "{projectRoot}/**/*.go",
+      "{workspaceRoot}/go.work",
+      "{workspaceRoot}/go.work.sum"
     ]
   },
   "sync": {
