@@ -283,6 +283,23 @@ func expectManifest(t *testing.T, cwd string, vector scenario) {
 	}
 }
 
+// expectAfter checks the files a scenario leaves, but its manifests.
+func expectAfter(t *testing.T, cwd string, vector scenario) {
+	t.Helper()
+
+	manifests := map[string]bool{}
+
+	for _, call := range append(slices.Clone(vector.Setup), vector.step) {
+		if call.Options.Manifest != "" {
+			manifests[filepath.ToSlash(filepath.Clean(call.Options.Manifest))] = true
+		}
+	}
+
+	if after := listFiles(t, cwd, manifests); !maps.Equal(after, vector.After) {
+		t.Errorf("%s: got files %v, expected %v", vector.Description, after, vector.After)
+	}
+}
+
 func TestScenarioVectors(t *testing.T) {
 	t.Parallel()
 
@@ -294,6 +311,9 @@ func TestScenarioVectors(t *testing.T) {
 		results, err := run(cwd, vector.step)
 		if vector.Error != nil {
 			expectError(t, cwd, vector, err)
+
+			// Nothing is written when a call fails
+			expectAfter(t, cwd, vector)
 
 			continue
 		}
@@ -313,17 +333,7 @@ func TestScenarioVectors(t *testing.T) {
 			t.Errorf("%s: got %v, expected %v", vector.Description, got, vector.Results)
 		}
 
-		manifests := map[string]bool{}
-
-		for _, call := range append(slices.Clone(vector.Setup), vector.step) {
-			if call.Options.Manifest != "" {
-				manifests[filepath.ToSlash(filepath.Clean(call.Options.Manifest))] = true
-			}
-		}
-
-		if after := listFiles(t, cwd, manifests); !maps.Equal(after, vector.After) {
-			t.Errorf("%s: got files %v, expected %v", vector.Description, after, vector.After)
-		}
+		expectAfter(t, cwd, vector)
 
 		if vector.Manifest != nil {
 			expectManifest(t, cwd, vector)

@@ -116,7 +116,7 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 
 **Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
-With `check`, every file is computed first and one `PopulateFilesCheckError` reports everything out of date, but a `PopulateFilesOwnershipError` is thrown as soon as it is found.
+Every file is decided before any is written or removed, so a failure leaves the files as they were: with `check`, one `PopulateFilesCheckError` reports everything out of date, and a `PopulateFilesOwnershipError` writes nothing.
 
 ---
 

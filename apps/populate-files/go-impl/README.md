@@ -20,7 +20,6 @@ Compared to the TypeScript package:
 
 - Content is bytes. Nothing is formatted: JSON content is the caller's to write, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
 - `Check` is a plain option, where the TypeScript package defaults it to whether it runs in CI.
-- A call decides every file before it writes any, so a refusal or failed check leaves every file as it was. The TypeScript package writes files in parallel, so a refusal can come after other files were written.
 - Stale files without a manifest are found in sorted order.
 
 It is not published as a Go module (yet).

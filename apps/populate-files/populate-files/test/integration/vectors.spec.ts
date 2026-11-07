@@ -119,9 +119,17 @@ suite('Test vectors', () => {
                 }
 
                 const step: Step = vector;
+                const manifests = new Set(
+                    [...setup, step]
+                        .map(({ options }) => options.manifest)
+                        .filter(manifest => typeof manifest === 'string')
+                        .map(manifest => Path.normalize(manifest))
+                );
                 if ('error' in vector) {
                     const thrown = await settle(run(cwd, step));
                     expect(errorOf(cwd, thrown)).to.deep.equal(vector.error);
+                    // Nothing is written when a call fails
+                    expect(await listFiles(cwd, manifests)).to.deep.equal(vector.after);
                     return;
                 }
 
@@ -129,13 +137,6 @@ suite('Test vectors', () => {
                 expect(
                     results.map(result => ({ ...result, filePath: relative(cwd, result.filePath) }))
                 ).to.deep.equal(vector.results);
-
-                const manifests = new Set(
-                    [...setup, step]
-                        .map(({ options }) => options.manifest)
-                        .filter(manifest => typeof manifest === 'string')
-                        .map(manifest => Path.normalize(manifest))
-                );
                 expect(await listFiles(cwd, manifests)).to.deep.equal(vector.after);
 
                 if ('manifest' in vector) {

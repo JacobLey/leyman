@@ -261,6 +261,9 @@
             "reason": "content-changed"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
       }
     },
     {
@@ -284,7 +287,8 @@
             "reason": "file-not-exist"
           }
         ]
-      }
+      },
+      "after": {}
     },
     {
       "description": "Check passes on an up to date file",
@@ -565,6 +569,9 @@
             "reason": "content-changed"
           }
         ]
+      },
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -606,6 +613,9 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "edited"
+      },
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 3;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -628,6 +638,9 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "not-owned"
+      },
+      "after": {
+        "out/b.ts": "handwritten\n"
       }
     },
     {
@@ -669,6 +682,9 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "malformed"
+      },
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n"
       }
     },
     {
@@ -703,6 +719,9 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "orphaned-section"
+      },
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -791,6 +810,9 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "edited"
+      },
+      "after": {
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 3;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -1227,6 +1249,10 @@
             "reason": "file-not-exist"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -1299,7 +1325,8 @@
       },
       "error": {
         "kind": "duplicate-file"
-      }
+      },
+      "after": {}
     },
     {
       "description": "Rejects the same file by two paths",
@@ -1319,7 +1346,8 @@
       },
       "error": {
         "kind": "duplicate-file"
-      }
+      },
+      "after": {}
     },
     {
       "description": "Clean removes stale files",
@@ -1485,6 +1513,10 @@
             "reason": "stale-file"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/stale.txt": "old\n"
       }
     },
     {
@@ -1848,6 +1880,10 @@
             "reason": "content-changed"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -1907,7 +1943,8 @@
       },
       "error": {
         "kind": "manifest"
-      }
+      },
+      "after": {}
     },
     {
       "description": "Reads a manifest in any JSON layout",
@@ -2004,6 +2041,10 @@
         "kind": "ownership",
         "filePath": "out/a.json",
         "reason": "edited"
+      },
+      "after": {
+        "out/a.json": "{\"edited\": true}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -2047,6 +2088,10 @@
         "kind": "ownership",
         "filePath": "out/a.json",
         "reason": "not-owned"
+      },
+      "after": {
+        "out/a.json": "{\"handwritten\": true}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -2489,6 +2534,10 @@
         "kind": "ownership",
         "filePath": "out/a.json",
         "reason": "edited"
+      },
+      "after": {
+        "out/a.json": "{\"edited\": true}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -2536,6 +2585,10 @@
         "kind": "ownership",
         "filePath": "out/b.ts",
         "reason": "edited"
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 3;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -2650,6 +2703,10 @@
             "reason": "stale-file"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n",
+        "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
       }
     },
     {
@@ -2804,6 +2861,9 @@
         "kind": "ownership",
         "filePath": "out/a.json",
         "reason": "edited"
+      },
+      "after": {
+        "out/a.json": "{\"edited\": true}\n"
       }
     },
     {
@@ -2842,6 +2902,9 @@
             "reason": "file-not-exist"
           }
         ]
+      },
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
       }
     },
     {
