@@ -110,6 +110,14 @@ overrides:
   # miniflare 4 pins sharp exactly at 0.35.2 (libheif and librsvg advisories fixed in 0.35.5), and its stable line
   # has had no release since. Remove once a miniflare 4 release depends on >=0.35.5.
   miniflare>sharp: 0.35.5
+  # eslint, nx, mocha, test-exclude, typescript-estree, sonarjs and @swc/cli allow minimatch 10 (or 9) at most, below
+  # the pattern amplification fix in 11.0.1, and mocha and test-exclude allow glob 13 at most, below the abort fix in
+  # 14.0.2. They only call APIs both majors share. Remove each once none of them allows a version below its fix.
+  minimatch@>=7 <11.0.1: ^11.0.1
+  glob@>=9 <14.0.2: ^14.0.2
+  # eslint-plugin-import-x 4.17 imports `makeRe`, which minimatch 11 removed, so it keeps minimatch 10 (it only
+  # compiles patterns from the config, never untrusted input). Remove when the catalog moves to 4.18, which takes 11.
+  eslint-plugin-import-x>minimatch: ^10.2.6
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
   '@vueuse/integrations>axios': '-'
