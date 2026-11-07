@@ -2,7 +2,14 @@
 // imported by `check-fork-manifest.mjs`, which inspects the result on every run, and by `audit-fork-manifest.mjs`.
 //
 //   node fork-manifest.mjs apply --to <dir> [--with go,rust,...] [--package <path>]...
+//   node fork-manifest.mjs drift --fork <dir>
+//   node fork-manifest.mjs resync --fork <dir>
 //   node fork-manifest.mjs render
+//
+// `apply` records in the fork's `leyman-upstream.json` the commit it copied from and what it took. `drift`, run from an
+// up-to-date checkout, reports what changed upstream in those files since then, and `resync` records that the fork has
+// caught up. Neither compares the fork's files with this repository's: a fork keeps its own values (versions, images,
+// names), so only upstream's changes are news.
 //
 // Has no dependencies, because CI's `test` job runs it straight from the checkout, with no `node_modules`.
 
@@ -401,6 +408,39 @@ const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
 };
 
 /**
+ * Where a fork records what it took from this repository, and from which commit.
+ */
+export const upstreamFile = 'leyman-upstream.json';
+
+const git = (...args) =>
+    // eslint-disable-next-line sonarjs/no-os-command-from-path -- the checkout's own Git, in a script run by hand or CI
+    execFileSync('git', args, { cwd: workspaceRoot, encoding: 'utf8' });
+
+const headCommit = () => git('rev-parse', 'HEAD').trim();
+
+const shortCommit = commit => git('rev-parse', '--short', commit).trim();
+
+const writeUpstream = (to, { commit, conditions, extraPackages, files }) => {
+    writeJson(path.join(to, upstreamFile), {
+        $comment:
+            'What this repository took from leyman, and the commit it was taken at. From a checkout of leyman, `node leyman/main/scripts/fork-manifest.mjs drift --fork <this repository>` lists what changed upstream since, and `resync` records that it has caught up.',
+        repository: 'https://github.com/JacobLey/leyman',
+        with: conditions,
+        packages: extraPackages,
+        files: files.toSorted((a, b) => a.localeCompare(b)),
+        commit,
+    });
+};
+
+const readUpstream = fork => {
+    const file = path.join(fork, upstreamFile);
+    if (!existsSync(file)) {
+        throw new Error(`No ${upstreamFile} in ${fork}: apply the manifest to it first`);
+    }
+    return readJson(file);
+};
+
+/**
  * Copies what a fork with these conditions takes, and cuts the shared configs down to it.
  *
  * @param options - required
@@ -411,6 +451,7 @@ const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
  * @throws {Error} for a condition the manifest doesn't list
  */
 export const apply = ({ conditions = [], extraPackages = [], to }) => {
+    const commit = headCommit();
     const manifest = readManifest();
     const unknown = conditions.filter(condition => !Object.hasOwn(manifest.conditions, condition));
     if (unknown.length > 0) {
@@ -431,7 +472,114 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     installTools(files, to);
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
+    writeUpstream(to, { commit, conditions, extraPackages, files });
     return { files, skipped, taken };
+};
+
+/**
+ * The files the manifest gives a fork with these options at the checkout's commit, committed ones only.
+ *
+ * @param upstream - the fork's record
+ * @returns each path
+ */
+const currentFiles = ({ with: conditions, packages }) => {
+    const manifest = readManifest();
+    const requested = new Set(conditions);
+    const paths = [
+        ...[...manifest.entries, ...manifest.packages]
+            .filter(({ when }) => when === undefined || requested.has(when))
+            .map(entry => entry.path),
+        ...packages,
+    ];
+    return git('ls-files', '-z')
+        .split('\0')
+        .filter(file => file !== '' && paths.some(entryPath => covers(entryPath, file)));
+};
+
+/**
+ * What changed upstream, in the files a fork took, since the commit it took them at.
+ *
+ * @param fork - the fork's root
+ * @returns the commit, each changed or removed file with the commits that touched it, and each new file
+ * @throws {Error} when the fork has no record, or this checkout lacks its commit
+ */
+export const drift = fork => {
+    const upstream = readUpstream(fork);
+    try {
+        git('cat-file', '-t', upstream.commit);
+    } catch (error) {
+        throw new Error(
+            `This checkout doesn't have ${upstream.commit}: fetch leyman's full history (git fetch --unshallow)`,
+            { cause: error }
+        );
+    }
+    const head = headCommit();
+    const current = currentFiles(upstream);
+    const taken = new Set(upstream.files);
+    // New since the fork's commit, so not a file it was given and dropped (a patch for a plugin it doesn't use)
+    const created = new Set(
+        git('diff', '--name-only', '--no-renames', '--diff-filter=A', '-z', upstream.commit, head)
+            .split('\0')
+            .filter(file => file !== '')
+    );
+    const changed = upstream.files
+        .map(file => ({
+            file,
+            removed: !current.includes(file),
+            commits: git('log', '--format=%h %s', `${upstream.commit}..${head}`, '--', file)
+                .split('\n')
+                .filter(line => line !== ''),
+        }))
+        .filter(({ commits }) => commits.length > 0);
+    return {
+        from: shortCommit(upstream.commit),
+        to: shortCommit(head),
+        added: current.filter(file => created.has(file) && !taken.has(file)),
+        changed,
+    };
+};
+
+/**
+ * Records that a fork has caught up with the checkout: its commit, and the files it now has of what the manifest gives
+ * it.
+ *
+ * @param fork - the fork's root
+ * @returns the commits it moved between
+ */
+export const resync = fork => {
+    const upstream = readUpstream(fork);
+    const current = currentFiles(upstream);
+    const commit = headCommit();
+    writeUpstream(fork, {
+        commit,
+        conditions: upstream.with,
+        extraPackages: upstream.packages,
+        files: current.filter(file => existsSync(path.join(fork, file))),
+    });
+    return { from: shortCommit(upstream.commit), to: shortCommit(commit) };
+};
+
+const printDrift = ({ from, to, changed, added }) => {
+    if (changed.length === 0 && added.length === 0) {
+        console.log(`Nothing upstream changed in what the fork took, from ${from} to ${to}`);
+        return;
+    }
+    console.log(`Upstream changes from ${from} to ${to}, in what the fork took:`);
+    for (const { file, removed, commits } of changed) {
+        console.log(`\n${file}${removed ? ' (removed or moved upstream)' : ''}`);
+        for (const commit of commits) {
+            console.log(`  ${commit}`);
+        }
+    }
+    if (added.length > 0) {
+        console.log('\nNew upstream, in what the fork takes:');
+        for (const file of added) {
+            console.log(`  ${file}`);
+        }
+    }
+    console.log(
+        `\nRead a change with \`git diff ${from} ${to} -- <file>\`, apply what fits the fork, then \`resync\`.`
+    );
 };
 
 const skillFile = path.join(workspaceRoot, '.claude/skills/fork-manifest/SKILL.md');
@@ -623,6 +771,7 @@ const main = () => {
     const { positionals, values } = parseArgs({
         allowPositionals: true,
         options: {
+            fork: { type: 'string' },
             package: { multiple: true, type: 'string' },
             to: { type: 'string' },
             with: { type: 'string' },
@@ -632,9 +781,18 @@ const main = () => {
         writeFileSync(skillFile, renderSkill());
         return;
     }
+    if (positionals[0] === 'drift' && values.fork !== undefined) {
+        printDrift(drift(path.resolve(values.fork)));
+        return;
+    }
+    if (positionals[0] === 'resync' && values.fork !== undefined) {
+        const { from, to } = resync(path.resolve(values.fork));
+        console.log(`Recorded ${values.fork} as caught up: ${from} to ${to}`);
+        return;
+    }
     if (positionals[0] !== 'apply' || values.to === undefined) {
         throw new Error(
-            'Usage: fork-manifest.mjs render | apply --to <dir> [--with go,rust,...] [--package <path>]...'
+            'Usage: fork-manifest.mjs render | apply --to <dir> [--with go,rust,...] [--package <path>]... | drift --fork <dir> | resync --fork <dir>'
         );
     }
     const conditions = values.with?.split(',') ?? [];

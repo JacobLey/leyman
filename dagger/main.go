@@ -139,8 +139,8 @@ func (m *Ci) ForkManifestAudit(
 		// In a worktree, `.git` is a file that the ignore above doesn't reach, naming a directory that isn't here
 		WithDirectory(workdir, source.Filter(dagger.DirectoryFilterOpts{Gitignore: true, Exclude: []string{".git"}})).
 		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends git"}).
-		// The script lists what Git would commit, which only needs the ignore rules
-		WithExec([]string{"git", "init", "--quiet"}).
+		// The script lists what Git would commit, which only needs the ignore rules, and records the commit it copied from
+		WithExec([]string{"sh", "-c", "git init --quiet && git add --all && git -c user.name=audit -c user.email=audit@localhost commit --quiet --message snapshot"}).
 		WithEnvVariable("CACHE_BUSTER", time.Now().String()).
 		WithExec([]string{"node", "leyman/main/scripts/audit-fork-manifest.mjs"}).
 		Sync(ctx)

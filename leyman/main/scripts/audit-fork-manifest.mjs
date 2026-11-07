@@ -10,7 +10,7 @@ import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { apply, inspect } from './fork-manifest.mjs';
+import { apply, drift, inspect } from './fork-manifest.mjs';
 
 const samplePackage = 'tools/parse-cwd';
 const millisecondsPerSecond = 1000;
@@ -51,7 +51,12 @@ const run = (label, command, ...args) => {
 
 try {
     const { files } = apply({ conditions, to, extraPackages: [samplePackage] });
-    const problems = inspect({ conditions, files, to });
+    const sinceApply = drift(to);
+    const problems = [
+        ...inspect({ conditions, files, to }),
+        ...sinceApply.changed.map(({ file }) => `Drift right after apply: ${file} changed`),
+        ...sinceApply.added.map(file => `Drift right after apply: ${file} is new`),
+    ];
     if (problems.length > 0) {
         throw new Error(problems.join('\n'));
     }

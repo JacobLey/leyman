@@ -89,5 +89,5 @@ node leyman/main/scripts/fork-manifest.mjs apply --to <your repository> --with c
 **What it costs**
 
 - Docker, and Dagger for CI.
-- You own what you copy. Packages upgrade through their changelogs, but copied files don't track what changes here afterwards: compare them by hand.
+- You own what you copy. Packages upgrade through their changelogs; copied files don't. `apply` records in `leyman-upstream.json` the commit it copied from and what it took, and from a checkout of this repository `node leyman/main/scripts/fork-manifest.mjs drift --fork <your repository>` lists the commits since then that touched those files, and the files new to the parts you took. You decide what to bring over, since your copies hold your own versions and names, then `resync --fork <your repository>` records that you're caught up.
 - The skills name this repository's packages as examples until you rewrite them.

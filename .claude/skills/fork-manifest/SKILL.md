@@ -27,11 +27,20 @@ A file is portable if it works with the other entries and nothing else. It may m
 | What | When | What it catches |
 |------|------|-----------------|
 | `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names that didn't come along, with no optional conditions and with all of them |
-| `fork-manifest-audit` | By hand and weekly, never in `verify` | What only shows up when a fork runs: applies the manifest with `tools/parse-cwd`, installs from nothing, runs `verify` and checks for lifecycle drift |
+| `fork-manifest-audit` | By hand and weekly, never in `verify` | What only shows up when a fork runs: applies the manifest with `tools/parse-cwd`, installs from nothing, runs `verify` and checks for lifecycle drift, and that `drift` reports nothing right after `apply` |
 
 The audit runs without any optional condition, so it doesn't prove the conditional files work. It also doesn't read the skills, which still name this repo's packages as examples.
 
 To try a fork by hand, `node leyman/main/scripts/fork-manifest.mjs apply --to <dir> --with go,rust --package tools/parse-cwd` prints what it skipped and why. To audit from CI, run the `Adoption audits` workflow. To audit in Dagger, `dagger call --mod ./dagger fork-manifest-audit`.
+
+## Keeping a fork current
+
+`apply` writes `leyman-upstream.json` into the fork: this repository's URL, the commit it copied from, the `with` conditions and extra packages, and each file it copied. From an up-to-date checkout here (with full history, so it has that commit):
+
+- `node leyman/main/scripts/fork-manifest.mjs drift --fork <dir>` lists, for each recorded file, the commits since then that touched it (marking files removed or moved here), and the files added since then under what the fork takes, with the `git diff` command that shows a change.
+- `node leyman/main/scripts/fork-manifest.mjs resync --fork <dir>` moves the record to this checkout's commit, keeping the files of what the fork takes that the fork still has.
+
+`drift` never compares the fork's files with these: a fork keeps its own values (the Node version, images, names), so only what changed here is news, and its owner decides what fits. Commit here before running `apply`, as the record names `HEAD` and uncommitted changes aren't part of it.
 
 ## What a fork gets
 
