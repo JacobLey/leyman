@@ -36,6 +36,7 @@
     "dist",
     "!dist/**/*.map",
     "!dist/tsconfig.tsbuildinfo",
+    "skills",
     "WHY-MOCHA-CHAIN.md"
   ],
   "dependencies": {

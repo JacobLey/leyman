@@ -63,6 +63,7 @@ export const frameworkPackages = [
     '@leyman/expect',
     '@leyman/framework',
     '@leyman/nx-plugin',
+    'mocha-chain',
     'nx-lifecycle',
 ] as const;
 
