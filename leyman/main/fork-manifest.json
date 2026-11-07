@@ -467,6 +467,10 @@
       "why": "on npm as @leyman/expect: a fork installs it"
     },
     {
+      "path": "leyman/framework",
+      "why": "on npm as @leyman/framework: a fork runs it"
+    },
+    {
       "path": "leyman/nx-plugin",
       "why": "on npm as @leyman/nx-plugin: a fork installs it"
     }

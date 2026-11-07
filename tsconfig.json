@@ -153,6 +153,9 @@
     },
     {
       "path": "./leyman/nx-plugin"
+    },
+    {
+      "path": "./leyman/framework"
     }
   ]
 }

@@ -1,0 +1,69 @@
+{
+  "name": "@leyman/framework",
+  "version": "0.0.1",
+  "description": "Audits how much of the leyman framework a repository has adopted, tier by tier, with the fix for each gap.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "leyman/framework"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/framework#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs",
+    "skills"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "bin": {
+    "leyman-framework": "./bin.mjs"
+  },
+  "dependencies": {
+    "entry-script": "workspace:^",
+    "tinyglobby": "catalog:",
+    "yaml": "catalog:",
+    "yargs": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:node-22",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:",
+    "@types/yargs": "catalog:"
+  },
+  "keywords": [
+    "audit",
+    "framework",
+    "monorepo",
+    "nx",
+    "pnpm",
+    "skill"
+  ]
+}

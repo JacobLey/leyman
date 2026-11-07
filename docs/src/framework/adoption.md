@@ -15,6 +15,12 @@ The setup comes in four tiers. The first three are npm packages: install them, a
 
 All of it assumes TypeScript packages published as ESM.
 
+To see where a repository stands, run [`@leyman/framework`](https://www.npmjs.com/package/@leyman/framework)'s audit in it. It runs a check for each tier, reports the highest tier met, and gives the fix for each gap. It also prints the path of a skill that has a coding agent audit what needs judgment against the [principles](/framework/principles):
+
+```sh
+pnpm dlx @leyman/framework audit
+```
+
 ## 1. Checks
 
 Install [`@leyman/check-package`](https://www.npmjs.com/package/@leyman/check-package) and [`@leyman/eslint-config`](https://www.npmjs.com/package/@leyman/eslint-config) in any repository, Nx or not.

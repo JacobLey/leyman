@@ -206,6 +206,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/configs` | on npm as @leyman/configs: a fork installs it |
 | `leyman/eslint-config` | on npm as @leyman/eslint-config: a fork installs it |
 | `leyman/expect` | on npm as @leyman/expect: a fork installs it |
+| `leyman/framework` | on npm as @leyman/framework: a fork runs it |
 | `leyman/nx-plugin` | on npm as @leyman/nx-plugin: a fork installs it |
 
 <!-- fork-manifest:end -->
