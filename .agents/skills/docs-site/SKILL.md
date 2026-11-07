@@ -122,5 +122,10 @@ A post is `docs/src/blog/<slug>.md`, listed on `/blog/`, in the RSS feed and in 
 - `<PostHeader />` right under the title: the date, the packages and a link back to all posts.
 - The build fails when a field is missing, a slug names nothing, or `<PostHeader />` is missing (`docs/.vitepress/blog.ts`).
 - Lead with a measured result or a real story. Numbers come from a generated report (embed it, like `<GeneverComparison />`), with the versions measured, never typed in by hand.
-- Same rules as any page: type-checked `ts` blocks, plain prose, site-path links.
+- Links, chosen by what the reader needs at that point:
+  - **Our packages: the docs site** (`/packages/genever/`), not npm or GitHub. It's the canonical page, has guides and the reference, and keeps readers (and search credit) on our domain.
+  - **Other projects' packages: npm** (or their own docs site, when the point is a feature). Neutral, and shows the version the post names.
+  - **Code, data and issues: GitHub**, pinned to `main` (the probes, a comparison's documents, a workflow, "open an issue"). Where a reader would check a claim, link the file that backs it.
+- The feed carries each post's full content for sites that import it (dev.to): site paths become absolute docs-site URLs, code blocks lose highlighting and twoslash directives (the code after `// ---cut---` is kept), `<PostHeader />` is dropped, and any other component (a live report) becomes a link to the post (`docs/.vitepress/feed.ts`). So a post must still read well without its components: give a live report a static summary next to it.
+- Same rules as any page: type-checked `ts` blocks, plain prose.
 <!-- @manual-end rest -->
