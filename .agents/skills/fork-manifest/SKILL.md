@@ -192,6 +192,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 |------|-----|
 | `.agents/skills/framework-audit` | a link to the workspace package's source; a fork links its installed copy with leyman-framework skills |
 | `.agents/skills/principles` | a link to @leyman/configs' source; a fork links its installed copy (nx-plugin init or leyman-framework skills) |
+| `.agents/skills/nx-lifecycle` | a link to nx-lifecycle's source; a fork links its installed copy with leyman-framework skills |
 | `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |

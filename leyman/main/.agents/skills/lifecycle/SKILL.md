@@ -5,6 +5,8 @@ description: How the install → prepare → check/build → test → verify tas
 
 # Lifecycle Configuration
 
+How stages, hooks and bindings work in general, and the rules for any workspace using `nx-lifecycle`: the `nx-lifecycle` skill ([`.agents/skills/nx-lifecycle`](../../../../../.agents/skills/nx-lifecycle/SKILL.md), which `nx-lifecycle` ships and `leyman-framework skills` links). This one is this repository's stages, and how it differs.
+
 [`lifecycle.json`](../../../lifecycle.json) is the source of truth for task ordering. [`nx-lifecycle`](../../../../../apps/nx-lifecycle/README.md) uses it to generate every orchestration target's `dependsOn` in `nx.json` and each `project.json`. For why, see [WHY-NX-LIFECYCLE.md](../../../../../apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 `nx-lifecycle` also ships an Nx plugin that infers these targets instead of generating them, which is what other workspaces should use. This repo keeps the executor: Nx needs plugins before it can build anything, so the plugin would have to come from a published version. Generated files keep working if `nx-lifecycle` breaks, and `verify` runs the local build against this repo, so a mistake shows up in the same commit.

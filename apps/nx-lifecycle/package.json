@@ -44,6 +44,7 @@
     "!dist/file-content.*",
     "bin.mjs",
     "executors.json",
+    "skills",
     "out",
     "!out/.generated.json",
     "WHY-NX-LIFECYCLE.md"

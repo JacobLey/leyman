@@ -24,6 +24,8 @@ yarn add -D nx-lifecycle
 
 :::
 
+The package ships a skill for coding agents, `skills/nx-lifecycle/SKILL.md`: how the workspace orders its targets, and how to add one without breaking the wiring. Link it where your agent reads skills, e.g. `ln -s ../../node_modules/nx-lifecycle/skills/nx-lifecycle .agents/skills/nx-lifecycle`, or with [`leyman-framework skills`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills).
+
 ::: tip
 nx-lifecycle requires Node.js 24 or later.
 :::

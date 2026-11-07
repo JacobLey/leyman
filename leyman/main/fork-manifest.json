@@ -376,6 +376,10 @@
       "why": "a link to @leyman/configs' source; a fork links its installed copy (nx-plugin init or leyman-framework skills)"
     },
     {
+      "path": ".agents/skills/nx-lifecycle",
+      "why": "a link to nx-lifecycle's source; a fork links its installed copy with leyman-framework skills"
+    },
+    {
       "path": ".agents/skills/fork-manifest",
       "why": "how this repo's classification works; a fork keeps the list of what it took"
     },
