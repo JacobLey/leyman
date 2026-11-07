@@ -25,21 +25,14 @@ func newOptions(cwd, manifest string) populatefiles.Options {
 	}
 }
 
-func mkdir(t *testing.T, path string, mode fs.FileMode) {
+func mkdir(t *testing.T, path string) {
 	t.Helper()
 
 	if err := os.MkdirAll(path, 0o750); err != nil {
 		t.Fatal(err)
 	}
-
-	if err := os.Chmod(path, mode); err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() { _ = os.Chmod(path, 0o750) }) //nolint:gosec // Restored so the directory can be removed
 }
 
-// populateBoth populates a file with PopulateFile and PopulateFiles, expecting each to fail.
 func populateBoth(t *testing.T, file populatefiles.File, options populatefiles.Options) []error {
 	t.Helper()
 
@@ -94,8 +87,8 @@ func TestReadErrors(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	mkdir(t, filepath.Join(dir, "a.txt"), 0o750)
-	mkdir(t, filepath.Join(dir, "manifest.json"), 0o750)
+	mkdir(t, filepath.Join(dir, "a.txt"))
+	mkdir(t, filepath.Join(dir, "manifest.json"))
 
 	for _, err := range append(
 		populateBoth(t, newFile("a.txt", "a\n", false), newOptions(dir, "")),
@@ -129,16 +122,34 @@ func TestSignErrors(t *testing.T) {
 	}
 }
 
+// symlink makes a link at path, relative to dir, to target, which needn't exist.
+func symlink(t *testing.T, dir, path, target string) {
+	t.Helper()
+
+	link := filepath.Join(dir, path)
+	if err := os.MkdirAll(filepath.Dir(link), 0o750); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// The errors are made without file permissions, which root (as in CI) ignores.
 func TestWriteErrors(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	mkdir(t, filepath.Join(dir, "locked"), 0o500)
 
-	// A directory that can't be created, and a file that can't be written.
-	for _, path := range []string{"locked/sub/a.txt", "locked/a.txt"} {
+	// A directory that can't be created, as a dangling link is in its place, and a file that can't be written, as it is
+	// a link into a directory that doesn't exist. Neither can be read, so each is written.
+	symlink(t, dir, "linked", "missing/linked")
+	symlink(t, dir, "out/a.txt", "../missing/a.txt")
+
+	for path, kind := range map[string]error{"linked/sub/a.txt": fs.ErrExist, "out/a.txt": fs.ErrNotExist} {
 		for _, err := range populateBoth(t, newFile(path, "a\n", false), newOptions(dir, "")) {
-			if !errors.Is(err, fs.ErrPermission) {
+			if !errors.Is(err, kind) {
 				t.Errorf("%s: got %v", path, err)
 			}
 		}
@@ -161,31 +172,26 @@ func TestCleanErrors(t *testing.T) {
 		return options
 	}
 
-	// A target directory that is a file, and one with a directory that can't be read.
-	mkdir(t, filepath.Join(dir, "unreadable", "nested"), 0o000)
-
-	for _, targetDir := range []string{"file", "unreadable"} {
-		if _, err := populatefiles.PopulateFiles(nil, cleaning(targetDir, "")); err == nil {
-			t.Errorf("%s: expected an error", targetDir)
-		}
-	}
-
-	// A stale file that can't be removed, and a listed file that can't be read.
-	if _, err := populatefiles.PopulateFiles([]populatefiles.File{
-		newFile("stale.txt", "a\n", false), newFile("listed/a.txt", "a\n", false),
-	}, cleaning("out", "manifest.json")); err != nil {
-		t.Fatal(err)
-	}
-
-	mkdir(t, filepath.Join(dir, "out"), 0o500)
-
-	if _, err := populatefiles.PopulateFiles(nil, cleaning("out", "")); !errors.Is(err, fs.ErrPermission) {
+	// A target directory that is a file
+	if _, err := populatefiles.PopulateFiles(nil, cleaning("file", "")); err == nil || !strings.Contains(err.Error(),
+		"listing") {
 		t.Errorf("got %v", err)
 	}
 
-	mkdir(t, filepath.Join(dir, "out", "listed"), 0o000)
+	// A listed file that can't be read, as a directory is in its place
+	if _, err := populatefiles.PopulateFiles([]populatefiles.File{newFile("listed/a.txt", "a\n", false)},
+		cleaning("out", "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
 
-	if _, err := populatefiles.PopulateFiles(nil, cleaning("out", "manifest.json")); !errors.Is(err, fs.ErrPermission) {
+	if err := os.Remove(filepath.Join(dir, "out", "listed", "a.txt")); err != nil {
+		t.Fatal(err)
+	}
+
+	mkdir(t, filepath.Join(dir, "out", "listed", "a.txt", "nested"))
+
+	if _, err := populatefiles.PopulateFiles(nil, cleaning("out", "manifest.json")); err == nil ||
+		!strings.Contains(err.Error(), "reading") {
 		t.Errorf("got %v", err)
 	}
 }
@@ -194,7 +200,7 @@ func TestCleanErrors(t *testing.T) {
 // working directory.
 func TestMissingWorkingDirectory(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "gone")
-	mkdir(t, dir, 0o750)
+	mkdir(t, dir)
 	t.Chdir(dir)
 
 	if err := os.Remove(dir); err != nil {

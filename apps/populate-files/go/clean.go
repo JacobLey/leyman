@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 func stalePlan(path string) plan {
@@ -52,32 +53,43 @@ func findStale(targets []normalized, resolved paths, manifest *lookup, force boo
 	return stale, nil
 }
 
-// listStale lists the regular files of a directory, recursively, that aren't generated: none when it doesn't exist.
+// A listed entry of the target directory, or the directory itself without an entry.
+type listed struct {
+	entry fs.DirEntry
+	path  string
+}
+
+// listStale lists the regular files of a directory, recursively, that aren't generated, by path in depth-first order:
+// none when it doesn't exist.
 func listStale(dir string, generated map[string]bool) ([]plan, error) {
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("listing %s: %w", dir, err)
-	}
-
 	var stale []plan
 
-	for _, entry := range entries {
-		path := filepath.Join(dir, entry.Name())
+	// A stack: the last is next, so each directory's entries are pushed in reverse
+	pending := []listed{{entry: nil, path: dir}}
 
-		switch {
-		case entry.IsDir():
-			nested, err := listStale(path, generated)
-			if err != nil {
-				return nil, err
+	for len(pending) > 0 {
+		next := pending[len(pending)-1]
+		pending = pending[:len(pending)-1]
+
+		if next.entry != nil && !next.entry.IsDir() {
+			if next.entry.Type().IsRegular() && !generated[next.path] {
+				stale = append(stale, stalePlan(next.path))
 			}
 
-			stale = append(stale, nested...)
-		case entry.Type().IsRegular() && !generated[path]:
-			stale = append(stale, stalePlan(path))
+			continue
+		}
+
+		entries, err := os.ReadDir(next.path)
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+
+		if err != nil {
+			return nil, fmt.Errorf("listing %s: %w", next.path, err)
+		}
+
+		for _, entry := range slices.Backward(entries) {
+			pending = append(pending, listed{entry: entry, path: filepath.Join(next.path, entry.Name())})
 		}
 	}
 

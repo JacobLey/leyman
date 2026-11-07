@@ -325,13 +325,19 @@ func planFiles(targets []normalized, resolved paths, manifest *lookup, options O
 	return append(plans, stale...), nil
 }
 
+// removeFile removes a file, swapped by tests: nothing else makes removing a regular file fail for root, which tests
+// run as in CI.
+//
+//nolint:gochecknoglobals // Swapped only by tests
+var removeFile = os.Remove
+
 // apply writes the updated files, and removes the stale ones.
 func apply(plans []plan) error {
 	var writes []plan
 
 	for _, planned := range plans {
 		if planned.result.Reason == ReasonStaleFile {
-			if err := os.Remove(planned.result.Path); err != nil {
+			if err := removeFile(planned.result.Path); err != nil {
 				return fmt.Errorf("removing %s: %w", planned.result.Path, err)
 			}
 		} else {
