@@ -1,5 +1,6 @@
+import type { Context } from 'mocha';
 import { expect } from 'chai';
-import { suite, test } from 'mocha';
+import { before, suite, test } from 'mocha';
 import configGenerator, { nonDeprecatedRules } from '#internal/eslint-config.js';
 
 const globalsOf = (options: { node?: boolean }) => {
@@ -15,6 +16,12 @@ const globalsOf = (options: { node?: boolean }) => {
 };
 
 suite('configGenerator globals', () => {
+    // The first config built collects every plugin's rules, which on a loaded CI runner under c8 outlasts a test's timeout
+    before(function (this: Context) {
+        this.timeout(10_000);
+        globalsOf({});
+    });
+
     test('Only defines globals shared with browsers by default', () => {
         const { source } = globalsOf({});
         expect(source).to.include.keys('console', 'fetch', 'setTimeout', 'URL');
