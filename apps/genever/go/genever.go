@@ -57,17 +57,19 @@ var (
 )
 
 // Generate generates Go types from a JSON Schema, and returns the source of a Go file, formatted as gofmt does. It
-// reads one document, and loads nothing: a `$ref` to another document fails with ErrUnsupported.
+// reads one document, and loads nothing: a `$ref` to another document fails with ErrUnsupported. GenerateFile loads
+// the files and URLs a schema refers to.
 func Generate(schema []byte, options Options) ([]byte, error) {
 	root, err := jsonv.Parse(schema)
 	if err != nil {
 		return nil, err //nolint:wrapcheck // ErrSyntax is the error, already saying what is wrong
 	}
 
-	return generate(root, options)
+	return generate(root, options, nil)
 }
 
-func generate(root jsonv.Value, options Options) ([]byte, error) {
+// generate generates Go types from a schema or OpenAPI document, with the files it refers to, as Load returns them.
+func generate(root jsonv.Value, options Options, files map[string]convert.OpenAPIFile) ([]byte, error) {
 	name := options.Name
 	if name == "" {
 		name = "Schema"
@@ -97,8 +99,7 @@ func generate(root jsonv.Value, options Options) ([]byte, error) {
 		dialect = documentDialect
 	}
 
-	// Without loading, there are no files
-	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Files: nil, Strict: !options.NoStrict}
+	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Files: files, Strict: !options.NoStrict}
 
 	var types []convert.NamedType
 	if isDocument {
