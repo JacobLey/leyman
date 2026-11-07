@@ -1,11 +1,13 @@
 import TwoslashFloatingVue from '@shikijs/vitepress-twoslash/client';
 import type { EnhanceAppContext } from 'vitepress';
 import Theme from 'vitepress/theme';
+import BlogPosts from './components/BlogPosts.vue';
 import CategoryCards from './components/CategoryCards.vue';
 import DemoCards from './components/DemoCards.vue';
 import GeneverComparison from './components/GeneverComparison.vue';
 import InfrastructureCards from './components/InfrastructureCards.vue';
 import PackageCards from './components/PackageCards.vue';
+import PostHeader from './components/PostHeader.vue';
 import ProjectHeader from './components/ProjectHeader.vue';
 import ProjectRelated from './components/ProjectRelated.vue';
 
@@ -15,11 +17,13 @@ export default {
     extends: Theme,
     enhanceApp({ app }: EnhanceAppContext) {
         app.use(TwoslashFloatingVue);
+        app.component('BlogPosts', BlogPosts);
         app.component('CategoryCards', CategoryCards);
         app.component('DemoCards', DemoCards);
         app.component('GeneverComparison', GeneverComparison);
         app.component('InfrastructureCards', InfrastructureCards);
         app.component('PackageCards', PackageCards);
+        app.component('PostHeader', PostHeader);
         app.component('ProjectHeader', ProjectHeader);
         app.component('ProjectRelated', ProjectRelated);
     },

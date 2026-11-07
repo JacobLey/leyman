@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createPostsLoader, type Post } from './blog.js';
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash';
 import ts from 'typescript';
 import { type DefaultTheme, defineConfigWithTheme } from 'vitepress';
@@ -336,10 +337,10 @@ const writeRedirects = (outDir: string, base: string): void => {
 
 /**
  * Writes `/llms.txt` ([llmstxt.org](https://llmstxt.org/)): an index of every package, demo,
- * infrastructure entry and framework page for AI agents, with links to the pages, npm and GitHub. Generated from the
+ * infrastructure entry, framework page and blog post for AI agents, with links to the pages, npm and GitHub. Generated from the
  * registry, so it lists exactly what the site does.
  */
-const writeLlmsTxt = (outDir: string): void => {
+const writeLlmsTxt = (outDir: string, posts: readonly Post[]): void => {
     const showcase = (section: 'demos' | 'infrastructure', entries: readonly Demo[]): string[] =>
         entries.map(
             ({ slug, title, pitch, source }) =>
@@ -381,8 +382,54 @@ const writeLlmsTxt = (outDir: string): void => {
         ...framework.map(
             ({ text, link, pitch }) => `- [${text}](${siteUrl}framework/${link}): ${pitch}`
         ),
+        ...(posts.length > 0
+            ? [
+                  '',
+                  '## Blog',
+                  '',
+                  ...posts.map(
+                      ({ url, title, date, description }) =>
+                          `- [${title}](${siteUrl}${url.slice(1)}) (${date}): ${description}`
+                  ),
+              ]
+            : []),
     ];
     writeFileSync(join(outDir, 'llms.txt'), `${lines.join('\n')}\n`);
+};
+
+const escapeXml = (text: string): string =>
+    text.replaceAll(/[&<>"']/gv, char => `&#${char.codePointAt(0)};`);
+
+/**
+ * Writes the blog's RSS feed to `/blog/feed.xml`, newest first. Each item's link is the post's
+ * page, so a site importing the feed (dev.to) can mark it as the canonical URL.
+ */
+const writeFeed = (outDir: string, posts: readonly Post[]): void => {
+    const items = posts.map(
+        ({ url, title, description, date }) => `    <item>
+      <title>${escapeXml(title)}</title>
+      <link>${siteUrl}${url.slice(1)}</link>
+      <guid isPermaLink="true">${siteUrl}${url.slice(1)}</guid>
+      <pubDate>${new Date(`${date}T00:00:00Z`).toUTCString()}</pubDate>
+      <description>${escapeXml(description)}</description>
+    </item>`
+    );
+    mkdirSync(join(outDir, 'blog'), { recursive: true });
+    writeFileSync(
+        join(outDir, 'blog', 'feed.xml'),
+        `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Leyman blog</title>
+    <link>${siteUrl}blog/</link>
+    <atom:link href="${siteUrl}blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Benchmarks, comparisons and stories behind the Leyman TypeScript packages.</description>
+    <language>en</language>
+${items.join('\n')}
+  </channel>
+</rss>
+`
+    );
 };
 
 const nav: DefaultTheme.NavItem[] = [
@@ -423,6 +470,7 @@ const nav: DefaultTheme.NavItem[] = [
         activeMatch: '^/framework/',
         items: framework.map(({ text, link }) => ({ text, link: `/framework/${link}` })),
     },
+    { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
 ];
 
 export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
@@ -437,6 +485,15 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     cleanUrls: true,
     lastUpdated: false,
     head: [
+        [
+            'link',
+            {
+                rel: 'alternate',
+                type: 'application/rss+xml',
+                title: 'Leyman blog',
+                href: `${siteUrl}blog/feed.xml`,
+            },
+        ],
         // Proves ownership of the site to Google Search Console. Not a secret: it only works for the
         // Google account that made it.
         [
@@ -471,9 +528,11 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
         // `tsx` too, for code in libraries' JSDoc that twoslash shows in hovers (e.g. TanStack Query's)
         languages: ['js', 'ts', 'tsx', 'json', 'sh'],
     },
-    buildEnd({ outDir, site }) {
+    async buildEnd({ outDir, site }) {
+        const posts = await createPostsLoader().load();
         writeRedirects(outDir, site.base);
-        writeLlmsTxt(outDir);
+        writeLlmsTxt(outDir, posts);
+        writeFeed(outDir, posts);
     },
     transformPageData(pageData) {
         // `packages/haywire/index.md` is linked as `/packages/haywire/`, other pages without `.md`
