@@ -198,6 +198,14 @@ const readme = () => {
     const published = projects
         .filter(project => project.published)
         .toSorted((a, b) => byName(a.npmName, b.npmName));
+    const slugs = new Map(documented.map(({ slug, project }) => [project.directory, slug]));
+    // A documented package links its docs page (which links npm), the rest link npm
+    const packageLink = project => {
+        const slug = slugs.get(project.directory);
+        return slug
+            ? `${docsSite}/packages/${slug}/`
+            : `https://www.npmjs.com/package/${project.npmName}`;
+    };
     return `${header()}
 
 ${manual(filePath, 'intro')}
@@ -209,7 +217,7 @@ Published to npm:
 ${table(
     ['Package', 'Description', 'Source'],
     published.map(project => [
-        `[${code(project.npmName)}](https://www.npmjs.com/package/${project.npmName})`,
+        `[${code(project.npmName)}](${packageLink(project)})`,
         project.description,
         `[${code(project.directory)}](./${project.directory})`,
     ])
@@ -217,7 +225,7 @@ ${table(
 
 ${manual(filePath, 'packages')}
 
-A documentation site, with every code example type-checked, is in [\`docs/\`](./docs) (${list(documented.map(({ project }) => code(project.name)))} so far), plus the demos.
+A [documentation site](${docsSite}/), with every code example type-checked, is built from [\`docs/\`](./docs) (${list(documented.map(({ project }) => code(project.name)))} so far), plus the demos.
 
 ## Demos
 
