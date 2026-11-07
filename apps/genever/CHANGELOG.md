@@ -1,5 +1,13 @@
 # genever
 
+## 0.10.2
+
+### Patch Changes
+
+- Updated dependencies [ee0b74b]
+  - generated-signature@0.3.0
+  - populate-files@1.2.2
+
 ## 0.10.1
 
 ### Patch Changes

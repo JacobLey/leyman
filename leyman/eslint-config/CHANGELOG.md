@@ -1,5 +1,16 @@
 # @leyman/eslint-config
 
+## 0.2.0
+
+### Minor Changes
+
+- ee0b74b: Update dependencies: @tanstack/react-query@5.105.0, eslint@10.14.0, globals@17.13.0, @typescript-eslint/eslint-plugin@8.72.1, @typescript-eslint/parser@8.72.1, @typescript-eslint/utils@8.72.1, eslint-plugin-regexp@3.3.2.
+- 5e7e91f: Ships a skill for coding agents, `skills/eslint-config/SKILL.md`: the `configGenerator` options, what each directory is held to, when and how to disable a rule, and where to run ESLint from.
+
+### Patch Changes
+
+- a65f397: `unicorn/prefer-iterator-concat` stays off on a Node.js 26 floor: TypeScript's lib doesn't declare `Iterator.concat` yet, so the call it asks for doesn't type-check.
+
 ## 0.1.1
 
 ### Patch Changes

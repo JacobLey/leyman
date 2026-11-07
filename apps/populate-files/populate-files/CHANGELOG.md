@@ -1,5 +1,12 @@
 # populate-files
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies [ee0b74b]
+  - generated-signature@0.3.0
+
 ## 1.2.1
 
 ### Patch Changes

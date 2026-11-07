@@ -1,5 +1,11 @@
 # @leyman/configs
 
+## 0.2.0
+
+### Minor Changes
+
+- d20634b: Ships the framework's principles as a skill, `skills/principles/SKILL.md`, so a coding agent reads the principles of the version installed. pnpm links it into an agent's skills once approved, which `@leyman/nx-plugin`'s `init` does.
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@leyman/configs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Strict shared configs for TypeScript ESM packages: tsconfig bases per Node.js support floor, SWC, c8 at 100% coverage, Biome and Vitest, each consumed by extending or pointing at the installed file.",
   "type": "module",
   "author": "JacobLey",
