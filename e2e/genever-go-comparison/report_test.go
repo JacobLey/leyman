@@ -18,7 +18,7 @@ var errBroken = errors.New("broken")
 func options(tools []comparison.Tool) comparison.Options {
 	return comparison.Options{
 		Commit: "abc", GeneratedAt: "2026-11-07T00:00:00Z", Tools: tools, Definitions: 5, Runs: 1,
-		DocumentsDir: "", TempDir: "",
+		DocumentsDir: "",
 	}
 }
 
@@ -114,7 +114,18 @@ func TestToolFailures(t *testing.T) {
 	}
 }
 
-// A problem with the comparison itself fails it: the shared documents missing, or nowhere to build.
+// generating is a tool that generates the source.
+func generating(source string) comparison.Tool {
+	return comparison.Tool{
+		Name: "fixed", Module: "", OpenAPI: nil,
+		JSONSchema: func([]byte) (comparison.Generated, error) {
+			return comparison.Generated{Source: []byte(source), Subject: "int"}, nil
+		},
+	}
+}
+
+// A problem with the comparison itself fails it, rather than scoring a tool: the shared documents missing, or the
+// harness failing other than by the source not compiling.
 func TestReportErrors(t *testing.T) {
 	t.Parallel()
 
@@ -125,24 +136,22 @@ func TestReportErrors(t *testing.T) {
 		t.Error("expected an error")
 	}
 
-	nowhere := options([]comparison.Tool{comparison.GeneverTool})
-	nowhere.TempDir = filepath.Join(t.TempDir(), "missing")
-
-	if _, err := comparison.CreateReport(nowhere); err == nil {
-		t.Error("expected an error")
+	for name, source := range map[string]string{
+		"silent":  "package main\n\nimport \"os\"\n\nfunc init() { os.Exit(0) }\n",
+		"panics":  "package main\n\nfunc init() { panic(1) }\n",
+		"imports": "package main\n\nimport _ \"example.com/missing\"\n",
+	} {
+		if _, err := comparison.CreateReport(options([]comparison.Tool{generating(source)})); err == nil {
+			t.Errorf("%s: expected an error", name)
+		}
 	}
+}
 
-	// A harness that prints nothing
-	silent := func([]byte) (comparison.Generated, error) {
-		return comparison.Generated{
-			Source:  []byte("package main\n\nimport \"os\"\n\nfunc init() { os.Exit(0) }\n"),
-			Subject: "int",
-		}, nil
-	}
+// Without a directory for temporary files, there is nowhere to build. Not parallel, as it sets TMPDIR.
+func TestNowhereToBuild(t *testing.T) {
+	t.Setenv("TMPDIR", filepath.Join(t.TempDir(), "missing"))
 
-	if _, err := comparison.CreateReport(options([]comparison.Tool{
-		{Name: "silent", Module: "", JSONSchema: silent, OpenAPI: nil},
-	})); err == nil {
+	if _, err := comparison.CreateReport(options([]comparison.Tool{comparison.GeneverTool})); err == nil {
 		t.Error("expected an error")
 	}
 }
@@ -204,7 +213,7 @@ func TestEnvironmentOptions(t *testing.T) {
 func TestDefaultBenchmark(t *testing.T) {
 	t.Parallel()
 
-	defaults := options([]comparison.Tool{comparison.GeneverTool})
+	defaults := options([]comparison.Tool{})
 	defaults.Definitions, defaults.Runs = 0, 0
 
 	report, err := comparison.CreateReport(defaults)

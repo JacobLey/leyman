@@ -101,6 +101,32 @@ const features = computed(() => {
     });
 });
 
+// Why a tool failed every probe of a suite: it produced nothing, or what it produced doesn't build
+const failures = computed(() =>
+    (report.value?.tools ?? []).flatMap(({ name, results }) =>
+        suiteIds.flatMap(id => {
+            const result = results[id];
+            if (result?.error) {
+                return [
+                    {
+                        key: `${name}-${id}`,
+                        text: `${name} failed on the ${suiteTitles[id]} document: ${result.error}`,
+                    },
+                ];
+            }
+            if (result?.typeErrors.length) {
+                return [
+                    {
+                        key: `${name}-${id}`,
+                        text: `${name}'s ${suiteTitles[id]} types don't build: ${result.typeErrors.join('; ')}`,
+                    },
+                ];
+            }
+            return [];
+        })
+    )
+);
+
 const timed = computed(() => {
     const current = report.value;
     if (!current) {
@@ -161,6 +187,9 @@ const timed = computed(() => {
                 </tr>
             </tbody>
         </table>
+        <ul v-if="failures.length > 0">
+            <li v-for="failure in failures" :key="failure.key">{{ failure.text }}</li>
+        </ul>
 
         <template v-for="suite in features" :key="suite.id">
             <h2>{{ suite.title }} probes by feature</h2>

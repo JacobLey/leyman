@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"slices"
+	"strings"
 	"time"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
@@ -68,8 +69,6 @@ type Options struct {
 	Runs int
 	// DocumentsDir holds the shared documents, or DefaultDocumentsDir.
 	DocumentsDir string
-	// TempDir is where each tool's source is built, or the default directory for temporary files.
-	TempDir string
 }
 
 // Suites, by their id in the report.
@@ -180,7 +179,7 @@ func runSuite(generate Generate, each suite, benchmark Benchmark, options Option
 		result.Error = err.Error()
 		result.Probes = failed(each.probes)
 	} else {
-		passed, typeErrors, err := runProbes(generated, each.probes, options.TempDir)
+		passed, typeErrors, err := runProbes(generated, each.probes)
 		if err != nil {
 			return result, err
 		}
@@ -222,10 +221,11 @@ func versionOf(module string) string {
 		return genever.Version()
 	}
 
-	info, _ := debug.ReadBuildInfo()
-	for _, dependency := range info.Deps {
-		if dependency.Path == module {
-			return dependency.Version[1:]
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, dependency := range info.Deps {
+			if dependency.Path == module {
+				return strings.TrimPrefix(dependency.Version, "v")
+			}
 		}
 	}
 
@@ -262,6 +262,6 @@ func EnvironmentOptions(getenv func(string) string) Options {
 
 	return Options{
 		Commit: commit, GeneratedAt: time.Now().UTC().Format(time.RFC3339Nano), Tools: nil, Definitions: 0, Runs: 0,
-		DocumentsDir: "", TempDir: "",
+		DocumentsDir: "",
 	}
 }

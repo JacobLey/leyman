@@ -2,7 +2,6 @@ package comparison
 
 import (
 	"bytes"
-	"fmt"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
 	"github.com/atombender/go-jsonschema/pkg/generator"
@@ -17,7 +16,7 @@ type Generated struct {
 	Subject string
 }
 
-// Generate turns a document into Go source.
+// Generate turns a document into Go source. With an error, the source is ignored.
 type Generate func(document []byte) (Generated, error)
 
 // A Tool in the comparison.
@@ -57,11 +56,8 @@ func geneverGenerate(document []byte, name, subject string) (Generated, error) {
 	source, err := genever.Generate(document, genever.Options{
 		Name: name, Package: generatedPackage, BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
 	})
-	if err != nil {
-		return Generated{Source: nil, Subject: ""}, fmt.Errorf("genever-go: %w", err)
-	}
-
-	return Generated{Source: source, Subject: subject}, nil
+	// The report names the tool
+	return Generated{Source: source, Subject: subject}, err //nolint:wrapcheck // See above
 }
 
 // AlternativeTools are the most used tools for generating Go types from JSON Schema or OpenAPI.
@@ -84,51 +80,44 @@ var AlternativeTools = []Tool{
 
 // goJSONSchema generates with go-jsonschema. The root type is named after the schema's file name.
 func goJSONSchema(document []byte) (Generated, error) {
-	empty := Generated{Source: nil, Subject: ""}
-
 	schema, err := schemas.FromJSONReader(bytes.NewReader(document))
-	if err != nil {
-		return empty, fmt.Errorf("go-jsonschema: %w", err)
-	}
-
-	gen, err := generator.New(generator.Config{ //nolint:exhaustruct_v5 // The tool's defaults
-		DefaultPackageName: generatedPackage,
-		DefaultOutputName:  "generated.go",
-		Tags:               []string{"json"},
-		Warner:             func(string) {},
-	})
-	if err == nil {
-		err = gen.AddFile("subject.json", schema)
-	}
 
 	var sources map[string][]byte
+
 	if err == nil {
-		sources, err = gen.Sources()
+		var gen *generator.Generator
+
+		gen, err = generator.New(generator.Config{ //nolint:exhaustruct_v5 // The tool's defaults
+			DefaultPackageName: generatedPackage,
+			DefaultOutputName:  "generated.go",
+			Tags:               []string{"json"},
+			Warner:             func(string) {},
+		})
+		if err == nil {
+			err = gen.AddFile("subject.json", schema)
+		}
+
+		if err == nil {
+			sources, err = gen.Sources()
+		}
 	}
 
-	if err != nil {
-		return empty, fmt.Errorf("go-jsonschema: %w", err)
-	}
-
-	return Generated{Source: sources["generated.go"], Subject: "SubjectJson"}, nil
+	// The report names the tool
+	return Generated{Source: sources["generated.go"], Subject: "SubjectJson"}, err //nolint:wrapcheck // See above
 }
 
 // oapiCodegen generates oapi-codegen's models, the types of an OpenAPI document's schemas.
 func oapiCodegen(document []byte) (Generated, error) {
-	empty := Generated{Source: nil, Subject: ""}
-
 	spec, err := openapi3.NewLoader().LoadFromData(document)
-	if err != nil {
-		return empty, fmt.Errorf("oapi-codegen: %w", err)
+
+	var source string
+	if err == nil {
+		source, err = codegen.Generate(spec, codegen.Configuration{ //nolint:exhaustruct_v5 // The tool's defaults
+			PackageName: generatedPackage,
+			Generate:    codegen.GenerateOptions{Models: true}, //nolint:exhaustruct_v5 // Only the models
+		})
 	}
 
-	source, err := codegen.Generate(spec, codegen.Configuration{ //nolint:exhaustruct_v5 // The tool's defaults
-		PackageName: generatedPackage,
-		Generate:    codegen.GenerateOptions{Models: true}, //nolint:exhaustruct_v5 // Only the models
-	})
-	if err != nil {
-		return empty, fmt.Errorf("oapi-codegen: %w", err)
-	}
-
-	return Generated{Source: []byte(source), Subject: "Note"}, nil
+	// The report names the tool
+	return Generated{Source: []byte(source), Subject: "Note"}, err //nolint:wrapcheck // See above
 }

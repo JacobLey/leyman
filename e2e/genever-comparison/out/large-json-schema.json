@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "Def0": {
+      "$ref": "#/$defs/Def0"
+    },
+    "Def1": {
+      "$ref": "#/$defs/Def1"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Shared": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^id_"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Def0": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^id_"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "shared": {
+          "$ref": "#/$defs/Shared"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Def1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^id_"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "a",
+            "b",
+            "c"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "shared": {
+          "$ref": "#/$defs/Shared"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

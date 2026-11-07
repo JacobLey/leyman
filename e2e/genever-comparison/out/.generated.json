@@ -4,6 +4,12 @@
     "json-schema.json": {
       "hash": "v1:a7e36f49afceb365c7660a39fb6d4683"
     },
+    "large-json-schema.json": {
+      "hash": "v1:836729a74202fcfcde59c3aefc2ce2bc"
+    },
+    "large-openapi.json": {
+      "hash": "v1:38c1ffe3eef0cc5f9a04ec55a5edc6be"
+    },
     "openapi.json": {
       "hash": "v1:a219f9aa1ac2be1c2f0c5dbcc85da1a1"
     }

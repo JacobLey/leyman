@@ -21,7 +21,8 @@ const (
 	outcomePanicked = "panicked"
 )
 
-// harnessGoMod is the module the generated source is built in. Every tool's types only need the standard library.
+// harnessGoMod is the module the generated source is built in, with only the standard library: a tool whose types
+// import its own package fails the comparison, rather than scoring zero, until that package is added here.
 const harnessGoMod = "module harness\n\ngo 1.24\n"
 
 // harnessMain decodes each value into the subject, encodes it back, and prints what happened to each.
@@ -73,12 +74,13 @@ func main() {
 }
 `
 
-// errHarness is the harness failing to report, which only a bug in it causes.
-var errHarness = errors.New("the harness printed no outcomes")
+// errHarness is the harness failing other than by the generated source not compiling, such as Go missing, an import
+// it can't resolve, or a panic outside decoding: the comparison's problem, not the tool's.
+var errHarness = errors.New("the harness failed")
 
 // runProbes builds the generated source with a harness, and decodes each probe's value. It returns whether each probe
 // passed, and the build's errors, when the source doesn't build.
-func runProbes(generated Generated, probes []Probe, tempDir string) ([]bool, []string, error) {
+func runProbes(generated Generated, probes []Probe) ([]bool, []string, error) {
 	values := make([]string, len(probes))
 	for index, probe := range probes {
 		values[index] = strconv.Quote(probe.Value)
@@ -87,7 +89,7 @@ func runProbes(generated Generated, probes []Probe, tempDir string) ([]bool, []s
 	main := fmt.Sprintf(harnessMain, strings.Join(values, ", "), outcomePanicked, generated.Subject, outcomeRejected,
 		outcomeChanged, outcomeChanged, outcomeHeld)
 
-	dir, err := harnessDir(tempDir, map[string][]byte{
+	dir, err := harnessDir(map[string][]byte{
 		"go.mod": []byte(harnessGoMod), "generated.go": generated.Source, "harness.go": []byte(main),
 	})
 	if err != nil {
@@ -104,12 +106,24 @@ func runProbes(generated Generated, probes []Probe, tempDir string) ([]bool, []s
 	command.Stderr = &stderr
 
 	if err := command.Run(); err != nil {
+		// Compile errors are listed under the package's name
+		if !strings.HasPrefix(stderr.String(), "# ") {
+			return nil, nil, fmt.Errorf("%w: %w: %s", errHarness, err, stderr.String())
+		}
+
 		return failed(probes), buildErrors(stderr.String()), nil
 	}
 
+	passed, err := score(stdout.Bytes(), probes)
+
+	return passed, nil, err
+}
+
+// score is whether each probe passed, from the outcomes the harness printed.
+func score(printed []byte, probes []Probe) ([]bool, error) {
 	var outcomes []string
-	if err := json.Unmarshal(stdout.Bytes(), &outcomes); err != nil || len(outcomes) != len(probes) {
-		return nil, nil, fmt.Errorf("%w: %q", errHarness, stdout.String())
+	if err := json.Unmarshal(printed, &outcomes); err != nil || len(outcomes) != len(probes) {
+		return nil, fmt.Errorf("%w: it printed %q", errHarness, printed)
 	}
 
 	passed := make([]bool, len(probes))
@@ -118,12 +132,12 @@ func runProbes(generated Generated, probes []Probe, tempDir string) ([]bool, []s
 			outcomes[index] == outcomeRejected && probe.Rejects
 	}
 
-	return passed, nil, nil
+	return passed, nil
 }
 
-// harnessDir makes a temporary directory in tempDir holding the files, which the caller removes.
-func harnessDir(tempDir string, files map[string][]byte) (string, error) {
-	dir, err := os.MkdirTemp(tempDir, "genever-go-comparison")
+// harnessDir makes a temporary directory holding the files, which the caller removes.
+func harnessDir(files map[string][]byte) (string, error) {
+	dir, err := os.MkdirTemp("", "genever-go-comparison")
 	if err != nil {
 		return "", fmt.Errorf("temporary directory: %w", err)
 	}
@@ -144,7 +158,7 @@ func failed(probes []Probe) []bool {
 	return make([]bool, len(probes))
 }
 
-// buildErrors are the lines of `go run`'s errors, without the line naming the package.
+// buildErrors are the lines of `go run`'s compile errors, without the line naming the package.
 func buildErrors(stderr string) []string {
 	var lines []string
 
