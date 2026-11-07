@@ -330,3 +330,55 @@ func TestDocumentPrecision(t *testing.T) {
 		}
 	}
 }
+
+// An OpenAPI document's operations each have a struct of what a call sends, and a type for each JSON response body.
+func TestOperationPrecision(t *testing.T) {
+	t.Parallel()
+
+	source, err := genever.Generate([]byte(`{
+		"openapi": "3.1.0",
+		"info": {"title": "API", "version": "1"},
+		"paths": {"/users/{id}": {
+			"parameters": [{"name": "id", "in": "path", "schema": {"type": "string"}}],
+			"put": {
+				"operationId": "update-user",
+				"parameters": [
+					{"name": "dryRun", "in": "query", "schema": {"type": "boolean"}},
+					{"name": "X-Trace", "in": "header", "required": true, "schema": {"type": "string"}}
+				],
+				"requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}},
+				"responses": {
+					"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}},
+					"default": {"content": {"application/json": {"schema": {"type": "string"}}}}
+				}
+			}
+		}},
+		"components": {"schemas": {"User": {
+			"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": false
+		}}}
+	}`), genever.Options{Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := map[string]string{
+		"User":                      "{Name *string}",
+		"UpdateUserInput":           "{Body *User; Path UpdateUserInputPath; Query *UpdateUserInputQuery; Header UpdateUserInputHeader}",
+		"UpdateUserInputPath":       "{ID string}",
+		"UpdateUserInputQuery":      "{DryRun *bool}",
+		"UpdateUserInputHeader":     "{XTrace string}",
+		"UpdateUserResponse200":     "= User",
+		"UpdateUserResponseDefault": "string",
+	}
+
+	got := declarations(checkSource(t, source))
+	for declared, description := range got {
+		if expected[declared] != description {
+			t.Errorf("%s: got %q, expected %q", declared, description, expected[declared])
+		}
+	}
+
+	if len(got) != len(expected) {
+		t.Errorf("got %v", got)
+	}
+}

@@ -88,8 +88,8 @@ func Convert(root jsonv.Value, rootName string, options Options) ([]NamedType, e
 }
 
 // Document converts an OpenAPI document. Each of its `components.schemas`, and any other schema targeted by a
-// `$ref`, becomes a named type, sorted by name, by byte. Schemas only an operation uses aren't converted. The error is
-// a *gerr.Error.
+// `$ref`, becomes a named type, sorted by name, by byte. Then each operation with an `operationId` has a type for what
+// a call to it sends, and one for each JSON response body, in the order of `paths`. The error is a *gerr.Error.
 func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 	conv := &converter{
 		root:           document,
@@ -118,6 +118,12 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 		return nil, err
 	}
 
+	// Operations before the pending schemas, in the order the TypeScript genever converts them
+	operations, err := conv.operations(document)
+	if err != nil {
+		return nil, err
+	}
+
 	types, err := conv.convertPending()
 	if err != nil {
 		return nil, err
@@ -127,7 +133,7 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 		return cmp.Compare(a.Name, b.Name)
 	})
 
-	return types, nil
+	return append(types, operationTypes(conv.names, operations)...), nil
 }
 
 // dialectOf is the dialect of the schema at a JSON Pointer: the document's, or that of the file it is in.

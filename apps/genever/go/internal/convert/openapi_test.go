@@ -153,8 +153,7 @@ func TestDocumentOtherSchemas(t *testing.T) {
 					"responses": {"201": {"content": {"application/json": {"schema": {"type": "null"}}}}}
 				},
 				"summary": "Users"
-			},
-			"/other": "not a path item"
+			}
 		},
 		"x-extension": {"type": "string"}`)
 	text = strings.Replace(text, `"components": {`, `"components": {

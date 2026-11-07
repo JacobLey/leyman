@@ -12,6 +12,20 @@ export interface ErrorCase {
 }
 
 /**
+ * An OpenAPI 3.1 document with paths, and other components.
+ *
+ * @param paths - path items, by path
+ * @param components - other objects the paths refer to, by kind
+ * @returns a document of version 3.1.0, with an `info`
+ */
+const openApiDocument = (paths: unknown, components: Record<string, unknown> = {}): unknown => ({
+    openapi: '3.1.0',
+    info: { title: 'API', version: '1.0.0' },
+    paths,
+    components,
+});
+
+/**
  * Schemas that are not valid JSON Schema.
  */
 export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
@@ -111,6 +125,107 @@ export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
         schema: { type: 'number', exclusiveMaximum: '1' },
         pointer: '#/exclusiveMaximum',
     },
+    'paths is not an object': { schema: openApiDocument([]), pointer: '#/paths' },
+    'path item is not an object': { schema: openApiDocument({ '/a': 1 }), pointer: '#/paths/~1a' },
+    'operation is not an object': {
+        schema: openApiDocument({ '/a': { get: 1 } }),
+        pointer: '#/paths/~1a/get',
+    },
+    'parameters is not an array': {
+        schema: openApiDocument({ '/a': { get: { parameters: {} } } }),
+        pointer: '#/paths/~1a/get/parameters',
+    },
+    'parameter without a location': {
+        schema: openApiDocument({ '/a': { get: { parameters: [{ name: 'a', in: 'body' }] } } }),
+        pointer: '#/paths/~1a/get/parameters/0',
+    },
+    'parameter content is not an object': {
+        schema: openApiDocument({
+            '/a': { get: { parameters: [{ name: 'a', in: 'query', content: [] }] } },
+        }),
+        pointer: '#/paths/~1a/get/parameters/0/content',
+    },
+    'reference object to something not an object': {
+        schema: openApiDocument(
+            { '/a': { parameters: [{ $ref: '#/components/parameters/P' }] } },
+            { parameters: { P: 1 } }
+        ),
+        pointer: '#/components/parameters/P',
+    },
+    'reference objects only referring to each other': {
+        schema: openApiDocument(
+            { '/a': { $ref: '#/components/pathItems/A' } },
+            {
+                pathItems: {
+                    A: { $ref: '#/components/pathItems/B' },
+                    B: { $ref: '#/components/pathItems/A' },
+                },
+            }
+        ),
+        pointer: '#/paths/~1a/$ref',
+    },
+    'reference object that does not resolve': {
+        schema: openApiDocument({
+            '/a': { get: { parameters: [{ $ref: '#/components/parameters/None' }] } },
+        }),
+        pointer: '#/paths/~1a/get/parameters/0/$ref',
+    },
+    'request body is not an object': {
+        schema: openApiDocument({ '/a': { post: { requestBody: 1 } } }),
+        pointer: '#/paths/~1a/post/requestBody',
+    },
+    'response is not an object': {
+        schema: openApiDocument({ '/a': { get: { responses: { 200: 1 } } } }),
+        pointer: '#/paths/~1a/get/responses/200',
+    },
+    'header is not an object': {
+        schema: openApiDocument({
+            '/a': { get: { responses: { 200: { headers: { 'X-A': 1 } } } } },
+        }),
+        pointer: '#/paths/~1a/get/responses/200/headers/X-A',
+    },
+    'operationId used twice': {
+        schema: openApiDocument({
+            '/a': { get: { operationId: 'x' } },
+            '/b': { get: { operationId: 'x' } },
+        }),
+        pointer: '#/paths/~1b/get/operationId',
+    },
+    'request body content is not an object': {
+        schema: openApiDocument({ '/a': { post: { requestBody: { content: [] } } } }),
+        pointer: '#/paths/~1a/post/requestBody/content',
+    },
+    'responses is not an object': {
+        schema: openApiDocument({ '/a': { get: { responses: [] } } }),
+        pointer: '#/paths/~1a/get/responses',
+    },
+    'media type is not an object': {
+        schema: openApiDocument({
+            '/a': { get: { responses: { 200: { content: { 'application/json': 1 } } } } },
+        }),
+        pointer: '#/paths/~1a/get/responses/200/content/application~1json',
+    },
+    'response headers is not an object': {
+        schema: openApiDocument({ '/a': { get: { responses: { 200: { headers: [] } } } } }),
+        pointer: '#/paths/~1a/get/responses/200/headers',
+    },
+    // The reference of a parameter's schema is followed first, for its default, before the responses
+    'parameter schema reference, before responses': {
+        schema: openApiDocument(
+            {
+                '/a': {
+                    get: {
+                        parameters: [
+                            { name: 'a', in: 'query', schema: { $ref: '#/components/schemas/A' } },
+                        ],
+                        responses: { 200: { headers: [] } },
+                    },
+                },
+            },
+            { schemas: { A: { $ref: 1 } } }
+        ),
+        pointer: '#/components/schemas/A/$ref',
+    },
 };
 
 /**
@@ -151,6 +266,46 @@ export const strictSchemas: Readonly<Record<string, ErrorCase>> = {
     'required property that is never valid': {
         schema: { type: 'object', properties: { a: false }, required: ['a'] },
         pointer: '#',
+    },
+    // Operations are read before the component schemas
+    'parameter schema, before components': {
+        schema: openApiDocument(
+            {
+                '/a': {
+                    get: {
+                        parameters: [
+                            { name: 'a', in: 'query', schema: { type: 'string', foo: 1 } },
+                        ],
+                    },
+                },
+            },
+            { schemas: { A: { type: 'string', foo: 1 } } }
+        ),
+        pointer: '#/paths/~1a/get/parameters/0/schema/foo',
+    },
+    'response header schema': {
+        schema: openApiDocument({
+            '/a': {
+                get: {
+                    responses: {
+                        200: { headers: { 'X-A': { schema: { type: 'string', foo: 1 } } } },
+                    },
+                },
+            },
+        }),
+        pointer: '#/paths/~1a/get/responses/200/headers/X-A/schema/foo',
+    },
+    'schema of other content than JSON': {
+        schema: openApiDocument({
+            '/a': {
+                post: {
+                    requestBody: {
+                        content: { 'text/plain': { schema: { type: 'string', foo: 1 } } },
+                    },
+                },
+            },
+        }),
+        pointer: '#/paths/~1a/post/requestBody/content/text~1plain/schema/foo',
     },
 };
 

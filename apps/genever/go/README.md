@@ -15,6 +15,7 @@ It is not published as a Go module (yet), and lives in this repository only.
 - [Command line](#command-line)
 - [API](#api)
 - [Types](#types)
+  - [Operations](#operations)
 - [Compared to genever](#compared-to-genever)
 - [Development](#development)
 
@@ -61,7 +62,7 @@ Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsuppor
 
 ## Types
 
-The root schema is a type named `--name`, and each definition in its `$defs` (or draft 7 `definitions`), or an OpenAPI document's `components.schemas`, is a type named after its key.
+The root schema is a type named `--name`, and each definition in its `$defs` (or draft 7 `definitions`), or an OpenAPI document's `components.schemas`, is a type named after its key. An OpenAPI document's operations have [types of their own](#operations).
 
 | Schema                                                         | Go                                                                                                                                  |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -76,6 +77,17 @@ The root schema is a type named `--name`, and each definition in its `$defs` (or
 | `false`                                                        | `Never`                                                                                                                             |
 | a type that holds itself by value                              | a pointer, so the type is finite                                                                                                    |
 
+### Operations
+
+Each operation of an OpenAPI document with an `operationId` has two kinds of types, named after it:
+
+| Type                                                                        | Holds                                                                                                                                                                                                                                   |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<Id>Input`, e.g. `GetUserInput`                                            | What a call sends: `Body`, its `application/json` request body, and `Path`, `Query`, `Header` and `Cookie`, each a struct of its parameters. A field is left out when the operation has none of it, and is a pointer when it's optional |
+| `<Id>Response<Status>`, e.g. `GetUserResponse200`, `GetUserResponseDefault` | The `application/json` body of each response that has one                                                                                                                                                                               |
+
+They are the TypeScript genever's `OperationInput` and `OperationResult`, as Go can't key a type by an `operationId`. A path item's parameters apply to each of its operations, and an operation's own parameter replaces one of the same name and location. Operations without an `operationId`, other media types and response headers have no types, but their schemas are checked like any other.
+
 The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with a validator.
 
 ## Compared to genever
@@ -85,7 +97,7 @@ Go can't express every type TypeScript can, so some types are wider:
 - A `pattern`, or a template of strings, is a `string`. Patterns are still checked for strict mode, by a lenient parser, as Go's regexp doesn't read ECMAScript's lookarounds and backreferences.
 - An enum's constants don't restrict its type.
 - `encoding/json` matches keys case-insensitively, so `{"A": 1}` fills the field for `"a"`.
-- An OpenAPI document's operations have no types yet, and genever's TypeScript-only options (`--parameter-defaults`, `--typed-min-items`) don't apply.
+- An OpenAPI document has no `Paths` or `Operations` types, only each operation's input and response bodies (see [Operations](#operations)), and genever's TypeScript-only options (`--parameter-defaults`, `--typed-min-items`) don't apply.
 - Manifests record the generator as `genever-go`, so the Go and TypeScript genever never take each other's output as up to date. They are written unformatted.
 
 ## Development

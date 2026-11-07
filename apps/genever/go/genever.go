@@ -7,7 +7,9 @@
 // into the file.
 //
 // An OpenAPI 3.0 or 3.1 document (one with an `openapi` version) is read too: each of its `components.schemas` becomes
-// a type named after its key, and its schemas are in the document's dialect. Its operations have no types.
+// a type named after its key, and its schemas are in the document's dialect. Each operation with an `operationId` has
+// a struct of what a call to it sends (e.g. GetUserInput, with its JSON Body and its parameters by location), and a
+// type for the JSON body of each of its responses (e.g. GetUserResponse200).
 //
 // The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with
 // a validator, such as github.com/santhosh-tekuri/jsonschema.

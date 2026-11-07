@@ -286,6 +286,390 @@
         "exclusiveMaximum": "1"
       },
       "pointer": "#/exclusiveMaximum"
+    },
+    "paths is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": [],
+        "components": {}
+      },
+      "pointer": "#/paths"
+    },
+    "path item is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": 1
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a"
+    },
+    "operation is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": 1
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get"
+    },
+    "parameters is not an array": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": {}
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/parameters"
+    },
+    "parameter without a location": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": [
+                {
+                  "name": "a",
+                  "in": "body"
+                }
+              ]
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/parameters/0"
+    },
+    "parameter content is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": [
+                {
+                  "name": "a",
+                  "in": "query",
+                  "content": []
+                }
+              ]
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/parameters/0/content"
+    },
+    "reference object to something not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "parameters": [
+              {
+                "$ref": "#/components/parameters/P"
+              }
+            ]
+          }
+        },
+        "components": {
+          "parameters": {
+            "P": 1
+          }
+        }
+      },
+      "pointer": "#/components/parameters/P"
+    },
+    "reference objects only referring to each other": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "$ref": "#/components/pathItems/A"
+          }
+        },
+        "components": {
+          "pathItems": {
+            "A": {
+              "$ref": "#/components/pathItems/B"
+            },
+            "B": {
+              "$ref": "#/components/pathItems/A"
+            }
+          }
+        }
+      },
+      "pointer": "#/paths/~1a/$ref"
+    },
+    "reference object that does not resolve": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": [
+                {
+                  "$ref": "#/components/parameters/None"
+                }
+              ]
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/parameters/0/$ref"
+    },
+    "request body is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "post": {
+              "requestBody": 1
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/post/requestBody"
+    },
+    "response is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": {
+                "200": 1
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses/200"
+    },
+    "header is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": {
+                "200": {
+                  "headers": {
+                    "X-A": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses/200/headers/X-A"
+    },
+    "operationId used twice": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "operationId": "x"
+            }
+          },
+          "/b": {
+            "get": {
+              "operationId": "x"
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1b/get/operationId"
+    },
+    "request body content is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "post": {
+              "requestBody": {
+                "content": []
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/post/requestBody/content"
+    },
+    "responses is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": []
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses"
+    },
+    "media type is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": {
+                "200": {
+                  "content": {
+                    "application/json": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses/200/content/application~1json"
+    },
+    "response headers is not an object": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": {
+                "200": {
+                  "headers": []
+                }
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses/200/headers"
+    },
+    "parameter schema reference, before responses": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": [
+                {
+                  "name": "a",
+                  "in": "query",
+                  "schema": {
+                    "$ref": "#/components/schemas/A"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "headers": []
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "A": {
+              "$ref": 1
+            }
+          }
+        }
+      },
+      "pointer": "#/components/schemas/A/$ref"
     }
   },
   "strict": {
@@ -409,6 +793,96 @@
         ]
       },
       "pointer": "#"
+    },
+    "parameter schema, before components": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "parameters": [
+                {
+                  "name": "a",
+                  "in": "query",
+                  "schema": {
+                    "type": "string",
+                    "foo": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "A": {
+              "type": "string",
+              "foo": 1
+            }
+          }
+        }
+      },
+      "pointer": "#/paths/~1a/get/parameters/0/schema/foo"
+    },
+    "response header schema": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "get": {
+              "responses": {
+                "200": {
+                  "headers": {
+                    "X-A": {
+                      "schema": {
+                        "type": "string",
+                        "foo": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/get/responses/200/headers/X-A/schema/foo"
+    },
+    "schema of other content than JSON": {
+      "schema": {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/a": {
+            "post": {
+              "requestBody": {
+                "content": {
+                  "text/plain": {
+                    "schema": {
+                      "type": "string",
+                      "foo": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {}
+      },
+      "pointer": "#/paths/~1a/post/requestBody/content/text~1plain/schema/foo"
     }
   },
   "unsupported": {
