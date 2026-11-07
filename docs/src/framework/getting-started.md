@@ -39,7 +39,7 @@ This installs [`@leyman/nx-plugin`](https://www.npmjs.com/package/@leyman/nx-plu
 - In the root `package.json`, the tools the targets run: the shared configs, check-package, Biome, TypeScript and `@nx/js`.
 - A `biome.json`, a `tsconfig.json` that Nx keeps a reference to each package in, and a `.gitignore` for what the targets write.
 - In `pnpm-workspace.yaml`, injected workspace packages, so a dependent gets a package as it would be published, plus `allowBuilds` for SWC.
-- A `principles` skill for coding agents.
+- Links to the `principles` skill that `@leyman/configs` ships, in `.agents/skills` (which most coding agents read) and `.claude/skills` (a link to it, for Claude Code), so agents read the principles of the version installed.
 
 The [plugin's README](https://github.com/JacobLey/leyman/tree/main/leyman/nx-plugin#init) lists each one in full.
 

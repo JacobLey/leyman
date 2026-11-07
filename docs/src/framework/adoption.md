@@ -72,7 +72,7 @@ In an Nx workspace, run `nx add @leyman/nx-plugin`. It installs [`@leyman/nx-plu
 
 ## 4. Devcontainer, CI and skills
 
-The rest can't be a package: a devcontainer per git worktree, CI through [Dagger](https://dagger.io/) on GitHub Actions, releases with changesets, and the skills coding agents read. A clone of this repository copies them into a new repository with the [fork manifest](https://github.com/JacobLey/leyman/blob/main/.agents/skills/fork-manifest/SKILL.md), which installs tiers 1 to 3 from npm:
+The rest can't be a package: a devcontainer per git worktree, CI through [Dagger](https://dagger.io/) on GitHub Actions, releases with changesets, and the skills coding agents read about this repository's way of working. The skills about a package (its config, its plugin, its test helpers) ship with it instead, at any tier: `leyman-framework skills`, from [`@leyman/framework`](https://www.npmjs.com/package/@leyman/framework), links those of the framework's packages installed into `.agents/skills`, so they change with the version. A clone of this repository copies them into a new repository with the [fork manifest](https://github.com/JacobLey/leyman/blob/main/.agents/skills/fork-manifest/SKILL.md), which installs tiers 1 to 3 from npm:
 
 ```sh
 node leyman/main/scripts/fork-manifest.mjs apply --to <your repository> --with ci,dagger,publishing
