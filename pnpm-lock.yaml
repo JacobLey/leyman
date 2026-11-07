@@ -3692,6 +3692,9 @@ importers:
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
+      '@leyman/generated-signature-test-vectors':
+        specifier: workspace:^
+        version: file:tools/generated-signature/test-vectors
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -3725,6 +3728,12 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+
+  tools/generated-signature/test-vectors:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
 
   tools/haywire:
     dependencies:
@@ -6058,6 +6067,9 @@ packages:
     resolution: {directory: leyman/framework, type: directory}
     engines: {node: '>=22.12.0'}
     hasBin: true
+
+  '@leyman/generated-signature-test-vectors@file:tools/generated-signature/test-vectors':
+    resolution: {directory: tools/generated-signature/test-vectors, type: directory}
 
   '@leyman/genever-vectors@file:apps/genever/vectors':
     resolution: {directory: apps/genever/vectors, type: directory}
@@ -13863,6 +13875,8 @@ snapshots:
       tinyglobby: 0.2.17
       yaml: 2.9.1
       yargs: 18.2.0
+
+  '@leyman/generated-signature-test-vectors@file:tools/generated-signature/test-vectors': {}
 
   '@leyman/genever-vectors@file:apps/genever/vectors(eslint@10.14.0(supports-color@8.1.1))':
     dependencies:

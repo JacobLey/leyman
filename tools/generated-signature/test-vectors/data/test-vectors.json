@@ -1,0 +1,1448 @@
+{
+  "commentStyles": [
+    {
+      "filePath": "a.ts",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "src/a.TSX",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "a.go",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "a.rs",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "a.json5",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "a.py",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "a.yml",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "a.toml",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "a.css",
+      "style": {
+        "start": "/*",
+        "end": "*/"
+      }
+    },
+    {
+      "filePath": "a.html",
+      "style": {
+        "start": "<!--",
+        "end": "-->"
+      }
+    },
+    {
+      "filePath": "a.md",
+      "style": {
+        "start": "<!--",
+        "end": "-->"
+      }
+    },
+    {
+      "filePath": "a.svg",
+      "style": {
+        "start": "<!--",
+        "end": "-->"
+      }
+    },
+    {
+      "filePath": "a.sql",
+      "style": {
+        "start": "--"
+      }
+    },
+    {
+      "filePath": "a.lua",
+      "style": {
+        "start": "--"
+      }
+    },
+    {
+      "filePath": "a.json",
+      "style": null
+    },
+    {
+      "filePath": "a.txt",
+      "style": null
+    },
+    {
+      "filePath": "README",
+      "style": null
+    },
+    {
+      "filePath": ".gitignore",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "dir/.npmignore",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "Dockerfile",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "Dockerfile.dev",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "Makefile",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "Makefile.inc.ts",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": ".env",
+      "style": null
+    },
+    {
+      "filePath": ".env.local",
+      "style": null
+    },
+    {
+      "filePath": "..md",
+      "style": {
+        "start": "<!--",
+        "end": "-->"
+      }
+    },
+    {
+      "filePath": "...",
+      "style": null
+    },
+    {
+      "filePath": "a.",
+      "style": null
+    },
+    {
+      "filePath": "a..ts",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "dir.ts/",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "dir.ts/file",
+      "style": null
+    },
+    {
+      "filePath": "/abs/a.sh",
+      "style": {
+        "start": "#"
+      }
+    },
+    {
+      "filePath": "a.Kt",
+      "style": {
+        "start": "//"
+      }
+    },
+    {
+      "filePath": "a.İni",
+      "style": null
+    },
+    {
+      "filePath": "Gitignore",
+      "style": null
+    },
+    {
+      "filePath": ".GITIGNORE",
+      "style": null
+    }
+  ],
+  "sign": [
+    {
+      "description": "File path",
+      "text": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "options": {
+        "filePath": "foo.ts"
+      },
+      "signed": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n"
+    },
+    {
+      "description": "Comment style with an end",
+      "text": "<p>hi</p>\n",
+      "options": {
+        "comment": {
+          "start": "<!--",
+          "end": "-->"
+        }
+      },
+      "signed": "<!-- @generated-signature v1:d704239be70fa4a305e210edc7bbce7e Generated file. Do not edit outside of manual sections. -->\n<p>hi</p>\n"
+    },
+    {
+      "description": "Custom message",
+      "text": "a\n",
+      "options": {
+        "filePath": "a.ts",
+        "message": "By my-tool."
+      },
+      "signed": "// @generated-signature v1:616d3a9ccd204fddd6defda392e22420 By my-tool.\na\n"
+    },
+    {
+      "description": "Empty message",
+      "text": "a\n",
+      "options": {
+        "filePath": "a.ts",
+        "message": ""
+      },
+      "signed": "// @generated-signature v1:65ecd2ad694a1d58bcb18be302cf879b \na\n"
+    },
+    {
+      "description": "Empty text",
+      "text": "",
+      "options": {
+        "filePath": "a.py"
+      },
+      "signed": "# @generated-signature v1:635a5a069b1d5221c4bd061077678f6c Generated file. Do not edit outside of manual sections.\n"
+    },
+    {
+      "description": "Placeholder token",
+      "text": "// AUTO-BARREL @generated-signature v1:00000000000000000000000000000000\nexport * from './a.js';\n",
+      "signed": "// AUTO-BARREL @generated-signature v1:59f383790a8edebb8c822d3e08266e99\nexport * from './a.js';\n"
+    },
+    {
+      "description": "Placeholder token with options",
+      "text": "/* @generated-signature v1:00000000000000000000000000000000 */\nbody\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "/* @generated-signature v1:78cb5dfb4248dddde6c7062d199681f6 */\nbody\n"
+    },
+    {
+      "description": "Stale token",
+      "text": "// @generated-signature v1:ffffffffffffffffffffffffffffffff\nbody\n",
+      "signed": "// @generated-signature v1:9233802e2571b36773f109bcccb98bec\nbody\n"
+    },
+    {
+      "description": "Longer hash",
+      "text": "// @generated-signature v1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbody\n",
+      "signed": "// @generated-signature v1:2334ad9fb8d4341eeb2d6f06b15c289ca\nbody\n"
+    },
+    {
+      "description": "Two placeholder tokens on one line",
+      "text": "// @generated-signature v1:00000000000000000000000000000000 @generated-signature v1:00000000000000000000000000000000\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "duplicate-signature",
+        "line": 1
+      }
+    },
+    {
+      "description": "Already signed",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "signed": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n"
+    },
+    {
+      "description": "Edited signed file",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 10;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "signed": "// @generated-signature v1:480e0feff6a0b1ee7cd495fa00cb35bc Generated file. Do not edit outside of manual sections.\nexport const a = 10;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n"
+    },
+    {
+      "description": "Shebang",
+      "text": "#!/usr/bin/env node\nconsole.log(1);\n",
+      "options": {
+        "filePath": "bin.js"
+      },
+      "signed": "#!/usr/bin/env node\n// @generated-signature v1:cc4db61365ce148df7f874df497a8cf1 Generated file. Do not edit outside of manual sections.\nconsole.log(1);\n"
+    },
+    {
+      "description": "Shebang without a line break",
+      "text": "#!/bin/sh",
+      "options": {
+        "filePath": "run.sh"
+      },
+      "signed": "#!/bin/sh\n# @generated-signature v1:cda331d50efeb56423cb061c1acf9624 Generated file. Do not edit outside of manual sections.\n"
+    },
+    {
+      "description": "Shebang with CRLF",
+      "text": "#!/bin/sh\r\necho\r\n",
+      "options": {
+        "filePath": "run.sh"
+      },
+      "signed": "#!/bin/sh\r\n# @generated-signature v1:394f680d4ab184d854153a91a973180c Generated file. Do not edit outside of manual sections.\r\necho\r\n"
+    },
+    {
+      "description": "XML declaration",
+      "text": "<?xml version=\"1.0\"?>\n<a/>\n",
+      "options": {
+        "filePath": "a.xml"
+      },
+      "signed": "<?xml version=\"1.0\"?>\n<!-- @generated-signature v1:a2f75c88f06e084247be9daae40e9980 Generated file. Do not edit outside of manual sections. -->\n<a/>\n"
+    },
+    {
+      "description": "Front matter",
+      "text": "---\ntitle: A\n---\n# A\n",
+      "options": {
+        "filePath": "a.md"
+      },
+      "signed": "---\ntitle: A\n---\n<!-- @generated-signature v1:bc5406746b3edb782ef67e75ac874fc0 Generated file. Do not edit outside of manual sections. -->\n# A\n"
+    },
+    {
+      "description": "Front matter with CRLF",
+      "text": "---\r\ntitle: A\r\n---\r\n# A\r\n",
+      "options": {
+        "filePath": "a.md"
+      },
+      "signed": "---\r\ntitle: A\r\n---\r\n<!-- @generated-signature v1:bc5406746b3edb782ef67e75ac874fc0 Generated file. Do not edit outside of manual sections. -->\r\n# A\r\n"
+    },
+    {
+      "description": "Only front matter",
+      "text": "---\ntitle: A\n---",
+      "options": {
+        "filePath": "a.mdx"
+      },
+      "signed": "---\ntitle: A\n---\n<!-- @generated-signature v1:c168213516f8d10ab58adc8fed2db000 Generated file. Do not edit outside of manual sections. -->\n"
+    },
+    {
+      "description": "Only front matter, CR",
+      "text": "---\ntitle: A\n---\r",
+      "options": {
+        "filePath": "a.mdx"
+      },
+      "signed": "---\ntitle: A\n---\r\n<!-- @generated-signature v1:c168213516f8d10ab58adc8fed2db000 Generated file. Do not edit outside of manual sections. -->\n"
+    },
+    {
+      "description": "Empty front matter",
+      "text": "---\n---\nbody\n",
+      "options": {
+        "filePath": "a.md"
+      },
+      "signed": "---\n---\n<!-- @generated-signature v1:4a8cb569066dfb413d4e5f5d61d18b3e Generated file. Do not edit outside of manual sections. -->\nbody\n"
+    },
+    {
+      "description": "Front matter fence with text after it",
+      "text": "---\na: 1\n----\nb\n---\nc\n",
+      "options": {
+        "filePath": "a.md"
+      },
+      "signed": "---\na: 1\n----\nb\n---\n<!-- @generated-signature v1:76b6a1e6d020b85a1d6fcff3295fefca Generated file. Do not edit outside of manual sections. -->\nc\n"
+    },
+    {
+      "description": "Front matter for an explicit markup comment",
+      "text": "---\na: 1\n---\n",
+      "options": {
+        "comment": {
+          "start": "<!--",
+          "end": "-->"
+        }
+      },
+      "signed": "---\na: 1\n---\n<!-- @generated-signature v1:7d553e8877de72896ff0f65b9d036523 Generated file. Do not edit outside of manual sections. -->\n"
+    },
+    {
+      "description": "Front matter outside Markdown",
+      "text": "---\na: 1\n---\n",
+      "options": {
+        "filePath": "a.yml"
+      },
+      "signed": "# @generated-signature v1:d076cc99c7ef05c75388ecc7fe5eb20c Generated file. Do not edit outside of manual sections.\n---\na: 1\n---\n"
+    },
+    {
+      "description": "Unclosed front matter",
+      "text": "---\nnot closed\n",
+      "options": {
+        "filePath": "a.md"
+      },
+      "signed": "<!-- @generated-signature v1:e9d8ecc47089abae1929a81eb9a6c56b Generated file. Do not edit outside of manual sections. -->\n---\nnot closed\n"
+    },
+    {
+      "description": "CRLF",
+      "text": "a\r\nb\r\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "// @generated-signature v1:34329187fab50c070c272c8265ee9602 Generated file. Do not edit outside of manual sections.\r\na\r\nb\r\n"
+    },
+    {
+      "description": "Mixed line breaks",
+      "text": "a\nb\r\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "// @generated-signature v1:34329187fab50c070c272c8265ee9602 Generated file. Do not edit outside of manual sections.\r\na\nb\r\n"
+    },
+    {
+      "description": "Lone CR",
+      "text": "a\rb\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "// @generated-signature v1:e44aa322d475d65cf3b2b38ef229981a Generated file. Do not edit outside of manual sections.\na\rb\n"
+    },
+    {
+      "description": "Manual sections with CRLF",
+      "text": "export const a = 1;\r\n// @manual-start custom\r\nexport const b = 2;\r\n// @manual-end custom\r\nexport const c = 3;\r\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\r\nexport const a = 1;\r\n// @manual-start custom\r\nexport const b = 2;\r\n// @manual-end custom\r\nexport const c = 3;\r\n"
+    },
+    {
+      "description": "Unicode",
+      "text": "const s = \"café 😀\";\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "signed": "// @generated-signature v1:05b71aa0691b42d76e1c986a4bd936f2 Generated file. Do not edit outside of manual sections.\nconst s = \"café 😀\";\n"
+    },
+    {
+      "description": "No comment style",
+      "text": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "error": {
+        "kind": "missing-comment-style"
+      }
+    },
+    {
+      "description": "Unknown comment style",
+      "text": "{}",
+      "options": {
+        "filePath": "a.json"
+      },
+      "error": {
+        "kind": "unknown-comment-style"
+      }
+    },
+    {
+      "description": "Unclosed manual section",
+      "text": "// @manual-start a\n",
+      "options": {
+        "filePath": "a.ts"
+      },
+      "error": {
+        "kind": "malformed",
+        "reason": "unclosed-section",
+        "line": 2
+      }
+    },
+    {
+      "description": "Duplicate token",
+      "text": "// @generated-signature v1:00000000000000000000000000000000\n// @generated-signature v1:00000000000000000000000000000000\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "duplicate-signature",
+        "line": 2
+      }
+    },
+    {
+      "description": "Unsupported version",
+      "text": "// @generated-signature v2:00000000000000000000000000000000\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "unsupported-version",
+        "line": 1
+      }
+    }
+  ],
+  "verify": [
+    {
+      "description": "Unsigned",
+      "text": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "unsigned"
+    },
+    {
+      "description": "Empty",
+      "text": "",
+      "status": "unsigned"
+    },
+    {
+      "description": "Short hash",
+      "text": "// @generated-signature v1:abc\n",
+      "status": "unsigned"
+    },
+    {
+      "description": "Uppercase hash",
+      "text": "// @generated-signature v1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n",
+      "status": "unsigned"
+    },
+    {
+      "description": "Signed",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "valid"
+    },
+    {
+      "description": "Edited manual section",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 20;\n// more\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "valid"
+    },
+    {
+      "description": "Emptied manual section",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "valid"
+    },
+    {
+      "description": "CRLF",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\r\nexport const a = 1;\r\n// @manual-start custom\r\nexport const b = 2;\r\n// @manual-end custom\r\nexport const c = 3;\r\n",
+      "status": "valid"
+    },
+    {
+      "description": "Edited outside a manual section",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 10;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "invalid"
+    },
+    {
+      "description": "Renamed manual section",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start renamed\nexport const b = 2;\n// @manual-end renamed\nexport const c = 3;\n",
+      "status": "invalid"
+    },
+    {
+      "description": "Changed hash",
+      "text": "// @generated-signature v1:a8a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "status": "invalid"
+    },
+    {
+      "description": "Placeholder hash",
+      "text": "// @generated-signature v1:00000000000000000000000000000000\n",
+      "status": "invalid"
+    },
+    {
+      "description": "Duplicate token",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n// @generated-signature v1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+      "status": "malformed",
+      "reason": "duplicate-signature",
+      "line": 7
+    },
+    {
+      "description": "Duplicate token on one line",
+      "text": "// @generated-signature v1:00000000000000000000000000000000 @generated-signature v1:00000000000000000000000000000000\n",
+      "status": "malformed",
+      "reason": "duplicate-signature",
+      "line": 1
+    },
+    {
+      "description": "Unsupported version",
+      "text": "// @generated-signature v2:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+      "status": "malformed",
+      "reason": "unsupported-version",
+      "line": 1
+    },
+    {
+      "description": "Leading zero version",
+      "text": "// @generated-signature v01:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n",
+      "status": "malformed",
+      "reason": "unsupported-version",
+      "line": 1
+    },
+    {
+      "description": "Unclosed manual section",
+      "text": "// @generated-signature v1:28a04db0f8a7df9a73610a35e38b75f6 Generated file. Do not edit outside of manual sections.\nexport const a = 1;\n// @manual-start custom\nexport const b = 2;\nexport const c = 3;\n",
+      "status": "malformed",
+      "reason": "unclosed-section",
+      "line": 3
+    },
+    {
+      "description": "Signed with front matter",
+      "text": "---\ntitle: A\n---\n<!-- @generated-signature v1:bc5406746b3edb782ef67e75ac874fc0 Generated file. Do not edit outside of manual sections. -->\n# A\n",
+      "status": "valid"
+    },
+    {
+      "description": "Token inside a manual section",
+      "text": "// @manual-start a\n// @generated-signature v1:243b1993939469289f0fef0560c66bd1\n// @manual-end a\n",
+      "status": "valid"
+    }
+  ],
+  "sections": [
+    {
+      "description": "None",
+      "text": "a\nb\n",
+      "sections": []
+    },
+    {
+      "description": "One",
+      "text": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "sections": [
+        {
+          "id": "custom",
+          "body": "export const b = 2;\n",
+          "startLine": 2,
+          "endLine": 4
+        }
+      ]
+    },
+    {
+      "description": "Two",
+      "text": "// @manual-start a\nx\n// @manual-end a\n// @manual-start b\n// @manual-end b\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "x\n",
+          "startLine": 1,
+          "endLine": 3
+        },
+        {
+          "id": "b",
+          "body": "",
+          "startLine": 4,
+          "endLine": 5
+        }
+      ]
+    },
+    {
+      "description": "Last line without a break",
+      "text": "// @manual-start a\nx\n// @manual-end a",
+      "sections": [
+        {
+          "id": "a",
+          "body": "x\n",
+          "startLine": 1,
+          "endLine": 3
+        }
+      ]
+    },
+    {
+      "description": "CRLF",
+      "text": "// @manual-start a\r\nx\r\n// @manual-end a\r\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "x\r\n",
+          "startLine": 1,
+          "endLine": 3
+        }
+      ]
+    },
+    {
+      "description": "Id characters",
+      "text": "# @manual-start A_b-1.2\n# @manual-end A_b-1.2\n",
+      "sections": [
+        {
+          "id": "A_b-1.2",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Block comments",
+      "text": "/* @manual-start a */\n/* @manual-end a */\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker at the line start",
+      "text": "@manual-start a\n@manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker after a tab",
+      "text": "\t@manual-start a\n\t@manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker after a vertical tab",
+      "text": "\u000b@manual-start a\n\u000b@manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker after a no-break space",
+      "text": " @manual-start a\n @manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker after an ideographic space",
+      "text": "　@manual-start a\n　@manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Marker after a byte order mark",
+      "text": "﻿@manual-start a\n﻿@manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Id after a no-break space",
+      "text": "// @manual-start a\n// @manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Not a marker after a next line character",
+      "text": "@manual-start a\n",
+      "sections": []
+    },
+    {
+      "description": "Not a marker inside a word",
+      "text": "https://x.com/foo@manual-start a\n",
+      "sections": []
+    },
+    {
+      "description": "Not a marker with a longer name",
+      "text": "// @manual-started a\n",
+      "sections": []
+    },
+    {
+      "description": "Marker followed by punctuation",
+      "text": "// @manual-start: a\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "invalid-section-id",
+        "line": 1
+      }
+    },
+    {
+      "description": "Only the first marker of a line",
+      "text": "// @manual-start a @manual-end a\n// @manual-end a\n",
+      "sections": [
+        {
+          "id": "a",
+          "body": "",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ]
+    },
+    {
+      "description": "Missing id",
+      "text": "// @manual-start\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "invalid-section-id",
+        "line": 1
+      }
+    },
+    {
+      "description": "Invalid id",
+      "text": "// @manual-start a/b\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "invalid-section-id",
+        "line": 1
+      }
+    },
+    {
+      "description": "Nested",
+      "text": "// @manual-start a\n// @manual-start b\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "nested-section",
+        "line": 2
+      }
+    },
+    {
+      "description": "Duplicate",
+      "text": "// @manual-start a\n// @manual-end a\n// @manual-start a\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "duplicate-section",
+        "line": 3
+      }
+    },
+    {
+      "description": "End without a start",
+      "text": "x\n// @manual-end a\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "unopened-section",
+        "line": 2
+      }
+    },
+    {
+      "description": "End of another section",
+      "text": "// @manual-start a\n// @manual-end b\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "unopened-section",
+        "line": 2
+      }
+    },
+    {
+      "description": "Unclosed",
+      "text": "x\n// @manual-start a\nx\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "unclosed-section",
+        "line": 2
+      }
+    }
+  ],
+  "merge": [
+    {
+      "description": "Keeps existing bodies",
+      "generated": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "existing": "export const a = 1;\n// @manual-start custom\nexport const b = 20;\n// @manual-end custom\nexport const c = 3;\n",
+      "result": {
+        "text": "export const a = 1;\n// @manual-start custom\nexport const b = 20;\n// @manual-end custom\nexport const c = 3;\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Keeps generated bodies without existing",
+      "generated": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "existing": "unrelated\n",
+      "result": {
+        "text": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Keeps an existing empty body",
+      "generated": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "existing": "// @manual-start custom\n// @manual-end custom\n",
+      "result": {
+        "text": "export const a = 1;\n// @manual-start custom\n// @manual-end custom\nexport const c = 3;\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Lists orphans in order",
+      "generated": "x\n",
+      "existing": "// @manual-start z\nz\n// @manual-end z\n// @manual-start a\na\n// @manual-end a\n",
+      "result": {
+        "text": "x\n",
+        "orphans": [
+          "z",
+          "a"
+        ]
+      }
+    },
+    {
+      "description": "Drops blank orphans",
+      "generated": "x\n",
+      "existing": "// @manual-start a\n \t ﻿　\n\n// @manual-end a\n",
+      "result": {
+        "text": "x\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Keeps a next line orphan",
+      "generated": "x\n",
+      "existing": "// @manual-start a\n\n// @manual-end a\n",
+      "result": {
+        "text": "x\n",
+        "orphans": [
+          "a"
+        ]
+      }
+    },
+    {
+      "description": "Existing CRLF",
+      "generated": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "existing": "export const a = 1;\r\n// @manual-start custom\r\nexport const b = 20;\r\n// @manual-end custom\r\nexport const c = 3;\r\n",
+      "result": {
+        "text": "export const a = 1;\n// @manual-start custom\nexport const b = 20;\r\n// @manual-end custom\nexport const c = 3;\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Several sections",
+      "generated": "// @manual-start a\n1\n// @manual-end a\nmid\n// @manual-start b\n2\n// @manual-end b\n",
+      "existing": "// @manual-start b\nB\n// @manual-end b\n// @manual-start a\nA\nA\n// @manual-end a\n",
+      "result": {
+        "text": "// @manual-start a\nA\nA\n// @manual-end a\nmid\n// @manual-start b\nB\n// @manual-end b\n",
+        "orphans": []
+      }
+    },
+    {
+      "description": "Malformed existing",
+      "generated": "export const a = 1;\n// @manual-start custom\nexport const b = 2;\n// @manual-end custom\nexport const c = 3;\n",
+      "existing": "// @manual-start a\n",
+      "error": {
+        "kind": "malformed",
+        "reason": "unclosed-section",
+        "line": 1
+      }
+    },
+    {
+      "description": "Malformed generated",
+      "generated": "// @manual-end a\n",
+      "existing": "",
+      "error": {
+        "kind": "malformed",
+        "reason": "unopened-section",
+        "line": 1
+      }
+    }
+  ],
+  "manualSection": [
+    {
+      "description": "Empty",
+      "options": {
+        "id": "a",
+        "filePath": "a.ts"
+      },
+      "text": "// @manual-start a\n// @manual-end a"
+    },
+    {
+      "description": "Body",
+      "options": {
+        "id": "a",
+        "body": "x\ny",
+        "filePath": "a.ts"
+      },
+      "text": "// @manual-start a\nx\ny\n// @manual-end a"
+    },
+    {
+      "description": "Body with a trailing break",
+      "options": {
+        "id": "a",
+        "body": "x\n",
+        "filePath": "a.ts"
+      },
+      "text": "// @manual-start a\nx\n// @manual-end a"
+    },
+    {
+      "description": "Body with two trailing breaks",
+      "options": {
+        "id": "a",
+        "body": "x\n\n",
+        "filePath": "a.ts"
+      },
+      "text": "// @manual-start a\nx\n\n// @manual-end a"
+    },
+    {
+      "description": "Indent skips blank lines",
+      "options": {
+        "id": "a",
+        "body": "x\n\n \ny",
+        "indent": "    ",
+        "filePath": "a.py"
+      },
+      "text": "    # @manual-start a\n    x\n\n \n    y\n    # @manual-end a"
+    },
+    {
+      "description": "Comment style with an end",
+      "options": {
+        "id": "a.b-c_d",
+        "body": "<p/>",
+        "comment": {
+          "start": "<!--",
+          "end": "-->"
+        }
+      },
+      "text": "<!-- @manual-start a.b-c_d -->\n<p/>\n<!-- @manual-end a.b-c_d -->"
+    },
+    {
+      "description": "Empty id",
+      "options": {
+        "id": "",
+        "filePath": "a.ts"
+      },
+      "error": {
+        "kind": "section-id"
+      }
+    },
+    {
+      "description": "Invalid id",
+      "options": {
+        "id": "a b",
+        "filePath": "a.ts"
+      },
+      "error": {
+        "kind": "section-id"
+      }
+    },
+    {
+      "description": "Unknown comment style",
+      "options": {
+        "id": "a",
+        "filePath": "a.json"
+      },
+      "error": {
+        "kind": "unknown-comment-style"
+      }
+    }
+  ],
+  "contentHash": [
+    {
+      "description": "Empty",
+      "text": "",
+      "hash": "v1:e3b0c44298fc1c149afbf4c8996fb924"
+    },
+    {
+      "description": "JSON",
+      "text": "{}\n",
+      "hash": "v1:ca3d163bab055381827226140568f3be"
+    },
+    {
+      "description": "CRLF",
+      "text": "a\r\nb\r\n",
+      "hash": "v1:911169ddaaf146aff539f58c26c489af"
+    },
+    {
+      "description": "LF",
+      "text": "a\nb\n",
+      "hash": "v1:911169ddaaf146aff539f58c26c489af"
+    },
+    {
+      "description": "Lone CR",
+      "text": "a\rb",
+      "hash": "v1:af9081672dd5ef3247a30c2db5b0dafc"
+    },
+    {
+      "description": "CR CR LF",
+      "text": "a\r\r\nb",
+      "hash": "v1:18745f36a05e29072709042d6062ce54"
+    },
+    {
+      "description": "Unicode",
+      "text": "café 😀﻿",
+      "hash": "v1:4dc381894a98e669695262894474bcd9"
+    }
+  ],
+  "manifestEntries": [
+    {
+      "description": "Hash",
+      "content": "{}\n",
+      "entry": {
+        "hash": "v1:ca3d163bab055381827226140568f3be"
+      },
+      "status": "valid"
+    },
+    {
+      "description": "Hash of CRLF",
+      "content": "{}\r\n",
+      "entry": {
+        "hash": "v1:ca3d163bab055381827226140568f3be"
+      },
+      "status": "valid"
+    },
+    {
+      "description": "Wrong hash",
+      "content": "{\"a\":1}\n",
+      "entry": {
+        "hash": "v1:ca3d163bab055381827226140568f3be"
+      },
+      "status": "invalid"
+    },
+    {
+      "description": "Inline",
+      "content": "// @generated-signature v1:cc19e4a232d6399fa3ae20f3d2f40cc5 Generated file. Do not edit outside of manual sections.\na\n",
+      "entry": {
+        "signature": "inline"
+      },
+      "status": "valid"
+    },
+    {
+      "description": "Inline unsigned",
+      "content": "a\n",
+      "entry": {
+        "signature": "inline"
+      },
+      "status": "unsigned"
+    },
+    {
+      "description": "Inline after a byte order mark",
+      "content": "﻿// @generated-signature v1:cc19e4a232d6399fa3ae20f3d2f40cc5 Generated file. Do not edit outside of manual sections.\na\n",
+      "entry": {
+        "signature": "inline"
+      },
+      "status": "valid"
+    },
+    {
+      "description": "Inline malformed",
+      "content": "// @generated-signature v2:00000000000000000000000000000000\n",
+      "entry": {
+        "signature": "inline"
+      },
+      "status": "malformed",
+      "reason": "unsupported-version",
+      "line": 1
+    }
+  ],
+  "parseManifest": [
+    {
+      "description": "Entries",
+      "text": "{\"version\":1,\"files\":{\"a.json\":{\"hash\":\"v1:abc\"},\"b.ts\":{\"signature\":\"inline\",\"inputs\":{\"generator\":\"genever@1.0.0\"}}}}",
+      "files": {
+        "a.json": {
+          "hash": "v1:abc"
+        },
+        "b.ts": {
+          "signature": "inline",
+          "inputs": {
+            "generator": "genever@1.0.0"
+          }
+        }
+      }
+    },
+    {
+      "description": "Empty files",
+      "text": "{\"version\":1,\"files\":{}}",
+      "files": {}
+    },
+    {
+      "description": "Empty inputs",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"inputs\":{}}}}",
+      "files": {
+        "a": {
+          "hash": "x",
+          "inputs": {}
+        }
+      }
+    },
+    {
+      "description": "Version as a float",
+      "text": "{\"version\":1.0,\"files\":{}}",
+      "files": {}
+    },
+    {
+      "description": "Version as an exponent",
+      "text": "{\"version\":1e0,\"files\":{}}",
+      "files": {}
+    },
+    {
+      "description": "Extra top-level keys",
+      "text": "{\"version\":1,\"files\":{},\"extra\":true}",
+      "files": {}
+    },
+    {
+      "description": "Duplicate path",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\"},\"a\":{\"hash\":\"y\"}}}",
+      "files": {
+        "a": {
+          "hash": "y"
+        }
+      }
+    },
+    {
+      "description": "Whitespace",
+      "text": " \n{ \"version\" : 1 , \"files\" : { } }\n",
+      "files": {}
+    },
+    {
+      "description": "Not JSON",
+      "text": "{",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Trailing comma",
+      "text": "{\"version\":1,\"files\":{},}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Byte order mark",
+      "text": "﻿{\"version\":1,\"files\":{}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Not an object",
+      "text": "[]",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Null",
+      "text": "null",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Missing version",
+      "text": "{\"files\":{}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Unknown version",
+      "text": "{\"version\":2,\"files\":{}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Version as a string",
+      "text": "{\"version\":\"1\",\"files\":{}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Missing files",
+      "text": "{\"version\":1}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Files not an object",
+      "text": "{\"version\":1,\"files\":[]}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Files null",
+      "text": "{\"version\":1,\"files\":null}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Entry not an object",
+      "text": "{\"version\":1,\"files\":{\"a\":\"x\"}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Entry null",
+      "text": "{\"version\":1,\"files\":{\"a\":null}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Entry array",
+      "text": "{\"version\":1,\"files\":{\"a\":[]}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Neither hash nor signature",
+      "text": "{\"version\":1,\"files\":{\"a\":{}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Both hash and signature",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"signature\":\"inline\"}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Unknown signature",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"signature\":\"other\"}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Only an unknown signature",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"signature\":\"other\"}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Hash not a string",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":1,\"signature\":\"inline\"}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Null hash",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":null,\"signature\":\"inline\"}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Null signature",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"signature\":null}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Unknown key",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"extra\":1}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Inputs not strings",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"inputs\":{\"b\":1}}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Inputs null",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"inputs\":null}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    },
+    {
+      "description": "Inputs an array",
+      "text": "{\"version\":1,\"files\":{\"a\":{\"hash\":\"x\",\"inputs\":[]}}}",
+      "error": {
+        "kind": "manifest"
+      }
+    }
+  ],
+  "serializeManifest": [
+    {
+      "description": "Empty",
+      "files": {},
+      "text": "{\n  \"version\": 1,\n  \"files\": {}\n}\n"
+    },
+    {
+      "description": "Sorts paths and inputs",
+      "files": {
+        "b.json": {
+          "hash": "v1:b",
+          "inputs": {
+            "z": "1",
+            "a": "2"
+          }
+        },
+        "a.json": {
+          "hash": "v1:a"
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"a.json\": {\n      \"hash\": \"v1:a\"\n    },\n    \"b.json\": {\n      \"hash\": \"v1:b\",\n      \"inputs\": {\n        \"a\": \"2\",\n        \"z\": \"1\"\n      }\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Inline with empty inputs",
+      "files": {
+        "a.ts": {
+          "signature": "inline",
+          "inputs": {}
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"a.ts\": {\n      \"signature\": \"inline\",\n      \"inputs\": {}\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Sorts by UTF-16 code unit",
+      "files": {
+        "￿": {
+          "hash": "h"
+        },
+        "😀": {
+          "hash": "h"
+        },
+        "Z": {
+          "hash": "h"
+        },
+        "a": {
+          "hash": "h"
+        },
+        "é": {
+          "hash": "h"
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"Z\": {\n      \"hash\": \"h\"\n    },\n    \"a\": {\n      \"hash\": \"h\"\n    },\n    \"é\": {\n      \"hash\": \"h\"\n    },\n    \"😀\": {\n      \"hash\": \"h\"\n    },\n    \"￿\": {\n      \"hash\": \"h\"\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Escapes",
+      "files": {
+        "a\"b\\c\n\t\u0001\u001f <&>.json": {
+          "hash": "v1:x",
+          "inputs": {
+            "k\r": "v\b\f"
+          }
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"a\\\"b\\\\c\\n\\t\\u0001\\u001f <&>.json\": {\n      \"hash\": \"v1:x\",\n      \"inputs\": {\n        \"k\\r\": \"v\\b\\f\"\n      }\n    }\n  }\n}\n"
+    }
+  ]
+}

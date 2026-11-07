@@ -48,6 +48,7 @@
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
+    "@leyman/generated-signature-test-vectors": "workspace:^",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
