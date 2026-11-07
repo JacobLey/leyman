@@ -1,0 +1,44 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/e2e-genever-go-comparison",
+  "metadata": {
+    "description": "Runs genever-go and the most used tools for generating Go types through the same probes, for the report on the docs site."
+  },
+  "implicitDependencies": [
+    "@leyman/e2e-genever-comparison"
+  ],
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
+    "comparison-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go run ./cmd/report",
+        "cwd": "{projectRoot}"
+      },
+      "cache": false
+    },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

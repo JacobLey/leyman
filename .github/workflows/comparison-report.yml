@@ -46,13 +46,13 @@ jobs:
           version: ${{ env.DAGGER_VERSION }}
           verb: call
           module: ./dagger
-          args: comparison-report --commit=${{ github.sha }} --nx-cache=tcp://localhost:3000 export --path ./genever.json
+          args: comparison-report --commit=${{ github.sha }} --nx-cache=tcp://localhost:3000 export --path ./reports
 
       - name: Upload report
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: comparison-report
-          path: ./genever.json
+          path: ./reports
           retention-days: 1
 
   # Runs no code from the report job, and only commits its file. The history is a custom ref rather than a commit to
@@ -75,15 +75,17 @@ jobs:
 
       - name: Commit report
         run: |
-          jq empty "$RUNNER_TEMP/comparison-report/genever.json"
+          for report in genever genever-go; do
+            jq empty "$RUNNER_TEMP/comparison-report/$report.json"
+          done
           if git fetch origin refs/reports/comparison; then
             git checkout --detach FETCH_HEAD
           else
             git checkout --orphan comparison-report
             git rm -rfq .
           fi
-          cp "$RUNNER_TEMP/comparison-report/genever.json" genever.json
-          git add genever.json
+          cp "$RUNNER_TEMP/comparison-report/genever.json" "$RUNNER_TEMP/comparison-report/genever-go.json" .
+          git add genever.json genever-go.json
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
             commit -m "Report for $GITHUB_SHA"
           git push origin HEAD:refs/reports/comparison

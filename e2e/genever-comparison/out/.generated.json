@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "files": {
+    "json-schema.json": {
+      "hash": "v1:a7e36f49afceb365c7660a39fb6d4683"
+    },
+    "openapi.json": {
+      "hash": "v1:a219f9aa1ac2be1c2f0c5dbcc85da1a1"
+    }
+  }
+}

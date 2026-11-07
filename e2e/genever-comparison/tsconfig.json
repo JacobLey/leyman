@@ -21,6 +21,9 @@
     },
     {
       "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../../apps/populate-files/load-populate-files"
     }
   ]
 }

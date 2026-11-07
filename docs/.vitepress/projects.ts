@@ -197,6 +197,7 @@ export const packages: readonly Package[] = [
             },
             { text: 'Why genever', link: 'why' },
             { text: 'Comparison', link: 'comparison' },
+            { text: 'Go comparison', link: 'go-comparison' },
         ],
     },
     {

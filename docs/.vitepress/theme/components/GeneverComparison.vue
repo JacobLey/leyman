@@ -23,10 +23,25 @@ interface Report {
     tools: ToolReport[];
 }
 
+const props = withDefaults(
+    defineProps<{
+        /**
+         * Which report: genever's against TypeScript generators, or genever-go's against Go ones.
+         */
+        report?: 'genever' | 'genever-go';
+    }>(),
+    { report: 'genever' }
+);
+
 // The nightly `comparison-report.yml` workflow commits here. It is fetched by the browser, so that every deploy of the
 // site doesn't have to carry it
-const reportUrl =
-    'https://raw.githubusercontent.com/JacobLey/leyman/refs/reports/comparison/genever.json';
+const reportUrl = `https://raw.githubusercontent.com/JacobLey/leyman/refs/reports/comparison/${props.report}.json`;
+
+// A tool's page: its npm package, or its Go module
+const toolUrl = (packageName: string): string =>
+    props.report === 'genever-go'
+        ? `https://pkg.go.dev/${packageName}`
+        : `https://www.npmjs.com/package/${packageName}`;
 
 const report = ref<Report>();
 const failed = ref(false);
@@ -132,7 +147,7 @@ const timed = computed(() => {
             <tbody>
                 <tr v-for="tool in report.tools" :key="tool.name">
                     <td>
-                        <a :href="`https://www.npmjs.com/package/${tool.packageName}`">{{
+                        <a :href="toolUrl(tool.packageName)">{{
                             tool.name
                         }}</a>
                     </td>

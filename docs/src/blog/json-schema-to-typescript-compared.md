@@ -205,8 +205,10 @@ The comparison is [a package in the repository](https://github.com/JacobLey/leym
 
 ```sh
 git clone https://github.com/JacobLey/leyman.git && cd leyman
-dagger call comparison-report --commit="$(git rev-parse HEAD)" export --path ./genever.json
+dagger call comparison-report --commit="$(git rev-parse HEAD)" export --path ./reports
 ```
+
+The report is `reports/genever.json`, beside the Go comparison's.
 
 Versions are pinned in the lockfile, so running the same commit gives the same versions as the table.
 

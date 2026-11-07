@@ -59,4 +59,6 @@ Go can't say everything TypeScript can, so some types are wider: a `pattern` is 
 
 Its output is kept in sync the same way, through the Go implementations of [populate-files](/packages/populate-files/guides/go) and [generated-signature](/packages/generated-signature/guides/go). Manifests record it as `genever-go`, so the two genevers never take each other's output as up to date.
 
+How it compares with go-jsonschema and oapi-codegen, run every night, is on the [Go comparison](/packages/genever/go-comparison) page.
+
 Versions are in its [changelog](https://github.com/JacobLey/leyman/blob/main/apps/genever/go/CHANGELOG.md).

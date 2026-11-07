@@ -17,11 +17,16 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "!dist/tsconfig.tsbuildinfo"
+    "!dist/tsconfig.tsbuildinfo",
+    "out",
+    "!out/.generated.json"
   ],
   "types": "./dist/index.js",
   "exports": {
     ".": "./dist/index.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   },
   "dependencies": {
     "genever": "workspace:^",
@@ -46,6 +51,7 @@
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
+    "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^"
   }

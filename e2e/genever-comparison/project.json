@@ -7,6 +7,7 @@
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},
+    "populate-files": {},
     "mocha-integration-test": {},
     "coverage-report": {},
     "comparison-report": {

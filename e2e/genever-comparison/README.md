@@ -8,6 +8,8 @@ Tests only assert genever's own results. Another tool's results are what the rep
 
 Add a tool in [`src/tools.ts`](./src/tools.ts), and a probe in [`src/probes.ts`](./src/probes.ts).
 
+The `populate-files` target also writes the small documents as JSON to `out/`, committed, for the comparison of Go generators ([`e2e/genever-go-comparison`](../genever-go-comparison/)), which reads them by path so both give their tools the same documents.
+
 Versions come from the lockfile. The benchmark only times tools that generate source: one that infers in the type system does its work while type-checking, and type-check cost isn't compared. Times are from a shared CI runner, so compare tools within one run, rather than across runs.
 
 What the report doesn't cover is written by hand: the "Compared to" lists in [genever's README](../../apps/genever/ts/README.md#compared-to-alternatives) and [docs overview](../../docs/src/packages/genever/index.md) name the versions they were inspected at. Re-check them now and then, and bump the versions.
