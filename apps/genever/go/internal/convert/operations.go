@@ -545,10 +545,15 @@ func (c *converter) operations(document jsonv.Value) ([]operation, error) {
 	return builder.operations, nil
 }
 
+// isNamed reports whether an operation's types are named after its `operationId`: it has one, with a letter or digit.
+func (o operation) isNamed() bool {
+	return o.hasID && toTypeName(o.id) != toTypeName("")
+}
+
 // label is how an operation's types' documentation refers to it: its `operationId`, or else its method and path, e.g.
 // "GET /users/{id}".
 func (o operation) label() string {
-	if o.hasID {
+	if o.isNamed() {
 		return o.id
 	}
 
@@ -558,7 +563,7 @@ func (o operation) label() string {
 // baseName is what an operation's types are named after: its `operationId`, or else its method and path, e.g.
 // "get /users/{id}", which is GetUsersId.
 func (o operation) baseName() string {
-	if o.hasID {
+	if o.isNamed() {
 		return o.id
 	}
 
@@ -566,54 +571,100 @@ func (o operation) baseName() string {
 }
 
 // operationTypes are the named types of operations: for each, what a call to it sends (`<Id>Input`), with
-// parameterDefaults what its handler gets (`<Id>Request`), and the JSON body of each of its responses with one
-// (`<Id>Response<Status>`). An operation without an `operationId` is named after its method and path, e.g.
-// `GetUsersIdInput`.
+// parameterDefaults what its handler gets (`<Id>Request`), the JSON body of its request (`<Id>Body`), and that of
+// each of its responses (`<Id>Response<Status>`), in the operations' order. An operation without an `operationId`
+// is named after its method and path, e.g. `GetUsersIdInput`. Operations with one are named first, so their names
+// never depend on those without.
 //
 // They are what the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult` give for an
 // operation, as Go can't key a type by an `operationId`.
 func operationTypes(names *typeNames, operations []operation, parameterDefaults bool) []NamedType {
-	var types []NamedType
+	byOperation := make([][]NamedType, len(operations))
 
-	for _, item := range operations {
-		label := item.label()
-		inputName := names.reserve(item.baseName() + " Input")
+	for _, named := range []bool{true, false} {
+		for index, item := range operations {
+			if item.isNamed() == named {
+				byOperation[index] = typesOf(names, item, parameterDefaults)
+			}
+		}
+	}
+
+	return slices.Concat(byOperation...)
+}
+
+// typesOf are the named types of one operation, as operationTypes describes them.
+func typesOf(names *typeNames, item operation, parameterDefaults bool) []NamedType {
+	label := item.label()
+	inputName := names.reserve(item.baseName() + " Input")
+
+	var requestName, bodyName string
+	if parameterDefaults {
+		requestName = names.reserve(item.baseName() + " Request")
+	}
+
+	if item.requestBody != nil && item.requestBody.json != nil {
+		bodyName = names.reserve(item.baseName() + " Body")
+	}
+
+	input := inputType(item, bodyName, false)
+	types := []NamedType{{
+		Doc:     operationTypeDoc(inputName+" is what a call to operation "+quote(label)+" sends.", item.doc),
+		Type:    input,
+		Name:    inputName,
+		Pointer: item.pointer,
+	}}
+
+	if parameterDefaults {
+		// The input itself when no parameter has a default
+		request := inputType(item, bodyName, true)
+		if request.Key() == input.Key() {
+			request = model.Reference(inputName)
+		}
+
 		types = append(types, NamedType{
-			Doc:     operationTypeDoc(inputName+" is what a call to operation "+quote(label)+" sends.", item.doc),
-			Type:    inputType(item, false),
-			Name:    inputName,
+			Doc: operationTypeDoc(
+				requestName+" is what a handler of operation "+quote(label)+
+					" gets, once a validator filled in its parameters' defaults.",
+				item.doc,
+			),
+			Type:    request,
+			Name:    requestName,
 			Pointer: item.pointer,
 		})
+	}
 
-		if parameterDefaults {
-			requestName := names.reserve(item.baseName() + " Request")
-			types = append(types, NamedType{
-				Doc: operationTypeDoc(
-					requestName+" is what a handler of operation "+quote(label)+
-						" gets, once a validator filled in its parameters' defaults.",
-					item.doc,
-				),
-				Type:    inputType(item, true),
-				Name:    requestName,
-				Pointer: item.pointer,
-			})
+	if bodyName != "" {
+		types = append(types, NamedType{
+			Doc: operationTypeDoc(
+				bodyName+" is the JSON body of a call to operation "+quote(label)+".", item.requestBody.doc,
+			),
+			Type:    item.requestBody.json,
+			Name:    bodyName,
+			Pointer: item.requestBody.pointer,
+		})
+	}
+
+	return append(types, responseTypes(names, item)...)
+}
+
+// responseTypes are the types of the JSON bodies of an operation's responses.
+func responseTypes(names *typeNames, item operation) []NamedType {
+	var types []NamedType
+
+	for _, each := range item.responses {
+		if each.json == nil {
+			continue
 		}
 
-		for _, each := range item.responses {
-			if each.json == nil {
-				continue
-			}
-
-			name := names.reserve(item.baseName() + " Response " + each.status)
-			types = append(types, NamedType{
-				Doc: operationTypeDoc(
-					name+" is the JSON body of operation "+quote(label)+"'s "+each.status+" response.", each.doc,
-				),
-				Type:    each.json,
-				Name:    name,
-				Pointer: each.pointer,
-			})
-		}
+		name := names.reserve(item.baseName() + " Response " + each.status)
+		types = append(types, NamedType{
+			Doc: operationTypeDoc(
+				name+" is the JSON body of operation "+quote(item.label())+"'s "+each.status+" response.", each.doc,
+			),
+			Type:    each.json,
+			Name:    name,
+			Pointer: each.pointer,
+		})
 	}
 
 	return types
@@ -634,15 +685,15 @@ func operationTypeDoc(title string, own *model.Doc) *model.Doc {
 }
 
 // inputType is what a call to an operation sends: its JSON `body`, and its parameters by location, each only if it has
-// them. A body or location is optional if the request body, or every parameter there, is. With defaulted, a parameter
-// with a default is required, as a validator fills it in.
-func inputType(item operation, defaulted bool) *model.Type {
+// them, the body as the named type bodyName. A body or location is optional if the request body, or every parameter
+// there, is. With defaulted, a parameter with a default is required, as a validator fills it in.
+func inputType(item operation, bodyName string, defaulted bool) *model.Type {
 	var properties []model.Property
 
-	if item.requestBody != nil && item.requestBody.json != nil {
+	if bodyName != "" {
 		properties = append(properties, model.Property{
 			Doc:      item.requestBody.doc,
-			Type:     item.requestBody.json,
+			Type:     model.Reference(bodyName),
 			Name:     "body",
 			Pointer:  "",
 			Optional: !item.isBodyRequired,

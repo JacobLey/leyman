@@ -49,7 +49,7 @@ Every type holds every value the schema accepts, and can tell apart the values t
 | `oneOf`/`anyOf`, several `type`s            | a struct holding one of its variants                                                                        |
 | `true`, `false`                             | `json.RawMessage`, `Never`                                                                                  |
 
-Each operation gets `<Id>Input`, what a call sends (its JSON body, and its path, query, header and cookie parameters), and `<Id>Response<Status>`, each JSON response body. With `--parameter-defaults`, it also gets `<Id>Request`, what a handler gets once a validator filled in defaults. An operation without an `operationId` is named after its method and path: `post /users/{id}` is `PostUsersIdInput`.
+Each operation gets `<Id>Input`, what a call sends (its JSON body, `<Id>Body`, and its path, query, header and cookie parameters), and `<Id>Response<Status>`, each JSON response body. With `--parameter-defaults`, it also gets `<Id>Request`, what a handler gets once a validator filled in defaults. An operation without an `operationId` is named after its method and path: `post /users/{id}` is `PostUsersIdInput`.
 
 Decoding fails only when a value's shape doesn't fit, such as the wrong JSON kind or no branch of a union. Like genever, it doesn't validate: `pattern`, bounds and lengths are a validator's job.
 

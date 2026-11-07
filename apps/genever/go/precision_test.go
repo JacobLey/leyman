@@ -365,12 +365,13 @@ func TestOperationPrecision(t *testing.T) {
 
 	expected := map[string]string{
 		"User":                  "{Name *string}",
-		"UpdateUserInput":       "{Body *User; Path UpdateUserInputPath; Query *UpdateUserInputQuery; Header UpdateUserInputHeader}",
+		"UpdateUserInput":       "{Body *UpdateUserBody; Path UpdateUserInputPath; Query *UpdateUserInputQuery; Header UpdateUserInputHeader}",
 		"UpdateUserInputPath":   "{ID string}",
 		"UpdateUserInputQuery":  "{DryRun *bool}",
 		"UpdateUserInputHeader": "{XTrace string}",
+		"UpdateUserBody":        "= User",
 		// dryRun has a default, so a handler always gets it
-		"UpdateUserRequest":         "{Body *User; Path UpdateUserRequestPath; Query UpdateUserRequestQuery; Header UpdateUserRequestHeader}",
+		"UpdateUserRequest":         "{Body *UpdateUserBody; Path UpdateUserRequestPath; Query UpdateUserRequestQuery; Header UpdateUserRequestHeader}",
 		"UpdateUserRequestPath":     "{ID string}",
 		"UpdateUserRequestQuery":    "{DryRun bool}",
 		"UpdateUserRequestHeader":   "{XTrace string}",

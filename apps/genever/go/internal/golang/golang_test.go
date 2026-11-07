@@ -609,3 +609,28 @@ func writeFile(t *testing.T, name string, data []byte) {
 		t.Fatal(err)
 	}
 }
+
+// Names are the types and fields with a pointer, at their offsets in the source.
+func TestNames(t *testing.T) {
+	t.Parallel()
+
+	field := prop("body", model.StringType, false)
+	field.Pointer = "#/$defs/Note/properties/body"
+	note := named("Note", object(field, prop("other", model.StringType, false)))
+	note.Pointer = "#/$defs/Note"
+
+	output, err := golang.Generate([]convert.NamedType{note, named("Other", model.StringType)}, "schema")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(output.Names) != 2 {
+		t.Fatalf("got %+v", output.Names)
+	}
+
+	for _, name := range output.Names {
+		if at := string(output.Source[name.Offset : name.Offset+len(name.Name)]); at != name.Name {
+			t.Errorf("%s at %d is %q", name.Name, name.Offset, at)
+		}
+	}
+}

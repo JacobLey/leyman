@@ -7,10 +7,11 @@
 // into the file.
 //
 // An OpenAPI 3.0 or 3.1 document (one with an `openapi` version) is read too: each of its `components.schemas` becomes
-// a type named after its key, and its schemas are in the document's dialect. Each operation with an `operationId` has
-// a struct of what a call to it sends (e.g. GetUserInput, with its JSON Body and its parameters by location), and a
-// type for the JSON body of each of its responses (e.g. GetUserResponse200). An operation without an `operationId` is
-// named after its method and path (e.g. GetUsersIdInput).
+// a type named after its key, and its schemas are in the document's dialect. Each operation has a struct of what a call
+// to it sends (e.g. GetUserInput, with its JSON Body and its parameters by location), with Options.ParameterDefaults
+// one of what its handler gets (e.g. GetUserRequest), and a type for its JSON request body (e.g. GetUserBody) and for
+// that of each of its responses (e.g. GetUserResponse200). They are named after its `operationId`, or, without one (or
+// with one without a letter or digit), after its method and path (e.g. GetUsersIdInput).
 //
 // The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with
 // a validator, such as github.com/santhosh-tekuri/jsonschema.
@@ -77,8 +78,9 @@ type Name struct {
 	// Name is the identifier in the source.
 	Name string
 	// Pointer is the JSON Pointer to what the name is generated from in the document: a type's schema (e.g.
-	// `#/$defs/Note`), an operation for its Input (`#/paths/~1notes/post`), a response for its body's type, and a
-	// field's schema under `properties` (`#/$defs/Note/properties/body`). The same form as an Error's Pointer.
+	// `#/$defs/Note`), an operation for its Input and Request (`#/paths/~1notes/post`), its request body or a
+	// response for their body's type (`#/paths/~1notes/post/requestBody`), and a field's schema under `properties`
+	// (`#/$defs/Note/properties/body`) or `patternProperties`. The same form as an Error's Pointer.
 	Pointer string
 	// Offset is the name's byte offset in the source, where the type or field is declared.
 	Offset int
@@ -88,9 +90,9 @@ type Name struct {
 type Source struct {
 	// Text is the Go source Generate returns.
 	Text []byte
-	// Names are each named type, and each field of a property under `properties`, in the order they are in the
-	// source. Helper types, and types and fields that aren't generated from part of the document (such as an
-	// operation input's Path), aren't listed.
+	// Names are each named type, and each field of a property under `properties` (or a `patternProperties` pattern
+	// matching one name, such as `^id$`), in the order they are in the source. Helper types, and types and fields that
+	// aren't generated from part of the document (such as an operation input's Path), aren't listed.
 	Names []Name
 }
 

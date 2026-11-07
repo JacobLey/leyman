@@ -171,8 +171,9 @@ func TestDocumentOtherSchemas(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// All, the schemas it refers to, and the operations' GetUsersInput, PostUsersInput and PostUsersResponse201
-	if len(converted) != 1+len(refs)+3 {
+	// All, the schemas it refers to, and the operations' GetUsersInput, PostUsersInput, PostUsersBody and
+	// PostUsersResponse201
+	if len(converted) != 1+len(refs)+4 {
 		for _, named := range converted {
 			t.Log(named.Name, named.Pointer)
 		}

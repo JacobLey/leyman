@@ -101,10 +101,10 @@ func TestOperationTypes(t *testing.T) {
 	expectDocumentTypes(t, operationsDocument(usersPaths, usersComponents), []string{
 		"Page", "User",
 		"GetUserInput", "GetUserResponse200", "GetUserResponseDefault",
-		"UpdateUserInput", "UpdateUserResponse2XX",
+		"UpdateUserInput", "UpdateUserBody", "UpdateUserResponse2XX",
 		// Without an operationId, or with one that is not a string
 		"PostUsersIdInput", "PostUsersIdResponse201", "DeleteUsersIdInput",
-		"UploadInput", "AddNoteInput",
+		"UploadInput", "AddNoteInput", "AddNoteBody",
 	}, map[string]*model.Type{
 		"GetUserInput": object(
 			field("path", object(field("id", model.StringType, false)), false),
@@ -122,17 +122,19 @@ func TestOperationTypes(t *testing.T) {
 		"GetUserResponse200":     model.Reference("User"),
 		"GetUserResponseDefault": model.StringType,
 		"UpdateUserInput": object(
-			field("body", model.BooleanType, false),
+			field("body", model.Reference("UpdateUserBody"), false),
 			field("path", object(field("id", model.StringType, false)), false),
 			field("header", object(field("trace", model.StringType, true)), true),
 		),
+		"UpdateUserBody":        model.BooleanType,
 		"UpdateUserResponse2XX": model.Reference("User"),
 		"PostUsersIdInput": object(
 			field("path", object(field("id", model.StringType, false)), false),
 			field("header", object(field("trace", model.StringType, true)), true),
 		),
 		"PostUsersIdResponse201": model.UnknownType,
-		"AddNoteInput":           object(field("body", model.UnknownType, true)),
+		"AddNoteInput":           object(field("body", model.Reference("AddNoteBody"), true)),
+		"AddNoteBody":            model.UnknownType,
 		"UploadInput":            object(),
 	})
 }
@@ -294,9 +296,9 @@ func TestOperationRequestDocs(t *testing.T) {
 		t.Errorf("got %+v at %s", request.Doc, request.Pointer)
 	}
 
-	// page has a default, by reference, but was already required
-	if request.Type.Key() != input.Type.Key() {
-		t.Errorf("got %s, expected %s", request.Type.Key(), input.Type.Key())
+	// page has a default, by reference, but was already required, so the request is the input
+	if expected := model.Reference("GetUserInput"); request.Type.Key() != expected.Key() {
+		t.Errorf("got %s, expected %s", request.Type.Key(), expected.Key())
 	}
 }
 
@@ -322,7 +324,24 @@ func TestOperationRequestDefaults(t *testing.T) {
 	}
 }
 
-// An operation without an operationId is documented by its method and path, and an empty operationId is still one.
+// An operation with an operationId keeps its name, even after one without whose method and path give the same.
+func TestOperationIDPrecedence(t *testing.T) {
+	t.Parallel()
+
+	types := namedTypes(t, operationsDocument(
+		`{"/a": {"get": {}}, "/b": {"get": {"operationId": "getA"}}}`, `"schemas": {}`,
+	))
+	if pointer := types["GetAInput"].Pointer; pointer != "#/paths/~1b/get" {
+		t.Errorf("got %s", pointer)
+	}
+
+	if len(types) != 2 {
+		t.Errorf("got %v", types)
+	}
+}
+
+// An operation without an operationId, or with one without a letter or digit, is named and documented by its method and
+// path, and an empty operationId is still one.
 func TestOperationWithoutID(t *testing.T) {
 	t.Parallel()
 
@@ -332,7 +351,7 @@ func TestOperationWithoutID(t *testing.T) {
 	}
 
 	expectDocumentTypes(t, operationsDocument(`{"/a": {"get": {"operationId": ""}}, "/": {"get": {}}}`, `"schemas": {}`),
-		[]string{"Input", "GetInput"}, nil)
+		[]string{"GetAInput", "GetInput"}, nil)
 
 	_, err := convertDocument(t, operationsDocument(`{"/a": {"get": {"operationId": ""}, "put": {"operationId": ""}}}`, `"schemas": {}`))
 	if !errors.Is(err, gerr.ErrInvalidSchema) {
