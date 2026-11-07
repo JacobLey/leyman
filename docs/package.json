@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Documentation site for the packages in this repo, built with VitePress and deployed to GitHub Pages from main.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

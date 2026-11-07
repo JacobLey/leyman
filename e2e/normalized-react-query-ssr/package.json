@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks that normalized-react-query's preloading carries across a server render into client hydration.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

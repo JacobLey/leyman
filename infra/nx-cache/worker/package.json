@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

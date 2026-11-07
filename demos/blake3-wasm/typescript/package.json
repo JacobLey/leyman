@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

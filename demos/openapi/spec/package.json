@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json and notes.openapi.yaml.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

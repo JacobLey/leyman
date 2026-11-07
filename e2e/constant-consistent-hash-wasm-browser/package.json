@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks that constant-consistent-hash's Rust implementation, compiled to WASM, bundles for a frontend and runs in real browsers.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

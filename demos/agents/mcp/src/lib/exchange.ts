@@ -1,6 +1,8 @@
 import { discover, lazily, requestTimeoutMs } from './discovery.js';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
+const textEncoder = new TextEncoder();
+
 export interface TokenExchangeOptions {
     /**
      * The authorization server that issues tokens for the API.
@@ -55,7 +57,7 @@ export const tokenExchange = (
 ): ((agentToken: string) => Promise<string>) => {
     const tokenEndpoint = lazily(async () => discover(options.issuer, 'token_endpoint'));
     const credentials = [formEncode(options.clientId), formEncode(options.clientSecret)].join(':');
-    const authorization = `Basic ${btoa(credentials)}`;
+    const authorization = `Basic ${textEncoder.encode(credentials).toBase64()}`;
 
     const request = async (agentToken: string): Promise<Exchanged> => {
         const response = await fetch(await tokenEndpoint(), {

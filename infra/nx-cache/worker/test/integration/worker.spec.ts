@@ -6,6 +6,8 @@ import { handle } from '#internal/handle.js';
 import { startIssuer } from '../helpers/issuer.js';
 import { startWorker, uniqueHash } from '../helpers/miniflare.js';
 
+const textEncoder = new TextEncoder();
+
 const dayMs = 24 * 60 * 60 * 1000;
 
 const url = (hash: string): string => `https://cache.test/v1/cache/${hash}`;
@@ -201,7 +203,9 @@ suite('nx-cache-worker', () => {
                     string,
                 ];
                 const encode = (value: unknown): string =>
-                    Buffer.from(JSON.stringify(value)).toString('base64url');
+                    textEncoder
+                        .encode(JSON.stringify(value))
+                        .toBase64({ alphabet: 'base64url', omitPadding: true });
                 const tokens = {
                     'not a JWT': 'not-a-jwt',
                     'too many parts': `${header}.${payload}.${signature}.extra`,

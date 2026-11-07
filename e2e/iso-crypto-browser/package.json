@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks that iso-crypto's browser build works in real browsers, with no Node.js APIs.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

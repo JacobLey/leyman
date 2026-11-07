@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "constant-consistent-hash from TypeScript, through its Rust implementation compiled to WASM, on Node.js and in browsers.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

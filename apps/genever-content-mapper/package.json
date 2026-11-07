@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file.",
   "engines": {
-    "node": ">=24.22.1"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

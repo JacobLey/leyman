@@ -17,6 +17,8 @@ import {
     userTokens,
 } from 'oauth-dev-server';
 
+const textEncoder = new TextEncoder();
+
 const resource = 'http://127.0.0.1:1/mcp';
 const otherResource = 'http://127.0.0.1:2/mcp';
 const clientId = 'test-client';
@@ -47,7 +49,7 @@ const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';
  * @returns Both
  */
 const pkce = (): { readonly verifier: string; readonly challenge: string } => {
-    const verifier = randomBytes(32).toString('base64url');
+    const verifier = randomBytes(32).toBase64({ alphabet: 'base64url', omitPadding: true });
     return { verifier, challenge: createHash('sha256').update(verifier).digest('base64url') };
 };
 
@@ -566,7 +568,7 @@ suite('Dev authorization server', () => {
             const response = await fetch(metadata.token_endpoint, {
                 method: 'POST',
                 headers: {
-                    authorization: `Basic ${btoa([service.clientId, secret].join(':'))}`,
+                    authorization: `Basic ${textEncoder.encode([service.clientId, secret].join(':')).toBase64()}`,
                 },
                 body: new URLSearchParams({
                     grant_type: 'client_credentials',
@@ -659,7 +661,7 @@ suite('Dev authorization server', () => {
             const response = await fetch(metadata.token_endpoint, {
                 method: 'POST',
                 headers: {
-                    authorization: `Basic ${btoa([client.clientId, client.clientSecret].join(':'))}`,
+                    authorization: `Basic ${textEncoder.encode([client.clientId, client.clientSecret].join(':')).toBase64()}`,
                 },
                 body: new URLSearchParams(
                     Object.entries(all).filter(

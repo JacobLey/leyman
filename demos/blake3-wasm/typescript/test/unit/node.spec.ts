@@ -8,7 +8,7 @@ const { cases, inputByteCycle } = testVectors;
 
 const input = (length: number): Uint8Array<ArrayBuffer> =>
     Uint8Array.from({ length }, (_, i) => i % inputByteCycle);
-const hex = (bytes: Uint8Array): string => Buffer.from(bytes).toString('hex');
+const hex = (bytes: Uint8Array): string => bytes.toHex();
 
 suite('On Node.js', () => {
     test('Returns every test vector', () => {

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

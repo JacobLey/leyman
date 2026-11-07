@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

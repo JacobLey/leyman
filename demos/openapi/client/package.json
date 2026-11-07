@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A typed client for the OpenAPI demo's notes API: types imported from the spec through a content mapper, routes read from openapi.json at runtime.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

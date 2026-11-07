@@ -321,7 +321,11 @@ export const createDevAuthorizationServer = async (
         jwks: { keys: [signingKey] },
         // Its one key is ES256, so everything it signs is
         clientDefaults: { id_token_signed_response_alg: 'ES256' },
-        cookies: { keys: [randomBytes(cookieKeyBytes).toString('base64url')] },
+        cookies: {
+            keys: [
+                randomBytes(cookieKeyBytes).toBase64({ alphabet: 'base64url', omitPadding: true }),
+            ],
+        },
         findAccount: (_ctx, sub) => ({ accountId: sub, claims: () => ({ sub }) }),
         scopes: [...new Set(options.resources.flatMap(resource => resource.scopes))],
         interactions: {

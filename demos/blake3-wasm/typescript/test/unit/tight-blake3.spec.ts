@@ -11,7 +11,7 @@ suite('The bench’s tight JavaScript', () => {
                 { length: inputLength },
                 (_, i) => i % testVectors.inputByteCycle
             );
-            const actual = Buffer.from(tightBlake3(input)).toString('hex');
+            const actual = tightBlake3(input).toHex();
             expect(actual, `${inputLength} bytes`).to.equal(hash);
         }
     });

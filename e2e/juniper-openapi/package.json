@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Builds an example users and posts OpenAPI spec with juniper, and checks it is valid OpenAPI 3.0 and 3.1.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

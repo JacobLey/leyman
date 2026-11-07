@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Holds the repo's global tools and repo-wide scripts, without exposing them to every package.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "A CLI for the notes API, made for agents and people: one short command per task, with login, tokens and errors handled inside.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

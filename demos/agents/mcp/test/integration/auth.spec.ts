@@ -13,6 +13,8 @@ import { agentClientId, agentRedirectUri, connectAgent } from '../helpers/agent.
 import { listen } from '../helpers/serve.js';
 import { apiAudience, mcpService, withStack } from '../helpers/stack.js';
 
+const textEncoder = new TextEncoder();
+
 /**
  * The agent's redirect, on a port: its registered loopback redirect matches any.
  */
@@ -56,7 +58,7 @@ const serviceToken = async (
     const response = await fetch(`${authorization.issuer}/token`, {
         method: 'POST',
         headers: {
-            authorization: `Basic ${btoa([mcpService.clientId, mcpService.clientSecret].join(':'))}`,
+            authorization: `Basic ${textEncoder.encode([mcpService.clientId, mcpService.clientSecret].join(':')).toBase64()}`,
         },
         body: new URLSearchParams({
             resource,

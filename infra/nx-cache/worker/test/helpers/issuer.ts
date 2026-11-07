@@ -5,6 +5,8 @@ import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { promisify } from 'node:util';
 
+const textEncoder = new TextEncoder();
+
 /**
  * A stand-in for GitHub Actions' OIDC issuer: serves its signing keys, and signs tokens like GitHub's.
  */
@@ -53,7 +55,11 @@ export interface Issuer {
 export const audience = 'test-nx-cache';
 export const repositoryId = '1234';
 
-const base64url = (value: string | Uint8Array): string => Buffer.from(value).toString('base64url');
+const base64url = (value: string | Uint8Array): string =>
+    (typeof value === 'string' ? textEncoder.encode(value) : value).toBase64({
+        alphabet: 'base64url',
+        omitPadding: true,
+    });
 
 const generateRsaKeyPair = promisify(generateKeyPair);
 

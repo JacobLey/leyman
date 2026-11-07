@@ -50,14 +50,10 @@ const keyCache = new Map<string, { fetchedAt: number; keys: readonly SigningKey[
  *
  * @param segment - base64url text
  * @returns decoded bytes
- * @throws {DOMException} if it is not base64url
+ * @throws {SyntaxError} if it is not base64url
  */
 const decodeSegment = (segment: string): Uint8Array<ArrayBuffer> =>
-    // `Uint8Array.fromBase64` isn't in Node 24, where the tests run. Each character is one byte
-    Uint8Array.from(
-        atob(segment.replaceAll('-', '+').replaceAll('_', '/')),
-        char => char.codePointAt(0)!
-    );
+    Uint8Array.fromBase64(segment, { alphabet: 'base64url' });
 
 /**
  * Parse a base64url JSON segment of a JWT.

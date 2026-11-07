@@ -26,6 +26,8 @@ import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
 
+const textEncoder = new TextEncoder();
+
 /**
  * The API's resource identifier. Any URI will do: it names the API in tokens, and is never fetched.
  */
@@ -71,7 +73,7 @@ const serviceToken = async (server: ListeningAuthorizationServer): Promise<strin
     const response = await fetch(`${server.issuer}/token`, {
         method: 'POST',
         headers: {
-            authorization: `Basic ${btoa([service.clientId, service.clientSecret].join(':'))}`,
+            authorization: `Basic ${textEncoder.encode([service.clientId, service.clientSecret].join(':')).toBase64()}`,
         },
         body: new URLSearchParams({
             grant_type: 'client_credentials',

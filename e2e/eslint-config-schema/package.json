@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks that eslint-config's hand-written package.json schema matches what juniper builds.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

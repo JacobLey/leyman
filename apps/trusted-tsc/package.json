@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's permission sandbox.",
   "engines": {
-    "node": ">=24.22.1"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

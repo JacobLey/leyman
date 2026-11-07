@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Checks that unknown-error runs in real browsers, with and without Error.isError.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

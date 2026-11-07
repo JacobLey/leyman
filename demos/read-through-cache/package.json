@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, one load per key across instances with lease-cache, and sharding with weighted rendezvous hashing.",
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "private": true,
   "type": "module",

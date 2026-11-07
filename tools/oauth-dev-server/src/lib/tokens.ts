@@ -62,7 +62,10 @@ export interface UserTokens {
  */
 export const userTokens = async (options: UserTokensOptions): Promise<UserTokens> => {
     const { issuer, clientId, redirectUri, resource, scope, user, cookies } = options;
-    const verifier = randomBytes(verifierBytes).toString('base64url');
+    const verifier = randomBytes(verifierBytes).toBase64({
+        alphabet: 'base64url',
+        omitPadding: true,
+    });
     const query = new URLSearchParams({
         resource,
         scope,
