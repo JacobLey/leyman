@@ -1,21 +1,23 @@
 ---
-title: "JSON Schema to TypeScript: six tools, one set of type checks"
+title: "How narrow are generated TypeScript types? Six JSON Schema generators compared"
 description: "genever, json-schema-to-typescript, quicktype, json-schema-to-zod, json-schema-to-ts and TypeBox, given the same schema every night, with each generated type checked against valid values, invalid values and reads."
 date: 2026-11-07
 packages: [genever, juniper]
 ---
 
-# JSON Schema to TypeScript: six tools, one set of type checks
+# How narrow are generated TypeScript types? Six JSON Schema generators compared
 
 <PostHeader />
 
-A JSON Schema can say more than most generated TypeScript types do. A tuple of two numbers becomes `number[]`, an ID that must start with `ord_` becomes `string`, and an object that only allows `x-` headers takes any key. The type still compiles, but it accepts values the schema rejects, so the mistakes it should catch reach runtime.
+A JSON Schema can say more than most generated TypeScript types do. A tuple of two numbers becomes `number[]`, an ID that must start with `ord_` becomes `string`, and an object that only allows `x-` headers takes any key. The type compiles, and bad data goes straight through it.
 
-I wrote [genever](/packages/genever/) to close that gap, and to see whether it does, a nightly job gives it and the most-used alternatives the same schema, then checks each generated type. This post covers how the checks work, what the latest run found, and where the other tools are the better choice.
+<!-- Author to fill: one concrete sentence on what prompted genever (the moment a too-wide generated type let bad data through). -->
+
+I wrote [genever](/packages/genever/) so those would be compile errors. To check that it really is narrower than the alternatives, and stays that way, a nightly job gives it and five other generators the same schema and type-checks what each one produces.
 
 ## The same schema, two outputs
 
-Here's a schema for an order. Each property uses a JSON Schema feature that TypeScript can express:
+A schema for an order, with one property per feature that TypeScript can express but most generators don't:
 
 ```json
 {
@@ -94,7 +96,7 @@ export interface Order {
 }
 ```
 
-The `oneOf` union is right. The rest is wider or wrong: `location` is `never[]`, so even a valid `[1, 2]` fails to compile (2020-12's `prefixItems` isn't read). `id` and `headers` take any string, and `payment` allows a card without a billing address.
+The `oneOf` union is right. `location` is `never[]`, so even a valid `[1, 2]` fails to compile (2020-12's `prefixItems` isn't read). `id` and `headers` take any string, and `payment` allows a card without a billing address.
 
 `npx genever order.json --name Order` writes:
 
@@ -156,21 +158,23 @@ const noBillingAddress: Order = { id: 'ord_1', payment: { card: '4242' } };
 
 ## How the comparison works
 
-Showing one schema is easy to cherry-pick, so the comparison is automated, and runs every night in CI. Every tool gets [the same documents](https://github.com/JacobLey/leyman/blob/main/e2e/genever-comparison/src/documents.ts): one JSON Schema with a property per feature (nullable values, mixed enums, tuples, `oneOf` objects, recursion, closed `patternProperties`, literal patterns and `dependentRequired`), and an OpenAPI 3.1 document for the tools that read OpenAPI.
+One schema proves nothing, so the comparison runs every night in CI. Every tool gets [the same documents](https://github.com/JacobLey/leyman/blob/main/e2e/genever-comparison/src/documents.ts): one JSON Schema with a property per feature (nullable values, mixed enums, tuples, `oneOf` objects, recursion, closed `patternProperties`, literal patterns and `dependentRequired`), and an OpenAPI 3.1 document for the tools that read OpenAPI.
 
 Each [probe](https://github.com/JacobLey/leyman/blob/main/e2e/genever-comparison/src/probes.ts) is one line of TypeScript, compiled against the generated type:
 
 - **accepts**: a value the schema allows must type-check.
-- **rejects**: a value the schema forbids must fail to.
+- **rejects**: a value the schema forbids must not type-check.
 - **reads**: reading a value must give exactly the right type, compared with an identity check, so `any` doesn't pass.
 
-The rejecting probes are what most comparisons skip. Any type accepts the valid values if it's wide enough: `any` passes every one of them.
+Most comparisons only check that valid values are accepted, which any wide enough type does; `any` passes all of them. The rejecting probes are the ones that separate the tools.
 
-[json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) and [TypeBox](https://www.npmjs.com/package/typebox) infer types inside TypeScript instead of writing a file, so they get the schema pasted in `as const`. That's the best case for them: imported from a `.json` file, TypeScript widens the schema, and json-schema-to-ts gives `unknown`.
+I wrote the probes too, so of course genever passes them. Each one follows what the spec says a validator must accept or reject, and the documents and probes are public; if one is unfair to a tool, or a feature is missing, [open an issue](https://github.com/JacobLey/leyman/issues).
+
+[json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) and [TypeBox](https://www.npmjs.com/package/typebox) infer types inside TypeScript instead of writing a file, so they get the schema pasted in `as const`. That is their best case. Import the same schema from a `.json` file and TypeScript widens it; json-schema-to-ts then gives `unknown`.
 
 ## What the latest run found
 
-From the run of 2026-11-06, JSON Schema probes passed (out of 23):
+Results from the 2026-11-06 run, 23 JSON Schema probes each:
 
 | Tool                      | Version | Passed | Missed                                                                                                                           |
 | ------------------------- | ------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -183,13 +187,17 @@ From the run of 2026-11-06, JSON Schema probes passed (out of 23):
 
 On the OpenAPI document, genever passed 10 of 10 probes and [openapi-typescript](https://www.npmjs.com/package/openapi-typescript) 7.13.0 passed 9, missing only the literal pattern.
 
-Every tool handles the basics: nullable values, mixed enums. The differences are all in features JSON Schema has and TypeScript can express, but that most generators leave wider than they need to be.
+The other rows are a snapshot: what each tool did that night, at the version shown. When one of them ships a fix, the next run picks it up. Only genever's results are asserted by the comparison's tests.
 
 Generating from a schema of 500 definitions took genever 54 ms, json-schema-to-typescript 141 ms and quicktype 295 ms (median of 5 runs, on a shared CI runner, so only compare within one run). The tools that infer types aren't timed, since their cost is paid while type-checking.
 
 The live report, from last night's run, with the failed probes on hover:
 
 <GeneverComparison />
+
+## Where I'd use the others
+
+If the same schema feeds Go, Swift or Kotlin code, use quicktype: it generates for many languages and can infer a schema from sample JSON, and genever only writes TypeScript. If you want runtime checks and the schema has no `$ref`s, json-schema-to-zod gives you a Zod validator with the type attached, one generated file instead of a type plus a separate validator. json-schema-to-ts and TypeBox have no build step, which matters when the schema is already written in TypeScript; if it is, [Juniper](/packages/juniper/) is my version of that, with the same types genever generates. And openapi-typescript has more built around it, openapi-fetch for one; genever's `Paths` and `Operations` types are shaped like its output.
 
 ## Run it yourself
 
@@ -200,26 +208,7 @@ git clone https://github.com/JacobLey/leyman.git && cd leyman
 dagger call comparison-report --commit="$(git rev-parse HEAD)" export --path ./genever.json
 ```
 
-Or, inside the repository's devcontainer:
-
-```sh
-nx run @leyman/e2e-genever-comparison:comparison-report
-```
-
-which writes `e2e/genever-comparison/report/genever.json`, the file the table above reads. Tool versions come from the lockfile, so a run of the same commit uses the same versions as the report.
-
-## Caveats
-
-- **I wrote genever, and the probes.** They test features I set out to support, so it isn't surprising genever passes them all. Each probe follows what the JSON Schema spec says a validator accepts, and the documents and probes are public: if a feature that matters to you is missing, or a probe is unfair to a tool, [open an issue](https://github.com/JacobLey/leyman/issues).
-- **Only genever's results are tested.** The rest are what each tool did in that run, at the version shown. A tool improving is a change in the report, not a failure.
-- **Types aren't validation.** `minLength`, `format` and most patterns have no TypeScript type, so data still needs checking at runtime, with [Ajv](https://ajv.js.org/) or [juniper-validator](/packages/juniper-validator/).
-
-## When to use something else
-
-- **quicktype** generates types for many languages, and infers schemas from sample JSON. For a schema shared with Go, Swift or Kotlin code, it's the tool genever isn't.
-- **json-schema-to-zod** generates a validator, not only a type. If you want runtime checks and the schema has no `$ref`s, one generated file does both.
-- **json-schema-to-ts and TypeBox** need no build step, which is the right trade when the schema is written in TypeScript anyway. For that case, [Juniper](/packages/juniper/) builds schemas in TypeScript with the same types genever generates, and genever gets them back once the schema has been serialized and read somewhere else.
-- **openapi-typescript** has a larger ecosystem around OpenAPI (openapi-fetch, for one). genever's `Paths` and `Operations` types are shaped like its output.
+Versions are pinned in the lockfile, so running the same commit gives the same versions as the table.
 
 ## Try it
 
@@ -228,3 +217,5 @@ npx genever schema.json --name MyType
 ```
 
 Commit the output, and run `genever --ci` in CI to fail when it's out of date. [Getting started](/packages/genever/getting-started) covers the rest, including [OpenAPI documents](/packages/genever/guides/openapi) and [references to other files](/packages/genever/guides/references).
+
+A type doesn't check anything at runtime. `minLength`, `format` and most patterns have no TypeScript equivalent, so data still needs a validator: [Ajv](https://ajv.js.org/) or [juniper-validator](/packages/juniper-validator/).
