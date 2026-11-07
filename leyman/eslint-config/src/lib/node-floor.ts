@@ -5,11 +5,12 @@ import type { PackageJson } from './package-json-schema.js';
 
 /**
  * Rules that suggest a newer API, keyed by the first Node.js major version that has it.
- * `null` means no release has it yet.
+ * `null` means no release has it yet, or TypeScript's lib doesn't declare it, so a call can't type-check.
  */
 const apiRules: Readonly<Record<string, number | null>> = {
     'unicorn/prefer-error-is-error': 24,
-    'unicorn/prefer-iterator-concat': 26,
+    // In Node.js 26, but not in TypeScript's lib
+    'unicorn/prefer-iterator-concat': null,
     'unicorn/prefer-iterator-zip': null,
     'unicorn/prefer-promise-try': 23,
     'unicorn/prefer-regexp-escape': 24,

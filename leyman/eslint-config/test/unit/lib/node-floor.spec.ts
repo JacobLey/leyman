@@ -36,6 +36,7 @@ suite('nodeFloorRules', () => {
 
     test('Keeps rules for APIs the floor has', () => {
         expect(nodeFloorRules({ name: 'fake', engines: { node: '>=26' } })).to.deep.equal({
+            'unicorn/prefer-iterator-concat': 'off',
             'unicorn/prefer-iterator-zip': 'off',
         });
     });
