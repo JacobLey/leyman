@@ -20,6 +20,9 @@ linters:
     # `if err := f(); err != nil` is the Go idiom, and keeps `err` scoped to the check
     - noinlineerr
   settings:
+    gomoddirectives:
+      # A workspace project depends on another through a local `replace`, as it's never fetched
+      replace-local: true
     godot:
       # Dagger's pragmas, like `+cache="never"`, have to end a doc comment as they are
       exclude:
@@ -63,10 +66,6 @@ linters:
           - mnd
       # `dagger develop` writes these `replace` directives
       - path: dagger/go\.mod
-        linters:
-          - gomoddirectives
-      # Its test vectors are a sibling project, never fetched
-      - path: tools/constant-consistent-hash/go-impl/go\.mod
         linters:
           - gomoddirectives
       # Its numbers are the hash's specified constants and bit widths, which a name wouldn't explain further

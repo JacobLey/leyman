@@ -923,14 +923,15 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		WithExec([]string{"sh", "-c", `find . -mindepth 2 -name Cargo.toml -execdir sh -c 'mkdir -p src && touch src/lib.rs' \;`}).
 		WithExec([]string{"cargo", "fetch", "--locked"})
 
-	// And Go modules. Only the Dagger module has any to download.
+	// And Go modules, for each module with a `go.sum` (the others download nothing). Every `go.mod` is kept, for the
+	// `replace` directives that point at sibling modules.
 	goModules := m.base().
 		WithDirectory(workdir, source.Filter(dagger.DirectoryFilterOpts{
-			Include: []string{"dagger/go.mod", "dagger/go.sum"},
+			Include: []string{"**/go.mod", "**/go.sum"},
+			Exclude: []string{"**/node_modules/**"},
 		})).
-		WithWorkdir(workdir+"/dagger").
 		WithEnvVariable("GOPROXY", "https://proxy.golang.org,direct").
-		WithExec([]string{"go", "mod", "download"})
+		WithExec([]string{"sh", "-c", `find . -name go.sum -execdir go mod download \;`})
 
 	return m.base().
 		WithDirectory(goModCache, goModules.Directory(goModCache)).
