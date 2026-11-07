@@ -91,7 +91,7 @@ A document with an error has no types (its imports fail too), and the error is r
 | `genever100` | Anything unexpected. The message says what.                                                                                  |
 | `genever101` | The file isn't YAML, or uses something JSON can't hold (a duplicate key, a tag beyond YAML's core schema).                   |
 | `genever102` | Not a valid schema, e.g. `properties` isn't an object, a `$ref` doesn't resolve, or a value has no JSON equivalent (`.inf`). |
-| `genever103` | A [strict mode](../genever/README.md#strict-mode) rule is broken.                                                            |
+| `genever103` | A [strict mode](../genever/ts/README.md#strict-mode) rule is broken.                                                         |
 | `genever104` | genever doesn't support the feature, including a `$ref` to another file or a URL (see below).                                |
 
 The error covers the entry it is about (its key and value), e.g. `minLenght: 1` for an unknown keyword.

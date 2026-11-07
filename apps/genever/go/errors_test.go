@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
-	"github.com/JacobLey/leyman/apps/genever/vectors"
+	testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
 )
 
 type errorCase struct {
@@ -27,7 +27,7 @@ func TestErrorVectors(t *testing.T) {
 	t.Parallel()
 
 	var cases map[string]map[string]errorCase
-	if err := json.Unmarshal(vectors.Errors, &cases); err != nil {
+	if err := json.Unmarshal(testvectors.Errors, &cases); err != nil {
 		t.Fatal(err)
 	}
 

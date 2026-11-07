@@ -5,7 +5,7 @@ import { before } from 'mocha-chain';
 
 /**
  * Root of this package. Virtual files are placed inside it so `juniper`, `expect-type` and the fixtures
- * in `@leyman/genever-vectors` resolve from its `node_modules`.
+ * in `@leyman/genever-test-vectors` resolve from its `node_modules`.
  */
 export const packageRoot = Path.resolve(import.meta.dirname, '../..');
 const virtualRoot = Path.join(packageRoot, 'test', '__virtual__');

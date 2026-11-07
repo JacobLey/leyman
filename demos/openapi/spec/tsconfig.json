@@ -20,7 +20,7 @@
       "path": "../../../apps/populate-files/load-populate-files"
     },
     {
-      "path": "../../../apps/genever"
+      "path": "../../../apps/genever/ts"
     },
     {
       "path": "../../../tools/format-file"

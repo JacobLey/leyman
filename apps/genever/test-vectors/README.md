@@ -1,20 +1,20 @@
-# genever-vectors
+# genever-test-vectors
 
 Schemas and sample values shared by every genever implementation: Juniper fixtures and schemas genever rejects, as TypeScript, and as JSON for the Go implementation.
 
-The [TypeScript genever](../) checks that each fixture's generated type is the type Juniper infers, and accepts every sample. The [Go implementation](../go/) can't run Juniper, so it reads the same fixtures as JSON, and checks that every sample decodes into its generated types and encodes back unchanged. Both are held to the same schemas, not to each other. Both also reject the same error cases with the same kind of error, at the same JSON Pointer.
+The [TypeScript genever](../ts/) checks that each fixture's generated type is the type Juniper infers, and accepts every sample. The [Go implementation](../go/) can't run Juniper, so it reads the same fixtures as JSON, and checks that every sample decodes into its generated types and encodes back unchanged. Both are held to the same schemas, not to each other. Both also reject the same error cases with the same kind of error, at the same JSON Pointer.
 
 ```ts
-import { invalidSchemas, juniperSchemas, openApiSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-vectors';
+import { invalidSchemas, juniperSchemas, openApiSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-test-vectors';
 ```
 
 It is also a Go module, embedding the JSON:
 
 ```go
-import "github.com/JacobLey/leyman/apps/genever/vectors"
+import testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
 
-data, err := vectors.Fixtures.ReadFile("out/fixtures/tuple.json")
-errorCases := vectors.Errors // out/errors.json
+data, err := testvectors.Fixtures.ReadFile("out/fixtures/tuple.json")
+errorCases := testvectors.Errors // out/errors.json
 ```
 
 The module is not published, so require it with a `replace` pointing at this directory.
@@ -57,5 +57,5 @@ It also writes `out/errors.json` from [`src/error-schemas.ts`](./src/error-schem
 Run through Nx, like any other project:
 
 ```sh
-nx run @leyman/genever-vectors:build   # regenerates out/
+nx run @leyman/genever-test-vectors:build   # regenerates out/
 ```

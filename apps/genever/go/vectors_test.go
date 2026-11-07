@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
-	"github.com/JacobLey/leyman/apps/genever/vectors"
+	testvectors "github.com/JacobLey/leyman/apps/genever/test-vectors"
 )
 
 type fixture struct {
@@ -22,7 +22,7 @@ type fixture struct {
 func readFixtures(t *testing.T) map[string]fixture {
 	t.Helper()
 
-	entries, err := fs.ReadDir(vectors.Fixtures, "out/fixtures")
+	entries, err := fs.ReadDir(testvectors.Fixtures, "out/fixtures")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func readFixtures(t *testing.T) map[string]fixture {
 	fixtures := map[string]fixture{}
 
 	for _, entry := range entries {
-		data, err := vectors.Fixtures.ReadFile(path.Join("out/fixtures", entry.Name()))
+		data, err := testvectors.Fixtures.ReadFile(path.Join("out/fixtures", entry.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,7 +55,7 @@ type documentFixture struct {
 func readDocuments(t *testing.T) map[string]documentFixture {
 	t.Helper()
 
-	entries, err := fs.ReadDir(vectors.OpenAPI, "out/openapi")
+	entries, err := fs.ReadDir(testvectors.OpenAPI, "out/openapi")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func readDocuments(t *testing.T) map[string]documentFixture {
 	documents := map[string]documentFixture{}
 
 	for _, entry := range entries {
-		data, err := vectors.OpenAPI.ReadFile(path.Join("out/openapi", entry.Name()))
+		data, err := testvectors.OpenAPI.ReadFile(path.Join("out/openapi", entry.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}

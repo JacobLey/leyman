@@ -1,8 +1,8 @@
 # genever-go
 
-Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of [genever](../).
+Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of [genever](../ts/).
 
-- **Same schemas, same checks**: a port of genever's converter, held to the [shared vectors](../vectors/), so both accept the same schemas and reject the same mistakes, at the same JSON Pointers.
+- **Same schemas, same checks**: a port of genever's converter, held to the [shared vectors](../test-vectors/), so both accept the same schemas and reject the same mistakes, at the same JSON Pointers.
 - **Types that hold every valid value**: unions, tuples, `null` and absent properties each get a Go type that tells them apart, with the `MarshalJSON`/`UnmarshalJSON` they need written into the file.
 - **No runtime dependency**: the few helpers the types use (`Optional`, `Null`, `Never`) are written into the generated file.
 - **Loads what schemas reference**: files and URLs (with a host allowlist), JSON or YAML, and OpenAPI 3.0 and 3.1 documents.
@@ -96,4 +96,4 @@ Run through Nx, like any other project:
 nx run @leyman/genever-go:verify
 ```
 
-It has no `package.json`. The [vectors](../vectors/), generated-signature and populate-files are Go dependencies: `go.mod` requires their modules, with `replace` directives pointing at the workspace copies. Nx (through the gonx plugin) infers the dependencies from the imports, so `go test ./...` also works directly.
+It has no `package.json`. The [vectors](../test-vectors/), generated-signature and populate-files are Go dependencies: `go.mod` requires their modules, with `replace` directives pointing at the workspace copies. Nx (through the gonx plugin) infers the dependencies from the imports, so `go test ./...` also works directly.

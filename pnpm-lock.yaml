@@ -546,102 +546,11 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  apps/genever:
-    dependencies:
-      ci-info:
-        specifier: 'catalog:'
-        version: 4.4.0
-      entry-script:
-        specifier: workspace:^
-        version: file:tools/entry-script
-      format-file:
-        specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
-      generated-signature:
-        specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
-      parse-cwd:
-        specifier: workspace:^
-        version: file:tools/parse-cwd
-      populate-files:
-        specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
-      yaml:
-        specifier: 'catalog:'
-        version: 2.9.1
-      yargs:
-        specifier: 'catalog:'
-        version: 18.2.0
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.6.4
-      '@leyman/configs':
-        specifier: workspace:^
-        version: file:leyman/configs
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
-      '@leyman/expect':
-        specifier: workspace:^
-        version: file:leyman/expect
-      '@leyman/genever-vectors':
-        specifier: workspace:^
-        version: file:apps/genever/vectors(eslint@10.14.0(supports-color@8.1.1))
-      '@swc/cli':
-        specifier: 'catalog:'
-        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
-      '@swc/core':
-        specifier: 'catalog:'
-        version: 1.16.20(@swc/helpers@0.5.23)
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      '@types/node':
-        specifier: catalog:node-24
-        version: 24.19.2
-      '@types/yargs':
-        specifier: 'catalog:'
-        version: 17.0.35
-      '@typescript/native':
-        specifier: 'catalog:'
-        version: typescript@7.0.2
-      c8:
-        specifier: 'catalog:'
-        version: 12.0.0
-      eslint:
-        specifier: 'catalog:'
-        version: 10.14.0(supports-color@8.1.1)
-      expect-type:
-        specifier: 'catalog:'
-        version: 1.4.0
-      fast-check:
-        specifier: 'catalog:'
-        version: 4.10.2
-      juniper:
-        specifier: workspace:^
-        version: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
-      juniper-arbitrary:
-        specifier: workspace:^
-        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.14.0(supports-color@8.1.1)))
-      mocha:
-        specifier: 'catalog:'
-        version: 12.0.3
-      mocha-chain:
-        specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
-      tmp-promise:
-        specifier: 'catalog:'
-        version: 3.0.3
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
-
   apps/genever-content-mapper:
     dependencies:
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
@@ -695,7 +604,7 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  apps/genever/vectors:
+  apps/genever/test-vectors:
     dependencies:
       juniper:
         specifier: workspace:^
@@ -734,6 +643,97 @@ importers:
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  apps/genever/ts:
+    dependencies:
+      ci-info:
+        specifier: 'catalog:'
+        version: 4.4.0
+      entry-script:
+        specifier: workspace:^
+        version: file:tools/entry-script
+      format-file:
+        specifier: workspace:^
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@10.2.2))
+      parse-cwd:
+        specifier: workspace:^
+        version: file:tools/parse-cwd
+      populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      yaml:
+        specifier: 'catalog:'
+        version: 2.9.1
+      yargs:
+        specifier: 'catalog:'
+        version: 18.2.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@leyman/genever-test-vectors':
+        specifier: workspace:^
+        version: file:apps/genever/test-vectors(eslint@10.14.0(supports-color@10.2.2))
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: catalog:node-24
+        version: 24.19.2
+      '@types/yargs':
+        specifier: 'catalog:'
+        version: 17.0.35
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      juniper:
+        specifier: workspace:^
+        version: file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.14.0(supports-color@10.2.2)))
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      tmp-promise:
+        specifier: 'catalog:'
+        version: 3.0.3
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1909,7 +1909,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
@@ -2072,7 +2072,7 @@ importers:
         version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -2273,7 +2273,7 @@ importers:
     dependencies:
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       json-schema-to-ts:
         specifier: 'catalog:'
         version: 3.1.1
@@ -2451,7 +2451,7 @@ importers:
         version: 4.10.2
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
@@ -2622,7 +2622,7 @@ importers:
         version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -6080,8 +6080,8 @@ packages:
   '@leyman/generated-signature-test-vectors@file:tools/generated-signature/test-vectors':
     resolution: {directory: tools/generated-signature/test-vectors, type: directory}
 
-  '@leyman/genever-vectors@file:apps/genever/vectors':
-    resolution: {directory: apps/genever/vectors, type: directory}
+  '@leyman/genever-test-vectors@file:apps/genever/test-vectors':
+    resolution: {directory: apps/genever/test-vectors, type: directory}
 
   '@leyman/nx-plugin@file:leyman/nx-plugin':
     resolution: {directory: leyman/nx-plugin, type: directory}
@@ -8900,8 +8900,8 @@ packages:
     resolution: {directory: apps/genever-content-mapper, type: directory}
     engines: {node: '>=26'}
 
-  genever@file:apps/genever:
-    resolution: {directory: apps/genever, type: directory}
+  genever@file:apps/genever/ts:
+    resolution: {directory: apps/genever/ts, type: directory}
     engines: {node: '>=24.22.1'}
     hasBin: true
 
@@ -13890,9 +13890,9 @@ snapshots:
 
   '@leyman/generated-signature-test-vectors@file:tools/generated-signature/test-vectors': {}
 
-  '@leyman/genever-vectors@file:apps/genever/vectors(eslint@10.14.0(supports-color@8.1.1))':
+  '@leyman/genever-test-vectors@file:apps/genever/test-vectors(eslint@10.14.0(supports-color@10.2.2))':
     dependencies:
-      juniper: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
+      juniper: file:apps/juniper(eslint@10.14.0(supports-color@10.2.2))
     transitivePeerDependencies:
       - eslint
 
@@ -17170,14 +17170,14 @@ snapshots:
 
   genever-content-mapper@file:apps/genever-content-mapper(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
-      genever: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
+      genever: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
     transitivePeerDependencies:
       - '@biomejs/biome'
       - eslint
       - prettier
 
-  genever@file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
+  genever@file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script

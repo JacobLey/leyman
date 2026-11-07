@@ -1,7 +1,7 @@
-// Package vectors embeds the schemas and sample values shared by every genever implementation.
+// Package testvectors embeds the schemas and sample values shared by every genever implementation.
 //
 // See README.md for the format.
-package vectors
+package testvectors
 
 import "embed"
 

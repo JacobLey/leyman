@@ -11,7 +11,7 @@
   ],
   "references": [
     {
-      "path": "../../apps/genever"
+      "path": "../../apps/genever/ts"
     },
     {
       "path": "../../tools/test-chain/mocha-chain"

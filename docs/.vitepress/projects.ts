@@ -173,7 +173,7 @@ export const packages: readonly Package[] = [
         title: 'genever',
         category: 'Schemas and types',
         pitch: 'Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.',
-        sources: ['apps/genever'],
+        sources: ['apps/genever/ts'],
         related: ['populate-files', 'generated-signature'],
         pages: [
             { text: 'Overview', link: '' },

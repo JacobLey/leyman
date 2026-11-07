@@ -1,5 +1,5 @@
 {
-  "name": "@leyman/genever-vectors",
+  "name": "@leyman/genever-test-vectors",
   "version": "0.0.1",
   "description": "Schemas and sample values shared by every genever implementation: Juniper fixtures and schemas genever rejects, as TypeScript, and as JSON for the Go implementation.",
   "private": true,
@@ -7,7 +7,7 @@
   "author": "JacobLey",
   "license": "MIT",
   "repository": "JacobLey/leyman",
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/genever/vectors#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/genever/test-vectors#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

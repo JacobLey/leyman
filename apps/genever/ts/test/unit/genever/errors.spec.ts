@@ -1,6 +1,6 @@
-import type { ErrorCase } from '@leyman/genever-vectors';
+import type { ErrorCase } from '@leyman/genever-test-vectors';
 import { expect } from '@leyman/expect';
-import { invalidSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-vectors';
+import { invalidSchemas, strictSchemas, unsupportedSchemas } from '@leyman/genever-test-vectors';
 import {
     genever,
     GeneverError,

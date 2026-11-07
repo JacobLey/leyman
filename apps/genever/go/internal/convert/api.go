@@ -1,6 +1,6 @@
 // Package convert converts a JSON Schema document to named types of the model, checking strict mode as it goes.
 //
-// It is a port of the TypeScript genever's converter (apps/genever/src/lib/convert.ts and the files it uses), so the
+// It is a port of the TypeScript genever's converter (apps/genever/ts/src/lib/convert.ts and the files it uses), so the
 // two accept the same schemas, report the same errors at the same pointers, and build the same types. Go differs only
 // where the language does: integers are their own type, and patterns are checked by a lenient parser, as Go's regexp
 // doesn't read every ECMAScript pattern.

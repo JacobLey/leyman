@@ -1,7 +1,7 @@
 import type { Schema } from 'juniper';
 import * as fc from 'fast-check';
 import { expect } from '@leyman/expect';
-import { juniperSchemas as fixtures } from '@leyman/genever-vectors';
+import { juniperSchemas as fixtures } from '@leyman/genever-test-vectors';
 import { genever } from 'genever';
 import { makeArbitrary } from 'juniper-arbitrary';
 import { suite, test } from 'mocha-chain';
@@ -49,7 +49,7 @@ const typeCheckValues = (name: string): string[] => {
         'generated.ts': genever(json, { strict: false }),
         'values.ts': [
             "import type { SchemaType } from 'juniper';",
-            "import type { juniperSchemas as fixtures } from '@leyman/genever-vectors';",
+            "import type { juniperSchemas as fixtures } from '@leyman/genever-test-vectors';",
             "import type { Schema as Generated } from './generated.js';",
             `type Inferred = SchemaType<typeof fixtures.${name}>;`,
             assignments('Generated', values),

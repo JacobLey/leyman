@@ -83,7 +83,7 @@
       "path": "./tools/constant-consistent-hash/weighted-rendezvous-hash"
     },
     {
-      "path": "./apps/genever"
+      "path": "./apps/genever/ts"
     },
     {
       "path": "./tools/generated-signature/generated-signature"
@@ -158,7 +158,7 @@
       "path": "./leyman/framework"
     },
     {
-      "path": "./apps/genever/vectors"
+      "path": "./apps/genever/test-vectors"
     }
   ]
 }
