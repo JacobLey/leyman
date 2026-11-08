@@ -79,7 +79,7 @@ Infrastructure ([`infra/`](../../../infra/)) is documented the same way as demos
 | [`infra/nx-cache/`](../../../infra/nx-cache/) | [`docs/src/infrastructure/nx-cache/index.md`](../../../docs/src/infrastructure/nx-cache/index.md) |
 
 <!-- @manual-start rest -->
-**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), then run `nx run @leyman/docs:populate-files`.** It regenerates the tables above, the lists in the root README and `docs/README.md`, and the paths of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md) (from each source's `src/`, README and `WHY-*.md`; add other paths in its manual section). **Point the package's `homepage` at its overview page, and link that page from its README (see [writing-readmes](../writing-readmes/SKILL.md#links)): the build checks both. When a demo starts using a documented package, add it to the demo's `uses`.**
+**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), then run `nx run @leyman/docs:populate-files`.** It regenerates the tables above, the lists in the root README and `docs/README.md`, and the paths of [`.claude/rules/docs-site-sync.md`](../../../.claude/rules/docs-site-sync.md) (from each source's `src/`, README and `WHY-*.md`; add other paths in its manual section). **Point the package's `homepage` at its overview page, and link that page from its README (see [writing-readmes](../writing-readmes/SKILL.md#links)): the build checks both. When a demo starts using a documented package, add it to the demo's `uses`.**
 
 ## Keeping pages in sync
 
