@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "description": "Convert a relative path or URL to an absolute directory path.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

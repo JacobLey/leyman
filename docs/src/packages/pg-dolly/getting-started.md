@@ -23,7 +23,7 @@ yarn add --dev pg-dolly
 :::
 
 ::: tip
-pg-dolly is ESM only, for Node.js 22 or later. Its one dependency is [`pg`](https://www.npmjs.com/package/pg), for its own admin connection: tests connect with whatever client the project uses.
+pg-dolly is ESM only, for Node.js 22.12 or later. Its one dependency is [`pg`](https://www.npmjs.com/package/pg), for its own admin connection: tests connect with whatever client the project uses.
 :::
 
 ## A server

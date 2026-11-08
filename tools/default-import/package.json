@@ -3,7 +3,7 @@
   "version": "3.1.0",
   "description": "Properly handle CJS default imports in ESM.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

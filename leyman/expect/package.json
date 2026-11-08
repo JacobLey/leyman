@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Chai's expect and assert with chai-as-promised registered, as one ESM import, so async assertions work in any test file without setup.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

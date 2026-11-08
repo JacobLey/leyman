@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

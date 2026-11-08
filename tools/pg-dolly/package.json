@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "A fresh Postgres database for every test, cloned from a template built once from your schema's SQL.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

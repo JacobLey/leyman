@@ -22,7 +22,7 @@ Framework-agnostic internals for chaining test hooks with typed context.
 npm i test-chain-core
 ```
 
-ESM only, for Node.js 22 or later. It has no peer dependencies: the framework's native methods are passed in.
+ESM only, for Node.js 22.12 or later. It has no peer dependencies: the framework's native methods are passed in.
 
 ## Usage
 

@@ -3,7 +3,7 @@
   "version": "4.1.0",
   "description": "Statically typed event emitter.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

@@ -3,7 +3,7 @@
   "version": "2.2.0",
   "description": "Find and load the first matching JS/JSON file by searching parent directories.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

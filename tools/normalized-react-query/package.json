@@ -3,7 +3,7 @@
   "version": "2.4.0",
   "description": "Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

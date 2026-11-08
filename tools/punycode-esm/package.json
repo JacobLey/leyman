@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "description": "ESM and TypeScript port of the punycode.js library.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

@@ -100,7 +100,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 npm i iso-crypto
 ```
 
-No dependencies or peer dependencies. Requires Node.js 22 or later (`engines`); browsers use `crypto.subtle`.
+No dependencies or peer dependencies. Requires Node.js 22.12 or later (`engines`); browsers use `crypto.subtle`.
 
 ## Example
 

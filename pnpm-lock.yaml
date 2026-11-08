@@ -6073,7 +6073,7 @@ packages:
 
   '@leyman/expect@file:leyman/expect':
     resolution: {directory: leyman/expect, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   '@leyman/framework@file:leyman/framework':
     resolution: {directory: leyman/framework, type: directory}
@@ -8101,7 +8101,7 @@ packages:
 
   constant-consistent-hash@file:tools/constant-consistent-hash/ts:
     resolution: {directory: tools/constant-consistent-hash/ts, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   content-disposition@1.0.1:
     resolution: {integrity: sha512-oIXISMynqSqm241k6kcQ5UwttDILMK4BiurCfGEREw6+X9jkkpEe5T9FZaApyLGGOnFuyMWZpdolTXMtvEJ08Q==}
@@ -8204,7 +8204,7 @@ packages:
 
   default-import@file:tools/default-import:
     resolution: {directory: tools/default-import, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
@@ -8433,11 +8433,11 @@ packages:
 
   entry-script@file:tools/entry-script:
     resolution: {directory: tools/entry-script, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   enum-to-array@file:tools/enum-to-array:
     resolution: {directory: tools/enum-to-array, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   error-causes@3.0.2:
     resolution: {integrity: sha512-i0B8zq1dHL6mM85FGoxaJnVtx6LD5nL2v0hlpGdntg5FOSyzQ46c9lmz5qx0xRS2+PWHGOHcYxGIBC5Le2dRMw==}
@@ -8793,7 +8793,7 @@ packages:
 
   find-import@file:tools/find-import:
     resolution: {directory: tools/find-import, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   find-my-way@9.9.0:
     resolution: {integrity: sha512-sJsgZ1sQH2UDuowPuMKg8az7Qc8F0jnj+SKkFWU/+T0xcFlgV5skgXOGUqmQzOdmW6ALA7AhJINWx3qFBkbLHA==}
@@ -9327,7 +9327,7 @@ packages:
 
   iso-crypto@file:tools/iso-crypto:
     resolution: {directory: tools/iso-crypto, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
@@ -9479,7 +9479,7 @@ packages:
 
   lease-cache@file:tools/lease-cache:
     resolution: {directory: tools/lease-cache, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -9905,7 +9905,7 @@ packages:
 
   normalized-react-query@file:tools/normalized-react-query:
     resolution: {directory: tools/normalized-react-query, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
     peerDependencies:
       '@tanstack/react-query': 'catalog:'
       react: ^18 || ^19
@@ -10101,7 +10101,7 @@ packages:
 
   parse-cwd@file:tools/parse-cwd:
     resolution: {directory: tools/parse-cwd, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   parse-imports-exports@0.2.4:
     resolution: {integrity: sha512-4s6vd6dx1AotCx/RCI2m7t7GCh5bDRUtGNvRfHSP2wbBQdMi67pPe7mtzmgwcaQ8VKK/6IB7Glfyu3qdZJPybQ==}
@@ -10179,7 +10179,7 @@ packages:
 
   pg-dolly@file:tools/pg-dolly:
     resolution: {directory: tools/pg-dolly, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
@@ -10327,7 +10327,7 @@ packages:
 
   punycode-esm@file:tools/punycode-esm:
     resolution: {directory: tools/punycode-esm, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   punycode.js@2.3.1:
     resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
@@ -10714,7 +10714,7 @@ packages:
 
   static-emitter@file:tools/static-emitter:
     resolution: {directory: tools/static-emitter, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   statuses@1.5.0:
     resolution: {integrity: sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==}
@@ -10854,7 +10854,7 @@ packages:
 
   test-chain-core@file:tools/test-chain/test-chain-core:
     resolution: {directory: tools/test-chain/test-chain-core, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   test-exclude@8.0.0:
     resolution: {integrity: sha512-ZOffsNrXYggvU1mDGHk54I96r26P8SyMjO5slMKSc7+IWmtB/MQKnEC2fP51imB3/pT6YK5cT5E8f+Dd9KdyOQ==}
@@ -11117,7 +11117,7 @@ packages:
 
   unknown-error@file:tools/unknown-error:
     resolution: {directory: tools/unknown-error, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   unrs-resolver@1.12.2:
     resolution: {integrity: sha512-dmlRxBJJayXjqTwC+JtF1HhJmgf3ftQ3YejFcZrf4+KKtJv0qDsK1pjqaaVjG7wJ5NJ6UVP1OqRMQ71Z4C3rxQ==}
@@ -11322,7 +11322,7 @@ packages:
 
   weighted-rendezvous-hash@file:tools/constant-consistent-hash/weighted-rendezvous-hash:
     resolution: {directory: tools/constant-consistent-hash/weighted-rendezvous-hash, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.12.0'}
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}

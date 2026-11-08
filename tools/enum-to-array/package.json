@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "description": "Convert TypeScript enums to a strongly typed array.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",

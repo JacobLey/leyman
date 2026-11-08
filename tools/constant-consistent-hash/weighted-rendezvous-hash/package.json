@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "author": "JacobLey",
