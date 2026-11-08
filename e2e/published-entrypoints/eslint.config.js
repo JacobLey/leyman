@@ -21,8 +21,9 @@ export default [
             globals: { process: 'readonly' },
         },
         rules: {
-            // Plain JS can't declare return types
+            // Plain JS can't declare parameter or return types
             '@typescript-eslint/explicit-function-return-type': 'off',
+            '@typescript-eslint/explicit-module-boundary-types': 'off',
             // Reporting to the terminal is its output
             'no-console': 'off',
             // Dagger passes the Node.js binary to test with through the environment

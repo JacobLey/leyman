@@ -32,11 +32,17 @@ const published = (JSON.parse(workspace) as WorkspacePackage[])
         packageJsonPath: path.join(pkg.path, 'package.json'),
     }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
-// The `floor-test` target runs this on the oldest Node.js a package may support, where a package that needs newer
-// is skipped
+// A package whose floor's major is newer than the running Node.js is skipped. The `floor-test` target instead runs
+// this once per floor, on that exact version, naming the packages of that floor in `FLOOR_TEST_PACKAGES`: only those
+// are imported.
 const runningMajor = Number(process.versions.node.split('.', 1)[0]);
+// eslint-disable-next-line n/no-process-env -- `floor-test` passes the packages of the floor it runs on
+const floorTestPackages = process.env.FLOOR_TEST_PACKAGES?.split(',');
 const publishedPackages = new Map<string, { exports: unknown; floor: number }>();
 for (const { name, packageJsonPath } of published) {
+    if (floorTestPackages && !floorTestPackages.includes(name)) {
+        continue;
+    }
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as PackageJson;
     publishedPackages.set(name, {
         exports: packageJson.exports ?? packageJson.main,
@@ -74,6 +80,14 @@ const subpaths = (exports: unknown): string[] => {
 };
 
 suite('Published entry points', () => {
+    if (floorTestPackages) {
+        test('Every package named in FLOOR_TEST_PACKAGES is published', () => {
+            expect(floorTestPackages.filter(name => !publishedPackages.has(name))).to.deep.equal(
+                []
+            );
+        });
+    }
+
     test('Every published package is installed here', () => {
         expect(
             published.map(pkg => pkg.name).filter(name => !installed.includes(name))

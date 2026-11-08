@@ -30,9 +30,6 @@ const (
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
 	// node:26.13.0-trixie-slim.
 	nodeImage = "node:26.13.0-trixie-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39"
-	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` and
-	// `floor-suites` in `e2e/published-entrypoints`). Only its `node` binary is used.
-	node22Image = "node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f"
 	// golang:1.24.13-trixie, the oldest Go a released Go module may support (see `goFloorTest`). Only its Go
 	// toolchain is used.
 	go124Image = "golang:1.24.13-trixie@sha256:5835f052b784aa39f2fe9070def3568605c8bc3fcd810f10402066348b61e716"
@@ -75,6 +72,20 @@ const (
 	// major version. Keep in sync with `POSTGRES_MAJOR` in `.devcontainer/Dockerfile`.
 	postgresMajor = "18"
 )
+
+// One image per support floor: the exact oldest Node.js a published package's `engines.node` allows (`>=24` is
+// 24.0.0), in version order. Must cover every floor a published package declares, or `floor-test` and `floor-suites`
+// in `e2e/published-entrypoints` fail naming the floor that has no image. Only each image's `node` binary is used, so
+// `-bookworm-slim` stands in for releases older than trixie.
+func nodeFloorImages() []struct{ version, image string } {
+	return []struct{ version, image string }{
+		{"22.12.0", "node:22.12.0-bookworm-slim@sha256:35531c52ce27b6575d69755c73e65d4468dba93a25644eed56dc12879cae9213"},
+		{"22.13.0", "node:22.13.0-bookworm-slim@sha256:f5a0871ab03b035c58bdb3007c3d177b001c2145c18e81817b71624dcf7d8bff"},
+		{"24.0.0", "node:24.0.0-bookworm-slim@sha256:7b0f9cbb3f88da0e67873be5efcf38ce79ea25cfbb4986fad55a446af484e7c9"},
+		{"24.15.0", "node:24.15.0-trixie-slim@sha256:291be77873bc04731968cacf82f0fcef17cee8cf200c6b6951e2bcab41560eb7"},
+		{"24.22.1", "node:24.22.1-trixie-slim@sha256:89c5244bc22a9bc3287d89ebc7e49b9cb5bb84cd40e6175ac3421d5a9f68b95a"},
+	}
+}
 
 const (
 	workdir     = "/workspace"
@@ -183,8 +194,8 @@ func (m *Ci) Test(
 	// Omitted, every task runs.
 	// +optional
 	nxCache *dagger.Service,
-	// After the tests, also run each published package's test suites on Node.js 22 when its `engines` allows it
-	// (`floor-suites` in `e2e/published-entrypoints`), never cached. Nightly only, as it reruns every suite.
+	// After the tests, also run each published package's test suites on the exact oldest Node.js its `engines`
+	// allows (`floor-suites` in `e2e/published-entrypoints`), never cached. Nightly only, as it reruns every suite.
 	// +optional
 	floorSuites bool,
 ) error {
@@ -203,7 +214,7 @@ func (m *Ci) Test(
 			WithExec([]string{"test-ci"})
 		if floorSuites {
 			// Reuses the tests `test-ci` compiled, and its services. Nx and pnpm stay on the toolchain's Node.js
-			tested = withNode22(tested).
+			tested = withNodeFloors(tested).
 				WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-suites"})
 		}
 
@@ -217,9 +228,9 @@ func (m *Ci) Test(
 		return err
 	})
 	group.Go(func() error {
-		// Imports each published package's entry points on the oldest Node.js its `engines` allows. Everything else,
-		// Nx and pnpm included, stays on the toolchain's Node.js.
-		_, err := withNode22(built).
+		// Imports each published package's entry points on the exact oldest Node.js its `engines` allows. Everything
+		// else, Nx and pnpm included, stays on the toolchain's Node.js.
+		_, err := withNodeFloors(built).
 			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-test"}).
 			Sync(ctx)
 
@@ -240,11 +251,17 @@ func (m *Ci) Test(
 	return group.Wait()
 }
 
-// Adds the `node` binary of Node.js 22, the oldest a published package may support, at `NODE_22`.
-func withNode22(ctr *dagger.Container) *dagger.Container {
-	return ctr.
-		WithFile("/opt/node-22/bin/node", dag.Container().From(node22Image).File("/usr/local/bin/node")).
-		WithEnvVariable("NODE_22", "/opt/node-22/bin/node")
+// Adds the `node` binary of each support floor in `nodeFloorImages` at `/opt/node-floors/<version>/bin/node`, and
+// that directory at `NODE_FLOORS`.
+func withNodeFloors(ctr *dagger.Container) *dagger.Container {
+	for _, floor := range nodeFloorImages() {
+		ctr = ctr.WithFile(
+			"/opt/node-floors/"+floor.version+"/bin/node",
+			dag.Container().From(floor.image).File("/usr/local/bin/node"),
+		)
+	}
+
+	return ctr.WithEnvVariable("NODE_FLOORS", "/opt/node-floors")
 }
 
 // goFloorTest runs the tests of each released Go module (one with a VERSION) whose `go` directive is 1.24 with Go

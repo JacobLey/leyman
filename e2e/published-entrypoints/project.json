@@ -27,7 +27,7 @@
     "floor-test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "\"${NODE_22:?Set NODE_22 to a Node.js 22 binary}\" node_modules/mocha/bin/mocha.js --timeout 10000 dist-test/integration/entrypoints.spec.js",
+        "command": "node scripts/floor-test.mjs",
         "color": true,
         "cwd": "{projectRoot}"
       },
