@@ -1,5 +1,13 @@
 # genever
 
+## 0.10.4
+
+### Patch Changes
+
+- d5cb8bc: Generating from large schemas is about a fifth faster: genever no longer builds a JSON Pointer for every keyword a schema doesn't have while indexing it, nor serializes a type to compare it when it is the only member of a union or intersection. A schema with 200,000 properties went from 1.3 s to 1.0 s.
+- Updated dependencies [7537c11]
+  - format-file@1.3.1
+
 ## 0.10.3
 
 ### Patch Changes
