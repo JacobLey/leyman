@@ -20,6 +20,5 @@ that wakes a waiting request.
 | Package | Status |
 |---------|--------|
 | [`ts`](./ts/) | The TypeScript implementation, published to npm as [`idempotency-keys`](https://www.npmjs.com/package/idempotency-keys) |
+| [`go`](./go/) | The Go implementation, with `net/http` middleware, released as the Go module `github.com/JacobLey/leyman/tools/idempotency-keys/go` |
 | [`test-vectors`](./test-vectors/) | The scenarios and hashes every implementation passes, in this repository only |
-
-The Go (`go`) implementation is next.
