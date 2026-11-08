@@ -16,6 +16,8 @@ server on every store and notifier, and checks that each replays, waits on, take
 - **Postgres or Valkey**: Postgres is strict and durable; Valkey is lax (a failover can forget a key). Notifications
   through either, or none, only make waiting faster.
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
+
 ## Packages
 
 | Package | Status |

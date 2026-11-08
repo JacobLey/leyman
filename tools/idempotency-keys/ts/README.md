@@ -17,6 +17,8 @@ Idempotency-Key handling for HTTP writes on Postgres or Valkey: a retried reques
 
 It doesn't fit a write that must never run twice whatever happens to the store: on Valkey, a failover that loses writes or a flush forgets keys. Use the Postgres store for payments.
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
+
 ## Contents
 
 - [Install](#install)

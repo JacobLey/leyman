@@ -434,6 +434,36 @@ export const packages: readonly Package[] = [
         ],
     },
     {
+        slug: 'idempotency-keys',
+        title: 'idempotency-keys',
+        category: 'Data and caching',
+        pitch: 'Idempotency-Key handling for HTTP writes on Postgres or Valkey, so a retried request runs once across every instance, waits on a running duplicate, and gets the first response back, in TypeScript and Go.',
+        sources: ['tools/idempotency-keys/ts'],
+        related: ['lease-cache'],
+        pages: [
+            { text: 'Overview', link: '' },
+            { text: 'Getting started', link: 'getting-started' },
+            {
+                text: 'Guides',
+                items: [
+                    { text: 'Stores', link: 'guides/stores' },
+                    { text: 'Notifiers', link: 'guides/notifiers' },
+                    { text: 'Which responses are stored', link: 'guides/responses' },
+                    { text: 'Keys, scope and operation', link: 'guides/identity' },
+                    { text: 'Other frameworks', link: 'guides/other-frameworks' },
+                    { text: 'Go', link: 'guides/go' },
+                ],
+            },
+            {
+                text: 'Reference',
+                items: [
+                    { text: 'API', link: 'reference/api' },
+                    { text: 'Specification', link: 'reference/specification' },
+                ],
+            },
+        ],
+    },
+    {
         slug: 'normalized-react-query',
         title: 'normalized-react-query',
         category: 'Data and caching',
@@ -565,6 +595,7 @@ export const demos: readonly Demo[] = [
             'populate-files',
             'pg-dolly',
             'pg-dolly-schema',
+            'idempotency-keys',
             'haywire',
             'mocha-chain',
         ],

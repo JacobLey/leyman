@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/idempotency-keys/ts"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/ts#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/idempotency-keys/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
