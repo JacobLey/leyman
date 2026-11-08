@@ -133,6 +133,28 @@ suite('makeArbitrary', () => {
             'maxProperties smaller than properties': objectSchema()
                 .properties({ a: numberSchema(), b: numberSchema(), c: numberSchema() })
                 .maxProperties(1),
+            'maxProperties with pattern and additional properties': objectSchema()
+                .properties({ a: numberSchema() })
+                .patternProperties('^x', numberSchema())
+                .maxProperties(2),
+            'minProperties beyond declared': objectSchema()
+                .properties({ a: numberSchema() })
+                .minProperties(3),
+            'minProperties only patterns can reach': customSchema({
+                type: 'object',
+                properties: { a: { type: 'number' } },
+                patternProperties: { '^x': { type: 'number' } },
+                additionalProperties: false,
+                minProperties: 2,
+            }),
+            'required keys at maxProperties': objectSchema({
+                properties: { a: numberSchema(), b: numberSchema() },
+                required: ['a'],
+            }).maxProperties(1),
+            'dependent required beyond maxProperties': objectSchema()
+                .properties({ a: numberSchema(), b: numberSchema(), c: numberSchema() })
+                .dependentRequired('a', ['b', 'c'])
+                .maxProperties(2),
             'minProperties beyond required': objectSchema()
                 .properties({ a: numberSchema(), b: numberSchema() })
                 .additionalProperties(false)
@@ -321,6 +343,18 @@ suite('makeArbitrary', () => {
             'recursive additional properties': defineRecursive<object>('Nested', self =>
                 objectSchema().additionalProperties(self)
             ),
+            'recursive optional properties within maxProperties': defineRecursive<object>(
+                'Bounded',
+                self => objectSchema().properties({ left: self, right: self }).maxProperties(1)
+            ),
+            'recursive optional properties beyond minProperties': defineRecursive<object>(
+                'Leaf',
+                self =>
+                    objectSchema()
+                        .properties({ leaf: numberSchema(), next: self })
+                        .additionalProperties(false)
+                        .minProperties(1)
+            ),
             'recursive pattern properties': defineRecursive<object>('Patterned', self =>
                 objectSchema().patternProperties('^p', self)
             ),
@@ -411,6 +445,24 @@ suite('makeArbitrary', () => {
                 },
                 additionalProperties: false,
             }),
+            'maxProperties smaller than properties': objectSchema()
+                .properties({ a: numberSchema(), b: numberSchema(), c: numberSchema() })
+                .maxProperties(1),
+            'maxProperties with pattern and additional properties': objectSchema()
+                .properties({ a: numberSchema() })
+                .patternProperties('^x', numberSchema())
+                .maxProperties(2),
+            'minProperties beyond required': objectSchema()
+                .properties({ a: numberSchema(), b: numberSchema() })
+                .additionalProperties(false)
+                .minProperties(1),
+            'minProperties beyond declared': objectSchema()
+                .properties({ a: numberSchema() })
+                .minProperties(3),
+            'dependent required beyond maxProperties': objectSchema()
+                .properties({ a: numberSchema(), b: numberSchema(), c: numberSchema() })
+                .dependentRequired('a', ['b', 'c'])
+                .maxProperties(2),
             'dependent required in a closed object': objectSchema()
                 .properties({ a: numberSchema(), b: numberSchema() })
                 .additionalProperties(false)
@@ -495,6 +547,18 @@ suite('makeArbitrary', () => {
             );
             expect(values.every(value => Object.keys(value).every(key => key === 'a'))).to.equal(
                 true
+            );
+        });
+
+        test('every property count maxProperties allows', () => {
+            const values = sample(
+                objectSchema()
+                    .properties({ a: numberSchema(), b: numberSchema(), c: numberSchema() })
+                    .additionalProperties(false)
+                    .maxProperties(2)
+            );
+            expect(new Set(values.map(value => Object.keys(value).length))).to.deep.equal(
+                new Set([0, 1, 2])
             );
         });
 
@@ -646,6 +710,10 @@ suite('makeArbitrary', () => {
                 contains: { type: 'number' },
                 maxItems: 0,
             }),
+            'more required keys than maxProperties': objectSchema({
+                properties: { a: numberSchema(), b: numberSchema() },
+                required: ['a', 'b'],
+            }).maxProperties(1),
             'a required key a closed allOf branch forbids': customSchema({
                 type: 'object',
                 allOf: [

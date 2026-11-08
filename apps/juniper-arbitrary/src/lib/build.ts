@@ -388,9 +388,40 @@ export class Builder {
             : this.#params.validatorFor({ allOf: propertyNames }, `${path}/propertyNames`);
     }
 
+    /**
+     * Declared properties when `minProperties` or `maxProperties` bound how many optional ones
+     * there can be: how many appear is chosen within the bounds first, then which.
+     *
+     * @param requiredEntries - required properties, always present
+     * @param optionalEntries - optional properties
+     * @param least - fewest optional properties, to reach `minProperties`
+     * @param most - most optional properties, to stay within `maxProperties`
+     * @param isRecursive - whether an optional property may not bottom out
+     * @returns arbitrary of the present properties
+     */
+    #countedEntries<T>(
+        requiredEntries: readonly fc.Arbitrary<T>[],
+        optionalEntries: readonly fc.Arbitrary<T>[],
+        least: number,
+        most: number,
+        isRecursive: boolean
+    ): fc.Arbitrary<readonly T[]> {
+        const some = (limit: number): fc.Arbitrary<readonly T[]> =>
+            fc
+                .subarray([...optionalEntries], { minLength: least, maxLength: limit })
+                .chain(chosen => fc.tuple(...chosen));
+        return fc
+            .tuple(
+                fc.tuple(...requiredEntries),
+                isRecursive ? this.#limitDepth(some(least), some(most)) : some(most)
+            )
+            .map(([always, chosen]) => [...always, ...chosen]);
+    }
+
     #buildObject(branch: Branch, path: string): BuiltType | null {
         const { maxProperties, minProperties, patternProperties, propertyNames, required } = branch;
-        if (minProperties > maxProperties) {
+        // Every required key is a different one, so they alone can be too many
+        if (minProperties > maxProperties || required.size > maxProperties) {
             return null;
         }
         const additional = branch.additionalProperties;
@@ -404,10 +435,10 @@ export class Builder {
         const toEntries = (dictionary: Record<string, unknown>): readonly Entry[] =>
             Object.entries(dictionary);
 
-        const entries: fc.Arbitrary<Entry | typeof absent>[] = [];
+        const declaredEntries: { arbitrary: fc.Arbitrary<Entry>; isRequired: boolean }[] = [];
         const known = new Set<string>();
         let isRecursive = false;
-        let optionalCount = 0;
+        let isOptionalRecursive = false;
 
         const isAllowedName = this.#nameCheck(propertyNames, path);
         const keys = new Set([...branch.properties.keys(), ...required]);
@@ -423,36 +454,37 @@ export class Builder {
             const built = isAllowedName(key)
                 ? this.#combined(nodes, `${path}/properties/${key}`)
                 : null;
-            if (required.has(key)) {
-                if (!built) {
+            const isRequired = required.has(key);
+            if (!built) {
+                if (isRequired) {
                     return null;
                 }
-                isRecursive ||= built.recursive;
-                entries.push(built.arbitrary.map(value => [key, value] as const));
-            } else if (built) {
-                isRecursive ||= built.recursive;
-                optionalCount++;
-                entries.push(
-                    fc.option(
-                        built.arbitrary.map(value => [key, value] as const),
-                        { maxDepth, depthIdentifier: this.#depthIdentifier, nil: absent }
-                    )
-                );
+                continue;
             }
+            isRecursive ||= built.recursive;
+            isOptionalRecursive ||= built.recursive && !isRequired;
+            declaredEntries.push({
+                arbitrary: built.arbitrary.map(value => [key, value] as const),
+                isRequired,
+            });
         }
+        const optionalEntries = declaredEntries
+            .filter(({ isRequired }) => !isRequired)
+            .map(({ arbitrary }) => arbitrary);
 
         const isOpen = additional.length === 0;
         const additionalBuilt = this.#combined(additional, `${path}/additionalProperties`);
         const dictionaries: fc.Arbitrary<readonly Entry[]>[] = [];
-        const requiredCount = required.size;
-        const roomForExtras = maxProperties - requiredCount;
-        const neededExtras = Math.max(0, minProperties - requiredCount - optionalCount);
+        const roomForExtras = maxProperties - required.size;
+        const neededOptional = Math.max(0, minProperties - required.size);
+        const neededExtras = Math.max(0, neededOptional - optionalEntries.length);
 
         // Only strings can be keys, whatever `propertyNames` leaves open
         const keyNodes = this.#combined(
             [{ type: 'string' }, ...propertyNames],
             `${path}/propertyNames`
         );
+        const hasAdditional = additionalBuilt !== null && keyNodes !== null;
         if (additionalBuilt && keyNodes) {
             isRecursive ||= additionalBuilt.recursive;
             const dictionaryKey = filtered(
@@ -506,20 +538,61 @@ export class Builder {
             );
         }
 
+        // Each optional property is otherwise present or not on its own, unless that could leave
+        // too few or too many
+        const declared =
+            neededOptional > 0 || optionalEntries.length > roomForExtras
+                ? this.#countedEntries(
+                      declaredEntries
+                          .filter(({ isRequired }) => isRequired)
+                          .map(({ arbitrary }) => arbitrary),
+                      optionalEntries,
+                      Math.min(optionalEntries.length, neededOptional),
+                      Math.min(optionalEntries.length, roomForExtras),
+                      isOptionalRecursive
+                  )
+                : fc
+                      .tuple(
+                          ...declaredEntries.map(({ arbitrary, isRequired }) =>
+                              isRequired
+                                  ? arbitrary
+                                  : fc.option(arbitrary, {
+                                        maxDepth,
+                                        depthIdentifier: this.#depthIdentifier,
+                                        nil: absent,
+                                    })
+                          )
+                      )
+                      .map(entries => entries.filter((entry): entry is Entry => entry !== absent));
+
         return {
             arbitrary: fc
-                .tuple(fc.tuple(...entries), fc.tuple(...dictionaries))
-                .map(([declared, extras]) => {
-                    const present = declared.filter((entry): entry is Entry => entry !== absent);
-                    // Declared last, since a declared property wins over a pattern matching its key
-                    return Object.fromEntries([...extras.flat(), ...present]);
+                .tuple(
+                    declared,
+                    fc.tuple(...dictionaries),
+                    maxProperties < Number.POSITIVE_INFINITY ? fc.nat() : fc.constant(0)
+                )
+                .map(([present, extras, rotation]) => {
+                    // A declared property wins over a pattern matching its key
+                    const presentKeys = new Set(present.map(([key]) => key));
+                    const undeclared = new Map(extras.flat());
+                    let kept = undeclared
+                        .entries()
+                        .filter(([key]) => !presentKeys.has(key))
+                        .toArray();
+                    // Which undeclared keys make way when there are too many varies, like array items
+                    const room = maxProperties - present.length;
+                    if (kept.length > room) {
+                        const offset = rotation % kept.length;
+                        kept = [...kept.slice(offset), ...kept.slice(0, offset)].slice(0, room);
+                    }
+                    return Object.fromEntries([...kept, ...present]);
                 }),
+            // Undeclared keys come from `additionalProperties` alone, so they never collide
             exact:
                 patternProperties.size === 0 &&
                 propertyNames.length <= 1 &&
-                (minProperties <= requiredCount || additionalBuilt !== null) &&
-                (maxProperties === Number.POSITIVE_INFINITY ||
-                    maxProperties >= requiredCount + optionalCount + maxOpenProperties),
+                (neededExtras === 0 || hasAdditional),
             recursive: isRecursive,
         };
     }
