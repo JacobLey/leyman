@@ -1,2 +1,2 @@
 # The Go server, built by the tests
-bin
+/bin
