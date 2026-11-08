@@ -1,8 +1,12 @@
+import type { Suite } from 'mocha';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { createFormatters, createTmpCwd, formatted, unformatted } from '../helpers.js';
 
-suite('Biome', () => {
+suite('Biome', function (this: Suite) {
+    // Each test runs the real formatter's process: tens of milliseconds alone, but a full CI run shares a small runner
+    this.timeout(10_000);
+
     const withTmpCwd = beforeEach(createTmpCwd);
     withTmpCwd.afterEach(async ctx => {
         await ctx.restore();
