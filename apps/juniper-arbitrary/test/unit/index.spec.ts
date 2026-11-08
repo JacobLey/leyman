@@ -234,6 +234,19 @@ suite('makeArbitrary', () => {
             'allOf object then closed': mergeSchema()
                 .allOf(objectSchema().properties({ a: numberSchema() }))
                 .allOf(objectSchema().additionalProperties(false)),
+            'allOf closed branch covering by pattern': customSchema({
+                type: 'object',
+                allOf: [
+                    { additionalProperties: false, patternProperties: { '^a': true } },
+                    { properties: { ab: { type: 'number' }, b: { type: 'number' } } },
+                ],
+            }),
+            'closed branch with unevaluated properties': customSchema({
+                type: 'object',
+                allOf: [{ additionalProperties: { type: 'number' } }],
+                properties: { a: { type: 'string' }, b: { type: 'number' } },
+                unevaluatedProperties: false,
+            }),
             'allOf items and prefix': customSchema({
                 allOf: [
                     { items: { type: 'number' } },
@@ -398,6 +411,25 @@ suite('makeArbitrary', () => {
                 },
                 additionalProperties: false,
             }),
+            'dependent required in a closed object': objectSchema()
+                .properties({ a: numberSchema(), b: numberSchema() })
+                .additionalProperties(false)
+                .dependentRequired('a', ['b']),
+            'allOf closed object': mergeSchema()
+                .allOf(objectSchema().additionalProperties(false))
+                .allOf(objectSchema().properties({ a: numberSchema(), b: numberSchema() })),
+            'allOf object then closed': mergeSchema()
+                .allOf(objectSchema().properties({ a: numberSchema() }))
+                .allOf(
+                    objectSchema().properties({ b: numberSchema() }).additionalProperties(false)
+                ),
+            'allOf typed additional properties': customSchema({
+                type: 'object',
+                allOf: [
+                    { properties: { a: { type: 'number' } } },
+                    { additionalProperties: { minimum: 1 } },
+                ],
+            }),
             anyOf: mergeSchema().anyOf([numberSchema(), stringSchema()]),
             allOf: mergeSchema()
                 .allOf(numberSchema().minimum(5))
@@ -464,6 +496,20 @@ suite('makeArbitrary', () => {
             expect(values.every(value => Object.keys(value).every(key => key === 'a'))).to.equal(
                 true
             );
+        });
+
+        test('keys a closed allOf branch covers by pattern, and no others', () => {
+            const values = sample(
+                customSchema({
+                    type: 'object',
+                    allOf: [
+                        { additionalProperties: false, patternProperties: { '^a': true } },
+                        { properties: { ab: { type: 'number' }, b: { type: 'number' } } },
+                    ],
+                }) as Schema<Record<string, unknown>>
+            );
+            expect(values.some(value => Object.hasOwn(value, 'ab'))).to.equal(true);
+            expect(values.some(value => Object.hasOwn(value, 'b'))).to.equal(false);
         });
 
         test('every anyOf branch', () => {
@@ -599,6 +645,13 @@ suite('makeArbitrary', () => {
                 type: 'array',
                 contains: { type: 'number' },
                 maxItems: 0,
+            }),
+            'a required key a closed allOf branch forbids': customSchema({
+                type: 'object',
+                allOf: [
+                    { additionalProperties: false },
+                    { properties: { a: { type: 'number' } }, required: ['a'] },
+                ],
             }),
             'property names reject a required key': customSchema({
                 type: 'object',

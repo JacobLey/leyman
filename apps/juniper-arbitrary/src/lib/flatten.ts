@@ -175,18 +175,49 @@ const mergeNodeMaps = (
 };
 
 /**
- * `additionalProperties` and `items` only see the `properties` and `prefixItems` next to them,
- * so once merged with another schema's their meaning is no longer captured exactly.
+ * `additionalProperties` only sees the `properties` and `patternProperties` next to it, so a key
+ * another schema declares is held to it unless that schema covers the key too
+ * (https://json-schema.org/draft/2020-12/json-schema-core#section-10.3.2.3). `false` there
+ * forbids the key outright.
+ *
+ * @param own - branch whose `properties` are kept
+ * @param other - branch merged with it
+ * @returns `own.properties`, each key `other` doesn't cover also held to its `additionalProperties`
+ */
+const holdToAdditional = (
+    own: Branch,
+    other: Branch
+): ReadonlyMap<string, readonly SchemaNode[]> => {
+    if (other.additionalProperties.length === 0) {
+        return own.properties;
+    }
+    const patterns = other.patternProperties
+        .keys()
+        .map(pattern => new RegExp(pattern, 'u'))
+        .toArray();
+    return new Map(
+        own.properties
+            .entries()
+            .map(([key, nodes]) =>
+                other.properties.has(key) || patterns.some(pattern => pattern.test(key))
+                    ? [key, nodes]
+                    : [key, [...nodes, ...other.additionalProperties]]
+            )
+    );
+};
+
+/**
+ * `additionalProperties` and `items` only see the `patternProperties` and `prefixItems` next to
+ * them, so once merged with another schema's their meaning is no longer captured exactly.
+ * Declared `properties` are captured by {@link holdToAdditional}.
  *
  * @param left - branch to merge
  * @param right - branch to merge
  * @returns whether the merge loses part of the meaning of either
  */
 const doesMergeLoseScope = (left: Branch, right: Branch): boolean =>
-    (left.additionalProperties.length > 0 &&
-        (right.properties.size > 0 || right.patternProperties.size > 0)) ||
-    (right.additionalProperties.length > 0 &&
-        (left.properties.size > 0 || left.patternProperties.size > 0)) ||
+    (left.additionalProperties.length > 0 && right.patternProperties.size > 0) ||
+    (right.additionalProperties.length > 0 && left.patternProperties.size > 0) ||
     (left.items.length > 0 && right.prefixItems.length > 0) ||
     (right.items.length > 0 && left.prefixItems.length > 0);
 
@@ -215,7 +246,7 @@ const mergeBranches = (left: Branch, right: Branch): Branch => ({
     patternProperties: mergeNodeMaps(left.patternProperties, right.patternProperties),
     patterns: [...left.patterns, ...right.patterns],
     prefixItems: [...left.prefixItems, ...right.prefixItems],
-    properties: mergeNodeMaps(left.properties, right.properties),
+    properties: mergeNodeMaps(holdToAdditional(left, right), holdToAdditional(right, left)),
     propertyNames: [...left.propertyNames, ...right.propertyNames],
     required: new Set([...left.required, ...right.required]),
     residual: left.residual || right.residual || doesMergeLoseScope(left, right),
