@@ -5,6 +5,7 @@ import { filtered, LazyArbitrary } from './filtered-arbitrary.js';
 import { flatten } from './flatten.js';
 import { canonicalJson } from './json.js';
 import { numberArbitrary } from './numbers.js';
+import { SchemaIndex } from './refs.js';
 import { stringArbitrary, stringsMatching } from './strings.js';
 
 type ValueArbitrary = fc.Arbitrary<unknown>;
@@ -112,15 +113,18 @@ export interface BuilderParams {
 export class Builder {
     readonly #depthIdentifier = fc.createDepthIdentifier();
     /**
-     * Built schemas by content, so a schema reaching itself finds its own entry.
+     * Built schemas by content (and base URI, see {@link SchemaIndex.keyOf}), so a schema reaching
+     * itself finds its own entry.
      * Null when nothing can match. Absent while still being built.
      */
     readonly #memo = new Map<string, Built | null>();
     readonly #inProgress = new Set<string>();
     readonly #params: BuilderParams;
+    readonly #index: SchemaIndex;
 
     public constructor(params: BuilderParams) {
         this.#params = params;
+        this.#index = new SchemaIndex(params.root);
     }
 
     /**
@@ -135,7 +139,7 @@ export class Builder {
     }
 
     #build(node: SchemaNode, path: string): Built | null {
-        const key = JSON.stringify(node);
+        const key = this.#index.keyOf(node);
         const memoized = this.#memo.get(key);
         if (memoized !== undefined) {
             return memoized;
@@ -160,7 +164,7 @@ export class Builder {
     }
 
     #buildUncached(node: SchemaNode, path: string): Built | null {
-        const results = flatten(this.#params.root, node, path).flatMap(branch =>
+        const results = flatten(this.#index, node, path).flatMap(branch =>
             this.#buildBranch(branch, path)
         );
         const chosen = this.#choose(results);
@@ -265,7 +269,7 @@ export class Builder {
     #combined(nodes: readonly SchemaNode[], path: string): Built | null {
         // Without duplicates: a schema reaching itself through `allOf` would otherwise get one
         // longer each time, and never find its own entry in the memo
-        const byContent = new Map(nodes.map(node => [JSON.stringify(node), node]));
+        const byContent = new Map(nodes.map(node => [this.#index.keyOf(node), node]));
         const unique = byContent.values().toArray();
         const [first, ...rest] = unique;
         if (first === undefined) {

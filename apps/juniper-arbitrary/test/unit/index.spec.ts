@@ -30,6 +30,7 @@ import {
 import { suite, test } from 'mocha-chain';
 import { Builder } from '#internal/lib/build.js';
 import { LazyArbitrary } from '#internal/lib/filtered-arbitrary.js';
+import { SchemaIndex } from '#internal/lib/refs.js';
 
 const sample = <T>(schema: Schema<T>): T[] =>
     fc.sample(makeArbitrary(schema), { numRuns: 200, seed: 42 });
@@ -64,6 +65,82 @@ const tree = defineRecursive<Tree>('Tree', self =>
 );
 
 const definedName = stringSchema().minLength(1).define('Name');
+
+// `$ref`s that only resolve through an `$id` or an anchor
+const idRefs: Readonly<Record<string, Schema<unknown>>> = {
+    'embedded $id': customSchema({
+        $ref: 'number.json',
+        $defs: { number: { $id: 'number.json', type: 'number' } },
+    }),
+    'embedded absolute $id': customSchema({
+        $ref: 'https://example.com/number.json',
+        $defs: { number: { $id: 'https://example.com/number.json', type: 'number', minimum: 5 } },
+    }),
+    'relative $id inside another': customSchema({
+        type: 'array',
+        prefixItems: [
+            { $ref: 'https://example.com/a/outer.json' },
+            { $ref: 'https://example.com/a/inner.json' },
+        ],
+        items: false,
+        minItems: 2,
+        $defs: {
+            outer: {
+                $id: 'https://example.com/a/outer.json',
+                $ref: 'inner.json',
+                $defs: { inner: { $id: 'inner.json', type: 'string', minLength: 3 } },
+            },
+        },
+    }),
+    'pointer into an $id': customSchema({
+        $ref: 'item.json#/$defs/positive',
+        $defs: {
+            item: { $id: 'item.json', $defs: { positive: { type: 'integer', minimum: 1 } } },
+        },
+    }),
+    'pointer within an $id resolves in it': customSchema({
+        $ref: 'resource.json',
+        $defs: {
+            x: { type: 'string' },
+            resource: {
+                $id: 'resource.json',
+                allOf: [{ $ref: '#/$defs/x' }],
+                $defs: { x: { type: 'number' } },
+            },
+        },
+    }),
+    $anchor: customSchema({
+        type: 'array',
+        prefixItems: [{ $ref: '#number' }, { $ref: 'resource.json#text' }],
+        items: false,
+        minItems: 2,
+        $defs: {
+            number: { $anchor: 'number', type: 'number' },
+            resource: {
+                $id: 'resource.json',
+                $defs: { text: { $anchor: 'text', type: 'string', minLength: 1 } },
+            },
+        },
+    }),
+    'root with its own $id': customSchema({
+        $id: 'https://example.com/schemas/root.json',
+        $ref: 'number.json',
+        $defs: {
+            number: { $id: 'https://example.com/schemas/number.json', type: 'number', maximum: 0 },
+        },
+    }),
+    'recursion through an $id': customSchema({
+        $ref: 'list.json',
+        $defs: {
+            list: {
+                $id: 'list.json',
+                type: 'object',
+                properties: { next: { anyOf: [{ type: 'null' }, { $ref: 'list.json' }] } },
+                required: ['next'],
+            },
+        },
+    }),
+};
 
 suite('makeArbitrary', () => {
     suite('Only generates valid values', () => {
@@ -207,10 +284,7 @@ suite('makeArbitrary', () => {
                 type: 'object',
                 propertyNames: false,
             }),
-            'embedded $id': customSchema({
-                $ref: 'number.json',
-                $defs: { number: { $id: 'number.json', type: 'number' } },
-            }),
+            ...idRefs,
             'both set minContains': customSchema({
                 type: 'array',
                 allOf: [
@@ -487,6 +561,7 @@ suite('makeArbitrary', () => {
                 .allOf(numberSchema().minimum(5))
                 .allOf(numberSchema().type('integer').maximum(6)),
             tree,
+            ...idRefs,
         };
         for (const [name, schema] of Object.entries(cases)) {
             test(name, () => {
@@ -523,6 +598,61 @@ suite('makeArbitrary', () => {
                 expect(validate(value), JSON.stringify(value)).to.equal(true);
             }
             expect(checked).to.deep.equal(['#/propertyNames']);
+        });
+    });
+
+    suite('Resolves references', () => {
+        const root = {
+            $defs: {
+                list: { prefixItems: [{ type: 'number' }] },
+                resource: { $id: 'https://example.com/a.json', $anchor: 'top' },
+                again: { $id: 'https://example.com/a.json', type: 'string' },
+                fragment: { $id: '#not-a-resource', type: 'null' },
+                text: { const: { $id: 'https://example.com/data.json' } },
+            },
+        } satisfies SchemaNode;
+        const index = new SchemaIndex(root);
+
+        test('pointers into lists', () => {
+            expect(index.resolve('#/$defs/list/prefixItems/0', index.rootBase)?.node).to.equal(
+                root.$defs.list.prefixItems[0]
+            );
+        });
+
+        test('anchors in an $id, the first of the same $id winning', () => {
+            expect(index.resolve('https://example.com/a.json#top', index.rootBase)?.node).to.equal(
+                root.$defs.resource
+            );
+        });
+
+        test('not what is missing or malformed', () => {
+            for (const ref of [
+                'https://[',
+                'https://example.com/missing.json',
+                'https://example.com/a.json#missing',
+                '#/$defs/missing',
+                '#/$defs/%E0%A4%A',
+                '#not-a-resource',
+                'https://example.com/data.json',
+            ]) {
+                expect(index.resolve(ref, index.rootBase), ref).to.equal(null);
+            }
+        });
+
+        test('booleans keep the base around them', () => {
+            expect(index.baseOf(true, 'https://example.com/')).to.equal('https://example.com/');
+        });
+
+        test('anything for a reference the validator found some other way', () => {
+            const builder = new Builder({
+                root: { $ref: 'https://example.com/elsewhere.json' },
+                validatorFor: () => () => true,
+            });
+            const arbitrary = builder.build({ $ref: 'https://example.com/elsewhere.json' }, '#');
+            const types = new Set(
+                fc.sample(arbitrary!, { numRuns: 200, seed: 42 }).map(value => typeof value)
+            );
+            expect(types.size).to.be.greaterThan(2);
         });
     });
 

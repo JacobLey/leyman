@@ -1,3 +1,4 @@
+import type { SchemaIndex } from './refs.js';
 import { canonicalJson } from './json.js';
 
 export type SchemaNode = boolean | SchemaObject;
@@ -8,7 +9,11 @@ export type TypeName = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'ob
  * The JSON Schema keywords read here. Anything else is an annotation, or left to the validator.
  */
 export interface SchemaObject {
+    readonly $anchor?: string;
     readonly $defs?: Readonly<Record<string, SchemaNode>>;
+    readonly $dynamicAnchor?: string;
+    readonly $dynamicRef?: string;
+    readonly $id?: string;
     readonly $ref?: string;
     readonly additionalProperties?: SchemaNode;
     readonly allOf?: readonly SchemaNode[];
@@ -297,6 +302,8 @@ const ownBranch = (node: SchemaObject): Branch => ({
     propertyNames: toList(node.propertyNames),
     required: new Set(node.required),
     residual:
+        // Not followed: what it refers to depends on the path taken to it, which the validator tracks
+        node.$dynamicRef !== undefined ||
         node.not !== undefined ||
         node.oneOf !== undefined ||
         node.if !== undefined ||
@@ -310,44 +317,27 @@ const cross = (left: readonly Branch[], right: readonly Branch[]): readonly Bran
     left.flatMap(a => right.map(b => mergeBranches(a, b))).slice(0, maxBranches);
 
 /**
- * Look up a `$ref` inside the root schema.
- *
- * The validator has already compiled the schema, so a `$ref` that isn't a pointer is one it found
- * another way, such as an embedded `$id`. Anything then goes here, and the validator decides.
- *
- * @param root - root schema
- * @param ref - `$ref` value
- * @returns referenced schema
- */
-const resolveRef = (root: SchemaNode, ref: string): SchemaNode => {
-    if (!ref.startsWith('#')) {
-        return true;
-    }
-    let current: unknown = root;
-    for (const segment of ref.split('/').slice(1)) {
-        const key = decodeURIComponent(segment).replaceAll('~1', '/').replaceAll('~0', '~');
-        current = (current as Record<string, unknown> | undefined)?.[key];
-    }
-    return current as SchemaNode;
-};
-
-/**
  * Resolve a schema's composition into the branches a value could satisfy.
  *
  * Only what can be aimed at is captured, and {@link Branch.residual} marks what isn't.
  * A branch may also accept values its schema doesn't, such as `if` without its negation: the
  * validator has the last word, so all this decides is how often generation hits on a valid value.
  *
- * @param root - root schema, which `$ref`s are looked up in
+ * A `$ref` is looked up in the root schema. One that isn't found there is one the validator, which
+ * compiled the schema, found some other way, so anything goes here and the validator decides.
+ *
+ * @param index - the root schema's resources, which `$ref`s are looked up in
  * @param node - schema to resolve
  * @param path - path of the schema, for errors
- * @param [activeRefs] - `$ref`s being resolved. Meeting one again before descending into a value means it adds nothing
+ * @param [inheritedBase] - base URI around the schema, for one not in the root
+ * @param [activeRefs] - URIs of the `$ref`s being resolved. Meeting one again before descending into a value means it adds nothing
  * @returns branches, empty if nothing can match
  */
 export const flatten = (
-    root: SchemaNode,
+    index: SchemaIndex,
     node: SchemaNode,
     path: string,
+    inheritedBase: string = index.rootBase,
     activeRefs: ReadonlySet<string> = new Set()
 ): readonly Branch[] => {
     if (typeof node === 'boolean') {
@@ -358,27 +348,28 @@ export const flatten = (
         return [];
     }
 
+    const base = index.baseOf(node, inheritedBase);
+    const flattenAt = (child: SchemaNode, childPath: string): readonly Branch[] =>
+        flatten(index, child, childPath, base, activeRefs);
     const flattenAll = (nodes: readonly SchemaNode[], keyword: string): readonly Branch[] =>
-        nodes.flatMap((child, index) =>
-            flatten(root, child, `${path}/${keyword}/${index}`, activeRefs)
-        );
+        nodes.flatMap((child, position) => flattenAt(child, `${path}/${keyword}/${position}`));
     const steps: (readonly Branch[])[] = [];
 
     if (node.$ref !== undefined) {
-        steps.push(
-            activeRefs.has(node.$ref)
-                ? []
-                : flatten(
-                      root,
-                      resolveRef(root, node.$ref),
-                      path,
-                      new Set([...activeRefs, node.$ref])
-                  )
-        );
+        const resolved = index.resolve(node.$ref, base);
+        if (!resolved) {
+            steps.push([emptyBranch]);
+        } else if (activeRefs.has(resolved.uri)) {
+            steps.push([]);
+        } else {
+            steps.push(
+                flatten(index, resolved.node, path, base, new Set([...activeRefs, resolved.uri]))
+            );
+        }
     }
     if (node.allOf) {
-        for (const [index, child] of node.allOf.entries()) {
-            steps.push(flatten(root, child, `${path}/allOf/${index}`, activeRefs));
+        for (const [position, child] of node.allOf.entries()) {
+            steps.push(flattenAt(child, `${path}/allOf/${position}`));
         }
     }
     if (node.anyOf) {
@@ -390,10 +381,10 @@ export const flatten = (
     if (node.if !== undefined) {
         steps.push([
             ...cross(
-                flatten(root, node.if, `${path}/if`, activeRefs),
-                flatten(root, node.then ?? true, `${path}/then`, activeRefs)
+                flattenAt(node.if, `${path}/if`),
+                flattenAt(node.then ?? true, `${path}/then`)
             ),
-            ...flatten(root, node.else ?? true, `${path}/else`, activeRefs),
+            ...flattenAt(node.else ?? true, `${path}/else`),
         ]);
     }
     // Either the key is absent, or it is present and brings its dependencies with it
@@ -411,7 +402,7 @@ export const flatten = (
                 { ...emptyBranch, properties: new Map([[key, [false]]]) },
                 ...cross(
                     [{ ...emptyBranch, required: new Set([key]) }],
-                    flatten(root, dependent, `${path}/dependentSchemas/${key}`, activeRefs)
+                    flattenAt(dependent, `${path}/dependentSchemas/${key}`)
                 ),
             ]);
         }
