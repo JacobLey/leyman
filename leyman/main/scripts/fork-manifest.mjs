@@ -407,6 +407,66 @@ const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
     writeFileSync(file, output.join('\n'));
 };
 
+// The devcontainer's user, compose service and display name say `leyman`. A fork takes its own repository's name, so
+// its container isn't named after this one. Each replacement must match, so a rewording here fails `apply` loudly.
+
+// Linux user names are at most 32 characters
+const maxUsername = 32;
+
+/**
+ * The name a fork's devcontainer takes: its folder's name, as a Linux user name and compose service name.
+ *
+ * @param to - the fork's folder
+ * @returns lower-case letters, digits and single dashes, starting with a letter, `dev` if nothing is left
+ */
+export const devcontainerName = to => {
+    const words =
+        path
+            .basename(path.resolve(to))
+            .toLowerCase()
+            .match(/[\da-z]+/gv) ?? [];
+    const name = words
+        .join('-')
+        .replace(/^[\d\-]+/v, '')
+        .slice(0, maxUsername);
+    const trimmed = name.endsWith('-') ? name.slice(0, -1) : name;
+    return trimmed || 'dev';
+};
+
+const devcontainerRenames = name => ({
+    '.devcontainer/Dockerfile': [['ARG USER=leyman\n', `ARG USER=${name}\n`]],
+    '.devcontainer/devcontainer.json': [
+        ['"name": "Leyman",', `"name": ${JSON.stringify(name)},`],
+        ['"service": "leyman",', `"service": ${JSON.stringify(name)},`],
+        ['"remoteUser": "leyman",', `"remoteUser": ${JSON.stringify(name)},`],
+    ],
+    '.devcontainer/docker-compose.yml': [
+        ['\nservices:\n  leyman:\n', `\nservices:\n  ${name}:\n`],
+        ["every worktree's service is `leyman`.", `every worktree's service is \`${name}\`.`],
+    ],
+});
+
+const renameDevcontainer = (files, to) => {
+    const name = devcontainerName(to);
+    const renames = Object.entries(devcontainerRenames(name));
+    for (const [file, replacements] of renames) {
+        if (!files.includes(file)) {
+            continue;
+        }
+        const target = path.join(to, file);
+        let text = readFileSync(target, 'utf8');
+        for (const [from, replacement] of replacements) {
+            if (!text.includes(from)) {
+                throw new Error(
+                    `${file} no longer has ${JSON.stringify(from)}: update devcontainerRenames`
+                );
+            }
+            text = text.replace(from, () => replacement);
+        }
+        writeFileSync(target, text);
+    }
+};
+
 /**
  * Where a fork records what it took from this repository, and from which commit.
  */
@@ -472,6 +532,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     installTools(files, to);
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
+    renameDevcontainer(files, to);
     writeUpstream(to, { commit, conditions, extraPackages, files });
     return { files, skipped, taken };
 };
