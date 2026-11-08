@@ -62,16 +62,15 @@ export const withStack = (options: StackOptions = {}) => {
             errors.push(error);
         };
         const api = await listen();
-        api.use(
-            createNotesApp({
-                authenticate: jwtAuthenticator({
-                    issuer: authorization.issuer,
-                    audience: options.apiAccepts ?? apiAudience,
-                }),
-                db,
-                onError,
-            }).fetch
-        );
+        const { fetch: apiFetch } = createNotesApp({
+            authenticate: jwtAuthenticator({
+                issuer: authorization.issuer,
+                audience: options.apiAccepts ?? apiAudience,
+            }),
+            db,
+            onError,
+        });
+        api.use(apiFetch);
         mcp.use(
             createNotesMcpApp({
                 resourceUrl: url,
@@ -87,7 +86,7 @@ export const withStack = (options: StackOptions = {}) => {
                 onError,
             }).fetch
         );
-        return { origin: mcp.url, url, authorization, db, pool, api, mcp, errors };
+        return { origin: mcp.url, url, authorization, db, pool, api, apiFetch, mcp, errors };
     });
     withServers.afterEach(async ({ authorization, pool, api, mcp }) => {
         await mcp.close();

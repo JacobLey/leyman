@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the notes API's spec documents them */
 import type { CallToolResult, McpServer } from '@modelcontextprotocol/server';
-import type { NotesClient } from '@leyman/demo-openapi-client';
+import type { NotesClient, OperationResult } from '@leyman/demo-openapi-client';
+import { randomUUID } from 'node:crypto';
 import { requireScopes } from '@modelcontextprotocol/server';
 import { NotesMcpApiError } from './errors.js';
 import {
@@ -57,6 +58,44 @@ const guarded =
             return fixable('The notes service failed. Try again later.');
         }
     };
+
+/**
+ * How many times `add_note` sends its request at most.
+ */
+const maxAddAttempts = 3;
+
+/**
+ * Adds a note, sending the request again when its answer may have been lost: a failure on the way (a timeout, a
+ * dropped connection, a gateway's `5xx`), or a `409` (the API still runs an earlier attempt). Every attempt carries
+ * the same `Idempotency-Key`, new for each call of the tool, so the API adds the note once and answers a retry with
+ * it.
+ *
+ * @param notes - The notes API
+ * @param note - What to add
+ * @param note.title - Its title
+ * @param note.body - Its body
+ * @returns The API's last answer
+ * @rejects With the last attempt's error
+ */
+const addNote = async (
+    notes: NotesClient,
+    note: { readonly title: string; readonly body: string }
+): Promise<OperationResult<'createNote'>> => {
+    const header = { 'Idempotency-Key': randomUUID() };
+    const add = async (): Promise<OperationResult<'createNote'>> =>
+        notes.call('createNote', { body: note, header });
+    for (let attempt = 1; attempt < maxAddAttempts; attempt++) {
+        try {
+            const created = await add();
+            if (created.status !== 409) {
+                return created;
+            }
+        } catch {
+            // Sent again, below or on the next attempt
+        }
+    }
+    return add();
+};
 
 /**
  * Adds the notes tools. Each maps onto the notes API, shaped for an agent rather than mirroring an endpoint: lists
@@ -142,7 +181,7 @@ export const registerNoteTools = (
             scopeChallenge: requireScopes('notes:read', 'notes:write'),
         },
         guarded(onError, async ({ title, body }: { title: string; body: string }) => {
-            const created = await notes.call('createNote', { body: { title, body } });
+            const created = await addNote(notes, { title, body });
             if (created.status !== 201) {
                 throw new NotesMcpApiError('createNote', created.status);
             }

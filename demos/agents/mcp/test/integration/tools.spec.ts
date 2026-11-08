@@ -223,6 +223,142 @@ suite('Tools', () => {
             expect(scopes).to.deep.equal(['notes:read', 'notes:read notes:write']);
         });
 
+        /**
+         * Puts something between the MCP server and the API, which sees each note added, and its key.
+         *
+         * @param api - The API's server
+         * @param apiFetch - The API itself
+         * @param answer - Answers the nth note added (from 1), or gives it to the API
+         * @returns The `Idempotency-Key` of each note added, in order
+         */
+        const intercept = (
+            api: { readonly use: (fetch: (request: Request) => Promise<Response>) => void },
+            apiFetch: (request: Request) => Promise<Response> | Response,
+            answer: (nth: number, pass: () => Promise<Response>) => Promise<Response>
+        ): (string | null)[] => {
+            const keys: (string | null)[] = [];
+            api.use(async request => {
+                if (request.method !== 'POST') {
+                    return apiFetch(request);
+                }
+                keys.push(request.headers.get('idempotency-key'));
+                return answer(keys.length, async () => apiFetch(request));
+            });
+            return keys;
+        };
+
+        withAgent.test(
+            'Adds the note once when its answer is lost, sending the same key again',
+            async ({ agent, api, apiFetch, db }) => {
+                const keys = intercept(api, apiFetch, async (nth, pass) => {
+                    const response = await pass();
+                    // The first answer lost on its way back, as through a gateway that timed out
+                    return nth === 1 ? new Response(null, { status: 502 }) : response;
+                });
+
+                const result = await agent.authorized(async () =>
+                    agent.client.callTool({
+                        name: 'add_note',
+                        arguments: { title: 'Dolly', body: '' },
+                    })
+                );
+
+                const rows = await db.select().from(notes);
+                expect(rows).to.have.length(1);
+                expect(result.structuredContent).to.include({ id: rows[0]!.id });
+                expect(keys).to.have.length(2);
+                expect(keys[0]).to.match(uuid);
+                expect(keys[1]).to.equal(keys[0]);
+            }
+        );
+
+        withAgent.test(
+            'Asks again while the API still adds the note',
+            async ({ agent, api, apiFetch, db }) => {
+                const keys = intercept(api, apiFetch, async (nth, pass) =>
+                    nth === 1
+                        ? Response.json(
+                              { code: 'idempotency_key_in_use', message: 'Still running' },
+                              { status: 409 }
+                          )
+                        : pass()
+                );
+
+                const result = await agent.authorized(async () =>
+                    agent.client.callTool({
+                        name: 'add_note',
+                        arguments: { title: 'Dolly', body: '' },
+                    })
+                );
+
+                expect(result.isError).to.equal(undefined);
+                expect(await db.select().from(notes)).to.have.length(1);
+                expect(keys).to.have.length(2);
+                expect(keys[1]).to.equal(keys[0]);
+            }
+        );
+
+        withAgent.test(
+            'Gives up after three answers that the note is still being added',
+            async ({ agent, api, apiFetch, errors }) => {
+                const keys = intercept(api, apiFetch, async () =>
+                    Response.json({ code: 'busy', message: 'Still running' }, { status: 409 })
+                );
+
+                const result = await agent.authorized(async () =>
+                    agent.client.callTool({
+                        name: 'add_note',
+                        arguments: { title: 'Dolly', body: '' },
+                    })
+                );
+
+                expect(textOf(result)).to.equal('The notes service failed. Try again later.');
+                expect(errors[0])
+                    .to.be.instanceOf(NotesMcpApiError)
+                    .and.include({ operationId: 'createNote', status: 409 });
+                const distinct = new Set(keys);
+                expect(distinct.size).to.equal(1);
+                expect(keys).to.have.length(3);
+            }
+        );
+
+        withAgent.test(
+            'Gives up after three failed tries',
+            async ({ agent, api, apiFetch, errors }) => {
+                const keys = intercept(
+                    api,
+                    apiFetch,
+                    async () => new Response(null, { status: 502 })
+                );
+
+                const result = await agent.authorized(async () =>
+                    agent.client.callTool({
+                        name: 'add_note',
+                        arguments: { title: 'Dolly', body: '' },
+                    })
+                );
+
+                expect(result.isError).to.equal(true);
+                expect(errors).to.have.length(1);
+                expect(keys).to.have.length(3);
+            }
+        );
+
+        withAgent.test('Sends a new key for each note', async ({ agent, api, apiFetch }) => {
+            const keys = intercept(api, apiFetch, async (_nth, pass) => pass());
+
+            await agent.authorized(async () =>
+                agent.client.callTool({ name: 'add_note', arguments: { title: 'Dolly', body: '' } })
+            );
+            await agent.client.callTool({
+                name: 'add_note',
+                arguments: { title: 'Dolly', body: '' },
+            });
+
+            expect(keys).to.have.length(2);
+            expect(keys[1]).not.to.equal(keys[0]);
+        });
+
         withAgent.test('Rejects a note the API would', async ({ agent, db }) => {
             const result = await agent.authorized(async () =>
                 agent.client.callTool({ name: 'add_note', arguments: { title: '', body: '' } })
