@@ -1,0 +1,1408 @@
+{
+  "defaults": {
+    "ttlMs": 86400000,
+    "leaseMs": 60000,
+    "waitMs": 10000
+  },
+  "keys": [
+    {
+      "description": "a token",
+      "header": [
+        "8e03978e-40d5-43e8-bc93-6894a57f9324"
+      ],
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324"
+    },
+    {
+      "description": "a Structured Field String",
+      "header": [
+        "\"8e03978e-40d5-43e8-bc93-6894a57f9324\""
+      ],
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324"
+    },
+    {
+      "description": "escapes in a string",
+      "header": [
+        "\"a \\\"quoted\\\" \\\\ key\""
+      ],
+      "key": "a \"quoted\" \\ key"
+    },
+    {
+      "description": "a quote inside an unquoted value is kept",
+      "header": [
+        "ab\"c"
+      ],
+      "key": "ab\"c"
+    },
+    {
+      "description": "spaces are allowed",
+      "header": [
+        "a b"
+      ],
+      "key": "a b"
+    },
+    {
+      "description": "255 characters",
+      "header": [
+        "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      ],
+      "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+    },
+    {
+      "description": "255 characters, quoted",
+      "header": [
+        "\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\""
+      ],
+      "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+    },
+    {
+      "description": "no header",
+      "header": [],
+      "key": null
+    },
+    {
+      "description": "empty",
+      "header": [
+        ""
+      ],
+      "error": true
+    },
+    {
+      "description": "an empty string",
+      "header": [
+        "\"\""
+      ],
+      "error": true
+    },
+    {
+      "description": "256 characters",
+      "header": [
+        "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      ],
+      "error": true
+    },
+    {
+      "description": "256 characters, quoted",
+      "header": [
+        "\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\""
+      ],
+      "error": true
+    },
+    {
+      "description": "an unterminated string",
+      "header": [
+        "\"abc"
+      ],
+      "error": true
+    },
+    {
+      "description": "a lone quote",
+      "header": [
+        "\""
+      ],
+      "error": true
+    },
+    {
+      "description": "characters after a string",
+      "header": [
+        "\"abc\" def"
+      ],
+      "error": true
+    },
+    {
+      "description": "an escape of anything but a quote or backslash",
+      "header": [
+        "\"a\\bc\""
+      ],
+      "error": true
+    },
+    {
+      "description": "outside 0x20-0x7E",
+      "header": [
+        "café"
+      ],
+      "error": true
+    },
+    {
+      "description": "a tab",
+      "header": [
+        "a\tb"
+      ],
+      "error": true
+    },
+    {
+      "description": "more than one header",
+      "header": [
+        "a",
+        "b"
+      ],
+      "error": true
+    }
+  ],
+  "identities": [
+    {
+      "description": "with an operation",
+      "scope": "user_1",
+      "operation": "createNote",
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "identity": "efbac56b9695040b97cafd84ae37832df242f1eff0a669d6f576e450c19d09fd"
+    },
+    {
+      "description": "without an operation",
+      "scope": "user_1",
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "identity": "0a8d077c5d48c50ecb7d26e498df6d5049ea77ab725b29ac32c88a2ac3b8d993"
+    },
+    {
+      "description": "an empty operation is not an absent one (servers never give one; the encoding still differs)",
+      "scope": "user_1",
+      "operation": "",
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "identity": "64cd97214493b77c11be97c5843786ddae6b6be2215fe33a9d45a1c5d2bdac04"
+    },
+    {
+      "description": "another scope",
+      "scope": "user_2",
+      "operation": "createNote",
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "identity": "73106003b1df3935d4a83cecf66fe4e53a536cef1ad5f3b7aff1e52fc5eb4b75"
+    },
+    {
+      "description": "fields are length-prefixed, so moving characters between them changes the identity",
+      "scope": "user_1c",
+      "operation": "reateNote",
+      "key": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "identity": "1e72797488fe97592d4ad50a48ce15889111659b117915557f17872ccbb951d5"
+    },
+    {
+      "description": "scope and operation are UTF-8",
+      "scope": "tenant/ñandú",
+      "operation": "créer",
+      "key": "k",
+      "identity": "98e34a8315938a03da6db654f4b7b7923d6491142dbdf68c4f7eae279125f812"
+    },
+    {
+      "description": "a key with spaces and quotes",
+      "scope": "user_1",
+      "operation": "createNote",
+      "key": "a \"quoted\" \\ key",
+      "identity": "697caa1fb1fe734799525a733efb63341ee96843ed2310f69542fc5919f863bf"
+    }
+  ],
+  "fingerprints": [
+    {
+      "description": "no named headers",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "73b66c99bf2e15450bfe2180bc4e91c0a3e0a5afe7e6c38729c3bd4990534b08"
+    },
+    {
+      "description": "another method",
+      "method": "PUT",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "f5ef6735f338e6cc603905d1c765cf061a1b5ab5d0df94c7af506c88e519175e"
+    },
+    {
+      "description": "the query is part of the target",
+      "method": "POST",
+      "target": "/notes?draft=1",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "aada3a767768fee2d9e96a0a7ab22d07fc85f43396954ac2b17a92a75b41f786"
+    },
+    {
+      "description": "the target is not decoded",
+      "method": "POST",
+      "target": "/notes/%61",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "6364b06a41bdd38a29b8c51d2f5ec75cd6c6cd779fea1893ddbad85f2cf7fedc"
+    },
+    {
+      "description": "one byte more in the body",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There!\"}",
+      "fingerprint": "d90c873a191898b76d02a0a7d6492c21a1f5461e3343195690df106b093f48e3"
+    },
+    {
+      "description": "whitespace in the body counts",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\": \"Hi\", \"body\": \"There\"}",
+      "fingerprint": "621deea2208483ba09279b5047a745e72945b47025f87c024e462133d3895a44"
+    },
+    {
+      "description": "no body",
+      "method": "DELETE",
+      "target": "/notes/1",
+      "headers": [],
+      "named": [],
+      "body": "",
+      "fingerprint": "37fac89507d96855d0376a64de9d34daad817d22240b9e04b2dd46358d4c1102"
+    },
+    {
+      "description": "a named header",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [
+        "content-type"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "e87c58f76b4a22c7a7c0a7e828adaf0dad9646ff819abdc67390cd284f5270d1"
+    },
+    {
+      "description": "names are compared in lower case",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "named": [
+        "Content-Type"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "e87c58f76b4a22c7a7c0a7e828adaf0dad9646ff819abdc67390cd284f5270d1"
+    },
+    {
+      "description": "a named header the request lacks is absent",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [
+        "x-tenant"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "468c8c4f036a3231e30f34b2af0eb910ad8f769fadb0eae86a3dbd2216afed95"
+    },
+    {
+      "description": "a named header sent empty is not absent",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "X-Tenant",
+          ""
+        ]
+      ],
+      "named": [
+        "x-tenant"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "b5dc1d10fb34eaf8c974da365225762151e003a4561bef878993b7db4262b798"
+    },
+    {
+      "description": "repeated values join with a comma and a space, in order",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Accept",
+          "text/plain"
+        ],
+        [
+          "accept",
+          "application/json"
+        ]
+      ],
+      "named": [
+        "accept"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "36fef54e976d285588ad41dbe3fff5af69b2e29e8b491d658f24065556559229"
+    },
+    {
+      "description": "named headers are hashed in byte order of their name, whatever order the server lists them",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Accept",
+          "application/json"
+        ]
+      ],
+      "named": [
+        "content-type",
+        "accept",
+        "Accept"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "48c39dae24dc84a15791ffc7cee3ee8d91fd2e1527b6e6cd4a771eadddabd2fa"
+    },
+    {
+      "description": "a UTF-8 body",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"ñandú 🐦\",\"body\":\"\"}",
+      "fingerprint": "487da5379f45fbcdfa324187b110dfdd710e3d459c1457c7ed38c01eecf1f834"
+    }
+  ],
+  "scenarios": [
+    {
+      "description": "a key runs once, then replays its response",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        },
+        {
+          "begin": "again",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a 5xx is stored by default, so a retry never runs a handler twice",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 500,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ]
+            ],
+            "body": "{\"code\":\"internal_error\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 500,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ]
+            ],
+            "body": "{\"code\":\"internal_error\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a 429 is released by default, so a retry runs",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 429,
+            "headers": [
+              [
+                "retry-after",
+                "1"
+              ]
+            ],
+            "body": ""
+          },
+          "expect": "released"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "a released key runs again",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "release": "first",
+          "expect": true
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "retry",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "again",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a duplicate of a running request is a 409 without waiting",
+      "options": {
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a waiting duplicate replays the response once stored",
+      "options": {
+        "waitMs": 5000
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "start": "duplicate",
+          "request": "a"
+        },
+        {
+          "sleep": 100
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "await": "duplicate",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a waiting duplicate runs once the key is released",
+      "options": {
+        "waitMs": 5000
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "start": "duplicate",
+          "request": "a"
+        },
+        {
+          "sleep": 100
+        },
+        {
+          "release": "first",
+          "expect": true
+        },
+        {
+          "await": "duplicate",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "a waiting duplicate gives up after waitMs",
+      "options": {
+        "waitMs": 300
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        }
+      ]
+    },
+    {
+      "description": "a key reused on another request is a 422, while running and once completed, and never waits",
+      "options": {
+        "waitMs": 5000
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "body": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Bye\"}"
+        },
+        "target": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes?draft=1",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "method": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "PUT",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "begin": "body",
+          "request": "body",
+          "expect": "mismatch"
+        },
+        {
+          "begin": "target",
+          "request": "target",
+          "expect": "mismatch"
+        },
+        {
+          "begin": "method",
+          "request": "method",
+          "expect": "mismatch"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "body after",
+          "request": "body",
+          "expect": "mismatch"
+        }
+      ]
+    },
+    {
+      "description": "without an operation, a key reused on another endpoint is a 422",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "other": {
+          "scope": "user_1",
+          "key": "k1",
+          "method": "POST",
+          "target": "/tags",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "other",
+          "request": "other",
+          "expect": "mismatch"
+        }
+      ]
+    },
+    {
+      "description": "with an operation, the same key on another operation is another key",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "other": {
+          "scope": "user_1",
+          "operation": "createTag",
+          "key": "k1",
+          "method": "POST",
+          "target": "/tags",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "other",
+          "request": "other",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "one scope's key never touches another's",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "b": {
+          "scope": "user_2",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Other\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "begin": "other scope",
+          "request": "b",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "a crashed holder is taken over once its lease runs out, and its late response is not stored",
+      "options": {
+        "leaseMs": 200,
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "body": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Bye\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "crashed",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 300
+        },
+        {
+          "begin": "mismatch",
+          "request": "body",
+          "expect": "mismatch"
+        },
+        {
+          "begin": "takeover",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "crashed",
+          "response": {
+            "status": 500,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ]
+            ],
+            "body": "{\"code\":\"internal_error\"}"
+          },
+          "expect": "lost"
+        },
+        {
+          "release": "crashed",
+          "expect": false
+        },
+        {
+          "respond": "takeover",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a waiting duplicate takes over once the lease runs out",
+      "options": {
+        "leaseMs": 300,
+        "waitMs": 5000
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "crashed",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "begin": "waiter",
+          "request": "a",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "a holder whose lease ran out still completes when nobody took over",
+      "options": {
+        "leaseMs": 200
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "slow",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 300
+        },
+        {
+          "respond": "slow",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "an expired key is forgotten, so another request may use it",
+      "options": {
+        "leaseMs": 100,
+        "ttlMs": 400
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "body": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Bye\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "sleep": 500
+        },
+        {
+          "begin": "later",
+          "request": "body",
+          "expect": "run"
+        }
+      ]
+    }
+  ],
+  "valkeyScripts": {
+    "claim": "local time = redis.call('TIME')\nlocal now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)\nlocal record = redis.call('HMGET', KEYS[1], 'fingerprint', 'lease', 'status', 'headers', 'body')\nif record[3] then\n    return {'completed', record[1], record[3], record[4], record[5]}\nend\nif record[1] and (record[1] ~= ARGV[1] or tonumber(record[2]) > now) then\n    return {'running', record[1]}\nend\nredis.call('DEL', KEYS[1])\nredis.call('HSET', KEYS[1], 'fingerprint', ARGV[1], 'token', ARGV[2], 'lease', string.format('%d', now + tonumber(ARGV[3])))\nredis.call('PEXPIRE', KEYS[1], ARGV[4])\nreturn {'claimed'}\n",
+    "complete": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nredis.call('HDEL', KEYS[1], 'token', 'lease')\nredis.call('HSET', KEYS[1], 'status', ARGV[2], 'headers', ARGV[3], 'body', ARGV[4])\nreturn 1\n",
+    "release": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nredis.call('DEL', KEYS[1])\nreturn 1\n"
+  }
+}

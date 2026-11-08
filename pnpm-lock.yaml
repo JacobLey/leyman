@@ -3862,6 +3862,12 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  tools/idempotency-keys/test-vectors:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+
   tools/iso-crypto:
     devDependencies:
       '@biomejs/biome':
