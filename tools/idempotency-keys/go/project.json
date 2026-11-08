@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/idempotency-keys-go",
+  "metadata": {
+    "description": "Go implementation of idempotency-keys, with Postgres and Valkey stores, tested against the shared test vectors."
+  },
+  "implicitDependencies": [
+    "@leyman/idempotency-keys-test-vectors"
+  ],
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
+    "check-go-release": {},
+    "go-test": {
+      "inputs": [
+        "...",
+        "postgres",
+        "valkey"
+      ]
+    },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}
