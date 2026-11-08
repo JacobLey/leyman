@@ -1,8 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createPostsLoader, type Post } from './blog.js';
-import { writeFeed } from './feed.js';
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash';
 import ts from 'typescript';
 import { type DefaultTheme, defineConfigWithTheme } from 'vitepress';
@@ -306,21 +304,15 @@ const pageOrder = new Map(
 );
 
 /**
- * Package pages used to be at the site root (`/haywire/guides/scopes`), and those URLs are in
- * published READMEs and ESLint rules' docs links. Writes a redirect page at each old path, keeping
- * the `#hash`. Generated from the registry, so nothing is kept by hand. (Old demo URLs need none:
- * GitHub Pages redirects `/demos/openapi` to the directory `/demos/openapi/` itself.)
+ * Writes a redirect page at `path` (under `outDir`, without `base`) to `target`, keeping the
+ * `#hash`. A path ending in `/` gets an `index.html`, any other path a `.html` (served without it).
  */
-const writeRedirects = (outDir: string, base: string): void => {
-    for (const { slug, pages } of packages) {
-        for (const { link } of flattenPages(`/packages/${slug}/`, pages)) {
-            const target = `${base}${link.slice(1)}`;
-            const old = link.slice('/packages/'.length);
-            const file = join(outDir, old.endsWith('/') ? `${old}index.html` : `${old}.html`);
-            mkdirSync(dirname(file), { recursive: true });
-            writeFileSync(
-                file,
-                `<!doctype html>
+const writeRedirect = (outDir: string, path: string, target: string): void => {
+    const file = join(outDir, path.endsWith('/') ? `${path}index.html` : `${path}.html`);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(
+        file,
+        `<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
 <title>Moved</title>
@@ -331,17 +323,45 @@ const writeRedirects = (outDir: string, base: string): void => {
 <p>This page moved to <a href="${target}">${target}</a>.</p>
 </html>
 `
-            );
+    );
+};
+
+/**
+ * Pages that moved to another site, by their path here (without `base`), kept so links to them
+ * keep working: the blog lives on the personal site.
+ */
+const movedAway: readonly (readonly [path: string, target: string])[] = [
+    ['blog/', 'https://jacobley.github.io/blog/'],
+    [
+        'blog/json-schema-to-typescript-compared',
+        'https://jacobley.github.io/blog/json-schema-to-typescript-compared',
+    ],
+];
+
+/**
+ * Writes a redirect page at each moved path. Package pages used to be at the site root
+ * (`/haywire/guides/scopes`), and those URLs are in published READMEs and ESLint rules' docs
+ * links; their redirects are generated from the registry, so nothing is kept by hand. (Old demo
+ * URLs need none: GitHub Pages redirects `/demos/openapi` to the directory `/demos/openapi/`
+ * itself.) Pages that moved to another site are listed in `movedAway`.
+ */
+const writeRedirects = (outDir: string, base: string): void => {
+    for (const { slug, pages } of packages) {
+        for (const { link } of flattenPages(`/packages/${slug}/`, pages)) {
+            writeRedirect(outDir, link.slice('/packages/'.length), `${base}${link.slice(1)}`);
         }
+    }
+    for (const [path, target] of movedAway) {
+        writeRedirect(outDir, path, target);
     }
 };
 
 /**
  * Writes `/llms.txt` ([llmstxt.org](https://llmstxt.org/)): an index of every package, demo,
- * infrastructure entry, framework page and blog post for AI agents, with links to the pages, npm and GitHub. Generated from the
- * registry, so it lists exactly what the site does.
+ * infrastructure entry and framework page for AI agents, with links to the pages, npm and GitHub.
+ * Generated from the registry, so it lists exactly what the site does.
  */
-const writeLlmsTxt = (outDir: string, posts: readonly Post[]): void => {
+const writeLlmsTxt = (outDir: string): void => {
     const showcase = (section: 'demos' | 'infrastructure', entries: readonly Demo[]): string[] =>
         entries.map(
             ({ slug, title, pitch, source }) =>
@@ -383,17 +403,6 @@ const writeLlmsTxt = (outDir: string, posts: readonly Post[]): void => {
         ...framework.map(
             ({ text, link, pitch }) => `- [${text}](${siteUrl}framework/${link}): ${pitch}`
         ),
-        ...(posts.length > 0
-            ? [
-                  '',
-                  '## Blog',
-                  '',
-                  ...posts.map(
-                      ({ url, title, date, description }) =>
-                          `- [${title}](${siteUrl}${url.slice(1)}) (${date}): ${description}`
-                  ),
-              ]
-            : []),
     ];
     writeFileSync(join(outDir, 'llms.txt'), `${lines.join('\n')}\n`);
 };
@@ -436,7 +445,6 @@ const nav: DefaultTheme.NavItem[] = [
         activeMatch: '^/framework/',
         items: framework.map(({ text, link }) => ({ text, link: `/framework/${link}` })),
     },
-    { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
 ];
 
 export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
@@ -451,15 +459,6 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     cleanUrls: true,
     lastUpdated: false,
     head: [
-        [
-            'link',
-            {
-                rel: 'alternate',
-                type: 'application/rss+xml',
-                title: 'Leyman blog',
-                href: `${siteUrl}blog/feed.xml`,
-            },
-        ],
         // Proves ownership of the site to Google Search Console. Not a secret: it only works for the
         // Google account that made it.
         [
@@ -494,11 +493,9 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
         // `tsx` too, for code in libraries' JSDoc that twoslash shows in hovers (e.g. TanStack Query's)
         languages: ['js', 'ts', 'tsx', 'json', 'sh'],
     },
-    async buildEnd({ outDir, site }) {
-        const posts = await createPostsLoader().load();
+    buildEnd({ outDir, site }) {
         writeRedirects(outDir, site.base);
-        writeLlmsTxt(outDir, posts);
-        await writeFeed(outDir, srcDir, siteUrl, posts);
+        writeLlmsTxt(outDir);
     },
     transformPageData(pageData) {
         // `packages/haywire/index.md` is linked as `/packages/haywire/`, other pages without `.md`

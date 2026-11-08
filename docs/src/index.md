@@ -17,9 +17,6 @@ hero:
     - theme: alt
       text: Framework
       link: /framework/
-    - theme: alt
-      text: Blog
-      link: /blog/
 ---
 
 ## Packages
@@ -43,10 +40,6 @@ What this repository runs on: real, deployed systems, and how they are built. [A
 ## Framework
 
 The setup these packages are built on, as a framework another repository can adopt in slices. [Start here →](/framework/)
-
-## Blog
-
-Benchmarks, comparisons with other libraries, and the stories behind the packages. [All posts →](/blog/)
 
 ## For AI agents
 
