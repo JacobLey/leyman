@@ -77,6 +77,9 @@ suite('makeArbitrary', () => {
             'nested lookahead': stringSchema().pattern(String.raw`^(?=(a|\)))..$`),
             'content encoding': stringSchema().contentEncoding('base64'),
             'format with length': stringSchema().format('email').maxLength(12),
+            'format with a long minLength': stringSchema().format('email').minLength(200),
+            'format with both lengths': stringSchema().format('uri').minLength(30).maxLength(40),
+            'pattern with a long minLength': stringSchema().pattern('^[a-z]+$').minLength(60),
             'format with pattern': stringSchema().format('uuid').pattern('^[0-9a-f-]+$'),
             'unknown format': stringSchema().format('made-up'),
             number: numberSchema(),
@@ -569,6 +572,9 @@ suite('makeArbitrary', () => {
             'a backreference, which plain strings miss':
                 stringSchema().pattern(String.raw`^(a)\1$`),
             'a lookahead nothing else satisfies': stringSchema().pattern('^(?=z{20}).*$'),
+            'a format whose values are never that short': stringSchema()
+                .format('uuid')
+                .maxLength(10),
             'recursion with no way out': defineRecursive<object>('Forever', self =>
                 objectSchema({ properties: { next: self }, required: ['next'] })
             ),
