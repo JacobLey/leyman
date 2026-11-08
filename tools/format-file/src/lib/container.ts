@@ -1,7 +1,7 @@
 import { bind, createContainer, createModule, singletonScope } from 'haywire';
 import { Biome } from './biome.js';
 import { Formatter } from './formatter.js';
-import { biomePath, biomePathId, prettierPath, prettierPathId } from './lib-path.js';
+import { biomePath, biomePathId, prettierImport, prettierImportId } from './lib-path.js';
 import { Prettier } from './prettier.js';
 
 /**
@@ -15,7 +15,7 @@ export const formatterModule = createModule(
 )
     .addBinding(
         bind(Prettier)
-            .withDependencies([prettierPathId.supplier()])
+            .withDependencies([prettierImportId.supplier()])
             .withConstructorProvider()
             .scoped(singletonScope)
     )
@@ -27,11 +27,11 @@ export const formatterModule = createModule(
     );
 
 /**
- * Locations of installed formatters.
+ * Where installed formatters are found.
  */
 export const formatterPathsModule = createModule(
     bind(biomePathId).withFactory(biomePath)
-).addBinding(bind(prettierPathId).withFactory(prettierPath));
+).addBinding(bind(prettierImportId).withFactory(prettierImport));
 
 export const formatFileContainer = createContainer(
     formatterModule.mergeModule(formatterPathsModule)

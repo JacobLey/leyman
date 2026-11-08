@@ -1,13 +1,10 @@
-import type { Suite } from 'mocha';
+import { symlink } from 'node:fs/promises';
 import { resolveConfigFile } from 'prettier';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { createFormatters, createTmpCwd, formatted, unformatted } from '../helpers.js';
 
-suite('Prettier', function (this: Suite) {
-    // Each test runs the real formatter's process: tens of milliseconds alone, but a full CI run shares a small runner
-    this.timeout(10_000);
-
+suite('Prettier', () => {
     const withTmpCwd = beforeEach(createTmpCwd);
     withTmpCwd.afterEach(async ctx => {
         await ctx.restore();
@@ -139,6 +136,161 @@ suite('Prettier', function (this: Suite) {
             await createFormatters().prettier.formatPrettierFiles([ctx.resolve('ignored/file.js')]);
 
             expect(await ctx.read('ignored/file.js')).to.equal(unformatted.js);
+        });
+
+        withIgnored.test('.prettierignore returns text unchanged', async ctx => {
+            await ctx.write('.prettierignore', 'ignored/\n');
+
+            expect(
+                await createFormatters().prettier.formatPrettierText(
+                    unformatted.invalid,
+                    ctx.resolve('ignored/file.js')
+                )
+            ).to.equal(unformatted.invalid);
+        });
+    });
+
+    suite('formatPrettierFiles', () => {
+        withTmpCwd.test('Reads .editorconfig', async ctx => {
+            await ctx.write('.editorconfig', '[*]\nindent_style = tab\n');
+            await ctx.write('file.js', unformatted.js);
+
+            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+        });
+
+        withTmpCwd.test('Loads plugins named in the config', async ctx => {
+            await ctx.write('.prettierrc', '{ "plugins": ["./plugin.mjs"] }');
+            await ctx.write(
+                'plugin.mjs',
+                `
+                    export const languages = [{ name: 'shout', parsers: ['shout'], extensions: ['.shout'] }];
+                    export const parsers = {
+                        shout: { parse: text => ({ text }), astFormat: 'shout', locStart: () => 0, locEnd: () => 0 },
+                    };
+                    export const printers = { shout: { print: path => path.node.text.trim().toUpperCase() } };
+                `
+            );
+            await ctx.write('file.shout', '  hello  ');
+
+            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.shout')]);
+
+            expect(await ctx.read('file.shout')).to.equal('HELLO');
+        });
+
+        withTmpCwd.test('Reads configuration afresh on each call', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+            const { prettier } = createFormatters();
+
+            await prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+            await ctx.write('.prettierrc', '{ "useTabs": true }');
+            await prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+        });
+
+        withTmpCwd.test('Formats the other files, then rejects, when one fails', async ctx => {
+            await ctx.write('first.js', unformatted.js);
+            await ctx.write('invalid.js', unformatted.invalid);
+            await ctx.write('second.js', unformatted.js);
+
+            await expect(
+                createFormatters().prettier.formatPrettierFiles([
+                    ctx.resolve('first.js'),
+                    ctx.resolve('invalid.js'),
+                    ctx.resolve('second.js'),
+                ])
+            ).to.be.rejectedWith(AggregateError);
+
+            expect(await ctx.read('first.js')).to.equal(formatted.prettier);
+            expect(await ctx.read('invalid.js')).to.equal(unformatted.invalid);
+            expect(await ctx.read('second.js')).to.equal(formatted.prettier);
+        });
+
+        withTmpCwd.test('Rejects a missing file', async ctx => {
+            await expect(
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('missing.js')])
+            ).to.be.rejectedWith(AggregateError);
+        });
+
+        withTmpCwd.test('Rejects a file without an inferable parser', async ctx => {
+            await ctx.write('file.unknown', unformatted.js);
+
+            await expect(
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.unknown')])
+            ).to.be.rejectedWith(AggregateError);
+        });
+
+        withTmpCwd.test('Rejects a symbolic link, as the CLI does', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+            await symlink(ctx.resolve('file.js'), ctx.resolve('link.js'));
+
+            await expect(
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('link.js')])
+            ).to.be.rejectedWith(AggregateError);
+
+            expect(await ctx.read('file.js')).to.equal(unformatted.js);
+        });
+
+        for (const directory of ['node_modules', '.git']) {
+            withTmpCwd.test(`Skips files in ${directory}, as the CLI does`, async ctx => {
+                await ctx.write(`${directory}/file.js`, unformatted.js);
+                await ctx.write('file.js', unformatted.js);
+
+                await createFormatters().prettier.formatPrettierFiles([
+                    ctx.resolve(`${directory}/file.js`),
+                    ctx.resolve('file.js'),
+                ]);
+
+                expect(await ctx.read(`${directory}/file.js`)).to.equal(unformatted.js);
+                expect(await ctx.read('file.js')).to.equal(formatted.prettier);
+            });
+
+            withTmpCwd.test(
+                `Rejects when every file is in ${directory}, as the CLI does`,
+                async ctx => {
+                    await ctx.write(`${directory}/file.js`, unformatted.js);
+
+                    await expect(
+                        createFormatters().prettier.formatPrettierFiles([
+                            ctx.resolve(`${directory}/file.js`),
+                        ])
+                    ).to.be.rejectedWith(Error);
+
+                    expect(await ctx.read(`${directory}/file.js`)).to.equal(unformatted.js);
+                }
+            );
+        }
+
+        withTmpCwd.test('Resolves relative paths from the working directory', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+
+            await createFormatters().prettier.formatPrettierFiles(['file.js', './file.js']);
+
+            expect(await ctx.read('file.js')).to.equal(formatted.prettier);
+        });
+    });
+
+    suite('formatPrettierText', () => {
+        withTmpCwd.test('Rejects a path without an inferable parser', async ctx => {
+            await expect(
+                createFormatters().prettier.formatPrettierText(
+                    unformatted.js,
+                    ctx.resolve('file.unknown')
+                )
+            ).to.be.rejectedWith(Error);
+        });
+
+        withTmpCwd.test('Keeps a byte order mark and CRLF line endings', async ctx => {
+            await ctx.write('.prettierrc', '{ "endOfLine": "auto" }');
+
+            expect(
+                await createFormatters().prettier.formatPrettierText(
+                    `\u{FEFF}${unformatted.js.replaceAll('\n', '\r\n')}`,
+                    ctx.resolve('file.js')
+                )
+            ).to.equal(`\u{FEFF}${formatted.prettier.replaceAll('\n', '\r\n')}`);
         });
     });
 });

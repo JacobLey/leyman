@@ -10,8 +10,8 @@ import {
     Formatter,
     formatterModule,
     Prettier,
-    prettierPath,
-    prettierPathId,
+    prettierImport,
+    prettierImportId,
 } from '#lib';
 
 export const unformatted = {
@@ -29,7 +29,7 @@ export const formatted = {
     md: '# Title\n\n- item\n',
 };
 
-const notInstalled = (): string => {
+const notInstalled = (): never => {
     throw new Error('Not installed');
 };
 
@@ -52,7 +52,9 @@ export const createFormatters = ({
         formatterModule.mergeModule(
             createModule(
                 bind(biomePathId).withFactory(biome ? biomePath : notInstalled)
-            ).addBinding(bind(prettierPathId).withFactory(prettier ? prettierPath : notInstalled))
+            ).addBinding(
+                bind(prettierImportId).withFactory(prettier ? prettierImport : notInstalled)
+            )
         )
     );
     return {
