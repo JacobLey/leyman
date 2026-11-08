@@ -1,3 +1,4 @@
+import type { Context } from 'mocha';
 import type { ErrorNode } from 'unknown-error';
 import { runInNewContext } from 'node:vm';
 import { expectTypeOf } from 'expect-type';
@@ -18,18 +19,27 @@ const summarize = (value: unknown): string[] =>
     );
 
 /**
- * Builds a chain of causes.
+ * Builds a chain of causes, without capturing stacks: no test reads them, and capturing one per error made the
+ * deepest chain slow enough to time out on a busy CI runner.
  *
  * @param length - how many errors wrap the leaf
  * @returns the outermost error
  */
+/* eslint-disable unicorn/no-nonstandard-builtin-properties -- V8's stackTraceLimit; the tests run on Node.js */
 const chain = (length: number): Error => {
-    let error = new Error('leaf');
-    for (let i = length - 1; i >= 0; i--) {
-        error = new Error(`e${i}`, { cause: error });
+    const { stackTraceLimit } = Error;
+    Error.stackTraceLimit = 0;
+    try {
+        let error = new Error('leaf');
+        for (let i = length - 1; i >= 0; i--) {
+            error = new Error(`e${i}`, { cause: error });
+        }
+        return error;
+    } finally {
+        Error.stackTraceLimit = stackTraceLimit;
     }
-    return error;
 };
+/* eslint-enable unicorn/no-nonstandard-builtin-properties */
 
 suite('walk', () => {
     suite('walkErrors', () => {
@@ -137,9 +147,12 @@ suite('walk', () => {
             expect(nodes.at(-1)?.truncated).to.equal(true);
         });
 
-        test('Walks chains too deep to recurse through', () => {
-            const nodes = [...walkErrors(chain(100_000), { maxDepth: Number.POSITIVE_INFINITY })];
-            expect(nodes).to.have.length(100_001);
+        test('Walks chains too deep to recurse through', function (this: Context) {
+            // Tens of milliseconds alone, but a full CI run shares a small runner with every other suite
+            this.timeout(10_000);
+            // Node's default stack overflows between 10,000 and 20,000 plain recursive calls
+            const nodes = [...walkErrors(chain(50_000), { maxDepth: Number.POSITIVE_INFINITY })];
+            expect(nodes).to.have.length(50_001);
         });
     });
 
