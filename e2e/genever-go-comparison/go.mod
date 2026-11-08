@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/JacobLey/leyman/apps/genever/go v0.0.0-00010101000000-000000000000
 	github.com/atombender/go-jsonschema v0.24.1
-	github.com/getkin/kin-openapi v0.142.0
+	github.com/getkin/kin-openapi v0.152.0
 	github.com/oapi-codegen/oapi-codegen/v2 v2.8.2
 )
 
@@ -22,7 +22,7 @@ require (
 	github.com/oasdiff/yaml v0.1.1 // indirect
 	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/sanity-io/litter v1.5.8 // indirect
-	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.3 // indirect
 	github.com/speakeasy-api/openapi v1.24.0 // indirect
