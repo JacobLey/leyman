@@ -5,7 +5,8 @@ back. TypeScript and Go implementations share one store and one notifier, so ser
 same keys.
 
 Every implementation follows one [specification](./SPEC.md): the hashes, what goes in the store, and the notification
-that wakes a waiting request.
+that wakes a waiting request. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a TypeScript server and a Go
+server on every store and notifier, and checks that each replays, waits on, takes over and rejects the other's requests.
 
 - **One run per key, across every instance**: a duplicate of a running request waits for its response (or gets a
   `409`), and a later one replays it.

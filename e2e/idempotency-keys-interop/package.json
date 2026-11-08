@@ -1,0 +1,39 @@
+{
+  "name": "@leyman/e2e-idempotency-keys-interop",
+  "version": "0.0.1",
+  "description": "Drives a TypeScript server and a Go server on idempotency-keys against each other, on one store and notifier, and checks they serve one set of keys.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/idempotency-keys-interop#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@leyman/idempotency-keys-test-vectors": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "idempotency-keys": "workspace:^",
+    "ioredis": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg": "catalog:",
+    "pg-dolly": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

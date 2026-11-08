@@ -1,0 +1,32 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/e2e-idempotency-keys-interop-go",
+  "metadata": {
+    "description": "The Go server that e2e-idempotency-keys-interop runs, on the net/http middleware of idempotency-keys-go."
+  },
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}
