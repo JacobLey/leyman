@@ -1,5 +1,11 @@
 # @leyman/nx-plugin
 
+## 0.3.1
+
+### Patch Changes
+
+- 6c7c141: `leyman-coverage-report` leaves out a project nested inside the one it reports on (a directory with its own `project.json`), which has its own coverage. `--all` counted its files as uncovered.
+
 ## 0.3.0
 
 ### Minor Changes

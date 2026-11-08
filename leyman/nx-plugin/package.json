@@ -1,6 +1,6 @@
 {
   "name": "@leyman/nx-plugin",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Nx plugin inferring the build, test, lint and package-check targets of TypeScript ESM packages: SWC and tsc builds, Mocha or Vitest under c8, ESLint, Biome and check-package.",
   "engines": {
     "node": ">=22.13.0"

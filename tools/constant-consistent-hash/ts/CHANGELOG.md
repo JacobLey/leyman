@@ -1,5 +1,11 @@
 # constant-consistent-hash
 
+## 0.2.1
+
+### Patch Changes
+
+- 1bb6371: The package's repository directory is now `tools/constant-consistent-hash/ts`, beside the Go, Rust and WASM implementations and the shared test vectors, and the README's links to the specification and the other implementations follow it.
+
 ## 0.2.0
 
 ### Minor Changes
