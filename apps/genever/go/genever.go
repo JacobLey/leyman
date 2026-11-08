@@ -95,9 +95,11 @@ type Name struct {
 type Source struct {
 	// Text is the Go source Generate returns.
 	Text []byte
-	// Names are each named type, and each field of a property under `properties` (or a `patternProperties` pattern
-	// matching one name, such as `^id$`), in the order they are in the source. Helper types, and types and fields that
-	// aren't generated from part of the document (such as an operation input's Path), aren't listed.
+	// Names are, in the order they are in the source, each type the document names (the root, each definition, and
+	// each operation's types), and each field of a property under `properties` (or a `patternProperties` pattern
+	// matching one name, such as `^id$`). Types genever names after one of those for part of its schema (a nested
+	// object's RootHome, a nullable definition's MaybeValue, a union's variants) aren't listed, though their fields
+	// are. Nor are helper types, or types and fields not generated from part of the document (an input's Path).
 	Names []Name
 }
 

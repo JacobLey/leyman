@@ -31,7 +31,7 @@ import genever "github.com/JacobLey/leyman/apps/genever/go"
 source, err := genever.Generate(schema, genever.Options{Name: "Pet", Package: "api"})
 ```
 
-`GenerateSource` also returns where each type's and field's name is, with the JSON Pointer it is generated from, as `geneverSource` does.
+`GenerateSource` also returns where the name of each type the document names, and of each field, is, with the JSON Pointer it is generated from, as `geneverSource` does.
 
 ## Types
 

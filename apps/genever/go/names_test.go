@@ -48,7 +48,41 @@ func TestGenerateSourceNames(t *testing.T) {
 	expectNames(t, source, expected)
 }
 
-// An OpenAPI document's operation types are generated from the operation, and each response's from the response.
+// A nullable definition is listed as its alias, and a union as its wrapper. The types genever derives for them (the
+// alias's MaybeValue, the union's variants) aren't listed, but their fields are, with the pointer of their schema.
+func TestGenerateSourceNullableAndUnionNames(t *testing.T) {
+	t.Parallel()
+
+	source, err := genever.GenerateSource([]byte(`{"$defs": {
+		"Maybe": {"type": ["object", "null"], "properties": {"a": {"type": "string"}}},
+		"Either": {"oneOf": [
+			{"type": "string"},
+			{"type": "object", "properties": {"b": {"type": "integer"}}, "required": ["b"]}
+		]},
+		"Holder": {"type": "object", "properties": {"m": {"$ref": "#/$defs/Maybe"}, "n": {"type": ["string", "null"]}}}
+	}}`), genever.Options{
+		Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectNames(t, source, []genever.Name{
+		{Name: "Schema", Pointer: "#", Offset: 0},
+		{Name: "Either", Pointer: "#/$defs/Either", Offset: 0},
+		// In EitherObject
+		{Name: "B", Pointer: "#/$defs/Either/oneOf/1/properties/b", Offset: 0},
+		{Name: "Holder", Pointer: "#/$defs/Holder", Offset: 0},
+		{Name: "M", Pointer: "#/$defs/Holder/properties/m", Offset: 0},
+		{Name: "N", Pointer: "#/$defs/Holder/properties/n", Offset: 0},
+		{Name: "Maybe", Pointer: "#/$defs/Maybe", Offset: 0},
+		// In MaybeValue
+		{Name: "A", Pointer: "#/$defs/Maybe/properties/a", Offset: 0},
+	})
+}
+
+// An OpenAPI document's operation types are generated from the operation, its body's from the request body, and each
+// response's from the response.
 func TestGenerateSourceOperationNames(t *testing.T) {
 	t.Parallel()
 
@@ -58,6 +92,9 @@ func TestGenerateSourceOperationNames(t *testing.T) {
 		"paths": {"/notes": {"post": {
 			"operationId": "addNote",
 			"parameters": [{"name": "q", "in": "query", "schema": {"type": "string"}}],
+			"requestBody": {"content": {"application/json": {"schema": {
+				"type": "object", "properties": {"text": {"type": "string"}}
+			}}}},
 			"responses": {"201": {"content": {"application/json": {"schema": {"type": "string"}}}}}
 		}}},
 		"components": {"schemas": {}}
@@ -71,6 +108,8 @@ func TestGenerateSourceOperationNames(t *testing.T) {
 	expectNames(t, source, []genever.Name{
 		{Name: "AddNoteInput", Pointer: "#/paths/~1notes/post", Offset: 0},
 		{Name: "AddNoteRequest", Pointer: "#/paths/~1notes/post", Offset: 0},
+		{Name: "AddNoteBody", Pointer: "#/paths/~1notes/post/requestBody", Offset: 0},
+		{Name: "Text", Pointer: "#/paths/~1notes/post/requestBody/content/application~1json/schema/properties/text", Offset: 0},
 		{Name: "AddNoteResponse201", Pointer: "#/paths/~1notes/post/responses/201", Offset: 0},
 	})
 }
