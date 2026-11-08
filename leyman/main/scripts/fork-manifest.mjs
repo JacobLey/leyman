@@ -549,7 +549,10 @@ const rewriteMainReadme = (files, to) => {
         `This repository was started from [leyman](${upstreamRepository})'s fork manifest. The manifest, and the scripts that apply and check it, stay in leyman: \`${upstreamFile}\` records what was taken and from which commit, and from a checkout of leyman \`node leyman/main/scripts/fork-manifest.mjs drift --fork <this repository>\` lists what changed upstream since.`,
         ...(hasRows ? ['', 'The scripts this repository took:', '', ''] : ['']),
     ].join('\n');
-    writeFileSync(target, withoutTable.join('\n').replace(scriptsHeading, () => scriptsHeading + note));
+    writeFileSync(
+        target,
+        withoutTable.join('\n').replace(scriptsHeading, () => scriptsHeading + note)
+    );
 };
 
 const fencePattern = /^ {0,3}(?:`{3}|~{3})/v;
@@ -601,7 +604,8 @@ const resolveLink = (file, target) => {
     const linked = hash === -1 ? target : target.slice(0, hash);
     return {
         anchor: hash === -1 ? '' : target.slice(hash),
-        resolved: linked === '' ? file : path.posix.join(path.posix.dirname(file), decodeURI(linked)),
+        resolved:
+            linked === '' ? file : path.posix.join(path.posix.dirname(file), decodeURI(linked)),
     };
 };
 
