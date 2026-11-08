@@ -12,7 +12,8 @@ on:
   # Off the top of the hour, when GitHub delays and drops scheduled runs
   schedule:
     # Nightly `test` of main: catches what changes outside the repository, and writes like a push, so the hosted Nx
-    # cache stays warm through a week without pushes
+    # cache stays warm through a week without pushes. Also runs published packages' suites on their oldest Node.js.
+    # Keep in sync with `test`'s args
     - cron: '17 9 * * *'
     # Weekly `test-uncached`. Keep in sync with both jobs' `if`
     - cron: '47 9 * * 0'
@@ -92,7 +93,7 @@ jobs:
           # enable Dagger Cloud caching on it: that cache isn't scoped by branch, so a PR could write
           # results that main's runs then trust.
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: test --nx-cache=tcp://localhost:3000
+          args: test --nx-cache=tcp://localhost:3000${{ github.event.schedule == '17 9 * * *' && ' --floor-suites' || '' }}
 
       # Results read during the run are uploaded again in the background, which the job ending would cut off. One that
       # doesn't finish is uploaded on a later read, so running out of time is only a warning

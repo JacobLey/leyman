@@ -30,8 +30,8 @@ const (
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
 	// node:26.13.0-trixie-slim.
 	nodeImage = "node:26.13.0-trixie-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39"
-	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` in
-	// `e2e/published-entrypoints`). Only its `node` binary is used.
+	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` and
+	// `floor-suites` in `e2e/published-entrypoints`). Only its `node` binary is used.
 	node22Image = "node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f"
 	// golang:1.24.13-trixie, the oldest Go a released Go module may support (see `goFloorTest`). Only its Go
 	// toolchain is used.
@@ -183,6 +183,10 @@ func (m *Ci) Test(
 	// Omitted, every task runs.
 	// +optional
 	nxCache *dagger.Service,
+	// After the tests, also run each published package's test suites on Node.js 22 when its `engines` allows it
+	// (`floor-suites` in `e2e/published-entrypoints`), never cached. Nightly only, as it reruns every suite.
+	// +optional
+	floorSuites bool,
 ) error {
 	// Pending changesets don't affect tests, so keep them from invalidating the cache
 	ctr := withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache)
@@ -191,13 +195,19 @@ func (m *Ci) Test(
 
 	group, ctx := errgroup.WithContext(ctx)
 	group.Go(func() error {
-		_, err := built.
+		tested := built.
 			WithServiceBinding("valkey", valkeyService()).
 			// Browser tests connect to it rather than launching their own, so `playwright-install` downloads none
 			WithServiceBinding("playwright", playwrightService()).
 			WithEnvVariable("PW_TEST_CONNECT_WS_ENDPOINT", "ws://playwright:3000/").
-			WithExec([]string{"test-ci"}).
-			Sync(ctx)
+			WithExec([]string{"test-ci"})
+		if floorSuites {
+			// Reuses the tests `test-ci` compiled, and its services. Nx and pnpm stay on the toolchain's Node.js
+			tested = withNode22(tested).
+				WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-suites"})
+		}
+
+		_, err := tested.Sync(ctx)
 
 		return err
 	})
@@ -209,9 +219,7 @@ func (m *Ci) Test(
 	group.Go(func() error {
 		// Imports each published package's entry points on the oldest Node.js its `engines` allows. Everything else,
 		// Nx and pnpm included, stays on the toolchain's Node.js.
-		_, err := built.
-			WithFile("/opt/node-22/bin/node", dag.Container().From(node22Image).File("/usr/local/bin/node")).
-			WithEnvVariable("NODE_22", "/opt/node-22/bin/node").
+		_, err := withNode22(built).
 			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-test"}).
 			Sync(ctx)
 
@@ -230,6 +238,13 @@ func (m *Ci) Test(
 	})
 
 	return group.Wait()
+}
+
+// Adds the `node` binary of Node.js 22, the oldest a published package may support, at `NODE_22`.
+func withNode22(ctr *dagger.Container) *dagger.Container {
+	return ctr.
+		WithFile("/opt/node-22/bin/node", dag.Container().From(node22Image).File("/usr/local/bin/node")).
+		WithEnvVariable("NODE_22", "/opt/node-22/bin/node")
 }
 
 // goFloorTest runs the tests of each released Go module (one with a VERSION) whose `go` directive is 1.24 with Go

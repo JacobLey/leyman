@@ -3,7 +3,17 @@
   "name": "@leyman/e2e-published-entrypoints",
   "targets": {
     "biome": {},
-    "eslint": {},
+    "eslint": {
+      "inputs": [
+        "eslint-input",
+        "ts-source",
+        "{projectRoot}/test/**/*",
+        "package-files",
+        "dependency-builds",
+        "^dependency-files",
+        "{projectRoot}/scripts/**/*"
+      ]
+    },
     "tsc-test": {},
     "mocha-integration-test": {
       "inputs": [
@@ -24,6 +34,18 @@
       "cache": false,
       "dependsOn": [
         "tsc-test"
+      ]
+    },
+    "floor-suites": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/floor-suites.mjs",
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^tsc-test"
       ]
     },
     "install:_": {},
