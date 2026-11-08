@@ -283,8 +283,12 @@ class Indexer {
             this.#references.set(referenced, childPointer(pointer, '$ref'));
         }
 
+        // Checked before building the child's pointer, which most keywords are absent from
         for (const keyword of schemaKeywords) {
-            this.visit(schema[keyword], childPointer(pointer, keyword), baseUri, isDraft04);
+            const value = schema[keyword];
+            if (isSchemaObject(value)) {
+                this.visit(value, childPointer(pointer, keyword), baseUri, isDraft04);
+            }
         }
         for (const keyword of schemaArrayKeywords) {
             const value = schema[keyword];
@@ -293,7 +297,9 @@ class Indexer {
             }
             const keywordPointer = childPointer(pointer, keyword);
             for (const [i, member] of value.entries()) {
-                this.visit(member, childPointer(keywordPointer, i), baseUri, isDraft04);
+                if (isSchemaObject(member)) {
+                    this.visit(member, childPointer(keywordPointer, i), baseUri, isDraft04);
+                }
             }
         }
         for (const keyword of schemaMapKeywords) {
@@ -303,7 +309,9 @@ class Indexer {
             }
             const keywordPointer = childPointer(pointer, keyword);
             for (const [key, member] of Object.entries(value)) {
-                this.visit(member, childPointer(keywordPointer, key), baseUri, isDraft04);
+                if (isSchemaObject(member)) {
+                    this.visit(member, childPointer(keywordPointer, key), baseUri, isDraft04);
+                }
             }
         }
     }

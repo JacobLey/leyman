@@ -176,7 +176,8 @@ export const union = (members: readonly TsType[]): TsType => {
     const seen = new Set<string>();
     const result: TsType[] = [];
     for (const member of flat) {
-        const key = typeKey(member);
+        // A lone member can't be a duplicate, and keying a large object serializes all of it
+        const key = flat.length > 1 ? typeKey(member) : '';
         if (
             isKeyword(member, neverType) ||
             seen.has(key) ||
@@ -288,7 +289,8 @@ const intersectFlat = (members: readonly TsType[]): TsType => {
     const objects: (TsType & { kind: 'object' })[] = [];
     const literals: (TsType & { kind: 'literal' })[] = [];
     for (const member of members) {
-        const key = typeKey(member);
+        // A lone member can't be a duplicate, and keying a large object serializes all of it
+        const key = members.length > 1 ? typeKey(member) : '';
         if (isKeyword(member, unknownType) || seen.has(key)) {
             continue;
         }
