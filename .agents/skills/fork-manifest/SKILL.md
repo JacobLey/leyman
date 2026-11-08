@@ -26,10 +26,12 @@ A file is portable if it works with the other entries and nothing else. It may m
 
 | What | When | What it catches |
 |------|------|-----------------|
-| `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names that didn't come along, with no optional conditions and with all of them |
+| `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names or links to that didn't come along, with no optional conditions and with all of them |
 | `fork-manifest-audit` | By hand and weekly, never in `verify` | What only shows up when a fork runs: applies the manifest with `tools/parse-cwd`, installs from nothing, runs `verify` and checks for lifecycle drift, and that `drift` reports nothing right after `apply` |
 
-The audit runs without any optional condition, so it doesn't prove the conditional files work. It also doesn't read the skills, which still name this repo's packages as examples.
+The audit runs without any optional condition, so it doesn't prove the conditional files work. Neither reads the prose of the skills, which still name this repo's packages as examples.
+
+A relative Markdown link in a copied file to something the fork doesn't take (a package's source, a skill of an unrequested condition, a page of `docs/`) is rewritten by `apply` to this repository on GitHub, at `main`, following symlinks to the committed source. The link here stays relative. So a copied file may link to anything committed here; `check-fork-manifest` fails only on a link that is broken here too, naming the file and the link. When an example only makes sense in this repo, say so in the prose ("e.g. leyman's `juniper`"), since the link alone won't.
 
 To try a fork by hand, `node leyman/main/scripts/fork-manifest.mjs apply --to <dir> --with go,rust --package tools/parse-cwd` prints what it skipped and why. To audit from CI, run the `Adoption audits` workflow. To audit in Dagger, `dagger call --mod ./dagger fork-manifest-audit`.
 

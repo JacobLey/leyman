@@ -21,7 +21,9 @@ import {
     mkdirSync,
     readFileSync,
     readlinkSync,
+    realpathSync,
     rmSync,
+    statSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
@@ -467,6 +469,95 @@ const renameDevcontainer = (files, to) => {
     }
 };
 
+const upstreamRepository = 'https://github.com/JacobLey/leyman';
+
+const fencePattern = /^ {0,3}(?:`{3}|~{3})/v;
+const inlineCodePattern = /`[^\n`]+`/gv;
+const linkPattern = /\]\((?<target>[^\s\)]+)(?<title> "[^\n"]*")?\)/gv;
+
+/**
+ * Rewrites each of Markdown's inline links outside code: fenced blocks and inline spans are left alone.
+ *
+ * @param text - Markdown
+ * @param replace - given each link's target, returns the target to write
+ * @returns the text with each link replaced
+ */
+const mapLinks = (text, replace) => {
+    let isFenced = false;
+    return text
+        .split('\n')
+        .map(line => {
+            if (fencePattern.test(line)) {
+                isFenced = !isFenced;
+            }
+            if (isFenced) {
+                return line;
+            }
+            // Blanked to the same length, so a link's index still points into the line
+            const blanked = line.replaceAll(inlineCodePattern, code => ' '.repeat(code.length));
+            let mapped = '';
+            let from = 0;
+            for (const { groups, index } of blanked.matchAll(linkPattern)) {
+                mapped += `${line.slice(from, index)}](${replace(groups.target)}${groups.title ?? ''})`;
+                from = index + `](${groups.target}${groups.title ?? ''})`.length;
+            }
+            return mapped + line.slice(from);
+        })
+        .join('\n');
+};
+
+const isRelativeLink = target => !/^(?:[a-z][\d+\-.a-z]*:|#|\/)/iv.test(target);
+
+/**
+ * Where a relative link in a file points, from the workspace's root.
+ *
+ * @param file - the file the link is in
+ * @param target - the link, which may end in an anchor
+ * @returns the path, and the anchor with its `#` (or empty)
+ */
+const resolveLink = (file, target) => {
+    const hash = target.indexOf('#');
+    const linked = hash === -1 ? target : target.slice(0, hash);
+    return {
+        anchor: hash === -1 ? '' : target.slice(hash),
+        resolved: linked === '' ? file : path.posix.join(path.posix.dirname(file), decodeURI(linked)),
+    };
+};
+
+const markdownFiles = files => files.filter(file => file.endsWith('.md'));
+
+// A copied file may link to what a fork doesn't take: an example in a package this repository publishes, or a skill
+// for a condition the fork didn't ask for. In the fork, such a link points at this repository on GitHub, so it still
+// leads somewhere, while the link here stays relative and current. Followed through symlinks, which GitHub doesn't
+// resolve in a URL, and only to what Git would commit, which is all that GitHub has.
+const pointLinksUpstream = (files, to) => {
+    const committed = listFiles();
+    const isCommitted = file => committed.some(committedFile => covers(file, committedFile));
+    const upstreamUrl = (file, link) => {
+        if (!isRelativeLink(link)) {
+            return link;
+        }
+        const { anchor, resolved } = resolveLink(file, link);
+        const source = path.join(workspaceRoot, resolved);
+        if (existsSync(path.join(to, resolved)) || !existsSync(source)) {
+            return link;
+        }
+        const real = path.relative(workspaceRoot, realpathSync(source)).split(path.sep).join('/');
+        if (real.startsWith('..') || !isCommitted(real)) {
+            return link;
+        }
+        const kind = statSync(source).isDirectory() ? 'tree' : 'blob';
+        return `${upstreamRepository}/${kind}/main/${real}${anchor}`;
+    };
+    for (const file of markdownFiles(files)) {
+        const target = path.join(to, file);
+        writeFileSync(
+            target,
+            mapLinks(readFileSync(target, 'utf8'), link => upstreamUrl(file, link))
+        );
+    }
+};
+
 /**
  * Where a fork records what it took from this repository, and from which commit.
  */
@@ -484,7 +575,7 @@ const writeUpstream = (to, { commit, conditions, extraPackages, files }) => {
     writeJson(path.join(to, upstreamFile), {
         $comment:
             'What this repository took from leyman, and the commit it was taken at. From a checkout of leyman, `node leyman/main/scripts/fork-manifest.mjs drift --fork <this repository>` lists what changed upstream since, and `resync` records that it has caught up.',
-        repository: 'https://github.com/JacobLey/leyman',
+        repository: upstreamRepository,
         with: conditions,
         packages: extraPackages,
         files: files.toSorted((a, b) => a.localeCompare(b)),
@@ -533,6 +624,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
     renameDevcontainer(files, to);
+    pointLinksUpstream(files, to);
     writeUpstream(to, { commit, conditions, extraPackages, files });
     return { files, skipped, taken };
 };
@@ -797,6 +889,24 @@ const relativePathProblems = (files, to) =>
                 .map(relative => `${file}: names ${relative}, which the fork doesn't have`);
         });
 
+// Every relative link in what a fork takes must lead somewhere in it: `apply` points the rest upstream, so one left is
+// broken here too
+const linkProblems = (files, to) =>
+    markdownFiles(files).flatMap(file => {
+        const problems = [];
+        mapLinks(readFileSync(path.join(to, file), 'utf8'), link => {
+            const { resolved } = resolveLink(file, link);
+            if (
+                isRelativeLink(link) &&
+                (resolved.startsWith('..') || !existsSync(path.join(to, resolved)))
+            ) {
+                problems.push(`${file}: links to ${link}, which doesn't exist`);
+            }
+            return link;
+        });
+        return problems;
+    });
+
 /**
  * Inspects an applied fork without installing or running anything: whatever it names must have come along.
  *
@@ -825,6 +935,7 @@ export const inspect = ({ conditions = [], files, to }) => {
         ...catalogProblems(files, to),
         ...patchProblems(to),
         ...relativePathProblems(files, to),
+        ...linkProblems(files, to),
     ];
 };
 
