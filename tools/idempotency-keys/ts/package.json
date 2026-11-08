@@ -1,0 +1,67 @@
+{
+  "name": "idempotency-keys",
+  "version": "0.0.1",
+  "description": "Idempotency-Key handling for HTTP writes on Postgres or Valkey: a retried request runs once across every instance, waits on a running duplicate, and replays the first response.",
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/idempotency-keys/ts"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/ts#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "idempotency",
+    "idempotency-key",
+    "idempotent",
+    "http",
+    "retry",
+    "fetch",
+    "postgres",
+    "valkey",
+    "redis",
+    "stripe"
+  ],
+  "types": "./dist/idempotency-keys.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./dist/idempotency-keys.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@leyman/idempotency-keys-test-vectors": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:node-22",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "ioredis": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "p-defer": "catalog:",
+    "pg": "catalog:",
+    "pg-dolly": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

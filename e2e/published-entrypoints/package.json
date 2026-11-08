@@ -41,6 +41,7 @@
     "genever": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
+    "idempotency-keys": "workspace:^",
     "iso-crypto": "workspace:^",
     "juniper": "workspace:^",
     "juniper-arbitrary": "workspace:^",

@@ -1,0 +1,25 @@
+{
+  "extends": "@leyman/configs/tsconfig.node-22.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../pg-dolly"
+    },
+    {
+      "path": "../../test-chain/mocha-chain"
+    },
+    {
+      "path": "../../../leyman/expect"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    }
+  ]
+}

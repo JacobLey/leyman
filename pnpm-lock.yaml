@@ -2635,6 +2635,9 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      idempotency-keys:
+        specifier: workspace:^
+        version: file:tools/idempotency-keys/ts
       iso-crypto:
         specifier: workspace:^
         version: file:tools/iso-crypto
@@ -3867,6 +3870,72 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+
+  tools/idempotency-keys/ts:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@leyman/idempotency-keys-test-vectors':
+        specifier: workspace:^
+        version: file:tools/idempotency-keys/test-vectors
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: catalog:node-22
+        version: 22.20.5
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.23.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.4.0
+      ioredis:
+        specifier: 'catalog:'
+        version: 5.11.1(supports-color@10.2.2)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      p-defer:
+        specifier: 'catalog:'
+        version: 4.0.1
+      pg:
+        specifier: 'catalog:'
+        version: 8.23.1
+      pg-dolly:
+        specifier: workspace:^
+        version: file:tools/pg-dolly
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   tools/iso-crypto:
     devDependencies:
@@ -6097,6 +6166,9 @@ packages:
 
   '@leyman/genever-test-vectors@file:apps/genever/test-vectors':
     resolution: {directory: apps/genever/test-vectors, type: directory}
+
+  '@leyman/idempotency-keys-test-vectors@file:tools/idempotency-keys/test-vectors':
+    resolution: {directory: tools/idempotency-keys/test-vectors, type: directory}
 
   '@leyman/nx-plugin@file:leyman/nx-plugin':
     resolution: {directory: leyman/nx-plugin, type: directory}
@@ -9103,6 +9175,10 @@ packages:
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
+
+  idempotency-keys@file:tools/idempotency-keys/ts:
+    resolution: {directory: tools/idempotency-keys/ts, type: directory}
+    engines: {node: '>=22'}
 
   identifier-regex@1.1.0:
     resolution: {integrity: sha512-SLX4H/vtcYlYnL7XqnuJKHU7Z8517TgsW9nmQiGOgMCjQ8V/deLYu6bEmbGoXe7WMMhc9+EUGyFFneHja8KabA==}
@@ -13916,6 +13992,8 @@ snapshots:
     transitivePeerDependencies:
       - eslint
 
+  '@leyman/idempotency-keys-test-vectors@file:tools/idempotency-keys/test-vectors': {}
+
   '@leyman/nx-plugin@file:leyman/nx-plugin(eslint@10.14.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:
       '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
@@ -17420,6 +17498,8 @@ snapshots:
 
   human-signals@8.0.1: {}
 
+  idempotency-keys@file:tools/idempotency-keys/ts: {}
+
   identifier-regex@1.1.0:
     dependencies:
       reserved-identifiers: 1.2.0
@@ -17464,6 +17544,18 @@ snapshots:
       '@inversifyjs/core': 15.0.1(reflect-metadata@0.2.2)
     transitivePeerDependencies:
       - reflect-metadata
+
+  ioredis@5.11.1(supports-color@10.2.2):
+    dependencies:
+      '@ioredis/commands': 1.10.0
+      cluster-key-slot: 1.1.1
+      debug: 4.4.3(supports-color@10.2.2)
+      denque: 2.1.0
+      redis-errors: 1.2.0
+      redis-parser: 3.0.0
+      standard-as-callback: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
 
   ioredis@5.11.1(supports-color@8.1.1):
     dependencies:

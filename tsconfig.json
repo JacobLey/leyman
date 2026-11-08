@@ -159,6 +159,9 @@
     },
     {
       "path": "./apps/genever/test-vectors"
+    },
+    {
+      "path": "./tools/idempotency-keys/ts"
     }
   ]
 }
