@@ -36,6 +36,7 @@
     "drizzle-orm": "catalog:",
     "haywire": "workspace:^",
     "hono": "catalog:",
+    "idempotency-keys": "workspace:^",
     "jose": "catalog:",
     "pg": "catalog:"
   },

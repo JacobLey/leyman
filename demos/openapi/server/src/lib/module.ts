@@ -9,7 +9,15 @@ import { bind, createContainer, createModule } from 'haywire';
 import { createApp } from './app.js';
 import { staticTokens } from './auth.js';
 import { drizzleHandlers } from './handlers.js';
-import { appConfigId, authenticatorId, databaseId, handlersId, notesAppId } from './ids.js';
+import { postgresIdempotencyKeys } from './idempotency.js';
+import {
+    appConfigId,
+    authenticatorId,
+    databaseId,
+    handlersId,
+    idempotencyKeysId,
+    notesAppId,
+} from './ids.js';
 import { jwtAuthenticator } from './jwt.js';
 
 /**
@@ -18,6 +26,13 @@ import { jwtAuthenticator } from './jwt.js';
 export const drizzleHandlersBinding = bind(handlersId)
     .withDependencies([databaseId])
     .withProvider(db => drizzleHandlers(db));
+
+/**
+ * Idempotency keys in the database's `idempotency_keys` table, on its pool.
+ */
+export const postgresIdempotencyKeysBinding = bind(idempotencyKeysId)
+    .withDependencies([databaseId, appConfigId])
+    .withProvider(postgresIdempotencyKeys);
 
 /**
  * Accepts these bearer tokens.
@@ -42,17 +57,21 @@ export const jwtAuthenticatorBinding = (
     bind(authenticatorId).withInstance(jwtAuthenticator(options));
 
 const notesAppBinding = bind(notesAppId)
-    .withDependencies([handlersId, authenticatorId, appConfigId])
+    .withDependencies([handlersId, authenticatorId, idempotencyKeysId, appConfigId])
     .withProvider(createApp);
 
 /**
- * The app, with Drizzle handlers. Bind `databaseId`, `authenticatorId` and `appConfigId` to complete it.
+ * The app, with Drizzle handlers and idempotency keys in Postgres. Bind `databaseId`, `authenticatorId` and
+ * `appConfigId` to complete it.
  */
-export const notesModule = createModule(notesAppBinding).addBinding(drizzleHandlersBinding);
+export const notesModule = createModule(notesAppBinding)
+    .addBinding(drizzleHandlersBinding)
+    .addBinding(postgresIdempotencyKeysBinding);
 
 export interface NotesAppOptions extends NotesAppConfig {
     /**
-     * Drizzle, on a connection pool the app owns. Never closed by the server.
+     * Drizzle, on a connection pool the app owns. Never closed by the server. Idempotency keys are kept through it
+     * too, in the `idempotency_keys` table.
      */
     readonly db: NotesDatabase;
     /**

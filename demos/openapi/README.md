@@ -33,11 +33,12 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 - **`drizzle-kit migrate` adds its own bookkeeping** (`drizzle.__drizzle_migrations`). A schema-only dump kept the table but not its rows, so a test database looked unmigrated, and migrating it would have run every migration again. `pg-dolly-schema --data` keeps its rows too.
 - **drizzle-kit has no check-only mode** for "the schema has changes no migration covers". `scripts/nx/drizzle-kit-check.sh` generates into a copy of the migrations, through a temporary config that only changes `out`, and compares.
 - **drizzle-kit exits 0 when it fails.** Without a terminal, it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass. The check fails on any error output instead.
+- **Hono ignores a middleware's return value once a later handler has set `c.res`.** A middleware wrapping the rest of the route (idempotency-keys' `handle()`, which reads the response to keep it, and returns a copy) must assign its response to `c.res`, or Hono sends the original, whose body has been read.
 - **Fastify was the other option.** It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields), not validation. With Hono, both directions are explicit middleware against the document.
 
 ## Not covered
 
-- Optional request bodies, other content types, header and cookie parameters, and response headers. The spec has none, so the server has no code for them.
+- Optional request bodies, other content types, header parameters other than `Idempotency-Key` (which the middleware reads, not Ajv), cookie parameters, and response headers. The spec has none, so the server has no code for them.
 - Pagination beyond a `limit` (cursors), rate limiting, and CORS. Tokens are issued by an authorization server (the [dev OAuth server](../../tools/oauth-dev-server) in tests); the API only verifies them.
 - Spec linting beyond the spec package's own tests (e.g. [Spectral](https://github.com/stoplightio/spectral)).
 - The cost of validating every response in production. It catches a handler breaking the contract before a client does, but a busy service might only sample.

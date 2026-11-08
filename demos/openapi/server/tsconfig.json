@@ -23,6 +23,9 @@
   ],
   "references": [
     {
+      "path": "../../../tools/idempotency-keys/ts"
+    },
+    {
       "path": "../../../tools/haywire"
     },
     {

@@ -1,4 +1,5 @@
 import type { Hono } from 'hono';
+import type { IdempotencyKeys } from 'idempotency-keys';
 import type { NotesAppConfig } from './app.js';
 import type { NotesDatabase } from './handlers.js';
 import type { Authenticator, NotesHandlers } from './types.js';
@@ -18,6 +19,11 @@ export const authenticatorId = identifier<Authenticator>();
  * What each operation does.
  */
 export const handlersId = identifier<NotesHandlers>();
+
+/**
+ * Where the `Idempotency-Key`s of the operations that take one are kept.
+ */
+export const idempotencyKeysId = identifier<IdempotencyKeys>();
 
 /**
  * Bound by the app: error reporting.

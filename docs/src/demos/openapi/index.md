@@ -171,9 +171,10 @@ Each operation in `openapi.json` becomes a Hono route (`/notes/{noteId}` → `/n
 
 1. **Authenticate**, with the scope the operation's `security` names: no token or an invalid one is a `401`, a valid one without the scope a `403` (`WWW-Authenticate: Bearer error="insufficient_scope", scope="notes:write"`), as RFC 6750 says. This comes first, so a caller without a token learns nothing about what the operation accepts.
 2. **Limit the body**, if the operation has one: a body over 128 KiB (more than any valid note could take as JSON) is a `413`, refused from its `Content-Length`, or once that much of a chunked body has arrived, rather than read whole and then rejected.
-3. **Validate the request**: path and query parameters (strings, coerced to the schema's types, with its defaults filled in: `limit` is 20 unless given), then the JSON body (`application/json`, in any case). Anything that doesn't match, including unknown query parameters and properties, is a `400` saying why.
-4. **Call the handler**, typed by genever's `Operations`: it gets only input that matched, and must answer with a documented `{ status, body }`.
-5. **Validate the response.** A handler that answers with an undocumented status, or a body that breaks the schema, never reaches the client: it gets a `500`, and `onError` gets a `NotesResponseError`.
+3. **Hold the `Idempotency-Key`**, if the operation takes one and the request has one: a retry gets the first response again, without going further (see [Retrying safely](#retrying-safely)).
+4. **Validate the request**: path and query parameters (strings, coerced to the schema's types, with its defaults filled in: `limit` is 20 unless given), then the JSON body (`application/json`, in any case). Anything that doesn't match, including unknown query parameters and properties, is a `400` saying why.
+5. **Call the handler**, typed by genever's `Operations`: it gets only input that matched, and must answer with a documented `{ status, body }`.
+6. **Validate the response.** A handler that answers with an undocumented status, or a body that breaks the schema, never reaches the client: it gets a `500`, and `onError` gets a `NotesResponseError`.
 
 A path the spec doesn't have is a `404`, a method it doesn't have on a path it does is a `405` with `Allow`, and a handler that throws is a `500`, reported to `onError`. `onError` gets the error as thrown: Drizzle's include the query's parameters, so scrub them before they reach a log service.
 
@@ -188,6 +189,40 @@ const getNote: NotesHandlers['getNote'] = async ({ path }) => ({
     body: { code: 'gone', message: `Note ${path.noteId} is gone` },
 });
 ```
+
+### Retrying safely
+
+`createNote` takes an optional `Idempotency-Key` header, handled by [idempotency-keys](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/ts), so a client that timed out can send the same request again without adding the note twice:
+
+```ts
+import type { NotesClient } from '@leyman/demo-openapi-client';
+
+declare const client: NotesClient;
+// ---cut---
+const key = crypto.randomUUID();
+// Sent again, with the same key, on every retry of this one note
+const created = await client.call('createNote', {
+    body: { title: 'Dolly', body: 'A sheep' },
+    header: { 'Idempotency-Key': key },
+});
+```
+
+| Request with the key                         | Answer                                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| The first                                    | Runs, and its response is kept for 24 hours                                                |
+| A retry, after the first finished            | The first's status and body (the same note, same `id`), with `Idempotent-Replayed: true`   |
+| A retry, while the first still runs          | Waits for it, then the same; a `409` (`idempotency_key_in_use`) if it runs over 10 seconds |
+| The same key on a different request          | `422` (`idempotency_key_reused`): another body, or anything else that differs              |
+| A key that isn't 1-255 printable ASCII chars | `400` (`invalid_request`)                                                                  |
+
+Every answer of its own is an `ApiError`, through idempotency-keys' `problem` option, and the spec documents the `409` and `422`, so the client types them and response validation knows them. A request without a key runs as before.
+
+- **Each key is the caller's, for the operation**: the scope is the token's subject and the operation the spec's `operationId`, so one user's key never touches another's.
+- **The spec says which operations take a key.** An operation with an `Idempotency-Key` header parameter gets the middleware, and the parameter's `required` says whether a request without one is a `400`. `createNote` is the only write, and retrying it is what adds a note twice; the reads are safe to repeat. A `PUT` or `DELETE` would be idempotent by its meaning, so wouldn't need a key; a `PATCH` applying a change relative to the current state, or another `POST`, would.
+- **Where it runs**: after authentication, so a key belongs to a known caller and a `401` never holds one, and after the body limit, since the key's fingerprint reads the whole body. Before validation, so a `400` is kept and replayed too, which is what the same request would get anyway.
+- **The body is still read by validation**: `handle()` reads a clone of the request to hash it, so Hono's `c.req` reads the original. Its response is assigned to `c.res` rather than returned: once a handler has set `c.res`, Hono ignores what a middleware returns ([compose.ts](https://github.com/honojs/hono/blob/v4.13.14/src/compose.ts#L67)), and would send the response whose body `handle()` read to keep it.
+- **Every response is kept but a `429`**, the library's default, including a `500`: a write that failed halfway must not run twice.
+- **Keys are in Postgres**, in the `idempotency_keys` table, through the same pool as the handlers. No notifier: a waiting duplicate polls the table, since `LISTEN` needs a connection of its own and the server owns none. A deployment binds `idempotencyKeysId` to keys with a `PostgresNotifier` to wake them at once, and runs `deleteExpired()` from a scheduled job, as Postgres never expires rows itself.
 
 ### Validation from the document
 
@@ -219,13 +254,14 @@ With `protectedResource`, the API also serves its Protected Resource Metadata (R
 
 `createNotesApp` covers the common case. Underneath, each part is a [haywire](/packages/haywire/) binding, so an app (or a test) swaps one at a time:
 
-| Identifier        | Bound by                                                       | Default                                                             |
-| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `databaseId`      | the app: Drizzle on a pool it owns, never closed by the server | —                                                                   |
-| `authenticatorId` | the app                                                        | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
-| `appConfigId`     | the app: `onError`, and `protectedResource`                    | —                                                                   |
-| `handlersId`      | `notesModule`                                                  | `drizzleHandlersBinding`                                            |
-| `notesAppId`      | `notesModule`                                                  | the Hono app                                                        |
+| Identifier          | Bound by                                                       | Default                                                                              |
+| ------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `databaseId`        | the app: Drizzle on a pool it owns, never closed by the server | —                                                                                    |
+| `authenticatorId`   | the app                                                        | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)`                  |
+| `appConfigId`       | the app: `onError`, and `protectedResource`                    | —                                                                                    |
+| `handlersId`        | `notesModule`                                                  | `drizzleHandlersBinding`                                                             |
+| `idempotencyKeysId` | `notesModule`                                                  | `postgresIdempotencyKeysBinding`: Postgres, through `databaseId`'s pool, no notifier |
+| `notesAppId`        | `notesModule`                                                  | the Hono app                                                                         |
 
 ```ts
 import type { Authenticator, NotesDatabase } from '@leyman/demo-openapi-server';
@@ -258,6 +294,7 @@ const app = createContainer(
 One test posts notes generated from the document with [`juniper-arbitrary`](/packages/juniper-arbitrary/), and checks they come back as sent. Text is where a server and a database disagree, and hand-written cases only cover the characters someone thought of.
 - **The app is served on a free port** with `@hono/node-server`, exactly as in production, and requests go through the typed client, or plain `fetch` for requests the client can't send (bad JSON, the wrong content type).
 - **Breaking responses are tested** by swapping in handlers that break the spec, one binding at a time.
+- **Idempotency keys are tested against the same Postgres**: replays, a reused key's `422`, a duplicate that waits on a running request (held open until the store says the duplicate found the key held, so nothing depends on timing) or gets a `409`, callers kept apart, and a response sent even when its key can't be stored.
 - **The client's unit tests** use a `fetch` that records each request and answers with a canned response, and one uses the real `fetch` against a local HTTP server.
 
 ## What was learned
@@ -267,11 +304,12 @@ One test posts notes generated from the document with [`juniper-arbitrary`](/pac
 - **`drizzle-kit migrate` adds its own bookkeeping** (`drizzle.__drizzle_migrations`). A schema-only dump kept the table but not its rows, so a test database looked unmigrated, and migrating it would have run every migration again. `pg-dolly-schema --data` keeps its rows too.
 - **drizzle-kit has no check-only mode** for "the schema has changes no migration covers". The `drizzle-kit-check` target generates into a copy of the migrations, through a temporary config that only changes `out`, and compares.
 - **drizzle-kit exits 0 when it fails.** Without a terminal, it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass. The check fails on any error output instead.
+- **Hono ignores a middleware's return value once a later handler has set `c.res`.** A middleware wrapping the rest of the route (idempotency-keys' `handle()`, which reads the response to keep it, and returns a copy) must assign its response to `c.res`, or Hono sends the original, whose body has been read.
 - **Fastify was the other option.** It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields), not validation. With Hono, both directions are explicit middleware against the document.
 
 ## Not covered
 
-- Optional request bodies, other content types, header and cookie parameters, and response headers. The spec has none, so the server has no code for them.
+- Optional request bodies, other content types, header parameters other than `Idempotency-Key` (which the middleware reads, not Ajv), cookie parameters, and response headers. The spec has none, so the server has no code for them.
 - Pagination beyond a `limit` (cursors), rate limiting, and CORS. Tokens are issued by an authorization server; the API only verifies them.
 - Spec linting beyond the spec package's own tests (e.g. [Spectral](https://github.com/stoplightio/spectral)).
 - The cost of validating every response in production. It catches a handler breaking the contract before a client does, but a busy service might only sample.

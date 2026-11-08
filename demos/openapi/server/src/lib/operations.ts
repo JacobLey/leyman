@@ -61,7 +61,13 @@ export interface Operation {
      * By status. Every response in this spec has a JSON body.
      */
     readonly responses: ReadonlyMap<number, ValidateFunction>;
+    /**
+     * Whether the operation takes an `Idempotency-Key` header, and must have one. `null` when it takes none.
+     */
+    readonly idempotencyKey: { readonly required: boolean } | null;
 }
+
+const idempotencyKeyHeader = 'idempotency-key';
 
 const documentId = 'openapi.json';
 
@@ -134,6 +140,12 @@ export const operations: readonly Operation[] = Object.entries(
         .map(([method, operation]) => {
             const list = [...(item.parameters ?? []), ...(operation.parameters ?? [])];
             const json = operation.requestBody?.content['application/json'];
+            // Header names are case-insensitive
+            const key = list.find(
+                parameter =>
+                    parameter.in === 'header' &&
+                    parameter.name.toLowerCase() === idempotencyKeyHeader
+            );
             return {
                 method,
                 operationId: operation.operationId,
@@ -143,6 +155,7 @@ export const operations: readonly Operation[] = Object.entries(
                 path: compileParameters('path', list),
                 query: compileParameters('query', list),
                 body: json ? bodies.compile(inDocument(json.schema)) : null,
+                idempotencyKey: key ? { required: key.required === true } : null,
                 responses: new Map(
                     Object.entries(operation.responses).map(([status, { content }]) => [
                         Number(status),

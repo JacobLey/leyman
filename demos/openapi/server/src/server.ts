@@ -16,13 +16,22 @@ export {
 } from './lib/errors.js';
 export { drizzleHandlers, type NotesDatabase } from './lib/handlers.js';
 export { type JwtAuthenticatorOptions, jwtAuthenticator } from './lib/jwt.js';
-export { appConfigId, authenticatorId, databaseId, handlersId, notesAppId } from './lib/ids.js';
+export { idempotencyProblem, postgresIdempotencyKeys } from './lib/idempotency.js';
+export {
+    appConfigId,
+    authenticatorId,
+    databaseId,
+    handlersId,
+    idempotencyKeysId,
+    notesAppId,
+} from './lib/ids.js';
 export {
     createNotesApp,
     drizzleHandlersBinding,
     jwtAuthenticatorBinding,
     type NotesAppOptions,
     notesModule,
+    postgresIdempotencyKeysBinding,
     staticTokensBinding,
 } from './lib/module.js';
 export type {

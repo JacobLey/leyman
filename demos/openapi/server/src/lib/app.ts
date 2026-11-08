@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the spec documents them */
 import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { IdempotencyKeys } from 'idempotency-keys';
 import type { Operation } from './operations.js';
 import type { Authenticator, Caller, NotesHandlers, OperationId } from './types.js';
 import { Hono } from 'hono';
@@ -150,6 +151,38 @@ const requireToken = (
     };
 };
 
+/**
+ * Runs the rest of the route at most once per `Idempotency-Key`, for the caller and the operation: a retry gets the
+ * first request's response again (with `Idempotent-Replayed: true`), waits while it still runs, and a key reused on a
+ * different request is a `422`. After authentication, so the key belongs to a known caller, and after the body limit,
+ * since the key's fingerprint reads the whole body. `serve` still reads the body: idempotency-keys reads a clone.
+ *
+ * The response is assigned to `context.res` rather than returned: once a later handler has set `context.res`, Hono
+ * ignores a middleware's return value ([compose.ts](https://github.com/honojs/hono/blob/v4.13.14/src/compose.ts#L67)),
+ * and would send that response, whose body idempotency-keys has read to store it.
+ *
+ * @param keys - Where keys are kept
+ * @param operation - The operation, whose `operationId` keeps its keys apart from other operations'
+ * @param isRequired - Whether a request without a key is a `400`
+ * @returns Middleware
+ */
+const idempotent =
+    (keys: IdempotencyKeys, operation: string, isRequired: boolean): MiddlewareHandler<NotesEnv> =>
+    async (context, next) => {
+        const response = await keys.handle(
+            context.req.raw,
+            { scope: context.get('caller').subject, required: isRequired, operation },
+            async () => {
+                // A handler that throws is already a 500 here, from `onError`, so it is kept like any response
+                // eslint-disable-next-line n/callback-return -- Hono's `next`, after which the response is in `context.res`
+                await next();
+                return context.res;
+            }
+        );
+        // eslint-disable-next-line require-atomic-updates -- The context is this request's alone
+        context.res = response;
+    };
+
 // eslint-disable-next-line jsdoc/require-rejects -- The handler it returns rejects, not this function
 /**
  * Serves one operation: validates the request, calls its handler, and validates the response.
@@ -220,12 +253,14 @@ const serve =
  *
  * @param handlers - Every operation's handler
  * @param authenticate - Checks bearer tokens for the secured operations
+ * @param idempotencyKeys - Keeps the `Idempotency-Key`s of the operations that take one
  * @param config - Error reporting, and the API's metadata
  * @returns Hono app, e.g. for `@hono/node-server`'s `serve`
  */
 export const createApp = (
     handlers: NotesHandlers,
     authenticate: Authenticator,
+    idempotencyKeys: IdempotencyKeys,
     config: NotesAppConfig
 ): Hono => {
     const app = new Hono();
@@ -255,6 +290,17 @@ export const createApp = (
         secured.on(method, operation.route, requireToken(authenticate, operation.scopes, metadata));
         if (operation.body) {
             secured.on(method, operation.route, limited);
+        }
+        if (operation.idempotencyKey) {
+            secured.on(
+                method,
+                operation.route,
+                idempotent(
+                    idempotencyKeys,
+                    operation.operationId,
+                    operation.idempotencyKey.required
+                )
+            );
         }
         secured.on(method, operation.route, serve(operation, handlers));
     }

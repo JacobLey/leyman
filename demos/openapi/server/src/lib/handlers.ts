@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the spec documents them */
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Note } from '@leyman/demo-openapi-spec/notes.openapi.yaml';
+import type { PostgresQueryable } from 'idempotency-keys';
 import type { NotesHandlers } from './types.js';
 import { and, desc, eq, ilike } from 'drizzle-orm';
 import { notes } from '@leyman/demo-openapi-database';
 
-export type NotesDatabase = NodePgDatabase;
+/**
+ * Drizzle on node-postgres, as `drizzle({ client: pool })` makes it. Idempotency keys are stored through its pool
+ * (`$client`) too, with idempotency-keys' own SQL.
+ */
+export type NotesDatabase = NodePgDatabase & { readonly $client: PostgresQueryable };
 
 /**
  * Converts a row to the API's shape.
