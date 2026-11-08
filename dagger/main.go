@@ -186,9 +186,8 @@ func (m *Ci) StarterAudit(
 	return err
 }
 
-// Run the full CI pipeline: install, build, test, check published entry points import on their oldest supported
-// Node.js and their types check on the oldest supported TypeScript, and verify generated lifecycle config is up to
-// date.
+// Run the tests: install, build, then every project's `test-ci` (lint, tests and coverage). The support floor and
+// generated config checks run in `Floors`, a separate CI job, so they never compete with the tests for CPU.
 func (m *Ci) Test(
 	ctx context.Context,
 	// Nx remote cache server to share task results with (e.g. `tcp://localhost:3000`, see `.devcontainer/nx-cache-server.mjs`).
@@ -200,29 +199,39 @@ func (m *Ci) Test(
 	// +optional
 	floorSuites bool,
 ) error {
-	// Pending changesets don't affect tests, so keep them from invalidating the cache
-	ctr := withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache)
-	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars
-	built := withPostgres(ctr).WithExec([]string{"nx", "run-many", "-t", "build"})
+	tested := m.built(nxCache).
+		WithServiceBinding("valkey", valkeyService()).
+		// Browser tests connect to it rather than launching their own, so `playwright-install` downloads none
+		WithServiceBinding("playwright", playwrightService()).
+		WithEnvVariable("PW_TEST_CONNECT_WS_ENDPOINT", "ws://playwright:3000/").
+		WithExec([]string{"test-ci"})
+	if floorSuites {
+		// Reuses the tests `test-ci` compiled, and its services. Nx and pnpm stay on the toolchain's Node.js
+		tested = withNodeFloors(tested).
+			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-suites"})
+	}
+
+	_, err := tested.Sync(ctx)
+
+	return err
+}
+
+// Check the support floors and generated config: install, build, then in parallel verify generated lifecycle config
+// is up to date, check published entry points import on their oldest supported Node.js and their types check on the
+// oldest supported TypeScript, and test released Go modules on their oldest supported Go.
+//
+// Separate from `Test` so CI runs it on its own runner: `floor-types` runs a `tsc` per CPU for minutes, which next
+// to `test-ci` slowed tests past their timeouts.
+func (m *Ci) Floors(
+	ctx context.Context,
+	// Nx remote cache server to share task results with (e.g. `tcp://localhost:3000`, see `.devcontainer/nx-cache-server.mjs`).
+	// Omitted, every task runs.
+	// +optional
+	nxCache *dagger.Service,
+) error {
+	built := m.built(nxCache)
 
 	group, ctx := errgroup.WithContext(ctx)
-	group.Go(func() error {
-		tested := built.
-			WithServiceBinding("valkey", valkeyService()).
-			// Browser tests connect to it rather than launching their own, so `playwright-install` downloads none
-			WithServiceBinding("playwright", playwrightService()).
-			WithEnvVariable("PW_TEST_CONNECT_WS_ENDPOINT", "ws://playwright:3000/").
-			WithExec([]string{"test-ci"})
-		if floorSuites {
-			// Reuses the tests `test-ci` compiled, and its services. Nx and pnpm stay on the toolchain's Node.js
-			tested = withNodeFloors(tested).
-				WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-suites"})
-		}
-
-		_, err := tested.Sync(ctx)
-
-		return err
-	})
 	group.Go(func() error {
 		_, err := built.WithExec([]string{"nx", "run", "@leyman/main:lifecycle"}).Sync(ctx)
 
@@ -239,7 +248,6 @@ func (m *Ci) Test(
 
 		return err
 	})
-
 	group.Go(func() error {
 		// Tests each released Go module on Go 1.24, the oldest its `go` directive allows. Everything else stays on the
 		// toolchain's Go.
@@ -609,6 +617,15 @@ type workspacePackage struct {
 	Version string `json:"version"`
 	Path    string `json:"path"`
 	Private bool   `json:"private"`
+}
+
+// The workspace installed and built, with Postgres bound, as `Test` and `Floors` start from.
+func (m *Ci) built(nxCache *dagger.Service) *dagger.Container {
+	// Pending changesets don't affect tests, so keep them from invalidating the cache
+	ctr := withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache)
+
+	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars
+	return withPostgres(ctr).WithExec([]string{"nx", "run-many", "-t", "build"})
 }
 
 // Public workspace packages whose current version is not on the registry.

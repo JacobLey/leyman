@@ -7,15 +7,16 @@ on:
   push:
     branches:
       - main
-      # Patches to an older major, on a branch cut from its last release. Only `test` and `publish` run on these
+      # Patches to an older major, on a branch cut from its last release. Only `test`, `floors` and `publish` run on
+      # these
       - release/*
   # Off the top of the hour, when GitHub delays and drops scheduled runs
   schedule:
-    # Nightly `test` of main: catches what changes outside the repository, and writes like a push, so the hosted Nx
-    # cache stays warm through a week without pushes. Also runs published packages' suites on their oldest Node.js.
-    # Keep in sync with `test`'s args
+    # Nightly `test` and `floors` of main: catches what changes outside the repository, and writes like a push, so the
+    # hosted Nx cache stays warm through a week without pushes. `test` also runs published packages' suites on their
+    # oldest Node.js. Keep in sync with `test`'s args
     - cron: '17 9 * * *'
-    # Weekly `test-uncached`. Keep in sync with both jobs' `if`
+    # Weekly `test-uncached`. Keep in sync with the `if` of it, `test` and `floors`
     - cron: '47 9 * * 0'
 
 permissions:
@@ -110,10 +111,68 @@ jobs:
         if: ${{ !cancelled() }}
         run: cat "$RUNNER_TEMP/nx-cache-server.log"
 
+  # The support floor and generated config checks, on their own runner: `floor-types` runs a `tsc` per CPU for
+  # minutes, which on `test`'s runner slowed tests past their timeouts. Gates the same jobs `test` does
+  floors:
+    if: ${{ github.event.schedule != '47 9 * * 0' }}
+    runs-on: ubuntu-latest
+    # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # As in `test`: pushes to main and nightly runs write the results of the builds they share with it
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # As in `test`
+      - name: Start Nx cache server
+        env:
+          NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
+          NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
+          NX_CACHE_SERVER_REFRESH_AFTER_DAYS: ${{ env.NX_CACHE_REFRESH_AFTER_DAYS }}
+          NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
+          NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
+        run: |
+          node .devcontainer/nx-cache-server.mjs > "$RUNNER_TEMP/nx-cache-server.log" 2>&1 &
+          echo "$!" > "$RUNNER_TEMP/nx-cache-server.pid"
+          curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
+
+      - name: Floors
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          # Only for Dagger Cloud traces, as in `test`
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: floors --nx-cache=tcp://localhost:3000
+
+      # As in `test`
+      - name: Stop Nx cache server
+        if: ${{ !cancelled() }}
+        run: |
+          pid=$(cat "$RUNNER_TEMP/nx-cache-server.pid")
+          if kill "$pid"; then
+            timeout 10m tail --pid="$pid" -f /dev/null || echo "::warning::Nx cache server was still refreshing results after 10 minutes"
+          fi
+
+      - name: Show Nx cache server log
+        if: ${{ !cancelled() }}
+        run: cat "$RUNNER_TEMP/nx-cache-server.log"
+
   # Weekly, every task with no Nx cache at all, reading or writing. A task that fails here but passes from the cache
-  # all week depends on something its inputs don't hash: add the input, rather than re-running
+  # all week depends on something its inputs don't hash: add the input, rather than re-running.
+  # `test` and `floors` on separate runners, as in the jobs of those names
   test-uncached:
     if: ${{ github.event.schedule == '47 9 * * 0' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        pipeline: [test, floors]
     runs-on: ubuntu-latest
     # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
     timeout-minutes: 30
@@ -125,7 +184,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Test
+      - name: Run ${{ matrix.pipeline }}
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
           version: ${{ env.DAGGER_VERSION }}
@@ -133,11 +192,11 @@ jobs:
           module: ./dagger
           # Only for Dagger Cloud traces, as in `test`
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: test
+          args: ${{ matrix.pipeline }}
 
   # Opens (or updates) a "Version Packages" PR applying pending changesets
   version:
-    needs: test
+    needs: [test, floors]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     # Only the tip of main opens the version PR. Never cancels a running job, which could be the tip's
@@ -205,7 +264,7 @@ jobs:
 
   # Publishes every package whose version is not yet on npm (i.e. after a version PR merges)
   publish:
-    needs: test
+    needs: [test, floors]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')) }}
     runs-on: ubuntu-latest
     # Restricted to main; npm trusted publishing only accepts this environment. A `release/*` branch fails here until
@@ -318,7 +377,7 @@ jobs:
 
   # Builds the docs site from main and deploys it to GitHub Pages
   docs:
-    needs: test
+    needs: [test, floors]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -390,7 +449,7 @@ jobs:
   # Deploys the hosted Nx cache's Worker (`infra/nx-cache/worker`). Off until the `CLOUDFLARE_ACCOUNT_ID` variable is
   # set (see `infra/nx-cache/README.md`)
   nx-cache:
-    needs: test
+    needs: [test, floors]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CLOUDFLARE_ACCOUNT_ID != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30

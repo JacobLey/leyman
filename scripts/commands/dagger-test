@@ -2,10 +2,13 @@
 
 set -e
 
+# CI's `test` and `floors` jobs, one after the other. Extra arguments (e.g. `--floor-suites`) go to `test`
+
 # `--uncached` runs every task, for a suspected missing Nx input or a last check before a release
 if [ "${1:-}" = "--uncached" ]; then
     shift
-    exec dagger call --mod ./dagger test "$@"
+    dagger call --mod ./dagger test "$@"
+    exec dagger call --mod ./dagger floors
 fi
 
 if ! getent hosts dagger-nx-cache > /dev/null; then
@@ -14,4 +17,5 @@ if ! getent hosts dagger-nx-cache > /dev/null; then
 fi
 
 # Reached from this container by the Dagger CLI, and bound to `nx-cache:3000` inside Dagger
-exec dagger call --mod ./dagger test --nx-cache=tcp://dagger-nx-cache:3000 "$@"
+dagger call --mod ./dagger test --nx-cache=tcp://dagger-nx-cache:3000 "$@"
+exec dagger call --mod ./dagger floors --nx-cache=tcp://dagger-nx-cache:3000
