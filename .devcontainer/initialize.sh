@@ -4,8 +4,8 @@
 # The main checkout stays wherever it was cloned. Worktrees live in one dedicated
 # sibling folder named after it, so they never collide with other projects:
 #
-#   ~/code/leyman/                    <- main checkout (owns .git)
-#   ~/code/leyman-worktrees/
+#   ~/code/<repo>/                    <- main checkout (owns .git)
+#   ~/code/<repo>-worktrees/
 #     <branch>/                       <- git worktrees
 #     .shared/                        <- pnpm store, Nx cache, Claude and gh config, plans
 #   ~/code/.claude-shared/            <- Claude settings.json and CLAUDE.md, shared with other repos

@@ -185,7 +185,7 @@
     },
     {
       "path": "leyman/main/README.md",
-      "why": "why the global tools live in this package"
+      "why": "why the global tools live in this package. `apply` cuts its list of scripts to those the fork took, and says the manifest stays here"
     },
     {
       "path": "leyman/main/eslint.config.js",

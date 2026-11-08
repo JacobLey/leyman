@@ -469,7 +469,47 @@ const renameDevcontainer = (files, to) => {
     }
 };
 
+/**
+ * Where a fork records what it took from this repository, and from which commit.
+ */
+export const upstreamFile = 'leyman-upstream.json';
+
 const upstreamRepository = 'https://github.com/JacobLey/leyman';
+
+const mainReadme = 'leyman/main/README.md';
+const scriptsHeading = '## Scripts\n\n';
+const scriptRowPattern = /^\| \[`[^`]+`\]\(\.\/scripts\/(?<script>[^\)]+)\)/v;
+
+// The tools package's README lists its scripts, most of which check this repository's own setup (the fork manifest
+// among them) and stay here. A fork's copy lists only the scripts it took, and says where the rest went. Each part must
+// still match, so a rewording here fails `apply` instead of leaving the list half cut.
+const rewriteMainReadme = (files, to) => {
+    if (!files.includes(mainReadme)) {
+        return;
+    }
+    const target = path.join(to, mainReadme);
+    const text = readFileSync(target, 'utf8');
+    const lines = text.split('\n');
+    const rows = lines.filter(line => scriptRowPattern.test(line));
+    if (!text.includes(scriptsHeading) || rows.length === 0) {
+        throw new Error(
+            `${mainReadme} no longer has a "## Scripts" table of ./scripts links: update rewriteMainReadme`
+        );
+    }
+    const isTaken = row =>
+        existsSync(path.join(to, 'leyman/main/scripts', scriptRowPattern.exec(row).groups.script));
+    const header = lines.findIndex(line => line === '| Script' || line.startsWith('| Script '));
+    const kept = lines.filter(line => !scriptRowPattern.test(line) || isTaken(line));
+    const hasRows = rows.some(row => isTaken(row));
+    const withoutTable = hasRows
+        ? kept
+        : kept.filter((_line, index) => index !== header && index !== header + 1);
+    const note = [
+        `This repository was started from [leyman](${upstreamRepository})'s fork manifest. The manifest, and the scripts that apply and check it, stay in leyman: \`${upstreamFile}\` records what was taken and from which commit, and from a checkout of leyman \`node leyman/main/scripts/fork-manifest.mjs drift --fork <this repository>\` lists what changed upstream since.`,
+        ...(hasRows ? ['', 'The scripts this repository took:', '', ''] : ['']),
+    ].join('\n');
+    writeFileSync(target, withoutTable.join('\n').replace(scriptsHeading, () => scriptsHeading + note));
+};
 
 const fencePattern = /^ {0,3}(?:`{3}|~{3})/v;
 const inlineCodePattern = /`[^\n`]+`/gv;
@@ -558,11 +598,6 @@ const pointLinksUpstream = (files, to) => {
     }
 };
 
-/**
- * Where a fork records what it took from this repository, and from which commit.
- */
-export const upstreamFile = 'leyman-upstream.json';
-
 const git = (...args) =>
     // eslint-disable-next-line sonarjs/no-os-command-from-path -- the checkout's own Git, in a script run by hand or CI
     execFileSync('git', args, { cwd: workspaceRoot, encoding: 'utf8' });
@@ -624,6 +659,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
     renameDevcontainer(files, to);
+    rewriteMainReadme(files, to);
     pointLinksUpstream(files, to);
     writeUpstream(to, { commit, conditions, extraPackages, files });
     return { files, skipped, taken };

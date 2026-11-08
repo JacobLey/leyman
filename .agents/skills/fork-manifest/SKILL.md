@@ -82,7 +82,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.vscode/tasks.json` | worktree commands in the editor |
 | `leyman/main/.claude/skills` | links Claude Code's skills directory to the package's .agents/skills |
 | `leyman/main/.agents/skills/lifecycle` | how the lifecycle stages connect |
-| `leyman/main/README.md` | why the global tools live in this package |
+| `leyman/main/README.md` | why the global tools live in this package. `apply` cuts its list of scripts to those the fork took, and says the manifest stays here |
 | `leyman/main/eslint.config.js` | lints the package's own scripts |
 | `leyman/main/lifecycle.json` | declares the stages and binds targets to them |
 | `leyman/main/nx-plugin.json` | the options the TypeScript targets in nx.json are written from |

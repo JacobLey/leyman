@@ -5,7 +5,7 @@ description: Writing and maintaining package READMEs
 
 # Writing Package READMEs
 
-> Examples: [`../../../tools/haywire/README.md`](../../../tools/haywire/README.md) · [`../../../apps/juniper/README.md`](../../../apps/juniper/README.md)
+> Examples from leyman: [`../../../tools/haywire/README.md`](../../../tools/haywire/README.md) · [`../../../apps/juniper/README.md`](../../../apps/juniper/README.md)
 
 ## Purpose
 
@@ -21,7 +21,7 @@ The README is also how the package is found and judged. npm search, web search, 
 
 **Rule:** The README says *that* the package is different and from what, in a few lines. The WHY file says *why* at length. Anything longer than a bullet or table row belongs in WHY-\<PACKAGE\>.md.
 
-See [`../../../tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
+See leyman's [`tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
 
 ## Spelling
 
@@ -36,14 +36,14 @@ American spelling ("behavior"), like most published text and the npm ecosystem's
 One-sentence description of what it does (same as `package.json` `description`).
 
 [![npm package](https://badge.fury.io/js/<npm-name>.svg)](https://www.npmjs.com/package/<npm-name>)
-[![License](https://img.shields.io/npm/l/<npm-name>.svg)](https://github.com/JacobLey/leyman/blob/main/<path>/LICENSE)
+[![License](https://img.shields.io/npm/l/<npm-name>.svg)](https://github.com/<owner>/<repo>/blob/main/<path>/LICENSE)
 
 </div>
 
 - **Highlight** — what sets it apart, in a line.
 - **Highlight** — 3–5 of these.
 
-For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.com/JacobLey/leyman/blob/main/<path>/WHY-<PACKAGE>.md).
+For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.com/<owner>/<repo>/blob/main/<path>/WHY-<PACKAGE>.md).
 
 ## Contents
 - [Install](#install)
@@ -145,8 +145,8 @@ Export types used by the API should be documented inline where first used, or in
 The README is rendered on npmjs.com, which does not resolve relative links inside a monorepo package (`./WHY-PACKAGE.md` 404s there). Every link must be absolute:
 
 - Another package's README → its npm page: `https://www.npmjs.com/package/<name>`
-- Any other repo file (WHY file, LICENSE, config) → `https://github.com/JacobLey/leyman/blob/main/<repo path>`
-- A package on the [docs site](../docs-site/SKILL.md#documented-packages) links its overview page near the top: `Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/<slug>/).` Its `package.json` `homepage` is that page too (npm's "Homepage" link is for a project site; npm already shows the README). Others keep `homepage` on the GitHub README. The docs build fails when either is missing.
+- Any other repo file (WHY file, LICENSE, config) → `https://github.com/<owner>/<repo>/blob/main/<repo path>` (for leyman, `https://github.com/JacobLey/leyman/blob/main/<repo path>`)
+- A package on the [docs site](../docs-site/SKILL.md#documented-packages) links its overview page near the top: `Guides and the full reference are on the [docs site](<docs site>/packages/<slug>/).` (for leyman, `https://jacobley.github.io/leyman/packages/<slug>/`) Its `package.json` `homepage` is that page too (npm's "Homepage" link is for a project site; npm already shows the README). Others keep `homepage` on the GitHub README. The docs build fails when either is missing.
 - In-page anchors (`#...`) are fine, but must match GitHub's slug of the full heading text: `` ### `suite(title, fn)` `` is `#suitetitle-fn`, not `#suite`. Repeated headings get `-1`, `-2` suffixes.
 
 The same applies to WHY files, which link back to the README via its npm page.

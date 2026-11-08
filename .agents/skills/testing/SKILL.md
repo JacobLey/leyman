@@ -26,7 +26,7 @@ Coverage is per package: only the package's own tests count, not tests of packag
 
 Checks that span packages, which no single package can test, go in a test-only package under `e2e/` (see [create-package](../create-package/SKILL.md#e2e-packages)). These have no source of their own, so no coverage report.
 
-Packages whose job is talking to a service (e.g. `tools/lease-cache` on Valkey, and demos in `demos/`, see [create-package](../create-package/SKILL.md#demo-packages)) test against the real service, running as a devcontainer sidecar and a Dagger service, rather than a mock. A mock could only assume how the service behaves, and that behavior (atomicity, expiry) is what these packages rely on. Each test isolates its keys (e.g. by a unique prefix) rather than clearing the shared service.
+Packages whose job is talking to a service (e.g. leyman's [`lease-cache`](../../../tools/lease-cache/) on Valkey, and demos in `demos/`, see [create-package](../create-package/SKILL.md#demo-packages)) test against the real service, running as a devcontainer sidecar and a Dagger service, rather than a mock. A mock could only assume how the service behaves, and that behavior (atomicity, expiry) is what these packages rely on. Each test isolates its keys (e.g. by a unique prefix) rather than clearing the shared service.
 
 The services, at the same hostnames in the devcontainer and in Dagger's `Test`:
 
@@ -39,7 +39,7 @@ Without the service a test needs, it fails rather than skipping. Neither service
 
 ### Postgres tests
 
-Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (dev dependency, `workspace:^`): a clone of a template built once per test process from the package's committed `schema.sql`, which the [`schema-snapshot`](../nx-tasks-reference/SKILL.md#schema-snapshot) target keeps up to date with its migrations. `pg-dolly` itself works with any runner; in this repo, follow its README's [mocha-chain pattern](../../../tools/pg-dolly/README.md#mocha-chain):
+Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (a dev dependency): a clone of a template built once per test process from the package's committed `schema.sql`, which the [`schema-snapshot`](../nx-tasks-reference/SKILL.md#schema-snapshot) target keeps up to date with its migrations. `pg-dolly` itself works with any runner; in this repo, follow its README's [mocha-chain pattern](../../../tools/pg-dolly/README.md#mocha-chain):
 
 - `test/helpers/database.ts` connects and builds the template in a root `before` (top level of the module), and closes in its `after`. Only `before`/`after` at the top level: a top-level `beforeEach` would clone a database for every test in the package.
 - It exports a `withDatabase()` fixture, called inside each suite that needs one: it clones in `beforeEach`, and keeps a failed test's database (`database.keep()`) in `afterEach`, so it can be inspected (`psql` with the printed name).

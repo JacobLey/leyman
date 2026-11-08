@@ -13,7 +13,7 @@ This document covers the soft rules and conventions of this codebase. Hard rules
 
 Packages should have a narrow, well-defined scope. When a natural extension of a package exists, make it a separate package that builds on the first rather than expanding the original.
 
-Good examples in this repo:
+Good examples in leyman:
 - `juniper` builds JSON schemas → `juniper-validator` wraps them with a StandardSchema interface
 - `haywire` is a DI container → `entry-script` is a CLI entry pattern → `haywire-launcher` connects the two
 - `populate-files` writes files → `load-populate-files` adds a config-file loader on top
@@ -76,7 +76,7 @@ Inject when callers really choose between implementations, or supply resources t
 - **Interchangeable implementations of one part**, each a real, complete choice (e.g. a cache's memory tier: none, local, or synced across instances). Each choice is one binding, and an application (or test) composes the ones it wants.
 - **Resources the application owns and shares**, such as a database or Valkey connection also used for something else. Taking them as bound instances, rather than opening its own, lets the code share them and makes ownership explicit: the container never closes what the application bound.
 
-Tests still test behavior: compose the real implementations, run them against real services, and assert on what the composed whole does. Swapping one choice per test (`replaceBinding()`) is the point; stubs stay limited to reason 1. See `demos/read-through-cache` for an example.
+Tests still test behavior: compose the real implementations, run them against real services, and assert on what the composed whole does. Swapping one choice per test (`replaceBinding()`) is the point; stubs stay limited to reason 1. See leyman's [`demos/read-through-cache`](../../../demos/read-through-cache/) for an example.
 
 ### Either way
 
@@ -84,7 +84,7 @@ Use `haywire` rather than hand-rolling it (e.g. constructor parameters with prod
 
 For reason 1, external consumers of a package should never be aware of its DI setup: the container wiring is an internal implementation detail, behind a clean, non-DI API. For reason 2, the bindings _are_ the API, so export them (and the ids the application binds), and document each choice.
 
-See the haywire README for the constructor provider pattern used in this repo.
+See the [haywire README](../../../tools/haywire/README.md) for the constructor provider pattern.
 
 ---
 

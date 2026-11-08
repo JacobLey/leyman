@@ -13,13 +13,13 @@ Each worktree has its own `node_modules`, `.nx/` and devcontainer. Downloaded pa
 
 ## Layout
 
-The main checkout stays wherever you cloned it. Worktrees go in a **dedicated sibling folder named after it**, so they never collide with your other projects:
+The main checkout stays wherever you cloned it. Worktrees go in a **dedicated sibling folder named after it**, `<repo>-worktrees/`, so they never collide with your other projects. For leyman, that is `leyman/` and `leyman-worktrees/`:
 
 ```
 ~/code/
   some-other-project/          <- untouched, never mounted
-  leyman/                      <- main checkout, owns .git (never delete it)
-  leyman-worktrees/            <- created automatically
+  <repo>/                      <- main checkout, owns .git (never delete it)
+  <repo>-worktrees/            <- created automatically
     feat-x/                    <- worktree for branch feat/x
     .shared/
       pnpm-store/              <- pnpm content-addressed store
@@ -30,13 +30,13 @@ The main checkout stays wherever you cloned it. Worktrees go in a **dedicated si
   .claude-shared/              <- Claude settings.json and CLAUDE.md, shared with your other repos' devcontainers
 ```
 
-Every devcontainer, including the one for the main checkout, mounts **`leyman/` and `leyman-worktrees/`**, plus `.claude-shared/`. Each one is mounted at the same absolute path it has on the host. This has three effects:
+Every devcontainer, including the one for the main checkout, mounts **`<repo>/` and `<repo>-worktrees/`**, plus `.claude-shared/`. Each one is mounted at the same absolute path it has on the host. This has three effects:
 
 - Git stores absolute paths in its worktree links, and those paths resolve both on the host and in the container.
 - Every container can reach `.shared/`.
 - `docker` bind mounts started from inside the container (docker-outside-of-docker) use paths that are valid on the host.
 
-The container's workspace folder is therefore the host path (for example `/Users/you/code/leyman-worktrees/feat-x`), not `/workspace`.
+The container's workspace folder is therefore the host path (for example `/Users/you/code/<repo>-worktrees/feat-x`), not `/workspace`.
 
 [`.devcontainer/initialize.sh`](../../../.devcontainer/initialize.sh) runs on the host before the container starts (`initializeCommand`). It does the following:
 
@@ -44,14 +44,14 @@ The container's workspace folder is therefore the host path (for example `/Users
 - Creates `.shared/`. The first time, it moves `<main>/.pnpm-store` into `.shared/` and copies `<main>/.claude-config` there.
 - Creates `.claude-shared/` beside the main checkout, and links `claude-config/settings.json` and `claude-config/CLAUDE.md` to it (absolute links, which resolve because it's mounted at the same path). Another repo using this setup links the same files, so settings and user-level instructions are shared; memory (`claude-config/projects/`) stays per repo. The first time, the repo's own file moves there (or an empty one is created). If both exist, it only warns: merge the repo's file into the shared one by hand and delete it, and the next start links it.
 - Links `<worktree>/plans` to `.shared/plans/`. Plans written there are visible from every worktree and never committed (`/plans` is gitignored).
-- Writes the paths and a namespaced `COMPOSE_PROJECT_NAME` (`leyman`, `leyman_feat-x`) to `.devcontainer/.env`, which is gitignored and read by `docker-compose.yml`. Container names therefore never clash with same-named worktrees from other repos. It also writes `REPO_NAME` and `WORKTREE_NAME` (`main` for the main checkout), as DNS labels, for the worktree's URL.
+- Writes the paths and a namespaced `COMPOSE_PROJECT_NAME` (`<repo>`, `<repo>_feat-x`) to `.devcontainer/.env`, which is gitignored and read by `docker-compose.yml`. Container names therefore never clash with same-named worktrees from other repos. It also writes `REPO_NAME` and `WORKTREE_NAME` (`main` for the main checkout), as DNS labels, for the worktree's URL.
 - Starts the machine's shared HTTPS ingress, [`tools/local-ingress`](../../../tools/local-ingress/README.md), if it isn't running. A failure only warns: the container still starts, without its URL.
 
 ---
 
 ## URLs
 
-Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.localhost`, e.g. `https://feat-x.leyman.localhost` (the main checkout is `main.leyman.localhost`). Browsers resolve `*.localhost` to this machine themselves. One Caddy per machine ([`tools/local-ingress`](../../../tools/local-ingress/README.md)) routes by host name to the container labeled with it, so worktrees never compete for a port. `scripts/worktree up` prints the URL.
+Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.localhost`, e.g. `https://feat-x.leyman.localhost` for leyman (the main checkout is `main.leyman.localhost`). Browsers resolve `*.localhost` to this machine themselves. One Caddy per machine ([`tools/local-ingress`](../../../tools/local-ingress/README.md)) routes by host name to the container labeled with it, so worktrees never compete for a port. `scripts/worktree up` prints the URL.
 
 Once per machine, trust its CA: open `http://ingress.localhost` for the root certificate and the steps for your OS. Until then, browsers warn about the certificate.
 
@@ -73,7 +73,7 @@ Run these from a VS Code window opened **locally** on the main checkout (dismiss
 | Container without an editor | | `scripts/worktree up feat/x` / `scripts/worktree shell feat/x [cmd...]` |
 | List | | `scripts/worktree list` |
 
-- `new` creates `leyman-worktrees/feat-x` (`/` in a branch name becomes `-`). It checks out `feat/x` if that branch exists. Otherwise it creates the branch from `--from`, which defaults to the current `HEAD`. It then opens the folder **directly in its devcontainer**.
+- `new` creates `<repo>-worktrees/feat-x` (`/` in a branch name becomes `-`). It checks out `feat/x` if that branch exists. Otherwise it creates the branch from `--from`, which defaults to the current `HEAD`. It then opens the folder **directly in its devcontainer**.
 - With the default editor (`vscode`), `new` and `open` print a Cmd+clickable `vscode://` link and hand it to the OS (macOS `open`, Linux `xdg-open`). VS Code asks for confirmation ("An external application wants to open…"). Keep that prompt: turning it off lets any app or webpage open a dev container for any folder, which runs that folder's `initializeCommand` on the host. `--no-open` (for `new`) and `--print` (for `open`) only print the link. If the link opens the folder but not the container, use `open --local` and click **Reopen in Container**.
 - `rm` runs `docker compose down` on the worktree's devcontainer, which would otherwise keep running, and then `git worktree remove`. It refuses to remove the main checkout or the worktree you're running it from.
 - Git won't check out the same branch in two worktrees. With the main checkout on `main`, worktrees branch from `main` rather than checking it out.

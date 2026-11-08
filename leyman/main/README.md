@@ -22,6 +22,9 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 | [`check-parity.mjs`](./scripts/check-parity.mjs)                                 | Checks that the versions the devcontainer and CI pin separately still match                                                                                                        |
 | [`check-workspace-dependencies.mjs`](./scripts/check-workspace-dependencies.mjs) | Checks that nothing takes a package in this workspace from npm rather than `workspace:`                                                                                            |
 | [`nx-rust-plugin.mjs`](./scripts/nx-rust-plugin.mjs)                             | Infers a Rust crate's Nx targets and workspace dependencies from its `Cargo.toml`, because no maintained plugin supports this repo's Nx                                            |
+| [`audit-starter.mjs`](./scripts/audit-starter.mjs)                               | Runs every `sh` block of the getting-started page in a temporary directory, then `verify`. Not part of `verify` itself                                                             |
+| [`check-go-release.mjs`](./scripts/check-go-release.mjs)                         | Checks a released Go module's `VERSION`, changelog and module path, and that what it requires from the workspace is released                                                       |
+| [`link-skills.mjs`](./scripts/link-skills.mjs)                                   | Links the skills this workspace's packages ship into `.agents/skills`, which pnpm only does for installed dependencies                                                             |
 
 ## Why the root `package.json` has no dependencies
 

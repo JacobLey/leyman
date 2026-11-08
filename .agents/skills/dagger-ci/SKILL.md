@@ -90,7 +90,7 @@ First check who it would help (npm's per-version downloads). If almost nobody is
 7. Allow that one branch to use the `npm` environment. Without this, `publish` fails at the environment and nothing is released.
 
    ```bash
-   gh api --method POST repos/JacobLey/leyman/environments/npm/deployment-branch-policies \
+   gh api --method POST repos/{owner}/{repo}/environments/npm/deployment-branch-policies \
      -f name='release/<package>-<major>.x' -f type=branch
    ```
 
@@ -98,8 +98,8 @@ First check who it would help (npm's per-version downloads). If almost nobody is
 9. Remove the branch from the environment, and delete the branch; its release tag keeps the code. Don't merge it into `main`.
 
    ```bash
-   gh api repos/JacobLey/leyman/environments/npm/deployment-branch-policies
-   gh api --method DELETE repos/JacobLey/leyman/environments/npm/deployment-branch-policies/<id>
+   gh api repos/{owner}/{repo}/environments/npm/deployment-branch-policies
+   gh api --method DELETE repos/{owner}/{repo}/environments/npm/deployment-branch-policies/<id>
    ```
 
 No npm settings change: a trusted publisher names the repository, workflow file (`ci.yml`) and environment (`npm`), not a branch, so keep publishing in that job. Don't publish from a machine: it has no provenance, which consumers using pnpm's `trustPolicy: no-downgrade` reject.

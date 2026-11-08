@@ -42,7 +42,7 @@ die() {
 }
 
 common_dir="$(git rev-parse --path-format=absolute --git-common-dir)" ||
-    die 'not inside the leyman repo'
+    die 'not inside a git repository'
 main_checkout="$(dirname "$common_dir")"
 worktrees_dir="${main_checkout}-worktrees"
 
