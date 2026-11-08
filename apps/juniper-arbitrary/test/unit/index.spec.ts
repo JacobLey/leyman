@@ -382,6 +382,22 @@ suite('makeArbitrary', () => {
             'dependent required': objectSchema()
                 .properties({ a: numberSchema(), b: numberSchema() })
                 .dependentRequired('a', ['b']),
+            'pattern covers a required key': customSchema({
+                type: 'object',
+                required: ['xa'],
+                patternProperties: { '^x': { type: 'number' } },
+                additionalProperties: false,
+            }),
+            'patterns covering a declared key': customSchema({
+                type: 'object',
+                properties: { xa: { minimum: 0 } },
+                required: ['xa'],
+                patternProperties: {
+                    '^x': { type: 'number' },
+                    '^xa$': { maximum: 5 },
+                },
+                additionalProperties: false,
+            }),
             anyOf: mergeSchema().anyOf([numberSchema(), stringSchema()]),
             allOf: mergeSchema()
                 .allOf(numberSchema().minimum(5))
@@ -400,6 +416,30 @@ suite('makeArbitrary', () => {
                 }
             });
         }
+
+        test('declared keys are checked against propertyNames while building', () => {
+            const schema = customSchema({
+                type: 'object',
+                properties: { a: { type: 'number' }, kb: { type: 'number' } },
+                propertyNames: { pattern: '^k' },
+                additionalProperties: { type: 'number' },
+            });
+            const root = schema.toJSON() as SchemaNode;
+            const validate = compile(schema);
+            const checked: string[] = [];
+            const builder = new Builder({
+                root,
+                validatorFor: (node, path) => {
+                    checked.push(path);
+                    return compile(customSchema(node as Record<string, unknown>));
+                },
+            });
+            const values = fc.sample(builder.build(root, '#')!, { numRuns: 200, seed: 42 });
+            for (const value of values) {
+                expect(validate(value), JSON.stringify(value)).to.equal(true);
+            }
+            expect(checked).to.deep.equal(['#/propertyNames']);
+        });
     });
 
     suite('Reaches what the schema allows', () => {
@@ -559,6 +599,11 @@ suite('makeArbitrary', () => {
                 type: 'array',
                 contains: { type: 'number' },
                 maxItems: 0,
+            }),
+            'property names reject a required key': customSchema({
+                type: 'object',
+                required: ['a'],
+                propertyNames: { pattern: '^k' },
             }),
         };
         for (const [name, schema] of Object.entries(nothingMatches)) {

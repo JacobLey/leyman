@@ -375,16 +375,30 @@ export class Builder {
         };
     }
 
+    /**
+     * Check declared and required keys against `propertyNames`, which forbids those it rejects.
+     *
+     * @param propertyNames - `propertyNames` schemas
+     * @param path - path of the object schema, for errors
+     * @returns whether a key is allowed
+     */
+    #nameCheck(propertyNames: readonly SchemaNode[], path: string): (key: string) => boolean {
+        return propertyNames.length === 0
+            ? () => true
+            : this.#params.validatorFor({ allOf: propertyNames }, `${path}/propertyNames`);
+    }
+
     #buildObject(branch: Branch, path: string): BuiltType | null {
         const { maxProperties, minProperties, patternProperties, propertyNames, required } = branch;
         if (minProperties > maxProperties) {
             return null;
         }
         const additional = branch.additionalProperties;
-        const patterns = patternProperties
-            .keys()
-            .map(pattern => new RegExp(pattern, 'u'))
+        const compiledPatterns = patternProperties
+            .entries()
+            .map(([pattern, nodes]) => ({ regExp: new RegExp(pattern, 'u'), nodes }))
             .toArray();
+        const patterns = compiledPatterns.map(({ regExp }) => regExp);
 
         type Entry = readonly [string, unknown];
         const toEntries = (dictionary: Record<string, unknown>): readonly Entry[] =>
@@ -395,13 +409,20 @@ export class Builder {
         let isRecursive = false;
         let optionalCount = 0;
 
+        const isAllowedName = this.#nameCheck(propertyNames, path);
         const keys = new Set([...branch.properties.keys(), ...required]);
         for (const key of keys) {
             known.add(key);
-            const declared = branch.properties.get(key);
-            const isCovered = isCoveredByPattern(patterns, key);
-            const nodes = declared ?? (isCovered ? [] : additional);
-            const built = this.#combined(nodes, `${path}/properties/${key}`);
+            // Every matching pattern applies besides `properties`, and `additionalProperties` only
+            // without either: https://json-schema.org/draft/2020-12/json-schema-core#section-10.3.2
+            const matching = compiledPatterns
+                .filter(({ regExp }) => regExp.test(key))
+                .flatMap(({ nodes }) => nodes);
+            const declared = [...(branch.properties.get(key) ?? []), ...matching];
+            const nodes = branch.properties.has(key) || matching.length > 0 ? declared : additional;
+            const built = isAllowedName(key)
+                ? this.#combined(nodes, `${path}/properties/${key}`)
+                : null;
             if (required.has(key)) {
                 if (!built) {
                     return null;
