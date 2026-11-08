@@ -3,9 +3,12 @@
 <!-- @manual-start intro -->
 # Leyman
 
-An Nx monorepo of TypeScript libraries and tools for Node.js ESM environments. Documentation: [jacobley.github.io/leyman](https://jacobley.github.io/leyman/).
+[![CI](https://github.com/JacobLey/leyman/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JacobLey/leyman/actions/workflows/ci.yml?query=branch%3Amain)
+[![Docs](https://img.shields.io/badge/docs-jacobley.github.io%2Fleyman-blue)](https://jacobley.github.io/leyman/)
 
-> **First time here?** Open this repo in VSCode — it will prompt you to reopen in the [DevContainer](.devcontainer/), which sets up Node, PNPM, and all tooling automatically. Day-to-day work happens in git worktrees; see the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
+TypeScript libraries for Node.js, each published to npm on its own. [genever](https://jacobley.github.io/leyman/packages/genever/) generates TypeScript types from JSON Schema and OpenAPI documents, [juniper](https://jacobley.github.io/leyman/packages/juniper/) builds JSON Schemas with inferred static types, [pg-dolly](https://jacobley.github.io/leyman/packages/pg-dolly/) gives every test a fresh Postgres database, and [haywire](https://jacobley.github.io/leyman/packages/haywire/) is dependency injection checked at compile time.
+
+Every package is strict ESM with full test coverage. Guides and API docs, with every example type-checked: [jacobley.github.io/leyman](https://jacobley.github.io/leyman/).
 <!-- @manual-end intro -->
 
 ## Packages
@@ -77,6 +80,8 @@ Worked examples of putting open-source projects and services together well, in [
 
 <!-- @manual-start rest -->
 ## Getting Started
+
+This is an Nx monorepo. Open it in VSCode, which prompts you to reopen it in the [DevContainer](.devcontainer/): that sets up Node, PNPM, and all tooling. Day-to-day work happens in git worktrees; see the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
 
 ```bash
 # Install dependencies

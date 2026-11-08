@@ -41,7 +41,7 @@ nx run @leyman/docs:build           # build into dist/, failing on any type erro
 
 A package's docs live in `src/packages/<package>/`, and a demo's in `src/demos/<demo>/`. Each has an entry in [`.vitepress/projects.ts`](./.vitepress/projects.ts), from which [`.vitepress/config.ts`](./.vitepress/config.ts) builds the nav, sidebars, redirects and `/llms.txt`, and the theme's components the home page, lists and cross-links. Pages are Markdown, with VitePress's [containers and code groups](https://vitepress.dev/guide/markdown). Document a package's types by adding it to `devDependencies` (`workspace:^`).
 
-The package lists in the root `README.md`, this file, the projects and docs-site skills, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json` by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed: edit them only inside their manual sections, and CI fails when one is out of date.
+The package lists in the root `README.md`, this file, the projects and docs-site skills, the issue templates' package dropdowns, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json` by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed: edit them only inside their manual sections, and CI fails when one is out of date.
 
 VitePress 2 is in alpha, so its version is pinned exactly in the catalog. Bump it deliberately and check the build.
 <!-- @manual-end rest -->
