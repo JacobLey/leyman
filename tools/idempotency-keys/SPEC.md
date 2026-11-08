@@ -50,7 +50,9 @@ headers     = for each named header, in byte order of its name: field(name) || f
   raw target concatenated (`http://host` + `//notes`, not `//notes` resolved as a relative URL) and parsed, then its path, plus `?` and its query when the query isn't empty, without the fragment. So `/notes?` is `/notes`,
   `/a/../notes` is `/notes`, `/café` is `/caf%C3%A9`, `/a b` is `/a%20b` and `/notes\sub` is `/notes/sub`, while a
   percent-encoding already there stays as it is (`/notes/%61` is not `/notes/a`). `fetch`'s `Request.url` is already
-  this; other servers parse the raw target with a WHATWG URL parser.
+  this; other servers parse the raw target with a WHATWG URL parser. An absolute-form target, whose scheme is `http`
+  or `https` in any case (`http://host/notes`, which a server must accept: [RFC 9112, section 3.2.2][absolute-form]), is
+  parsed alone instead, so it hashes as its origin-form does, as `Request.url` holds it.
 - Header names are lower case. Each name is listed once, so `count` is the number of distinct names. A header sent more
   than once has its values joined by `, ` in the order received (as both `fetch`'s `Headers` and Go's `Header.Values`
   give them). A named header the request doesn't have is absent. A value is hashed as the bytes received; `fetch`'s
@@ -60,6 +62,7 @@ headers     = for each named header, in byte order of its name: field(name) || f
 
 Written out, both are lower-case hex: 64 characters.
 
+[absolute-form]: https://www.rfc-editor.org/rfc/rfc9112#section-3.2.2
 [normalize]: https://fetch.spec.whatwg.org/#concept-method-normalize
 [methods]: https://www.rfc-editor.org/rfc/rfc9110#section-9.1
 [url]: https://url.spec.whatwg.org/#concept-basic-url-parser
@@ -121,7 +124,8 @@ A response is a status (an integer from 200 to 599), headers, and a body (bytes)
 empty body. An implementation refuses to complete with any other response, storing nothing (as `fetch` can't build
 it, a replay couldn't send it): the attempt is left to its lease, like one that failed before it had a response. Headers are stored as a JSON array of
 `[name, value]` pairs of strings, names in lower case, in the order the server's response lists them, repeated names
-kept. A replay sends them in that order, plus `Idempotent-Replayed: true`. The headers a server recomputes for every
+kept. Each byte of a value is one character from `U+0000` to `U+00FF`, as `fetch`'s `Headers` gives it (so a byte
+`0xE9` is stored as `é`, encoded in the JSON as UTF-8), and a replay sends each character back as that byte. A replay sends them in that order, plus `Idempotent-Replayed: true`. The headers a server recomputes for every
 response it sends (`content-length`, `transfer-encoding`, `connection`, `keep-alive`) and any `idempotent-replayed`
 are never stored.
 

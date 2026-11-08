@@ -4,10 +4,20 @@ import { suite, test } from 'mocha-chain';
 import { requestTarget } from '#internal/lib/http.js';
 import { vectors } from '../../helpers/vectors.js';
 
+/**
+ * The URL of a request with a raw target, as the vectors' README says: an absolute-form target (an HTTP or HTTPS
+ * scheme, in any case) is the URL, and any other follows the origin.
+ *
+ * @param raw - As on the request line
+ * @returns What `Request.url` holds
+ */
+const requestUrl = (raw: string): string =>
+    /^https?:/iv.test(raw) ? raw : `https://example.com${raw}`;
+
 suite('requestTarget', () => {
     for (const { raw, target } of vectors.targets) {
-        test(`Hashes ${raw} as ${target}`, () => {
-            expect(requestTarget(`https://example.com${raw}`)).to.equal(target);
+        test(`Hashes ${JSON.stringify(raw)} as ${target}`, () => {
+            expect(requestTarget(requestUrl(raw))).to.equal(target);
         });
     }
 

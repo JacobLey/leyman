@@ -19,7 +19,8 @@ Strings are UTF-8, and bodies are strings, except that fingerprint header values
   them, `null` for no key, or `error: true` for a `400`.
 - `identities`: `scope`, `operation` (left out when absent) and `key`, and their `identity`.
 - `targets`: a raw request target (`raw`, as on the request line) and the `target` hashed for it: the origin and `raw`
-  concatenated, parsed as a WHATWG URL, then its path and non-empty query.
+  concatenated (or `raw` alone, when it starts with `http:` or `https:` in any case), parsed as a WHATWG URL, then its
+  path and non-empty query. Each `target` is what Node.js's `URL` gives.
 - `fingerprints`: a request's `method`, `target`, `headers` (`[name, value]` pairs as received) and `body`, the header
   names the server names (`named`, as the server wrote them), and the request's `fingerprint`.
 - `valkeyScripts`: the Lua scripts of the Valkey store, sent byte for byte.

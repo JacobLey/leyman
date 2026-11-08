@@ -266,6 +266,114 @@
     {
       "raw": "//notes",
       "target": "//notes"
+    },
+    {
+      "raw": "/%2e/notes",
+      "target": "/notes"
+    },
+    {
+      "raw": "/%2E%2e/notes",
+      "target": "/notes"
+    },
+    {
+      "raw": "/a/.%2E/notes",
+      "target": "/notes"
+    },
+    {
+      "raw": "/a/%2e./b",
+      "target": "/b"
+    },
+    {
+      "raw": "/notes/%2e%2E",
+      "target": "/"
+    },
+    {
+      "raw": "/a/..",
+      "target": "/"
+    },
+    {
+      "raw": "/a/.",
+      "target": "/a/"
+    },
+    {
+      "raw": "/a/b/..?q",
+      "target": "/a/?q"
+    },
+    {
+      "raw": "/../..//x",
+      "target": "//x"
+    },
+    {
+      "raw": "/a/..%2fb",
+      "target": "/a/..%2fb"
+    },
+    {
+      "raw": "\\\\notes",
+      "target": "//notes"
+    },
+    {
+      "raw": "/🐦",
+      "target": "/%F0%9F%90%A6"
+    },
+    {
+      "raw": "/a^b?c^d",
+      "target": "/a%5Eb?c^d"
+    },
+    {
+      "raw": "/a`{}|b?`{}|",
+      "target": "/a%60%7B%7D|b?`{}|"
+    },
+    {
+      "raw": "/it's?it's",
+      "target": "/it's?it%27s"
+    },
+    {
+      "raw": "/<>?<>",
+      "target": "/%3C%3E?%3C%3E"
+    },
+    {
+      "raw": "/a\tb\nc\rd",
+      "target": "/abcd"
+    },
+    {
+      "raw": "/a\u007fb?\u007f",
+      "target": "/a%7Fb?%7F"
+    },
+    {
+      "raw": "/a\u0001b?c\u0001d",
+      "target": "/a%01b?c%01d"
+    },
+    {
+      "raw": "/notes \u0001 ",
+      "target": "/notes"
+    },
+    {
+      "raw": "/notes?q#f",
+      "target": "/notes?q"
+    },
+    {
+      "raw": "/notes#a?b",
+      "target": "/notes"
+    },
+    {
+      "raw": "/a?b?c",
+      "target": "/a?b?c"
+    },
+    {
+      "raw": "/%zz?%zz",
+      "target": "/%zz?%zz"
+    },
+    {
+      "raw": "*",
+      "target": "/"
+    },
+    {
+      "raw": "http://host/notes?draft=1",
+      "target": "/notes?draft=1"
+    },
+    {
+      "raw": "HTTPS://user:pw@host:8443\\a\\..\\notes?q#f",
+      "target": "/notes?q"
     }
   ],
   "fingerprints": [
