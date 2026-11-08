@@ -55,7 +55,8 @@ suite('Ecc', () => {
     });
 
     const successTest = async function (this: Context, { source, target }: EccContext) {
-        this.timeout(30_000);
+        // 35 rounds of key generation, encryption and decryption: a few hundred milliseconds alone, more on a busy CI runner
+        this.timeout(10_000);
 
         for (const encryption of [
             null,
@@ -156,7 +157,8 @@ suite('Ecc', () => {
     };
 
     const eccDecryptTest = async function (this: Context, { source }: EccSourceContext) {
-        this.timeout(8000);
+        // Decrypts on every curve: a few hundred milliseconds alone, more on a busy CI runner
+        this.timeout(10_000);
 
         for (const { output, curve, encrypted, iv, privateKey, publicKey, encryption } of [
             {
@@ -310,8 +312,8 @@ suite('Ecc', () => {
     };
 
     const gcmKeyTest = async function (this: Context, { source }: EccSourceContext) {
-        // Generates and encrypts with keys on every curve, slow in the browser implementation
-        this.timeout(30_000);
+        // Generates keys and encrypts on every curve: a few hundred milliseconds alone, more on a busy CI runner
+        this.timeout(10_000);
 
         const data = 'Is the kettle on?';
         for (const curve of ['p256', 'p384', 'p521'] as const) {

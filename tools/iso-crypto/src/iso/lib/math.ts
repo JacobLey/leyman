@@ -79,61 +79,6 @@ export const curves = {
 };
 
 /**
- * Linear Diophantine equations.
- *
- * ax + by = c.
- * Special case of c = 1.
- * Solve for base case of x0 and y0.
- *
- * @see {@link https://mathworld.wolfram.com/DiophantineEquation.html}
- *
- * @see {@link https://planetcalc.com/3303/|Validate Solutions}
- *
- * @param a - constant a
- * @param b - constant b
- * @returns base solution
- */
-const euclidian = (a: bigint, b: bigint): Point => {
-    const pairs: { a: bigint; b: bigint }[] = [];
-    let oldA = a;
-    let oldB = b;
-    let mod = a % b;
-    while (mod > 1n) {
-        pairs.push({ a: oldA, b: oldB });
-        mod = oldB % oldA;
-        oldB = oldA;
-        oldA = mod;
-    }
-
-    let x = 1n;
-    let y = 0n;
-    let pair = pairs.pop();
-    while (pair) {
-        y = x;
-        x = (1n - pair.b * y) / pair.a;
-        pair = pairs.pop();
-    }
-
-    return { x, y };
-};
-
-/**
- * Calculate modular inverse.
- *
- * @see {@link https://en.wikipedia.org/wiki/Modular_multiplicative_inverse}
- *
- * @see {@link https://planetcalc.com/3311/|Validate Solutions}
- *
- * @param a - value
- * @param mod - modulus
- * @returns modular inverse of `a`
- */
-const modularInverse = (a: bigint, mod: bigint): bigint => {
-    const inverse = euclidian(a < 0n ? a + mod : a, mod).x;
-    return inverse < 0n ? inverse + mod : inverse;
-};
-
-/**
  * Calculate positive modulus.
  *
  * @example
@@ -150,61 +95,128 @@ const positiveMod = (x: bigint, mod: bigint): bigint => {
 };
 
 /**
- * Add two points on the curve.
+ * Modular inverse by the extended Euclidean algorithm.
  *
- * Note conditions like Infinity are ignored/improperly handled, but that is acceptable for expected use case.
+ * @see {@link https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Modular_integers}
  *
- * @see {@link https://medium.com/asecuritysite-when-bob-met-alice/adding-points-in-elliptic-curve-cryptography-a1f0a1bce638}
- *
- * @param p - first point
- * @param q - second point
- * @param curve - curve specification
- * @returns result point
+ * @param a - value, not a multiple of `mod`
+ * @param mod - prime modulus
+ * @returns `x` in `[0, mod)` with `a * x ≡ 1 (mod mod)`
  */
-const addPoints = (p: Point, q: Point, curve: Curve): Point => {
-    const { rise, run } =
-        p.x === q.x
-            ? {
-                  rise: 3n * p.x * p.x + curve.a,
-                  run: 2n * p.y,
-              }
-            : {
-                  rise: q.y - p.y,
-                  run: q.x - p.x,
-              };
-    const slope = (rise * modularInverse(run, curve.p)) % curve.p;
+const modularInverse = (a: bigint, mod: bigint): bigint => {
+    let [oldR, r] = [positiveMod(a, mod), mod];
+    let [oldS, s] = [1n, 0n];
+    while (r !== 0n) {
+        const quotient = oldR / r;
+        [oldR, r] = [r, oldR - quotient * r];
+        [oldS, s] = [s, oldS - quotient * s];
+    }
+    return positiveMod(oldS, mod);
+};
 
-    const x = positiveMod(slope * slope - q.x - p.x, curve.p);
+/**
+ * A point in Jacobian coordinates: `x = X / Z^2`, `y = Y / Z^3`. Adding and doubling in them needs no modular
+ * inverse, the costly step, so a whole multiplication needs only one, to convert back.
+ *
+ * @see {@link https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html}
+ */
+interface JacobianPoint {
+    readonly x: bigint;
+    readonly y: bigint;
+    readonly z: bigint;
+}
+
+/**
+ * Double a point (`dbl-2007-bl`). Never called on the point at infinity, nor on a point with `y = 0`: neither occurs
+ * while multiplying the base point by a private key, which is below the curve's order.
+ *
+ * @see {@link https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#doubling-dbl-2007-bl}
+ *
+ * @param point - point to double
+ * @param curve - curve specification
+ * @returns `2 * point`
+ */
+const doublePoint = ({ x, y, z }: JacobianPoint, { a, p }: Curve): JacobianPoint => {
+    const xx = (x * x) % p;
+    const yy = (y * y) % p;
+    const yyyy = (yy * yy) % p;
+    const zz = (z * z) % p;
+    const s = (2n * ((x + yy) ** 2n - xx - yyyy)) % p;
+    const m = (3n * xx + ((a * zz) % p) * zz) % p;
+    const t = positiveMod(m * m - 2n * s, p);
+    return {
+        x: t,
+        y: positiveMod(m * (s - t) - 8n * yyyy, p),
+        z: positiveMod((y + z) ** 2n - yy - zz, p),
+    };
+};
+
+/**
+ * Add two distinct points (`add-2007-bl`), neither the point at infinity nor the other's negation: in the Montgomery
+ * ladder they always differ by the base point.
+ *
+ * @see {@link https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian.html#addition-add-2007-bl}
+ *
+ * @param first - point
+ * @param second - another point
+ * @param curve - curve specification
+ * @returns `first + second`
+ */
+const addPoints = (first: JacobianPoint, second: JacobianPoint, { p }: Curve): JacobianPoint => {
+    const z1z1 = (first.z * first.z) % p;
+    const z2z2 = (second.z * second.z) % p;
+    const u1 = (first.x * z2z2) % p;
+    const u2 = (second.x * z1z1) % p;
+    const s1 = (((first.y * second.z) % p) * z2z2) % p;
+    const s2 = (((second.y * first.z) % p) * z1z1) % p;
+    const h = positiveMod(u2 - u1, p);
+    const i = (4n * h * h) % p;
+    const j = (h * i) % p;
+    const r = positiveMod(2n * (s2 - s1), p);
+    const v = (u1 * i) % p;
+    const x = positiveMod(r * r - j - 2n * v, p);
     return {
         x,
-        y: positiveMod(slope * p.x - slope * x - p.y, curve.p),
+        y: positiveMod(r * (v - x) - 2n * s1 * j, p),
+        z: positiveMod(((first.z + second.z) ** 2n - z1z1 - z2z2) * h, p),
     };
 };
 
 /**
  * Derives coordinates of ECC public key given private key (random number) and curve.
- * Implements Double-and-add method.
  *
- * @see {@link https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication}
+ * A Montgomery ladder: every bit of the key takes one addition and one doubling, whatever its value, so the steps
+ * don't follow the key's bits the way double-and-add's do. BigInt arithmetic isn't constant-time, so this narrows a
+ * timing side channel rather than closing it.
  *
- * @param privateKey - random number in curve range
+ * @see {@link https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication#Montgomery_ladder}
+ *
+ * @param privateKey - random number in `[1, n)`, `n` the curve's order
  * @param curve - Curve specification
  * @returns public key point
  */
 export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
+    const base: JacobianPoint = { ...curve.g, z: 1n };
+    // `low` is `m * G` for the bits of the key read so far, `high` is `(m + 1) * G`. Neither is ever the point at
+    // infinity, as `m + 1` never exceeds the key, which is below the curve's order.
+    let low = base;
+    let high = doublePoint(base, curve);
     // eslint-disable-next-line @typescript-eslint/no-misused-spread -- Binary digits, all ASCII
-    const bits = [...privateKey.toString(2)].toReversed();
-
-    let doublePoint: Point | null = null;
-    let sum: Point | null = null;
-
-    for (const bit of bits) {
-        doublePoint = doublePoint ? addPoints(doublePoint, doublePoint, curve) : curve.g;
+    for (const bit of [...privateKey.toString(2)].slice(1)) {
         if (bit === '1') {
-            sum = sum ? addPoints(sum, doublePoint, curve) : doublePoint;
+            low = addPoints(low, high, curve);
+            high = doublePoint(high, curve);
+        } else {
+            high = addPoints(low, high, curve);
+            low = doublePoint(low, curve);
         }
     }
-    return sum!;
+    const zInverse = modularInverse(low.z, curve.p);
+    const zInverse2 = (zInverse * zInverse) % curve.p;
+    return {
+        x: (low.x * zInverse2) % curve.p,
+        y: (((low.y * zInverse2) % curve.p) * zInverse) % curve.p,
+    };
 };
 
 /**
