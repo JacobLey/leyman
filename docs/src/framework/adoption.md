@@ -36,7 +36,7 @@ Install [`@leyman/check-package`](https://www.npmjs.com/package/@leyman/check-pa
 - ESLint 10 with a flat config, and formatting left to Biome or Prettier.
 - On an existing codebase, expect a long first list of errors. The config is opinionated to a fault on purpose: turn off what doesn't fit in your own `eslint.config.js`, with a reason.
 - Type-aware lint is slower than syntax-only lint.
-- `check-package` wants `engines.node` as a floor (`>=22`), a matching `@types/node`, and a `files` allow-list.
+- `check-package` wants `engines.node` as a floor (`>=22.12.0`), a matching `@types/node`, and a `files` allow-list.
 
 ## 2. Shared configs
 

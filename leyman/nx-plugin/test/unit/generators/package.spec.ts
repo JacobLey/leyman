@@ -132,7 +132,7 @@ suite('packageGenerator', () => {
             name: '@scope/pub',
             description: 'Published.',
             published: true,
-            floor: 24,
+            floor: '24.15.0',
             test: 'vitest',
             repository: 'git+https://github.com/owner/repo.git',
             author: 'Someone',
@@ -149,7 +149,7 @@ suite('packageGenerator', () => {
             homepage: 'https://github.com/owner/repo/tree/main/packages/pub#readme',
         });
         expect(packageJson).to.not.have.property('private');
-        expect(packageJson.engines).to.deep.equal({ node: '>=24' });
+        expect(packageJson.engines).to.deep.equal({ node: '>=24.15.0' });
         expect(packageJson.repository).to.deep.equal({
             type: 'git',
             url: 'git+https://github.com/owner/repo.git',
@@ -195,6 +195,7 @@ suite('packageGenerator', () => {
             });
 
             const packageJson = readWritten(tree, 'packages/pub/package.json');
+            expect(packageJson.engines).to.deep.equal({ node: '>=22.12.0' });
             expect(packageJson.devDependencies['@types/node']).to.equal('^22.0.0');
             expect(packageJson.devDependencies).to.not.have.property('c8');
             expect(packageJson).to.not.have.property('repository');

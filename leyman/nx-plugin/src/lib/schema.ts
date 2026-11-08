@@ -148,9 +148,11 @@ export const executorJsonSchema = executorSchema
     .toJSON();
 
 /**
- * Major of the oldest Node.js a package the `package` generator adds supports, unless told otherwise.
+ * The oldest Node.js a package the `package` generator adds supports, unless told otherwise. 22.12.0 is the oldest
+ * that can `require()` its ES modules, which is also the oldest mocha (`^20.19.0 || >=22.12.0`) and vitest start on,
+ * so the oldest its tests can run on.
  */
-export const defaultFloor = 22;
+export const defaultFloor = '22.12.0';
 
 const packageGeneratorSchema = objectSchema({
     title: 'package',
@@ -173,9 +175,10 @@ const packageGeneratorSchema = objectSchema({
             description: 'Published to npm, rather than private',
             default: false,
         }),
-        floor: numberSchema({
-            type: 'integer',
-            description: 'Major of the oldest Node.js a published package supports',
+        floor: stringSchema({
+            description:
+                'The oldest Node.js a published package supports, as `<major>.<minor>.<patch>`. 22.12.0 by default: the oldest that can `require()` ES modules, and that its test runner starts on',
+            pattern: String.raw`^\d+\.\d+\.\d+$`,
             default: defaultFloor,
         }),
         test: enumSchema({

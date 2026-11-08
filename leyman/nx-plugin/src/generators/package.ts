@@ -41,11 +41,12 @@ export interface PackageGeneratorOptions {
      */
     readonly published?: boolean;
     /**
-     * Major of the oldest Node.js a published package supports.
+     * The oldest Node.js a published package supports, as `<major>.<minor>.<patch>`. Its major picks the
+     * `node-<major>` catalog for `@types/node` and the support floor's tsconfig.
      *
-     * @default 22
+     * @default '22.12.0'
      */
-    readonly floor?: number;
+    readonly floor?: string;
     /**
      * Test runner, or `none` for no tests.
      *
@@ -228,11 +229,13 @@ const packageGenerator = async (
             ...(options.devDependencies ?? []),
         ]),
     ].toSorted((a, b) => a.localeCompare(b));
-    // A published package's types are of its support floor
-    const floorCatalog = `node-${floor}`;
+    // A published package's types are of its support floor's major
+    // The schema checks it is `<major>.<minor>.<patch>`
+    const floorMajor = floor.slice(0, floor.indexOf('.'));
+    const floorCatalog = `node-${floorMajor}`;
     const floorTypes =
         versions.catalogs[floorCatalog]?.['@types/node'] === undefined
-            ? `^${floor}.0.0`
+            ? `^${floorMajor}.0.0`
             : `catalog:${floorCatalog}`;
     const packageJson = {
         name,
@@ -264,7 +267,7 @@ const packageGenerator = async (
     writeJson(tree, joinPathFragments(directory, 'tsconfig.json'), {
         extends:
             published && floorTsconfig !== false
-                ? floorTsconfig.replaceAll('{major}', () => String(floor))
+                ? floorTsconfig.replaceAll('{major}', () => floorMajor)
                 : '@leyman/configs/tsconfig.build.json',
         compilerOptions: {
             outDir: 'dist',

@@ -14,7 +14,7 @@ nx sync                         # adds the tsconfig references
 nx run @leyman/main:lifecycle   # adds the orchestration targets to project.json
 ```
 
-The [`@leyman/nx-plugin` README](../../../leyman/nx-plugin/README.md#package) lists its options. `nx.json` sets this repository's defaults (`config: leyman/main/nx-plugin.json`, the repository URL, author, license, and `@typescript/native` in `devDependencies`), so the usual choices are only `--published`, `--floor` (Node.js major, default 22), `--test` (`mocha`, `vitest` or `none`) and `--name` (default: the directory's last part).
+The [`@leyman/nx-plugin` README](../../../leyman/nx-plugin/README.md#package) lists its options. `nx.json` sets this repository's defaults (`config: leyman/main/nx-plugin.json`, the repository URL, author, license, and `@typescript/native` in `devDependencies`), so the usual choices are only `--published`, `--floor` (the oldest Node.js version, default 22.12.0, the oldest mocha and vitest start on), `--test` (`mocha`, `vitest` or `none`) and `--name` (default: the directory's last part).
 
 It writes `package.json` (versions from the catalog or `workspace:^`), `tsconfig.json` (the support floor's `@leyman/configs/tsconfig.node-<major>.json` when published, else `tsconfig.build.json`; see [Support floors](../typescript/SKILL.md#support-floors)), `src/index.ts`, `test/tsconfig.json` and a first spec in `test/unit/`, `eslint.config.js`, a README stub, `LICENSE` when published, and a `project.json` declaring as `{}` the TypeScript targets the plugin infers from those files. Then adapt it:
 

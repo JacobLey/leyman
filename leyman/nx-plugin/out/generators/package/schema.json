@@ -29,9 +29,10 @@
       "description": "Published to npm, rather than private"
     },
     "floor": {
-      "type": "integer",
-      "default": 22,
-      "description": "Major of the oldest Node.js a published package supports"
+      "type": "string",
+      "default": "22.12.0",
+      "description": "The oldest Node.js a published package supports, as `<major>.<minor>.<patch>`. 22.12.0 by default: the oldest that can `require()` ES modules, and that its test runner starts on",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
     },
     "test": {
       "default": "mocha",
