@@ -86,18 +86,28 @@ A Postgres store never deletes expired rows on its own. Call `deleteExpired()` f
 
 ### Hono
 
-`handle()` takes the request Hono wraps, and returns the response to send:
+As middleware, after authentication and a body-size limit (`handle()` reads the whole body to fingerprint it), before the route's handler:
 
 ```ts
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 
 const app = new Hono<{ Variables: { userId: string } }>();
 
-app.post('/notes', requireUser, async (c, next) =>
-    keys.handle(c.req.raw, { scope: c.get('userId'), operation: 'createNote' }, async () => {
-        await next();
-        return c.res;
-    })
+app.post(
+    '/notes',
+    requireUser,
+    bodyLimit({ maxSize: 64 * 1024 }),
+    async (c, next) => {
+        // Assigned, not returned: once the handler has set `c.res`, Hono ignores a middleware's return value
+        // (https://github.com/honojs/hono/blob/v4.13.14/src/compose.ts#L67) and would send the handler's response,
+        // whose body `handle()` already read to store it
+        c.res = await keys.handle(c.req.raw, { scope: c.get('userId'), operation: 'createNote' }, async () => {
+            await next();
+            return c.res;
+        });
+    },
+    async c => c.json(await createNote(await c.req.json()), 201)
 );
 ```
 
@@ -109,13 +119,16 @@ app.post('/notes', requireUser, async (c, next) =>
 import { computeFingerprint, parseIdempotencyKey } from 'idempotency-keys';
 
 const key = parseIdempotencyKey(headerValues); // throws IdempotencyKeyHeaderError: a 400
+if (key === null) {
+    return createNote(); // no key: runs as it would without the library
+}
 const fingerprint = await computeFingerprint({ method, target: pathAndQuery, headers, named: [], body });
 const result = await keys.begin({ scope, operation: 'createNote', key, fingerprint });
 
 switch (result.outcome) {
     case 'run': {
         const response = await createNote();
-        await result.attempt.respond(response); // stored, or released by the policy
+        await result.attempt.respond(response); // stored, released by the policy, lost, or refused
         return response;
     }
     case 'replay':
@@ -174,7 +187,9 @@ Reads the request's `Idempotency-Key`, runs `run(request)` at most once per key,
 
 **Returns** `Promise<Response>`: `run`'s response, a replay (with `Idempotent-Replayed: true`), or a problem. **Rejects** when the store fails before `run`, so a request never runs unprotected, or with `run`'s error (the key stays held until its lease runs out). Once `run` has a response, `handle()` returns it even if the store then fails to store or release it, and reports that failure to `onError`.
 
-`handle()` reads each response whole to store it, so a streamed response is buffered before it is sent.
+The request's body must be unread: `handle()` **rejects** with `IdempotencyKeysBodyUsedError` otherwise, since it couldn't fingerprint it. It reads the whole body, so put a body-size limit before it. It reads each response whole to store it, so a streamed response is buffered before it is sent.
+
+The fingerprint's target is the URL's path and query (`/notes?draft=1`, or `/notes` when the query is empty), without the origin or fragment. A named header's value must be Latin-1 (every character at most `U+00FF`), as HTTP allows: `handle()` and `computeFingerprint()` throw `IdempotencyKeysHeaderValueError` otherwise.
 
 #### `.begin(params)`
 
@@ -189,8 +204,10 @@ Claims a key. A completed request's response is replayed, and a running one is w
 
 **Returns** `Promise<BeginResult>`, one of:
 
-- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'`, `'released'` (by the policy), or `'lost'` (its lease ran out and another request took over, so nothing changed), or with `attempt.release()`, which resolves to whether it released.
+- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'`, `'released'` (by the policy), `'lost'` (its lease ran out and another request took over, so nothing changed), or `'refused'` (the response can't be sent: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`; the store isn't touched and the attempt still holds the key, so respond again or release it), or with `attempt.release()`, which resolves to whether it released.
 - `{ outcome: 'replay', response }`: the stored `{ status, headers, body }`, `headers` as `[name, value]` pairs with repeated names kept, and `body` as bytes.
+
+A stored response keeps its headers except `Connection`, `Content-Length`, `Keep-Alive`, `Transfer-Encoding` and `Idempotent-Replayed`, which describe one transfer rather than the response; a replay adds `Idempotent-Replayed: true` once.
 - `{ outcome: 'conflict' }`: still running after `waitMs`.
 - `{ outcome: 'mismatch' }`: the key was used on a different request.
 
@@ -203,7 +220,9 @@ Claims a key. A completed request's response is replayed, and a running one is w
 | `client` | `PostgresQueryable` | —                    | Required. Anything with `query(text, values)` returning `{ rows, rowCount }`, as a `pg` `Pool` does. |
 | `table`  | `string`            | `'idempotency_keys'` | The table, quoted as given.                                                                          |
 
-A claim is one `INSERT ... ON CONFLICT` statement, so it is exclusive and durable. Every time is Postgres's `now()`, so servers with drifting clocks agree on every lease.
+The table name is quoted as given, so it is case-exact, can't name a schema (it is found through `search_path`), and is at most 63 bytes (Postgres's limit, past which it would silently truncate); the channel of `PostgresNotifier` follows the same rules.
+
+A claim is one `INSERT ... ON CONFLICT` statement, so it is exclusive and durable. Every time is Postgres's `clock_timestamp()` (not `now()`, which is fixed for a transaction), so servers with drifting clocks agree on every lease, and a response that comes after its key expired isn't stored.
 
 #### `.deleteExpired()`
 
@@ -222,10 +241,10 @@ The `CREATE TABLE` statement of the spec, for a migration. **Returns** `string`.
 | `connection` | `ValkeyConnection` | —                    | Required. Anything with `eval(script, numKeys, ...args)`.           |
 | `prefix`     | `string`           | `'idempotency_keys'` | Each key is a hash at `<prefix>:<identity>`, expiring with the key. |
 
-An ioredis `Redis` or `Cluster` fits as is, but its `eval` decodes replies as UTF-8, which changes a binary body. To replay bodies byte for byte, send `EVAL` through `callBuffer`:
+`eval` must reply with bytes, so a binary body comes back as it was stored. ioredis's own `eval` decodes replies as text, which the store rejects with `IdempotencyKeysReplyError` on the first replay; send `EVAL` through `callBuffer`:
 
 ```ts
-import { Redis } from 'ioredis';
+import { Redis } from 'ioredis'; // or Cluster, or iovalkey
 import { ValkeyStore } from 'idempotency-keys';
 
 const valkey = new Redis('redis://valkey:6379');
@@ -240,9 +259,9 @@ Every time is the server's `TIME`.
 
 #### `PostgresNotifier.listen({ publisher, listener, channel? })`
 
-Announces with `SELECT pg_notify(channel, identity)` on `publisher` (such as the store's pool), and hears with `LISTEN` on `listener`, a connection of its own (a `pg` `Client`, not a pool). One listening connection serves every waiting request of the process. `channel` defaults to `idempotency_keys`. `pg` doesn't reconnect a client that fails: waiting requests then only poll.
+Announces with `SELECT pg_notify(channel, identity)` on `publisher` (such as the store's pool), and hears with `LISTEN` on `listener`, a connection of its own (a `pg` `Client`, not a pool). One listening connection serves every waiting request of the process. `channel` defaults to `idempotency_keys`. `pg` doesn't reconnect a client that fails: the notifier reports its `error` event to the optional `onError(error)`, and waiting requests then only poll. To listen again, connect a new client and call `listen` again (then `close()` the old notifier).
 
-**Returns** `Promise<PostgresNotifier>`, once listening. `.close()` stops listening; it never closes either connection.
+**Returns** `Promise<PostgresNotifier>`, once listening. `.close()` stops listening (after the connection failed, it only stops dispatching); it never closes either connection.
 
 ### `ValkeyNotifier`
 
@@ -264,13 +283,17 @@ Either notifier works with either store. A notifier only makes waiting faster: a
 
 Every error extends `IdempotencyKeysError`.
 
-| Error                        | When                                                                                              |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| `IdempotencyKeysOptionError` | An option out of range, or an empty scope, operation, table or channel. Has `option` and `value`. |
-| `IdempotencyKeyHeaderError`  | `parseIdempotencyKey()` can't read the header. Has `values`.                                      |
+| Error                             | When                                                                                                                                                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IdempotencyKeysOptionError`      | An option out of range; an empty or not well-formed (lone surrogate) scope, operation or key; or an empty or over 63-byte table or channel. Has `option` and `value`. |
+| `IdempotencyKeyHeaderError`       | `parseIdempotencyKey()` can't read the header. Has `values`.                                                                                                          |
+| `IdempotencyKeysHeaderValueError` | A named header's value isn't Latin-1. Has `header` and `value`.                                                                                                       |
+| `IdempotencyKeysBodyUsedError`    | `handle()` got a request whose body was already read.                                                                                                                 |
+| `IdempotencyKeysReplyError`       | A `ValkeyStore` connection replied with text where bytes were expected (ioredis's own `eval`).                                                                        |
 
 ## Limits
 
 - **Responses are read whole** to be stored, so `handle()` buffers a streamed response before sending it.
 - **Headers are stored in the order the response lists them.** For `handle()` that is the order of `fetch`'s `Headers`: sorted by name, repeated values joined, and repeated `Set-Cookie` kept.
+- **A proxied response must match its body.** A response from an upstream `fetch` carries the upstream's `Content-Encoding` with a body `fetch` already decoded; strip that header in `run`, or a replay sends a decoded body labelled as encoded. `handle()` doesn't strip it for you, since a handler may really send an encoded body.
 - **No lease renewal.** Set `leaseMs` above your slowest handler: a request that runs longer can be taken over, and run twice.

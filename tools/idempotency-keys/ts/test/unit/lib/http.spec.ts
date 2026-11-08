@@ -2,22 +2,17 @@ import { expect } from '@leyman/expect';
 import { problemResponse } from 'idempotency-keys';
 import { suite, test } from 'mocha-chain';
 import { requestTarget } from '#internal/lib/http.js';
+import { vectors } from '../../helpers/vectors.js';
 
 suite('requestTarget', () => {
-    test('Is the path and query', () => {
-        expect(requestTarget('https://example.com:8443/notes?draft=1')).to.equal('/notes?draft=1');
-    });
+    for (const { raw, target } of vectors.targets) {
+        test(`Hashes ${raw} as ${target}`, () => {
+            expect(requestTarget(`https://example.com${raw}`)).to.equal(target);
+        });
+    }
 
-    test('Keeps an empty query', () => {
-        expect(requestTarget('https://example.com/notes?')).to.equal('/notes?');
-    });
-
-    test('Leaves out the fragment', () => {
-        expect(requestTarget('https://example.com/notes?a=1#top')).to.equal('/notes?a=1');
-    });
-
-    test('Keeps percent-encoding as it is', () => {
-        expect(requestTarget('https://example.com/notes/%61')).to.equal('/notes/%61');
+    test('Leaves out credentials and the port', () => {
+        expect(requestTarget('https://user:pw@example.com:8443/notes?a=1')).to.equal('/notes?a=1');
     });
 });
 

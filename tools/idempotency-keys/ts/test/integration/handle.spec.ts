@@ -1,9 +1,9 @@
 import type { HandleOptions, IdempotencyKeysOptions, ProblemKind } from 'idempotency-keys';
 import pDefer from 'p-defer';
 import { expect } from '@leyman/expect';
-import { IdempotencyKeys, ValkeyStore } from 'idempotency-keys';
+import { IdempotencyKeys, IdempotencyKeysBodyUsedError, ValkeyStore } from 'idempotency-keys';
 import { beforeEach, suite } from 'mocha-chain';
-import { closeValkey, valkeyContext } from '../helpers/valkey.js';
+import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
 import { vectors } from '../helpers/vectors.js';
 
 const options: HandleOptions = { scope: 'user_1', operation: 'createNote' };
@@ -64,12 +64,32 @@ suite('handle', () => {
     const withContext = beforeEach(valkeyContext);
     withContext.afterEach(closeValkey);
     const withKeys = withContext.beforeEach(({ valkey, prefix }) => {
-        const store = new ValkeyStore({ connection: valkey, prefix });
+        const store = new ValkeyStore({ connection: bufferConnection(valkey), prefix });
         return {
             store,
             create: (more: Partial<IdempotencyKeysOptions> = {}) =>
                 new IdempotencyKeys({ store, ...more }),
         };
+    });
+
+    withKeys.test('Rejects a request whose body was already read', async ({ create }) => {
+        const request = createNote();
+        await request.text();
+        await expect(create().handle(request, options, handler().run)).to.be.rejectedWith(
+            IdempotencyKeysBodyUsedError
+        );
+    });
+
+    withKeys.test('Replays the marker header once', async ({ create }) => {
+        const keys = create();
+        const { run } = handler(
+            () => new Response('ok', { headers: { 'idempotent-replayed': 'true' } })
+        );
+        await keys.handle(createNote(), options, run);
+        const replay = await keys.handle(createNote(), options, run);
+        expect(
+            [...replay.headers].filter(([name]) => name === 'idempotent-replayed')
+        ).to.deep.equal([['idempotent-replayed', 'true']]);
     });
 
     withKeys.test('Runs a request without a key as it is', async ({ create }) => {

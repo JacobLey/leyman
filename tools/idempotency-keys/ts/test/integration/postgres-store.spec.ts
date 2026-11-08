@@ -43,6 +43,14 @@ suite('PostgresStore', () => {
         expect(() => createTableSql('')).to.throw(IdempotencyKeysOptionError);
     });
 
+    test('Rejects a table name over 63 bytes, which Postgres would cut short', () => {
+        expect(() => createTableSql('é'.repeat(32))).to.throw(IdempotencyKeysOptionError);
+    });
+
+    test('Accepts a table name of 63 bytes', () => {
+        expect(createTableSql('k'.repeat(63))).to.include(`"${'k'.repeat(63)}"`);
+    });
+
     const withStore = withDatabase().beforeEach(({ pool }) => ({
         store: new PostgresStore({ client: pool }),
         identity: 'a'.repeat(64),
@@ -158,6 +166,12 @@ suite('PostgresStore', () => {
             'SELECT count(*)::int AS count FROM "Idempotency ""Keys"""'
         );
         expect(rows).to.deep.equal([{ count: 1 }]);
+    });
+
+    withStore.test('Stores nothing once the key expired', async ({ store, identity }) => {
+        await claim(store, identity, '1'.repeat(32), { leaseMs: 1, ttlMs: 2 });
+        await setTimeout(10);
+        expect(await store.complete(identity, '1'.repeat(32), response)).to.equal(false);
     });
 
     withStore.test('Completes and releases only with the token', async ({ store, identity }) => {

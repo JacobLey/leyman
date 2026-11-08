@@ -26,9 +26,9 @@
     "fetch",
     "postgres",
     "valkey",
-    "redis",
-    "stripe"
+    "redis"
   ],
+  "sideEffects": false,
   "types": "./dist/idempotency-keys.js",
   "files": [
     "dist",

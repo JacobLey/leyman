@@ -30,7 +30,7 @@ export type Step =
     | {
           readonly respond: string;
           readonly response: VectorResponse;
-          readonly expect: 'lost' | 'released' | 'stored';
+          readonly expect: 'lost' | 'refused' | 'released' | 'stored';
       }
     | { readonly await: string; readonly expect: Expectation; readonly response?: VectorResponse }
     | { readonly release: string; readonly expect: boolean }
@@ -57,9 +57,10 @@ export interface Vectors {
     readonly keys: readonly {
         readonly description: string;
         readonly header: readonly string[];
-        readonly key: string | null;
+        readonly key?: string | null;
         readonly error?: true;
     }[];
+    readonly targets: readonly { readonly raw: string; readonly target: string }[];
     readonly identities: readonly {
         readonly description: string;
         readonly scope: string;

@@ -218,6 +218,56 @@
       "identity": "697caa1fb1fe734799525a733efb63341ee96843ed2310f69542fc5919f863bf"
     }
   ],
+  "targets": [
+    {
+      "raw": "/notes",
+      "target": "/notes"
+    },
+    {
+      "raw": "/notes?draft=1",
+      "target": "/notes?draft=1"
+    },
+    {
+      "raw": "/notes?",
+      "target": "/notes"
+    },
+    {
+      "raw": "/notes#top",
+      "target": "/notes"
+    },
+    {
+      "raw": "/a/../notes",
+      "target": "/notes"
+    },
+    {
+      "raw": "/a/./notes",
+      "target": "/a/notes"
+    },
+    {
+      "raw": "/notes\\sub",
+      "target": "/notes/sub"
+    },
+    {
+      "raw": "/café",
+      "target": "/caf%C3%A9"
+    },
+    {
+      "raw": "/a b?q=a b",
+      "target": "/a%20b?q=a%20b"
+    },
+    {
+      "raw": "/notes/%61",
+      "target": "/notes/%61"
+    },
+    {
+      "raw": "/\"q\"?\"q\"",
+      "target": "/%22q%22?%22q%22"
+    },
+    {
+      "raw": "//notes",
+      "target": "//notes"
+    }
+  ],
   "fingerprints": [
     {
       "description": "no named headers",
@@ -467,6 +517,26 @@
       ],
       "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
       "fingerprint": "48c39dae24dc84a15791ffc7cee3ee8d91fd2e1527b6e6cd4a771eadddabd2fa"
+    },
+    {
+      "description": "a header value byte above 0x7F is one byte (fetch gives it as U+00E9), not UTF-8",
+      "method": "POST",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "X-Name",
+          "café"
+        ]
+      ],
+      "named": [
+        "x-name"
+      ],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "cfc03d4d4cf56dadbd7d11597266b151e8ec8800e2744cd9ebb3aa55d80b1fb0"
     },
     {
       "description": "a UTF-8 body",
@@ -1385,6 +1455,287 @@
         {
           "begin": "retry",
           "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a completed record is not released, and a second respond is lost",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 500,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ]
+            ],
+            "body": "{\"code\":\"internal_error\"}"
+          },
+          "expect": "lost"
+        },
+        {
+          "release": "first",
+          "expect": false
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "an empty response replays as empty",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 204,
+            "headers": [],
+            "body": ""
+          },
+          "expect": "stored"
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 204,
+            "headers": [],
+            "body": ""
+          }
+        }
+      ]
+    },
+    {
+      "description": "a response a replay could not send is refused, and the attempt still holds the key",
+      "options": {
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 204,
+            "headers": [],
+            "body": "x"
+          },
+          "expect": "refused"
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 101,
+            "headers": [],
+            "body": ""
+          },
+          "expect": "refused"
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        },
+        {
+          "release": "first",
+          "expect": true
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "run"
+        }
+      ]
+    },
+    {
+      "description": "every waiting duplicate replays the stored response",
+      "options": {
+        "waitMs": 5000
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "first",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "start": "w1",
+          "request": "a"
+        },
+        {
+          "start": "w2",
+          "request": "a"
+        },
+        {
+          "sleep": 100
+        },
+        {
+          "respond": "first",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "await": "w1",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        },
+        {
+          "await": "w2",
           "expect": "replay",
           "response": {
             "status": 201,

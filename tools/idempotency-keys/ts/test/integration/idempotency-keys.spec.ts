@@ -4,7 +4,7 @@ import { expect } from '@leyman/expect';
 import { computeFingerprint, IdempotencyKeys, ValkeyStore } from 'idempotency-keys';
 import { beforeEach, suite } from 'mocha-chain';
 import { attemptOf } from '../helpers/scenario.js';
-import { closeValkey, valkeyContext } from '../helpers/valkey.js';
+import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
 
 const encoder = new TextEncoder();
 
@@ -26,7 +26,7 @@ const lossyNotifier: IdempotencyNotifier = {
 
 suite('IdempotencyKeys', () => {
     const withStore = beforeEach(valkeyContext).beforeEach(async ({ valkey, prefix }) => ({
-        store: new ValkeyStore({ connection: valkey, prefix }),
+        store: new ValkeyStore({ connection: bufferConnection(valkey), prefix }),
         fingerprint: await computeFingerprint({
             method: 'POST',
             target: '/notes',
@@ -58,6 +58,43 @@ suite('IdempotencyKeys', () => {
             .to.have.nested.property('response.headers')
             .that.deep.equals([['content-type', 'text/plain']]);
     });
+
+    withStore.test(
+        'Stores no header a server recomputes for each response',
+        async ({ store, fingerprint }) => {
+            const keys = new IdempotencyKeys({ store });
+            const first = attemptOf(await keys.begin({ ...request, fingerprint }));
+            await first.respond({
+                ...response,
+                headers: [
+                    ['Content-Length', '2'],
+                    ['Transfer-Encoding', 'chunked'],
+                    ['Connection', 'keep-alive'],
+                    ['Keep-Alive', 'timeout=5'],
+                    ['Idempotent-Replayed', 'true'],
+                    ['ETag', '"1"'],
+                ],
+            });
+            expect(await keys.begin({ ...request, fingerprint }))
+                .to.have.nested.property('response.headers')
+                .that.deep.equals([['etag', '"1"']]);
+        }
+    );
+
+    for (const status of [1.5, 600]) {
+        withStore.test(
+            `Refuses a status of ${status}, keeping the key`,
+            async ({ store, fingerprint }) => {
+                const keys = new IdempotencyKeys({ store, waitMs: 0 });
+                const first = attemptOf(await keys.begin({ ...request, fingerprint }));
+                expect(await first.respond({ ...response, status })).to.equal('refused');
+                expect(await keys.begin({ ...request, fingerprint })).to.have.property(
+                    'outcome',
+                    'conflict'
+                );
+            }
+        );
+    }
 
     withStore.test('Releases nothing once stored', async ({ store, fingerprint }) => {
         const keys = new IdempotencyKeys({ store });

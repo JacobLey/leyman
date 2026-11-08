@@ -1,7 +1,7 @@
 import type { ValkeyConnection } from 'idempotency-keys';
 import { randomBytes } from 'node:crypto';
 import { expect } from '@leyman/expect';
-import { ValkeyStore } from 'idempotency-keys';
+import { IdempotencyKeysReplyError, ValkeyStore } from 'idempotency-keys';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { claimScript, completeScript, releaseScript } from '#internal/lib/scripts.js';
 import { closeValkey, valkeyContext } from '../helpers/valkey.js';
@@ -92,8 +92,9 @@ suite('ValkeyStore', () => {
     );
 
     withContext.test(
-        'Reads replies as text, through an eval that decodes them',
+        'Rejects a body replied as text, rather than change it',
         async ({ valkey, prefix, identity }) => {
+            // Ioredis's own eval decodes every reply as UTF-8
             const store = new ValkeyStore({ connection: valkey, prefix });
             await store.claim({
                 identity,
@@ -102,26 +103,10 @@ suite('ValkeyStore', () => {
                 leaseMs: 60_000,
                 ttlMs: 86_400_000,
             });
-            await store.complete(identity, '1'.repeat(32), {
-                ...response,
-                body: encoder.encode('ñandú'),
-            });
-            const result = await store.claim({
-                identity,
-                fingerprint,
-                token: '2'.repeat(32),
-                leaseMs: 1,
-                ttlMs: 2,
-            });
-            expect(result).to.deep.equal({
-                fingerprint,
-                state: 'completed',
-                response: {
-                    status: 200,
-                    headers: response.headers,
-                    body: encoder.encode('ñandú'),
-                },
-            });
+            await store.complete(identity, '1'.repeat(32), response);
+            await expect(
+                store.claim({ identity, fingerprint, token: '2'.repeat(32), leaseMs: 1, ttlMs: 2 })
+            ).to.be.rejectedWith(IdempotencyKeysReplyError);
         }
     );
 

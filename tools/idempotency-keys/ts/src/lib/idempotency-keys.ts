@@ -10,7 +10,7 @@ import type { ProblemKind } from './http.js';
 import type { IdempotencyNotifier } from './listeners.js';
 import { Attempt } from './attempt.js';
 import { newToken } from './encoding.js';
-import { IdempotencyKeysOptionError } from './errors.js';
+import { IdempotencyKeysBodyUsedError, IdempotencyKeysOptionError } from './errors.js';
 import { computeFingerprint, computeIdentity } from './hashes.js';
 import { problemResponse, replayResponse, requestTarget, responseBody } from './http.js';
 import { readKeyValue } from './key.js';
@@ -152,15 +152,19 @@ const duration = (option: string, value: number, minimum: 0 | 1): number => {
 };
 
 /**
- * Checks that a scope or operation, when given, isn't empty.
+ * Checks that a scope, operation or key, when given, isn't empty and is well-formed Unicode.
  *
  * @param option - Name of the value, for the error
- * @param value - Scope or operation
- * @throws {IdempotencyKeysOptionError} When empty
+ * @param value - Scope, operation or key
+ * @throws {IdempotencyKeysOptionError} When empty, or with a lone surrogate
  */
-const notEmpty = (option: string, value: string | undefined): void => {
+const checkPart = (option: string, value: string | undefined): void => {
     if (value === '') {
         throw new IdempotencyKeysOptionError(option, value, 'must not be empty');
+    }
+    // A lone surrogate has no UTF-8 encoding, so it can't be hashed as the spec says
+    if (value?.isWellFormed() === false) {
+        throw new IdempotencyKeysOptionError(option, value, 'must be well-formed Unicode');
     }
 };
 
@@ -214,11 +218,12 @@ export class IdempotencyKeys {
      *
      * @param params - Scope, operation, key and fingerprint
      * @returns Whether to run, replay, or answer `409` or `422`
-     * @throws {IdempotencyKeysOptionError} When `scope` or `operation` is empty
+     * @throws {IdempotencyKeysOptionError} When `scope`, `operation` or `key` is empty or not well-formed Unicode
      */
     public async begin(params: BeginParams): Promise<BeginResult> {
-        notEmpty('scope', params.scope);
-        notEmpty('operation', params.operation);
+        checkPart('scope', params.scope);
+        checkPart('operation', params.operation);
+        checkPart('key', params.key);
         const identity = await computeIdentity(params);
         const { fingerprint } = params;
         const deadline = performance.now() + this.#waitMs;
@@ -282,12 +287,16 @@ export class IdempotencyKeys {
      * @param options - Scope and operation of the request
      * @param run - Runs the request, given the request as it came
      * @returns `run`'s response, a replay, or a problem response
+     * @rejects {IdempotencyKeysBodyUsedError} When the request's body was already read
      */
     public async handle(
         request: Request,
         { required = false, ...identity }: HandleOptions,
         run: (request: Request) => Promise<Response>
     ): Promise<Response> {
+        if (request.bodyUsed) {
+            throw new IdempotencyKeysBodyUsedError();
+        }
         const header = request.headers.get('idempotency-key');
         if (header === null) {
             return required ? this.#problem('missing-key', request) : run(request);

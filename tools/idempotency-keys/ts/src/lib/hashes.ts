@@ -1,4 +1,5 @@
 import { FieldEncoder } from './encoding.js';
+import { IdempotencyKeysHeaderValueError } from './errors.js';
 
 /**
  * What identifies a key: the caller, the operation, and the key it sent.
@@ -33,7 +34,8 @@ export interface FingerprintInput {
      */
     readonly target: string;
     /**
-     * The request's headers as `[name, value]` pairs, in the order received. A `Headers` object fits as is.
+     * The request's headers as `[name, value]` pairs, in the order received. A `Headers` object fits as is. Values hold
+     * one character per byte received (`U+0000` to `U+00FF`), as `Headers` gives them.
      */
     readonly headers: Iterable<readonly [string, string]>;
     /**
@@ -71,6 +73,26 @@ const normalizeMethod = (method: string): string => {
     return normalizedMethods.has(upper) ? upper : method;
 };
 
+const maxLatin1 = 0xff;
+
+/**
+ * Encodes a header value back to the bytes received: `fetch`'s `Headers` gives each byte as one character from
+ * `U+0000` to `U+00FF`, so each character is one byte, never UTF-8.
+ *
+ * @param name - Header name, for the error
+ * @param value - Header value
+ * @returns Its bytes
+ * @throws {IdempotencyKeysHeaderValueError} When a character is above `U+00FF`, which no request can hold
+ */
+const latin1 = (name: string, value: string): Uint8Array =>
+    Uint8Array.from(value, char => {
+        const code = char.codePointAt(0)!;
+        if (code > maxLatin1) {
+            throw new IdempotencyKeysHeaderValueError(name, value);
+        }
+        return code;
+    });
+
 /**
  * Hashes a key's identity, as the spec's `identity`.
  *
@@ -95,6 +117,7 @@ export const computeIdentity = async ({
  *
  * @param input - Method, target, headers and body
  * @returns SHA-256, as 64 lower-case hex characters
+ * @throws {IdempotencyKeysHeaderValueError} When a named header's value holds a character above `U+00FF`
  */
 export const computeFingerprint = async ({
     method,
@@ -117,7 +140,7 @@ export const computeFingerprint = async ({
     encoder.field(normalizeMethod(method)).field(target).uint32(names.length);
     for (const name of names) {
         const list = values.get(name)!;
-        encoder.field(name).field(list.length === 0 ? null : list.join(', '));
+        encoder.field(name).field(list.length === 0 ? null : latin1(name, list.join(', ')));
     }
     return encoder.field(body).sha256();
 };

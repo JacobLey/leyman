@@ -1,3 +1,4 @@
+import type { ValkeyConnection } from 'idempotency-keys';
 import { randomUUID } from 'node:crypto';
 import { Redis } from 'ioredis';
 
@@ -19,6 +20,16 @@ export const connectValkey = async (): Promise<Redis> => {
     await connection.connect();
     return connection;
 };
+
+/**
+ * The store's connection over ioredis, replying with bytes as the store requires.
+ *
+ * @param valkey - ioredis connection to wrap
+ * @returns `eval` through `callBuffer`
+ */
+export const bufferConnection = (valkey: Redis): ValkeyConnection => ({
+    eval: async (...args) => valkey.callBuffer('EVAL', ...args),
+});
 
 export interface ValkeyContext {
     readonly valkey: Redis;

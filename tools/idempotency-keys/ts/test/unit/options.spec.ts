@@ -68,6 +68,28 @@ suite('Options', () => {
         ).to.be.rejectedWith(IdempotencyKeysOptionError);
     });
 
+    for (const part of ['scope', 'operation', 'key'] as const) {
+        test(`Rejects a ${part} that isn't well-formed Unicode`, async () => {
+            const keys = new IdempotencyKeys({ store });
+            await expect(
+                keys.begin({
+                    scope: 's',
+                    operation: 'o',
+                    key: 'k',
+                    [part]: 'a\u{D800}',
+                    fingerprint,
+                })
+            ).to.be.rejectedWith(IdempotencyKeysOptionError);
+        });
+    }
+
+    test('Rejects an empty key', async () => {
+        const keys = new IdempotencyKeys({ store });
+        await expect(keys.begin({ scope: 's', key: '', fingerprint })).to.be.rejectedWith(
+            IdempotencyKeysOptionError
+        );
+    });
+
     test('Names the option in the error', () => {
         expect(() => new IdempotencyKeys({ store, waitMs: -1 }))
             .to.throw(IdempotencyKeysError)

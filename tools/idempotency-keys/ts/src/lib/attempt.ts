@@ -82,6 +82,46 @@ export interface IdempotencyStore {
 export type RespondPolicy = (response: StoredResponse) => 'complete' | 'release';
 
 /**
+ * How `respond()` ended an attempt.
+ */
+export type RespondResult = 'lost' | 'refused' | 'released' | 'stored';
+
+const minStatus = 200;
+const maxStatus = 599;
+
+/**
+ * Statuses whose response has no body, which `fetch`'s `Response` refuses to build with one.
+ */
+const noContent = 204;
+const resetContent = 205;
+const notModified = 304;
+const nullBodyStatuses: ReadonlySet<number> = new Set([noContent, resetContent, notModified]);
+
+/**
+ * Headers a server recomputes for every response it sends, which would be wrong on a replay, and the replay marker,
+ * which only the replay adds.
+ */
+const unstoredHeaders: ReadonlySet<string> = new Set([
+    'connection',
+    'content-length',
+    'idempotent-replayed',
+    'keep-alive',
+    'transfer-encoding',
+]);
+
+/**
+ * Whether a replay could send a response, as `fetch`'s `Response` would build it.
+ *
+ * @param response - Response to store
+ * @returns Whether the status is from 200 to 599, and a null-body status has no body
+ */
+const isSendable = ({ status, body }: StoredResponse): boolean =>
+    Number.isSafeInteger(status) &&
+    status >= minStatus &&
+    status <= maxStatus &&
+    (body.byteLength === 0 || !nullBodyStatuses.has(status));
+
+/**
  * A request that holds its key, and runs. End it with `respond()` or `release()`. One that never ends (it crashed)
  * holds the key until its lease runs out.
  */
@@ -91,12 +131,16 @@ export interface IdempotencyAttempt {
      */
     readonly identity: string;
     /**
-     * Ends the attempt with its response, by the respond policy. Header names are stored in lower case.
+     * Ends the attempt with its response, by the respond policy. Header names are stored in lower case, without the
+     * headers a server recomputes for each response it sends (`content-length`, `transfer-encoding`, `connection`,
+     * `keep-alive`) or any `idempotent-replayed`.
      *
-     * @returns `stored` or `released` by the policy, or `lost` when the lease ran out and another request took
-     * over, so nothing changed
+     * @returns `stored` or `released` by the policy; `lost` when the lease ran out and another request took over, so
+     * nothing changed; or `refused`, without touching the store, for a response a replay couldn't send (a status
+     * outside 200 to 599, or a body with a `204`, `205` or `304`): the attempt still holds the key, to respond again
+     * or release
      */
-    readonly respond: (response: StoredResponse) => Promise<'lost' | 'released' | 'stored'>;
+    readonly respond: (response: StoredResponse) => Promise<RespondResult>;
     /**
      * Releases the key, whatever the response, so the next request with it runs.
      *
@@ -126,13 +170,19 @@ export class Attempt implements IdempotencyAttempt {
         this.#context = context;
     }
 
-    public async respond(response: StoredResponse): Promise<'lost' | 'released' | 'stored'> {
+    public async respond(response: StoredResponse): Promise<RespondResult> {
+        if (!isSendable(response)) {
+            return 'refused';
+        }
         if (this.#context.respondPolicy(response) === 'release') {
             return (await this.release()) ? 'released' : 'lost';
         }
+        const headers = response.headers
+            .map(([name, value]) => [name.toLowerCase(), value] as const)
+            .filter(([name]) => !unstoredHeaders.has(name));
         const isStored = await this.#context.store.complete(this.identity, this.#token, {
+            headers,
             status: response.status,
-            headers: response.headers.map(([name, value]) => [name.toLowerCase(), value] as const),
             body: response.body,
         });
         await this.#announce(isStored);

@@ -1,6 +1,10 @@
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { computeFingerprint, computeIdentity } from 'idempotency-keys';
+import {
+    computeFingerprint,
+    computeIdentity,
+    IdempotencyKeysHeaderValueError,
+} from 'idempotency-keys';
 import { suite, test } from 'mocha-chain';
 import { vectors } from '../helpers/vectors.js';
 
@@ -42,6 +46,18 @@ suite('Hashes', () => {
             expect(
                 await computeFingerprint({ ...input, named: ['accept', 'content-type'] })
             ).to.equal(fingerprint);
+        });
+
+        test('Rejects a named header value above U+00FF, which no request can hold', async () => {
+            await expect(
+                computeFingerprint({
+                    method: 'POST',
+                    target: '/notes',
+                    headers: [['x-name', 'ñandú 🐦']],
+                    named: ['x-name'],
+                    body: '',
+                })
+            ).to.be.rejectedWith(IdempotencyKeysHeaderValueError);
         });
 
         test('Takes the headers of a Request as they are', async () => {

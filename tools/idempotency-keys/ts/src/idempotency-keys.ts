@@ -1,7 +1,10 @@
 export {
     IdempotencyKeyHeaderError,
+    IdempotencyKeysBodyUsedError,
     IdempotencyKeysError,
+    IdempotencyKeysHeaderValueError,
     IdempotencyKeysOptionError,
+    IdempotencyKeysReplyError,
 } from './lib/errors.js';
 export type { FingerprintInput, IdentityInput } from './lib/hashes.js';
 export { computeFingerprint, computeIdentity } from './lib/hashes.js';
@@ -13,6 +16,7 @@ export type {
     IdempotencyAttempt,
     IdempotencyStore,
     RespondPolicy,
+    RespondResult,
     StoredResponse,
 } from './lib/attempt.js';
 export type {

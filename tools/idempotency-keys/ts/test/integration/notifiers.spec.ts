@@ -174,6 +174,61 @@ suite('PostgresNotifier', () => {
         }
     );
 
+    /**
+     * Connects a client of its own and ends its connection from the server, as a Postgres restart would.
+     *
+     * @param url - Database to connect to
+     * @param pool - Another connection, to end it from
+     * @returns The client, and its end
+     */
+    const droppable = async (
+        url: string,
+        pool: { query: (text: string, values: unknown[]) => Promise<unknown> }
+    ) => {
+        const client = new Client({ connectionString: url });
+        await client.connect();
+        const { rows } = await client.query<{ pid: number }>('SELECT pg_backend_pid() AS pid');
+        return {
+            client,
+            drop: async () => {
+                await pool.query('SELECT pg_terminate_backend($1)', [rows[0]!.pid]);
+            },
+        };
+    };
+
+    withContext.test(
+        'Reports a dropped connection, and closes without it',
+        async ({ database, pool }) => {
+            const { client, drop } = await droppable(database.url, pool);
+            const failed = pDefer<Error>();
+            const notifier = await PostgresNotifier.listen({
+                publisher: pool,
+                listener: client,
+                onError: error => {
+                    failed.resolve(error);
+                },
+            });
+            await drop();
+            expect(await failed.promise).to.be.instanceOf(Error);
+            await notifier.close();
+        }
+    );
+
+    withContext.test(
+        'Survives a dropped connection without onError',
+        async ({ database, pool }) => {
+            const { client, drop } = await droppable(database.url, pool);
+            const notifier = await PostgresNotifier.listen({ publisher: pool, listener: client });
+            // Not `once()`, which rejects on the `error` event this test is about
+            const ended = new Promise<void>(resolve => {
+                client.on('end', resolve);
+            });
+            await drop();
+            await ended;
+            await notifier.close();
+        }
+    );
+
     withContext.test('Rejects an empty channel', async ({ pool, otherListener }) => {
         await expect(
             PostgresNotifier.listen({ publisher: pool, listener: otherListener, channel: '' })

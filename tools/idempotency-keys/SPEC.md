@@ -33,7 +33,8 @@ unless the server requires a key for that operation: then it is a `400`.
 ### Encoding
 
 Both hashes are SHA-256 over a sequence of fields. A field is its length in bytes as a 32-bit big-endian unsigned
-integer, then its bytes. Strings are UTF-8. An absent value is the length `0xFFFFFFFF` with no bytes, so it never
+integer, then its bytes. Strings are UTF-8, and `scope`, `operation` and `key` must be well-formed Unicode (no lone
+surrogates). An absent value is the length `0xFFFFFFFF` with no bytes, so it never
 equals an empty one.
 
 ```
@@ -45,16 +46,23 @@ headers     = for each named header, in byte order of its name: field(name) || f
 - `method` is as received, except that `DELETE`, `GET`, `HEAD`, `OPTIONS`, `POST` and `PUT` are upper-cased in any
   case, as `fetch` does when it builds a `Request` ([Fetch, normalize a method][normalize]). Other methods are
   case-sensitive (`patch` is not `PATCH`), as HTTP says ([RFC 9110, section 9.1][methods]).
-- `target` is the path and query exactly as the request line had them (`/notes?draft=1`), not decoded or normalized.
+- `target` is the path and query as a WHATWG URL serializes them ([URL Standard][url]): the request's origin and
+  raw target concatenated (`http://host` + `//notes`, not `//notes` resolved as a relative URL) and parsed, then its path, plus `?` and its query when the query isn't empty, without the fragment. So `/notes?` is `/notes`,
+  `/a/../notes` is `/notes`, `/café` is `/caf%C3%A9`, `/a b` is `/a%20b` and `/notes\sub` is `/notes/sub`, while a
+  percent-encoding already there stays as it is (`/notes/%61` is not `/notes/a`). `fetch`'s `Request.url` is already
+  this; other servers parse the raw target with a WHATWG URL parser.
 - Header names are lower case. Each name is listed once, so `count` is the number of distinct names. A header sent more
   than once has its values joined by `, ` in the order received (as both `fetch`'s `Headers` and Go's `Header.Values`
-  give them). A named header the request doesn't have is absent.
+  give them). A named header the request doesn't have is absent. A value is hashed as the bytes received; `fetch`'s
+  `Headers` gives each byte as one character from `U+0000` to `U+00FF`, so it is encoded back one byte per character,
+  not as UTF-8.
 - `body` is the raw bytes. A request without a body has an empty one.
 
 Written out, both are lower-case hex: 64 characters.
 
 [normalize]: https://fetch.spec.whatwg.org/#concept-method-normalize
 [methods]: https://www.rfc-editor.org/rfc/rfc9110#section-9.1
+[url]: https://url.spec.whatwg.org/#concept-basic-url-parser
 
 ## Attempts
 
@@ -109,8 +117,13 @@ every claim and takeover.
 - `complete(identity, token, response)` stores the response if the record holds `token`, and says whether it did.
 - `release(identity, token)` deletes the record if it holds `token`, and says whether it did.
 
-A response is a status (an integer from 100 to 599), headers, and a body (bytes). Headers are stored as a JSON array of
-`[name, value]` pairs of strings, names in lower case, in the order the server's response lists them, repeated names kept. A replay sends them in that order.
+A response is a status (an integer from 200 to 599), headers, and a body (bytes). A `204`, `205` or `304` has an
+empty body. An implementation refuses to complete with any other response, storing nothing (as `fetch` can't build
+it, a replay couldn't send it): the attempt is left to its lease, like one that failed before it had a response. Headers are stored as a JSON array of
+`[name, value]` pairs of strings, names in lower case, in the order the server's response lists them, repeated names
+kept. A replay sends them in that order, plus `Idempotent-Replayed: true`. The headers a server recomputes for every
+response it sends (`content-length`, `transfer-encoding`, `connection`, `keep-alive`) and any `idempotent-replayed`
+are never stored.
 
 ### Postgres
 
@@ -129,36 +142,47 @@ CREATE TABLE idempotency_keys (
 );
 ```
 
-The table's name is configurable; its columns are not. `identity` and `fingerprint` are the 32-byte digests. A running
+The table's name is configurable (one identifier, quoted, so case-exact, and at most 63 bytes, Postgres's limit;
+no schema qualification: set the client's `search_path`); its columns are not. `identity` and `fingerprint` are the 32-byte digests. A running
 row has `token` and `lease_expires_at`, and no response. A completed row has `status`, `headers` and `body`, and `token`
 and `lease_expires_at` are null. A row whose `expires_at` has passed counts as no row. Postgres doesn't expire rows on
 its own: run each implementation's `deleteExpired` from a scheduled job, or leave them to be overwritten.
 
-Every time is Postgres's `now()`. A claim is one statement:
+Every time is Postgres's `clock_timestamp()`, the time of the statement, not `now()`, which is the time its
+transaction started (a client inside a long transaction would write leases already run out). A claim is one statement:
 
 ```sql
 INSERT INTO idempotency_keys (identity, fingerprint, token, lease_expires_at, expires_at)
-VALUES ($1, $2, $3, now() + $4 * interval '1 millisecond', now() + $5 * interval '1 millisecond')
+VALUES ($1, $2, $3, clock_timestamp() + $4 * interval '1 millisecond', clock_timestamp() + $5 * interval '1 millisecond')
 ON CONFLICT (identity) DO UPDATE
     SET fingerprint = excluded.fingerprint, token = excluded.token,
         lease_expires_at = excluded.lease_expires_at, expires_at = excluded.expires_at,
         status = NULL, headers = NULL, body = NULL
-    WHERE idempotency_keys.expires_at <= now()
-       OR (idempotency_keys.lease_expires_at <= now() AND idempotency_keys.fingerprint = excluded.fingerprint)
+    WHERE idempotency_keys.expires_at <= clock_timestamp()
+       OR (idempotency_keys.lease_expires_at <= clock_timestamp() AND idempotency_keys.fingerprint = excluded.fingerprint)
 RETURNING token
 ```
 
-A returned row is a claim. No row returned means the record stays: read it (one `SELECT`) to answer `running` or
-`completed`, and claim again if it was released in between. Completing and releasing check the token in the statement:
+A returned row is a claim. No row returned means the record stays: read it to answer `running` (no `status`) or
+`completed`, and claim again if the read finds no row (it was released or expired in between):
+
+```sql
+SELECT fingerprint, status, headers, body FROM idempotency_keys
+WHERE identity = $1 AND expires_at > clock_timestamp()
+```
+
+Completing and releasing check the token in the statement, and completing also that the key hasn't expired, as a
+Valkey key that expired is gone:
 
 ```sql
 UPDATE idempotency_keys SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
-WHERE identity = $1 AND token = $2
+WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
 
 DELETE FROM idempotency_keys WHERE identity = $1 AND token = $2
 ```
 
 A request whose lease ran out, but that nobody took over, still completes or releases: its token is still there.
+`deleteExpired` is `DELETE FROM idempotency_keys WHERE expires_at <= clock_timestamp()`.
 
 ### Valkey (or Redis)
 
@@ -174,8 +198,17 @@ A record is a hash at `<prefix>:<identity>` (the prefix is `idempotency_keys` un
 | `lease` | When the lease runs out, in milliseconds since the epoch by the server's `TIME`, while running. |
 | `status`, `headers`, `body` | The response, once completed. `headers` is the JSON array. |
 
-Each operation is one Lua script, run with `EVAL`, which every implementation sends byte for byte (they are in the test
-vectors). Being one key, a record lives on one node of a cluster.
+Each operation is one Lua script, run with `EVAL` on one key, `KEYS[1]` the record, which every implementation sends
+byte for byte (they are in the test vectors). Being one key, a record lives on one node of a cluster. Arguments are
+strings, numbers in decimal:
+
+| Script | `ARGV` | Reply |
+|---|---|---|
+| claim | fingerprint, token, `leaseMs`, `ttlMs` | `{'claimed'}`, `{'running', fingerprint}`, or `{'completed', fingerprint, status, headers, body}` (`status` a decimal string) |
+| complete | token, status, headers, body | `1` if it stored the response, `0` if the record doesn't hold the token |
+| release | token | `1` if it deleted the record, `0` if it doesn't hold the token |
+
+`body` is binary: read the reply as bytes, not text (a client that decodes replies as UTF-8 changes a binary body).
 
 ## Notifiers
 
@@ -184,7 +217,7 @@ when woken, and polls without it, so a notifier that is down or loses a message 
 never the store's source of truth through its notifier, only the Postgres store's doorbell.
 
 After every successful `complete` and `release`, the request publishes the identity (64 hex characters) on one channel,
-named `idempotency_keys` unless configured. Every server listening on it wakes its requests waiting on that identity.
+named `idempotency_keys` unless configured (in Postgres a quoted identifier, so case-exact, at most 63 bytes). Every server listening on it wakes its requests waiting on that identity.
 
 - **None**: polling only.
 - **Valkey pub/sub**: `PUBLISH <channel> <identity>`.

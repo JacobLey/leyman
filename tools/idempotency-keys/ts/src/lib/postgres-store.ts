@@ -19,7 +19,8 @@ export interface PostgresStoreOptions {
      */
     readonly client: PostgresQueryable;
     /**
-     * Name of the table, created with {@link createTableSql}. Defaults to `idempotency_keys`.
+     * Name of the table, created with {@link createTableSql}. Defaults to `idempotency_keys`. One identifier, quoted, so
+     * case-exact, of at most 63 bytes. Not schema-qualified: set the client's `search_path` for another schema.
      */
     readonly table?: string;
 }
@@ -54,7 +55,9 @@ export const createTableSql = (
 `;
 
 /**
- * The strict store: a claim is a row written in a transaction, so it is exclusive and durable. Postgres never
+ * The strict store: a claim is a row written in a transaction, so it is exclusive and durable. Every time is
+ * `clock_timestamp()`, the statement's own, never `now()`, which a client inside a long transaction would see frozen
+ * at its start. Postgres never
  * deletes expired rows on its own: run {@link PostgresStore.deleteExpired} from a scheduled job, or leave them to be
  * overwritten by the next claim.
  */
@@ -70,19 +73,19 @@ export class PostgresStore implements IdempotencyStore {
         this.#client = client;
         const name = quoteIdentifier('table', table);
         this.#claimSql = `INSERT INTO ${name} (identity, fingerprint, token, lease_expires_at, expires_at)
-VALUES ($1, $2, $3, now() + $4 * interval '1 millisecond', now() + $5 * interval '1 millisecond')
+VALUES ($1, $2, $3, clock_timestamp() + $4 * interval '1 millisecond', clock_timestamp() + $5 * interval '1 millisecond')
 ON CONFLICT (identity) DO UPDATE
     SET fingerprint = excluded.fingerprint, token = excluded.token,
         lease_expires_at = excluded.lease_expires_at, expires_at = excluded.expires_at,
         status = NULL, headers = NULL, body = NULL
-    WHERE ${name}.expires_at <= now()
-       OR (${name}.lease_expires_at <= now() AND ${name}.fingerprint = excluded.fingerprint)
+    WHERE ${name}.expires_at <= clock_timestamp()
+       OR (${name}.lease_expires_at <= clock_timestamp() AND ${name}.fingerprint = excluded.fingerprint)
 RETURNING token`;
-        this.#readSql = `SELECT fingerprint, status, headers, body FROM ${name} WHERE identity = $1 AND expires_at > now()`;
+        this.#readSql = `SELECT fingerprint, status, headers, body FROM ${name} WHERE identity = $1 AND expires_at > clock_timestamp()`;
         this.#completeSql = `UPDATE ${name} SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
-WHERE identity = $1 AND token = $2`;
+WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
         this.#releaseSql = `DELETE FROM ${name} WHERE identity = $1 AND token = $2`;
-        this.#expiredSql = `DELETE FROM ${name} WHERE expires_at <= now()`;
+        this.#expiredSql = `DELETE FROM ${name} WHERE expires_at <= clock_timestamp()`;
     }
 
     public async claim({

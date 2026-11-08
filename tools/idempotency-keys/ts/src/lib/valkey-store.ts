@@ -1,12 +1,13 @@
 import type { ClaimParams, ClaimResult, IdempotencyStore, StoredResponse } from './attempt.js';
 // eslint-disable-next-line n/prefer-global/buffer -- Imported, as the package assumes no Node.js globals: Bun, Deno and Workers (`nodejs_compat`) have the module
 import { Buffer } from 'node:buffer';
+import { IdempotencyKeysReplyError } from './errors.js';
 import { claimScript, completeScript, releaseScript } from './scripts.js';
 
 /**
- * The one command needed from a Valkey (or Redis) client. An ioredis `Redis` or `Cluster` fits as is, though its
- * `eval` decodes replies as UTF-8 text: run `EVAL` through `callBuffer` to replay binary bodies byte for byte. Replies may be
- * strings or bytes.
+ * The one command needed from a Valkey (or Redis) client: `EVAL`, replying with bytes, so a binary body comes back as
+ * it was stored. With ioredis, `{ eval: async (...args) => redis.callBuffer('EVAL', ...args) }`; its own `eval`
+ * decodes replies as text, which the store rejects with `IdempotencyKeysReplyError`.
  */
 export interface ValkeyConnection {
     eval: (
@@ -28,14 +29,24 @@ export interface ValkeyStoreOptions {
 }
 
 const decoder = new TextDecoder();
-const encoder = new TextEncoder();
 
 type Reply = string | Uint8Array;
 
 const text = (reply: Reply): string => (typeof reply === 'string' ? reply : decoder.decode(reply));
 
-const bytes = (reply: Reply): Uint8Array =>
-    typeof reply === 'string' ? encoder.encode(reply) : reply;
+/**
+ * Reads the body, which must come back as bytes: a client that decodes replies as text changes a binary body.
+ *
+ * @param reply - The body reply
+ * @returns Its bytes
+ * @throws {IdempotencyKeysReplyError} When the client decoded it as text
+ */
+const bytes = (reply: Reply): Uint8Array => {
+    if (typeof reply === 'string') {
+        throw new IdempotencyKeysReplyError();
+    }
+    return reply;
+};
 
 /**
  * The lax store: a claim is a key with a time to live, so a failover that loses writes, or a flush, forgets keys,
