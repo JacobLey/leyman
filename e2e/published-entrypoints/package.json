@@ -60,6 +60,7 @@
     "static-emitter": "workspace:^",
     "test-chain-core": "workspace:^",
     "typescript": "catalog:",
+    "typescript-floor": "catalog:",
     "unknown-error": "workspace:^",
     "vitest": "catalog:",
     "vitest-chain": "workspace:^",

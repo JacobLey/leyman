@@ -28,6 +28,8 @@ export default [
             'no-console': 'off',
             // Dagger passes the Node.js binary to test with through the environment
             'n/no-process-env': 'off',
+            // Never imported, so awaiting at the top level holds up nothing
+            'n/no-top-level-await': 'off',
             // Runs one suite at a time, with nothing else to run concurrently
             'n/no-sync': 'off',
         },

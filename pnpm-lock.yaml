@@ -292,6 +292,9 @@ catalogs:
     typescript:
       specifier: npm:@typescript/typescript6@^6.0.2
       version: 6.0.2
+    typescript-floor:
+      specifier: npm:typescript@6.0.2
+      version: 6.0.2
     uint8array-extras:
       specifier: ^1.6.0
       version: 1.6.0
@@ -2689,6 +2692,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+      typescript-floor:
+        specifier: 'catalog:'
+        version: typescript@6.0.2
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
@@ -11022,6 +11028,11 @@ packages:
 
   typescript@5.6.1-rc:
     resolution: {integrity: sha512-E3b2+1zEFu84jB0YQi9BORDjz9+jGbwwy1Zi3G0LUNw7a7cePUrHMRNy8aPh53nXpkFGVHSxIZo5vKTfYaFiBQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@6.0.2:
+    resolution: {integrity: sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -19761,6 +19772,8 @@ snapshots:
       reflect.getprototypeof: 1.0.10
 
   typescript@5.6.1-rc: {}
+
+  typescript@6.0.2: {}
 
   typescript@6.0.3: {}
 

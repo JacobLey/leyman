@@ -48,6 +48,18 @@
         "^tsc-test"
       ]
     },
+    "floor-types": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/floor-types.mjs",
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "install:_": {},
     "install": {},
     "prepare:_": {},

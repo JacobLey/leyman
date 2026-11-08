@@ -29,7 +29,7 @@ How changes are recorded: the [versioning skill](https://github.com/JacobLey/ley
 
 ## Newest toolchain, lowest floor
 
-Development and CI run the newest runtimes and tools. Each published package supports the oldest runtime it can **without losing functionality**: never swap a newer API for a weaker stand-in to reach a lower floor. A package's floor is never below any of its runtime dependencies' floors. Upgrading the toolchain doesn't raise a package's floor. Only that package needing something newer does.
+Development and CI run the newest runtimes and tools. Each published package supports the oldest runtime it can **without losing functionality**: never swap a newer API for a weaker stand-in to reach a lower floor. A package's floor is never below any of its runtime dependencies' floors. Upgrading the toolchain doesn't raise a package's floor. Only that package needing something newer does. In this repository, every published package's TypeScript floor is 6.0: its declarations and type tests must check there as well as on the newest.
 
 How floors are declared and checked: [Support floors](https://github.com/JacobLey/leyman/blob/main/.agents/skills/typescript/SKILL.md#support-floors).
 

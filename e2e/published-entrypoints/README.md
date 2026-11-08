@@ -22,6 +22,8 @@ nx run @leyman/e2e-published-entrypoints:floor-test
 nx run @leyman/e2e-published-entrypoints:floor-suites
 ```
 
+The `floor-types` target ([`scripts/floor-types.mjs`](scripts/floor-types.mjs)) checks the TypeScript floor, 6.0 (`typescript-floor`, pinned in the catalog): each package's published declarations with TypeScript 6.0 and the newest, as a strict consumer with `skipLibCheck: false` and its Node.js floor's `lib` and `target`, and its type tests (`tsc -p test`) with 6.0. The checks run in parallel, and it fails printing every error. It needs no extra binaries, so it runs locally as is: `nx run @leyman/e2e-published-entrypoints:floor-types`. CI runs it on every run, after `floor-test`. It is not cached, since its inputs span every published package's tests and their dependencies.
+
 It also checks the barrels of the packages `barrelify` depends on, which can't use its target without a cycle.
 
 It is not published, and has no source of its own: only tests.

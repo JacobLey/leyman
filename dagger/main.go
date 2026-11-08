@@ -187,7 +187,8 @@ func (m *Ci) StarterAudit(
 }
 
 // Run the full CI pipeline: install, build, test, check published entry points import on their oldest supported
-// Node.js, and verify generated lifecycle config is up to date.
+// Node.js and their types check on the oldest supported TypeScript, and verify generated lifecycle config is up to
+// date.
 func (m *Ci) Test(
 	ctx context.Context,
 	// Nx remote cache server to share task results with (e.g. `tcp://localhost:3000`, see `.devcontainer/nx-cache-server.mjs`).
@@ -230,8 +231,10 @@ func (m *Ci) Test(
 	group.Go(func() error {
 		// Imports each published package's entry points on the exact oldest Node.js its `engines` allows. Everything
 		// else, Nx and pnpm included, stays on the toolchain's Node.js.
+		// Then checks their declarations and type tests on the TypeScript floor (and the declarations on the newest).
 		_, err := withNodeFloors(built).
 			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-test"}).
+			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-types"}).
 			Sync(ctx)
 
 		return err
