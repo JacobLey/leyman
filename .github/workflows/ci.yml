@@ -263,6 +263,48 @@ jobs:
             exit 1
           fi
 
+      # One GitHub release per run that published anything, for the Releases tab and watchers' notifications: each
+      # package published, then its changelog section. Its own tag, `published-<date>-<commit>`, names the run; each
+      # package's `name@version` tag stays the one to check out. A patch to an older major (a `release/*` branch) is
+      # never marked latest
+      - name: Create GitHub release
+        if: ${{ !cancelled() }}
+        env:
+          RESULTS: ${{ steps.publish.outputs.output }}
+          # See `Tag releases`
+          GH_TOKEN: ${{ secrets.RELEASE_TAG_TOKEN }}
+        run: |
+          published=$(printf '%s\n' "$RESULTS" | sed -n 's/^published //p')
+          if [ -z "$published" ]; then
+            exit 0
+          fi
+          list="$RUNNER_TEMP/release-list.md"
+          notes="$RUNNER_TEMP/release-notes.md"
+          for tag in $published; do
+            echo "- [\`$tag\`](https://www.npmjs.com/package/${tag%@*}/v/${tag##*@})"
+          done > "$list"
+          { echo "Published to npm:"; echo; cat "$list"; } > "$notes"
+          for tag in $published; do
+            name=${tag%@*}
+            manifest=$(grep -rlx --include=package.json --exclude-dir=node_modules "  \"name\": \"$name\"," . | head -n 1)
+            changelog="$(dirname "$manifest")/CHANGELOG.md"
+            printf '\n## %s\n' "$tag"
+            if [ -f "$changelog" ]; then
+              awk -v heading="## ${tag##*@}" '$0 == heading { found = 1; next } found && /^## / { exit } found' "$changelog"
+            fi
+          done >> "$notes"
+          # GitHub rejects release bodies over 125000 characters
+          if [ "$(wc -c < "$notes")" -gt 120000 ]; then
+            { echo "Published to npm:"; echo; cat "$list"; echo; echo "See each package's CHANGELOG.md for what changed."; } > "$notes"
+          fi
+          latest=false
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            latest=true
+          fi
+          day=$(date -u +%Y-%m-%d)
+          gh release create "published-$day-${GITHUB_SHA::7}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Published $day" --notes-file "$notes" --latest="$latest"
+
       # A Go module is released by its tag, `<directory>/v<VERSION>`: tags, in one push, each module with a VERSION
       # whose tag doesn't exist yet. `check-go-release` (in `test`) made sure each requires its workspace dependencies at
       # their VERSIONs, so they are tagged together. After publishing to npm, and even when it failed, so neither holds
