@@ -448,10 +448,17 @@ const devcontainerRenames = name => ({
     ],
 });
 
-const renameDevcontainer = (files, to) => {
-    const name = devcontainerName(to);
-    const renames = Object.entries(devcontainerRenames(name));
-    for (const [file, replacements] of renames) {
+/**
+ * Replaces text in the copied files, each replacement exactly once.
+ *
+ * @param files - files `apply` copied; a file not among them is skipped
+ * @param to - directory `apply` wrote to
+ * @param replacementsByFile - for each file, `[from, to]` pairs
+ * @param table - the name of the table they came from, for the error
+ * @throws {Error} when a file no longer has the text to replace
+ */
+const replaceExactly = (files, to, replacementsByFile, table) => {
+    for (const [file, replacements] of Object.entries(replacementsByFile)) {
         if (!files.includes(file)) {
             continue;
         }
@@ -459,14 +466,48 @@ const renameDevcontainer = (files, to) => {
         let text = readFileSync(target, 'utf8');
         for (const [from, replacement] of replacements) {
             if (!text.includes(from)) {
-                throw new Error(
-                    `${file} no longer has ${JSON.stringify(from)}: update devcontainerRenames`
-                );
+                throw new Error(`${file} no longer has ${JSON.stringify(from)}: update ${table}`);
             }
             text = text.replace(from, () => replacement);
         }
         writeFileSync(target, text);
     }
+};
+
+const renameDevcontainer = (files, to) => {
+    replaceExactly(files, to, devcontainerRenames(devcontainerName(to)), 'devcontainerRenames');
+};
+
+// The devcontainer's Nx cache reads this repository's hosted cache by default, and CI here writes to it with an OIDC
+// audience the server defaults to. A fork has neither: its cache has no upstream until it sets one, and writing to one
+// needs the audience that upstream verifies.
+const cacheDefaults = {
+    '.devcontainer/docker-compose.yml': [
+        [
+            `      # Reads results it doesn't have from the hosted cache that CI on main writes to (\`infra/nx-cache\`), never
+      # writes there. Set NX_CACHE_SERVER_UPSTREAM empty (e.g. in \`.devcontainer/.env\`) to work offline
+      NX_CACHE_SERVER_UPSTREAM: \${NX_CACHE_SERVER_UPSTREAM-https://leyman-nx-cache.leyman.workers.dev}
+`,
+            `      # With NX_CACHE_SERVER_UPSTREAM set (e.g. in \`.devcontainer/.env\`), reads results it doesn't have from a
+      # hosted cache that CI on main writes to, and never writes there. None by default
+      NX_CACHE_SERVER_UPSTREAM: \${NX_CACHE_SERVER_UPSTREAM-}
+`,
+        ],
+    ],
+    '.devcontainer/nx-cache-server.mjs': [
+        [
+            "const oidcAudience = process.env.NX_CACHE_SERVER_OIDC_AUDIENCE ?? 'leyman-nx-cache';\n",
+            'const oidcAudience = process.env.NX_CACHE_SERVER_OIDC_AUDIENCE;\n',
+        ],
+        [
+            "        'NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc needs a GitHub Actions job with `id-token: write`'\n    );\n}\n",
+            "        'NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc needs a GitHub Actions job with `id-token: write`'\n    );\n}\nif (writesUpstream && !oidcAudience) {\n    throw new Error(\n        'NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc needs NX_CACHE_SERVER_OIDC_AUDIENCE, the audience the upstream verifies'\n    );\n}\n",
+        ],
+    ],
+};
+
+const neutralizeCacheDefaults = (files, to) => {
+    replaceExactly(files, to, cacheDefaults, 'cacheDefaults');
 };
 
 /**
@@ -659,6 +700,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
     renameDevcontainer(files, to);
+    neutralizeCacheDefaults(files, to);
     rewriteMainReadme(files, to);
     pointLinksUpstream(files, to);
     writeUpstream(to, { commit, conditions, extraPackages, files });
@@ -832,16 +874,27 @@ const workspacePaths = text =>
         .map(({ groups }) => groups.file)
         .toArray();
 
+// A command run from the workspace's root may name a script by its plain path
+const rootRelativePaths = ({ options = {} }) =>
+    options.cwd === '{workspaceRoot}'
+        ? (options.commands ?? [])
+              .flatMap(command => command.split(/\s+/v))
+              .filter(word => /^[\w\-]+(?:\/[\w\-.]+)+\.\w+$/v.test(word))
+        : [];
+
 const targetFileProblems = ({ targetDefaults }, to) =>
     Object.entries(targetDefaults).flatMap(([name, target]) =>
-        workspacePaths(
-            JSON.stringify([
-                target.options?.commands ?? [],
-                (target.inputs ?? []).filter(
-                    input => typeof input === 'string' && !input.includes('*')
-                ),
-            ])
-        )
+        [
+            ...workspacePaths(
+                JSON.stringify([
+                    target.options?.commands ?? [],
+                    (target.inputs ?? []).filter(
+                        input => typeof input === 'string' && !input.includes('*')
+                    ),
+                ])
+            ),
+            ...rootRelativePaths(target),
+        ]
             .filter(file => !existsSync(path.join(to, file)))
             .map(file => `nx.json ${name}: names ${file}, which the fork doesn't have`)
     );

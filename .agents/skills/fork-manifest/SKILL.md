@@ -73,10 +73,10 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.devcontainer/Dockerfile` | the image everything runs in; delete the stages of languages the fork lacks. `apply` names its user after the fork |
 | `.devcontainer/devcontainer-lock.json` | pins the devcontainer features |
 | `.devcontainer/devcontainer.json` | the container's environment and post-create steps. `apply` names the container, its service and user after the fork |
-| `.devcontainer/docker-compose.yml` | the container and its sidecars. `apply` names its service after the fork |
+| `.devcontainer/docker-compose.yml` | the container and its sidecars. `apply` names its service after the fork, and gives its Nx cache no upstream |
 | `.devcontainer/initialize.sh` | writes the worktree's .env on the host, links the shared Claude settings; tolerates a missing local-ingress |
 | `.devcontainer/names.sh` | the worktree's DNS labels |
-| `.devcontainer/nx-cache-server.mjs` | the Nx cache shared by worktrees, which the compose file always mounts |
+| `.devcontainer/nx-cache-server.mjs` | the Nx cache shared by worktrees, which the compose file always mounts. `apply` drops its default OIDC audience, which names this repo's hosted cache |
 | `.devcontainer/tag-pinned-images.sh` | keeps digest-pinned images from looking dangling |
 | `.vscode/settings.json` | points the editor at the tools in leyman/main |
 | `.vscode/tasks.json` | worktree commands in the editor |

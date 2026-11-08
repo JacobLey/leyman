@@ -134,7 +134,7 @@
     },
     {
       "path": ".devcontainer/docker-compose.yml",
-      "why": "the container and its sidecars. `apply` names its service after the fork"
+      "why": "the container and its sidecars. `apply` names its service after the fork, and gives its Nx cache no upstream"
     },
     {
       "path": ".devcontainer/initialize.sh",
@@ -146,7 +146,7 @@
     },
     {
       "path": ".devcontainer/nx-cache-server.mjs",
-      "why": "the Nx cache shared by worktrees, which the compose file always mounts"
+      "why": "the Nx cache shared by worktrees, which the compose file always mounts. `apply` drops its default OIDC audience, which names this repo's hosted cache"
     },
     {
       "path": ".devcontainer/tag-pinned-images.sh",
@@ -589,6 +589,7 @@
     "repoOnlyTargets": [
       "check-fork-manifest",
       "check-parity",
+      "check-skills",
       "check-workspace-dependencies"
     ],
     "repoOnlyProjectTargets": [
