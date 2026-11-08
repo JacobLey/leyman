@@ -31,6 +31,7 @@ import { suite, test } from 'mocha-chain';
 import { Builder } from '#internal/lib/build.js';
 import { LazyArbitrary } from '#internal/lib/filtered-arbitrary.js';
 import { SchemaIndex } from '#internal/lib/refs.js';
+import { scalarValue } from '#internal/lib/strings.js';
 
 const sample = <T>(schema: Schema<T>): T[] =>
     fc.sample(makeArbitrary(schema), { numRuns: 200, seed: 42 });
@@ -1013,6 +1014,27 @@ suite('makeArbitrary', () => {
         test('a reference to something missing', () => {
             const schema = objectSchema().properties({ a: stringSchema().ref('#/$defs/missing') });
             expect(() => makeArbitrary(schema)).to.throw(UnsupportedSchemaError);
+        });
+    });
+
+    suite('Scalar values', () => {
+        test('generate as fast-check binary strings do', () => {
+            const settings = { numRuns: 200, seed: 42 };
+            expect(fc.sample(fc.string({ unit: scalarValue }), settings)).to.deep.equal(
+                fc.sample(fc.string({ unit: 'binary' }), settings)
+            );
+        });
+
+        test('unmap code points either side of the surrogates', () => {
+            for (const value of ['\0', 'a', '\u{D7FF}', '\u{E000}', '😀', '\u{10FFFF}']) {
+                expect(scalarValue.canShrinkWithoutContext(value), value).to.equal(true);
+            }
+        });
+
+        test('do not unmap anything else', () => {
+            for (const value of ['', 'ab', '\u{D800}', '\u{DFFF}', 1, undefined]) {
+                expect(scalarValue.canShrinkWithoutContext(value), String(value)).to.equal(false);
+            }
         });
     });
 });

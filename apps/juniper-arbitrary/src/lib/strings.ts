@@ -42,6 +42,34 @@ const isUnbounded = ({ minLength, maxLength }: LengthBounds): boolean =>
 // eslint-disable-next-line @typescript-eslint/no-misused-spread -- code points are what spreading a string yields
 const codePoints = (value: string): number => [...value].length;
 
+const surrogateStart = 0xd800;
+const surrogateCount = 0x800;
+const maxCodePoint = 0x10ffff;
+
+/**
+ * One Unicode scalar value (any code point but a surrogate), which is what lengths count. It generates and shrinks
+ * exactly as fast-check's `binary` unit does: the index is the code point, shifted past the surrogates. fast-check
+ * builds that unit with `mapToConstant`, whose unmapper fills a `Map` with all 1.1 million values the first time
+ * `fc.string` checks its default slices, about half a second per process
+ * ([source](https://github.com/dubzzz/fast-check/blob/9a5f8e257dba762b3288701ae79b77d3d9b43505/packages/fast-check/src/arbitrary/_internals/mappers/IndexToMappedConstant.ts#L41-L66)).
+ * Unmapping arithmetically costs nothing.
+ */
+export const scalarValue: fc.Arbitrary<string> = fc.nat({ max: maxCodePoint - surrogateCount }).map(
+    index => String.fromCodePoint(index < surrogateStart ? index : index + surrogateCount),
+    value => {
+        if (typeof value === 'string' && value.length > 0 && codePoints(value) === 1) {
+            const codePoint = value.codePointAt(0)!;
+            if (codePoint < surrogateStart) {
+                return codePoint;
+            }
+            if (codePoint >= surrogateStart + surrogateCount) {
+                return codePoint - surrogateCount;
+            }
+        }
+        throw new Error('Not a single Unicode scalar value');
+    }
+);
+
 /**
  * A size constraint for a fast-check arbitrary, leaving its default when undefined.
  *
@@ -267,7 +295,7 @@ const lengthenPointer: Lengthen = (value, missing) =>
 
 const pointerSegment = (size: fc.Size | undefined): fc.Arbitrary<string> =>
     fc
-        .string({ unit: 'binary', ...sized(size) })
+        .string({ unit: scalarValue, ...sized(size) })
         .map(segment => segment.replaceAll('~', '~0').replaceAll('/', '~1'));
 const jsonPointer = (size: fc.Size | undefined): fc.Arbitrary<string> =>
     fc
@@ -472,9 +500,8 @@ export const stringArbitrary = (branch: Branch): StringResult | null => {
         };
     }
     return {
-        // `binary` covers all of Unicode one code point at a time, which is what lengths count
         arbitrary: fc.string({
-            unit: 'binary',
+            unit: scalarValue,
             minLength,
             ...(maxLength < Number.POSITIVE_INFINITY && { maxLength }),
         }),
