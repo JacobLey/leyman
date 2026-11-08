@@ -8,8 +8,9 @@
 #   ~/code/leyman-worktrees/
 #     <branch>/                       <- git worktrees
 #     .shared/                        <- pnpm store, Nx cache, Claude and gh config, plans
+#   ~/code/.claude-shared/            <- Claude settings.json and CLAUDE.md, shared with other repos
 #
-# Both folders are bind-mounted into the container at the SAME absolute paths as on the
+# All three folders are bind-mounted into the container at the SAME absolute paths as on the
 # host, so git's absolute worktree links resolve on both sides. This writes those paths
 # to `.devcontainer/.env`, which docker compose reads for variable substitution.
 set -eu
@@ -41,6 +42,35 @@ if [ ! -e "$shared/claude-config" ] && [ -d "$main_checkout/.claude-config" ]; t
 fi
 mkdir -p "$shared/pnpm-store" "$shared/claude-config" "$shared/gh-config"
 
+# Claude settings and instructions shared with other repos' devcontainers: the config dir's settings.json and
+# CLAUDE.md are absolute links into a folder beside the main checkout, mounted at the same path. Memory (`projects/`)
+# stays per repo. A repo's own file moves there the first time; if both exist, nothing is linked until it's merged.
+claude_shared="$(dirname "$main_checkout")/.claude-shared"
+mkdir -p "$claude_shared"
+for file in settings.json CLAUDE.md; do
+    repo_file="$shared/claude-config/$file"
+    shared_file="$claude_shared/$file"
+    if [ -L "$repo_file" ]; then
+        continue
+    fi
+    if [ -e "$repo_file" ]; then
+        if [ -e "$shared_file" ]; then
+            echo "warning: $repo_file isn't shared, as $shared_file exists too." >&2
+            echo "         Merge it into the shared one by hand and delete it; the next start links it." >&2
+            continue
+        fi
+        echo "Moving $repo_file -> $shared_file"
+        mv "$repo_file" "$shared_file"
+    elif [ ! -e "$shared_file" ]; then
+        if [ "$file" = settings.json ]; then
+            printf '{}\n' > "$shared_file"
+        else
+            : > "$shared_file"
+        fi
+    fi
+    ln -s "$shared_file" "$repo_file"
+done
+
 # Plans shared by every worktree, kept out of git: `plans` is a gitignored symlink
 mkdir -p "$shared/plans"
 if [ ! -e plans ] && [ ! -L plans ]; then
@@ -63,6 +93,7 @@ tunnel_host="$(sed -n 's/^TUNNEL_HOST="\(.*\)"$/\1/p' .devcontainer/.env 2> /dev
 {
     printf 'MAIN_CHECKOUT="%s"\n' "$main_checkout"
     printf 'WORKTREES_DIR="%s"\n' "$worktrees_dir"
+    printf 'CLAUDE_SHARED="%s"\n' "$claude_shared"
     printf 'COMPOSE_PROJECT_NAME="%s"\n' "$project"
     printf 'REPO_NAME="%s"\n' "$repo_name"
     printf 'WORKTREE_NAME="%s"\n' "$worktree_name"

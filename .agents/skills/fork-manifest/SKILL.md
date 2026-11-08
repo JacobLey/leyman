@@ -72,7 +72,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.devcontainer/devcontainer-lock.json` | pins the devcontainer features |
 | `.devcontainer/devcontainer.json` | the container's environment and post-create steps |
 | `.devcontainer/docker-compose.yml` | the container and its sidecars |
-| `.devcontainer/initialize.sh` | writes the worktree's .env on the host; tolerates a missing local-ingress |
+| `.devcontainer/initialize.sh` | writes the worktree's .env on the host, links the shared Claude settings; tolerates a missing local-ingress |
 | `.devcontainer/names.sh` | the worktree's DNS labels |
 | `.devcontainer/nx-cache-server.mjs` | the Nx cache shared by worktrees, which the compose file always mounts |
 | `.devcontainer/tag-pinned-images.sh` | keeps digest-pinned images from looking dangling |

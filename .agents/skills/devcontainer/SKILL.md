@@ -9,7 +9,7 @@ description: DevContainer runtimes, CLI tools, and version parity with Dagger
 
 The DevContainer is defined in [`.devcontainer/`](../../../.devcontainer/) and is the canonical development environment for this repo. Opening a worktree in VS Code triggers a prompt to reopen in the container, which builds the image and mounts the main checkout and its sibling `<main>-worktrees/` folder at the same absolute paths they have on the host. See the [worktrees skill](../worktrees/SKILL.md) for the layout and the `nx-cache` sidecar.
 
-Files live on the host, so they survive container rebuilds. Claude Code config is shared across containers via `CLAUDE_CONFIG_DIR`.
+Files live on the host, so they survive container rebuilds. Claude Code config is shared across containers via `CLAUDE_CONFIG_DIR`, and its `settings.json` and `CLAUDE.md` with other repos' devcontainers via `.claude-shared/` (see the [worktrees skill](../worktrees/SKILL.md#layout)).
 
 **Goal:** every runtime, CLI tool, and script needed for development is available as soon as the container starts, with no manual setup. If you add a tool, add it to the image.
 

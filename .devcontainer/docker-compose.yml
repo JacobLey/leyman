@@ -1,4 +1,4 @@
-# MAIN_CHECKOUT, WORKTREES_DIR, REPO_NAME and WORKTREE_NAME come from `.devcontainer/.env`, written by `initialize.sh`
+# MAIN_CHECKOUT, WORKTREES_DIR, CLAUDE_SHARED, REPO_NAME and WORKTREE_NAME come from `.devcontainer/.env`, written by `initialize.sh`
 # (the devcontainer `initializeCommand`). So does TUNNEL_HOST, when you add it there (it's kept across rewrites).
 
 services:
@@ -14,6 +14,8 @@ services:
       # Mounted at the identical host paths so git worktree links work on both sides
       - ${MAIN_CHECKOUT:?run .devcontainer/initialize.sh}:${MAIN_CHECKOUT}:delegated
       - ${WORKTREES_DIR:?run .devcontainer/initialize.sh}:${WORKTREES_DIR}:delegated
+      # Claude settings.json and CLAUDE.md shared with other repos, which claude-config links into
+      - ${CLAUDE_SHARED:?run .devcontainer/initialize.sh}:${CLAUDE_SHARED}:delegated
 
     environment:
       CLAUDE_CONFIG_DIR: ${WORKTREES_DIR}/.shared/claude-config

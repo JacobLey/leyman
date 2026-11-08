@@ -111,7 +111,7 @@ See all aliased (added to `PATH` by [`devcontainer.json`](./.devcontainer/devcon
 
 ## Coding Agents
 
-Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In the devcontainer, Claude Code config (credentials, settings, memory) lives in `<main checkout>-worktrees/.shared/claude-config`, outside version control and shared by every worktree. See the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
+Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In the devcontainer, Claude Code config (credentials, settings, memory) lives in `<main checkout>-worktrees/.shared/claude-config`, outside version control and shared by every worktree. Its `settings.json` and `CLAUDE.md` link into `.claude-shared/` beside the main checkout, shared with other repos that use the same setup. See the [worktrees skill](./.agents/skills/worktrees/SKILL.md).
 
 (If you use a different coding agent, PRs are welcome to support those directories).
 
