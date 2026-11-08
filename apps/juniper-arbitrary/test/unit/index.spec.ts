@@ -66,6 +66,22 @@ const tree = defineRecursive<Tree>('Tree', self =>
 
 const definedName = stringSchema().minLength(1).define('Name');
 
+// Formats lengthened to reach a `minLength`
+const lengthenedFormats = [
+    'byte',
+    'email',
+    'hostname',
+    'idn-email',
+    'idn-hostname',
+    'iri',
+    'iri-reference',
+    'json-pointer',
+    'relative-json-pointer',
+    'uri',
+    'uri-reference',
+    'uri-template',
+];
+
 // `$ref`s that only resolve through an `$id` or an anchor
 const idRefs: Readonly<Record<string, Schema<unknown>>> = {
     'embedded $id': customSchema({
@@ -473,6 +489,33 @@ suite('makeArbitrary', () => {
                 expectAllValid(stringSchema().format(format));
             });
         }
+
+        const lengthWindows: Readonly<Record<string, readonly [number, number]>> = {
+            '30-40': [30, 40],
+            'exactly 24': [24, 24],
+            'at least 200': [200, Number.POSITIVE_INFINITY],
+        };
+        for (const format of lengthenedFormats) {
+            for (const [name, [minLength, maxLength]] of Object.entries(lengthWindows)) {
+                test(`format ${format} of ${name}`, () => {
+                    const schema = stringSchema().format(format).minLength(minLength);
+                    expectAllValid(
+                        maxLength === Number.POSITIVE_INFINITY
+                            ? schema
+                            : schema.maxLength(maxLength)
+                    );
+                });
+            }
+        }
+        test('format hostname one character longer than drawn', () => {
+            expectAllValid(stringSchema().format('hostname').minLength(6).maxLength(6));
+        });
+        test('format hostname near its longest', () => {
+            expectAllValid(stringSchema().format('hostname').minLength(250));
+        });
+        test('format email past its longest local part', () => {
+            expectAllValid(stringSchema().format('email').minLength(300));
+        });
     });
 
     suite('Aims true without the validator', () => {
@@ -706,6 +749,27 @@ suite('makeArbitrary', () => {
             expect(values.some(value => Object.hasOwn(value, 'b'))).to.equal(false);
         });
 
+        test('lengths across the bounds of a format', () => {
+            const values = sample(stringSchema().format('uri').minLength(30).maxLength(40));
+            const lengths = new Set(values.map(value => value.length));
+            expect(lengths.size).to.be.greaterThan(8);
+        });
+
+        test('unbounded formats as fast-check generates them', () => {
+            const plain: Readonly<Record<string, fc.Arbitrary<string>>> = {
+                byte: fc.base64String(),
+                email: fc.emailAddress(),
+                hostname: fc.domain(),
+                uri: fc.webUrl(),
+                'uri-reference': fc.oneof(fc.webUrl(), fc.webPath()),
+            };
+            for (const [format, arbitrary] of Object.entries(plain)) {
+                expect(sample(stringSchema().format(format)), format).to.deep.equal(
+                    fc.sample(arbitrary, { numRuns: 200, seed: 42 })
+                );
+            }
+        });
+
         test('every anyOf branch', () => {
             const values = sample(mergeSchema().anyOf([numberSchema(), stringSchema()]));
             expect(new Set(values.map(value => typeof value))).to.deep.equal(
@@ -870,6 +934,13 @@ suite('makeArbitrary', () => {
             'a lookahead nothing else satisfies': stringSchema().pattern('^(?=z{20}).*$'),
             'a format whose values are never that short': stringSchema()
                 .format('uuid')
+                .maxLength(10),
+            'base64 with no length a multiple of 4': stringSchema()
+                .format('byte')
+                .minLength(5)
+                .maxLength(7),
+            'a pattern whose matches are never that short': stringSchema()
+                .pattern('^a{20}$')
                 .maxLength(10),
             'recursion with no way out': defineRecursive<object>('Forever', self =>
                 objectSchema({ properties: { next: self }, required: ['next'] })
