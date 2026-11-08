@@ -79,7 +79,7 @@ suite('IdempotencyKeys', () => {
                         throw failure;
                     },
                 },
-                onNotifyError: (...args) => {
+                onError: (...args) => {
                     errors.push(args);
                 },
             });

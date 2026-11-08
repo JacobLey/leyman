@@ -146,17 +146,17 @@ const keys = new IdempotencyKeys({
 
 #### `new IdempotencyKeys(options)`
 
-| Option               | Type                                    | Default                | Description                                                                                                                                   |
-| -------------------- | --------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store`              | `IdempotencyStore`                      | —                      | Required. A `PostgresStore` or `ValkeyStore`.                                                                                                 |
-| `notifier`           | `IdempotencyNotifier`                   | none                   | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll.                                    |
-| `ttlMs`              | `number`                                | `86_400_000` (24 h)    | How long a key lasts from when it was claimed.                                                                                                |
-| `leaseMs`            | `number`                                | `60_000`               | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`. |
-| `waitMs`             | `number`                                | `10_000`               | How long a duplicate waits on a running request before a `409`. `0` answers at once.                                                          |
-| `respondPolicy`      | `(response) => 'complete' \| 'release'` | `defaultRespondPolicy` | Which responses are stored (`complete`) and which free the key (`release`). The default releases only a `429`.                                |
-| `fingerprintHeaders` | `readonly string[]`                     | `[]`                   | Headers that must match on a reused key in `handle()`, in any case.                                                                           |
-| `problem`            | `(kind, request) => Response`           | `problemResponse`      | `handle()`'s answer to `'missing-key'`, `'invalid-key'`, `'conflict'` or `'mismatch'`.                                                        |
-| `onNotifyError`      | `(error, identity) => void`             | ignored                | Called when announcing an ended request fails. The request still ends as it did, and other servers notice by polling.                         |
+| Option               | Type                                    | Default                | Description                                                                                                                                                                                                                                                           |
+| -------------------- | --------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `store`              | `IdempotencyStore`                      | —                      | Required. A `PostgresStore` or `ValkeyStore`.                                                                                                                                                                                                                         |
+| `notifier`           | `IdempotencyNotifier`                   | none                   | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll.                                                                                                                                                            |
+| `ttlMs`              | `number`                                | `86_400_000` (24 h)    | How long a key lasts from when it was claimed.                                                                                                                                                                                                                        |
+| `leaseMs`            | `number`                                | `60_000`               | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`.                                                                                                                         |
+| `waitMs`             | `number`                                | `10_000`               | How long a duplicate waits on a running request before a `409`. `0` answers at once.                                                                                                                                                                                  |
+| `respondPolicy`      | `(response) => 'complete' \| 'release'` | `defaultRespondPolicy` | Which responses are stored (`complete`) and which free the key (`release`). The default releases only a `429`.                                                                                                                                                        |
+| `fingerprintHeaders` | `readonly string[]`                     | `[]`                   | Headers that must match on a reused key in `handle()`, in any case.                                                                                                                                                                                                   |
+| `problem`            | `(kind, request) => Response`           | `problemResponse`      | `handle()`'s answer to `'missing-key'`, `'invalid-key'`, `'conflict'` or `'mismatch'`.                                                                                                                                                                                |
+| `onError`            | `(error, identity) => void`             | ignored                | Called with a failure that doesn't fail the request: announcing an ended request failed (other servers notice by polling), or in `handle()` the store failed to store or release a response (the caller still gets it, and the key is held until its lease runs out). |
 
 Durations are whole milliseconds. **Throws** `IdempotencyKeysOptionError` for a duration below 1 (`waitMs` below 0) or not whole, or a `leaseMs` not below `ttlMs`.
 
@@ -172,7 +172,9 @@ Reads the request's `Idempotency-Key`, runs `run(request)` at most once per key,
 | `options.required`  | `boolean`                                 | Whether a request without a key is a `400`. `false` by default. |
 | `run`               | `(request: Request) => Promise<Response>` | Runs the request.                                               |
 
-**Returns** `Promise<Response>`: `run`'s response, a replay (with `Idempotent-Replayed: true`), or a problem. **Rejects** when the store fails, so a request never runs unprotected, or with `run`'s error (the key stays held until its lease runs out).
+**Returns** `Promise<Response>`: `run`'s response, a replay (with `Idempotent-Replayed: true`), or a problem. **Rejects** when the store fails before `run`, so a request never runs unprotected, or with `run`'s error (the key stays held until its lease runs out). Once `run` has a response, `handle()` returns it even if the store then fails to store or release it, and reports that failure to `onError`.
+
+`handle()` reads each response whole to store it, so a streamed response is buffered before it is sent.
 
 #### `.begin(params)`
 
@@ -254,8 +256,8 @@ Either notifier works with either store. A notifier only makes waiting faster: a
 
 ### Hashes and keys
 
-- `parseIdempotencyKey(values)`: reads the key from the header's values, one per header. A value in quotes is a Structured Field String; any other is the key as it is. **Returns** the key, or `null` without a header. **Throws** `IdempotencyKeyHeaderError` for more than one header, or a key that isn't 1 to 255 characters of `0x20` to `0x7E`.
-- `computeIdentity({ scope, operation?, key })` and `computeFingerprint({ method, target, headers, named, body })`: the spec's SHA-256 hashes, as 64 hex characters. `headers` takes `[name, value]` pairs or a `Headers`.
+- `parseIdempotencyKey(values)`: reads the key from the header's values (one per header, or already joined by `, `). A value in quotes is a Structured Field String; any other is the key as it is, and can't hold a comma, so a repeated header is always rejected. **Returns** the key, or `null` without a header. **Throws** `IdempotencyKeyHeaderError` for a repeated header, or a key that isn't 1 to 255 characters of `0x20` to `0x7E`.
+- `computeIdentity({ scope, operation?, key })` and `computeFingerprint({ method, target, headers, named, body })`: the spec's SHA-256 hashes, as 64 hex characters. `headers` takes `[name, value]` pairs or a `Headers`. The method is hashed as received, except that `DELETE`, `GET`, `HEAD`, `OPTIONS`, `POST` and `PUT` are upper-cased, as `fetch` does.
 - `defaultRespondPolicy` and `problemResponse(kind)`: the defaults of `respondPolicy` and `problem`, to build on.
 
 ### Errors
@@ -270,5 +272,5 @@ Every error extends `IdempotencyKeysError`.
 ## Limits
 
 - **Responses are read whole** to be stored, so `handle()` buffers a streamed response before sending it.
-- **`fetch`'s `Headers` sorts and joins headers.** A replay from `handle()` keeps the headers in the order `Headers` gave them (sorted by name, with repeated `Set-Cookie` kept). It also joins two `Idempotency-Key` headers into one value with `, `, which `handle()` reads as one key rather than a `400`; `parseIdempotencyKey()` given each value rejects them.
+- **Headers are stored in the order the response lists them.** For `handle()` that is the order of `fetch`'s `Headers`: sorted by name, repeated values joined, and repeated `Set-Cookie` kept.
 - **No lease renewal.** Set `leaseMs` above your slowest handler: a request that runs longer can be taken over, and run twice.

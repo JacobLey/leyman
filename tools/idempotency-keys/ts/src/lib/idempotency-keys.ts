@@ -63,10 +63,14 @@ export interface IdempotencyKeysOptions {
      */
     readonly problem?: (kind: ProblemKind, request: Request) => Promise<Response> | Response;
     /**
-     * Called when announcing a completed or released record fails. The attempt still ends as it did, and other
-     * servers' waiting requests notice by polling. Ignored by default.
+     * Called with a failure that doesn't fail the request, and the identity of its key. Ignored by default.
+     *
+     * - Announcing a completed or released record failed: the attempt still ended as it did, and other servers'
+     *   waiting requests notice by polling.
+     * - In `handle()`, the store failed to complete or release a response: the caller still gets the response, and
+     *   the key is held until its lease runs out.
      */
-    readonly onNotifyError?: (error: unknown, identity: string) => void;
+    readonly onError?: (error: unknown, identity: string) => void;
 }
 
 export interface BeginParams {
@@ -173,6 +177,7 @@ export class IdempotencyKeys {
     readonly #waitMs: number;
     readonly #fingerprintHeaders: readonly string[];
     readonly #problem: (kind: ProblemKind, request: Request) => Promise<Response> | Response;
+    readonly #onError: (error: unknown, identity: string) => void;
 
     /**
      * @param options - Store, notifier and timings
@@ -187,7 +192,7 @@ export class IdempotencyKeys {
         respondPolicy = defaultRespondPolicy,
         fingerprintHeaders = [],
         problem = problemResponse,
-        onNotifyError = () => {},
+        onError = () => {},
     }: IdempotencyKeysOptions) {
         this.#store = store;
         this.#notifier = notifier;
@@ -197,7 +202,8 @@ export class IdempotencyKeys {
         if (this.#leaseMs >= this.#ttlMs) {
             throw new IdempotencyKeysOptionError('leaseMs', leaseMs, 'must be less than ttlMs');
         }
-        this.#attemptContext = { store, notifier, respondPolicy, onNotifyError };
+        this.#attemptContext = { store, notifier, respondPolicy, onError };
+        this.#onError = onError;
         this.#fingerprintHeaders = fingerprintHeaders;
         this.#problem = problem;
     }
@@ -266,10 +272,11 @@ export class IdempotencyKeys {
     /**
      * Handles a request with fetch's `Request` and `Response`: reads its `Idempotency-Key` header, runs `run` at
      * most once per key, and stores its response by the respond policy. A replay has the header
-     * `Idempotent-Replayed: true`. Responses are read whole, to store them.
+     * `Idempotent-Replayed: true`. Each response is read whole, to store it, so a streamed one is buffered before it is sent.
      *
      * A request without a key runs as is, unless `required`. When `run` rejects, the attempt doesn't end:
-     * its lease runs out, and a later request with the key runs.
+     * its lease runs out, and a later request with the key runs. When the store fails to complete or release the
+     * response, it is still returned, and the failure goes to `onError`.
      *
      * @param request - Request to handle, whose body is read from a clone
      * @param options - Scope and operation of the request
@@ -306,11 +313,16 @@ export class IdempotencyKeys {
         }
         const response = await run(request);
         const body = new Uint8Array(await response.arrayBuffer());
-        await result.attempt.respond({
-            status: response.status,
-            headers: [...response.headers],
-            body,
-        });
+        try {
+            await result.attempt.respond({
+                status: response.status,
+                headers: [...response.headers],
+                body,
+            });
+        } catch (error) {
+            // The request ran, so its caller gets the response, which a retry couldn't give
+            this.#onError(error, result.attempt.identity);
+        }
         return new Response(responseBody(body), {
             status: response.status,
             statusText: response.statusText,

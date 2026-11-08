@@ -24,7 +24,8 @@ export interface IdentityInput {
  */
 export interface FingerprintInput {
     /**
-     * Upper case, as sent (`POST`).
+     * As received. `DELETE`, `GET`, `HEAD`, `OPTIONS`, `POST` and `PUT` are upper-cased in any case, as `fetch` does;
+     * other methods are case-sensitive.
      */
     readonly method: string;
     /**
@@ -44,6 +45,31 @@ export interface FingerprintInput {
      */
     readonly body: string | Uint8Array;
 }
+
+/**
+ * The methods `fetch` upper-cases in any case when it builds a `Request`
+ * ([Fetch, normalize a method](https://fetch.spec.whatwg.org/#concept-method-normalize)). Other methods are
+ * case-sensitive, as in HTTP.
+ */
+const normalizedMethods: ReadonlySet<string> = new Set([
+    'DELETE',
+    'GET',
+    'HEAD',
+    'OPTIONS',
+    'POST',
+    'PUT',
+]);
+
+/**
+ * Normalizes a method as `fetch` does, so a server that gets the method as received hashes it the same.
+ *
+ * @param method - Method as received
+ * @returns The method, upper-cased if `fetch` would
+ */
+const normalizeMethod = (method: string): string => {
+    const upper = method.toUpperCase();
+    return normalizedMethods.has(upper) ? upper : method;
+};
 
 /**
  * Hashes a key's identity, as the spec's `identity`.
@@ -88,7 +114,7 @@ export const computeFingerprint = async ({
     }
 
     const encoder = new FieldEncoder();
-    encoder.field(method).field(target).uint32(names.length);
+    encoder.field(normalizeMethod(method)).field(target).uint32(names.length);
     for (const name of names) {
         const list = values.get(name)!;
         encoder.field(name).field(list.length === 0 ? null : list.join(', '));

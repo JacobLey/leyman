@@ -109,7 +109,7 @@ export interface AttemptContext {
     readonly store: IdempotencyStore;
     readonly notifier: IdempotencyNotifier | undefined;
     readonly respondPolicy: RespondPolicy;
-    readonly onNotifyError: (error: unknown, identity: string) => void;
+    readonly onError: (error: unknown, identity: string) => void;
 }
 
 /**
@@ -152,12 +152,12 @@ export class Attempt implements IdempotencyAttempt {
      * @param didChange - Whether the store changed the record
      */
     async #announce(didChange: boolean): Promise<void> {
-        const { notifier, onNotifyError } = this.#context;
+        const { notifier, onError } = this.#context;
         if (didChange && notifier) {
             try {
                 await notifier.publish(this.identity);
             } catch (error) {
-                onNotifyError(error, this.identity);
+                onError(error, this.identity);
             }
         }
     }

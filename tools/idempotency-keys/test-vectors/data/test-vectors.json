@@ -136,6 +136,36 @@
         "b"
       ],
       "error": true
+    },
+    {
+      "description": "more than one header, quoted",
+      "header": [
+        "\"a\"",
+        "\"b\""
+      ],
+      "error": true
+    },
+    {
+      "description": "more than one header, the first quoted",
+      "header": [
+        "\"a\"",
+        "b"
+      ],
+      "error": true
+    },
+    {
+      "description": "a comma in a raw value",
+      "header": [
+        "a,b"
+      ],
+      "error": true
+    },
+    {
+      "description": "a comma in a string",
+      "header": [
+        "\"a, b\""
+      ],
+      "key": "a, b"
     }
   ],
   "identities": [
@@ -216,6 +246,48 @@
       "named": [],
       "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
       "fingerprint": "f5ef6735f338e6cc603905d1c765cf061a1b5ab5d0df94c7af506c88e519175e"
+    },
+    {
+      "description": "the methods fetch normalizes are upper-cased (same as POST)",
+      "method": "post",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "73b66c99bf2e15450bfe2180bc4e91c0a3e0a5afe7e6c38729c3bd4990534b08"
+    },
+    {
+      "description": "other methods are case-sensitive",
+      "method": "patch",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "84c138c4bcb6b54162d79564ad40279e3e4e490ac6a80665d6e54f093c900ebc"
+    },
+    {
+      "description": "PATCH",
+      "method": "PATCH",
+      "target": "/notes",
+      "headers": [
+        [
+          "Content-Type",
+          "application/json"
+        ]
+      ],
+      "named": [],
+      "body": "{\"title\":\"Hi\",\"body\":\"There\"}",
+      "fingerprint": "ceaaf54bf29b9e924481794cc3ced33ae084d09c5160433d1b13ec2d9b9f3cf0"
     },
     {
       "description": "the query is part of the target",

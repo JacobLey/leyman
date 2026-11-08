@@ -36,13 +36,22 @@ const parseSfString = (value: string): string | null => {
 };
 
 /**
- * Reads the key from one header value.
+ * Reads an unquoted value, which is the key as it is. It can't hold a comma, which is how a repeated header's values
+ * are joined, so a repeated header is never read as one key.
+ *
+ * @param value - Header value, not starting with a quote
+ * @returns The value, or `null` if it holds a comma
+ */
+const parseRaw = (value: string): string | null => (value.includes(',') ? null : value);
+
+/**
+ * Reads the key from one header value, with a repeated header's values joined by `, ` (as `Headers` gives them).
  *
  * @param value - The header's value
  * @returns The key, or `false` when invalid
  */
 export const readKeyValue = (value: string): false | string => {
-    const key = value.startsWith('"') ? parseSfString(value) : value;
+    const key = value.startsWith('"') ? parseSfString(value) : parseRaw(value);
     return key === null || key.length === 0 || key.length > maxLength
         ? false
         : printable.test(key) && key;
@@ -54,23 +63,19 @@ export const readKeyValue = (value: string): false | string => {
  * @param values - The header's values
  * @returns The key, `null` without a header, or `false` when invalid
  */
-export const readKey = (values: readonly string[]): false | string | null => {
-    if (values.length !== 1) {
-        return values.length === 0 ? null : false;
-    }
-    return readKeyValue(values[0]!);
-};
+export const readKey = (values: readonly string[]): false | string | null =>
+    values.length === 0 ? null : readKeyValue(values.join(', '));
 
 /**
  * Reads the key from the values of the `Idempotency-Key` header. A value in quotes is a Structured Field String,
- * and the key is its content; any other value is the key as it is.
+ * and the key is its content; any other value is the key as it is, and can't hold a comma.
  *
- * `fetch`'s `Headers` joins repeated headers into one value with `, `, so it can't tell two headers from one
- * holding a comma: pass every value separately when the server gives them (as Node.js's `IncomingMessage` does).
+ * A repeated header's values are joined by `, `, as `fetch`'s `Headers` gives them, so a repeated header is never a
+ * valid key: an unquoted key can't hold the comma, and a string can't be followed by more.
  *
- * @param values - The header's values, one for each time the request has it
+ * @param values - The header's values: one for each time the request has it, or already joined
  * @returns The key, or `null` when the request has no header
- * @throws {IdempotencyKeyHeaderError} When there is more than one header, or it holds no valid key
+ * @throws {IdempotencyKeyHeaderError} When the header holds no valid key, or is repeated
  */
 export const parseIdempotencyKey = (values: readonly string[]): string | null => {
     const key = readKey(values);

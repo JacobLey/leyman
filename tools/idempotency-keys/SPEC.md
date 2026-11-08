@@ -15,9 +15,11 @@ can't be read, `409` for a request whose key is in use, and `422` for a key reus
 A request carries its key in the `Idempotency-Key` header. A request without one runs as it would without the library,
 unless the server requires a key for that operation: then it is a `400`.
 
-- **The key** is the header's value. A value in quotes is a Structured Field String ([RFC 9651, section 3.3.3][sf-string]),
-  and the key is its content, without the quotes and escapes. Any other value is the key as it is. A key is 1 to 255
-  characters, each from `0x20` (space) to `0x7E`. Anything else, and more than one `Idempotency-Key` header, is a `400`.
+- **The key** is the header's value, with the values of a repeated header joined by `, ` in the order received
+  ([RFC 9110, section 5.3][combining]: `fetch`'s `Headers` only ever gives them joined). A value in quotes is a
+  Structured Field String ([RFC 9651, section 3.3.3][sf-string]), and the key is its content, without the quotes and
+  escapes. Any other value is the key as it is, and can't contain a comma, so a repeated header is always a `400`. A key
+  is 1 to 255 characters, each from `0x20` (space) to `0x7E`. Anything else is a `400`.
 - **The identity** is `(scope, operation, key)`. The server gives `scope` (who is calling: a user or tenant id, never
   empty) and, optionally, `operation` (any non-empty string it picks: an OpenAPI `operationId`, a route name). With an
   operation, a key on another operation is another key. Without one, a key is one key across everything the scope
@@ -26,6 +28,7 @@ unless the server requires a key for that operation: then it is a `400`.
   received), the headers the server names, and the body.
 
 [sf-string]: https://www.rfc-editor.org/rfc/rfc9651#section-3.3.3
+[combining]: https://www.rfc-editor.org/rfc/rfc9110#section-5.3
 
 ### Encoding
 
@@ -39,7 +42,9 @@ fingerprint = SHA-256( field(method) || field(target) || uint32(count) || header
 headers     = for each named header, in byte order of its name: field(name) || field(value, or absent)
 ```
 
-- `method` is upper case, as sent (`POST`).
+- `method` is as received, except that `DELETE`, `GET`, `HEAD`, `OPTIONS`, `POST` and `PUT` are upper-cased in any
+  case, as `fetch` does when it builds a `Request` ([Fetch, normalize a method][normalize]). Other methods are
+  case-sensitive (`patch` is not `PATCH`), as HTTP says ([RFC 9110, section 9.1][methods]).
 - `target` is the path and query exactly as the request line had them (`/notes?draft=1`), not decoded or normalized.
 - Header names are lower case. Each name is listed once, so `count` is the number of distinct names. A header sent more
   than once has its values joined by `, ` in the order received (as both `fetch`'s `Headers` and Go's `Header.Values`
@@ -47,6 +52,9 @@ headers     = for each named header, in byte order of its name: field(name) || f
 - `body` is the raw bytes. A request without a body has an empty one.
 
 Written out, both are lower-case hex: 64 characters.
+
+[normalize]: https://fetch.spec.whatwg.org/#concept-method-normalize
+[methods]: https://www.rfc-editor.org/rfc/rfc9110#section-9.1
 
 ## Attempts
 
@@ -73,7 +81,9 @@ Which responses complete and which release is up to the server, as a function of
 every response except a `429` (Too Many Requests, which says nothing was done). A server that knows its handlers are
 transactional may release `5xx` responses too, so a retry runs again; a handler that may have partly written must not.
 A request that fails before it has a response (its server crashed, or it lost its store) neither completes nor
-releases: its lease runs out, and a waiting or later request takes over.
+releases: its lease runs out, and a waiting or later request takes over. One that has a response but fails to complete
+or release it still sends that response to its caller, who then has no reason to retry, and reports the failure to the
+server; its lease runs out the same way.
 
 Times come from the store's clock, never a server's, so servers with drifting clocks agree on every lease.
 
@@ -100,7 +110,7 @@ every claim and takeover.
 - `release(identity, token)` deletes the record if it holds `token`, and says whether it did.
 
 A response is a status (an integer from 100 to 599), headers, and a body (bytes). Headers are stored as a JSON array of
-`[name, value]` pairs of strings, names in lower case, in the order the server gave them, repeated names kept.
+`[name, value]` pairs of strings, names in lower case, in the order the server's response lists them, repeated names kept. A replay sends them in that order.
 
 ### Postgres
 
@@ -155,7 +165,7 @@ A request whose lease ran out, but that nobody took over, still completes or rel
 Lax: a claim is a key with a time to live, so a failover that loses writes or a flush forgets keys, and a request after
 that runs again. Use it for deduplicating notifications or non-financial creates, never payments.
 
-A record is a hash at `<prefix>:<identity>`, expiring with the key (`PEXPIRE` of `ttlMs` at each claim). Its fields:
+A record is a hash at `<prefix>:<identity>` (the prefix is `idempotency_keys` unless configured), expiring with the key (`PEXPIRE` of `ttlMs` at each claim). Its fields:
 
 | Field | Value |
 |---|---|

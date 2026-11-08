@@ -242,4 +242,27 @@ suite('handle', () => {
             expect(kinds).to.deep.equal(['invalid-key']);
         }
     );
+
+    withKeys.test(
+        'Returns the response when the store fails to store it, and reports why',
+        async ({ store }) => {
+            const failure = new Error('Store is down');
+            const errors: unknown[] = [];
+            const keys = new IdempotencyKeys({
+                store: {
+                    claim: async params => store.claim(params),
+                    complete: async () => {
+                        throw failure;
+                    },
+                    release: async (identity, token) => store.release(identity, token),
+                },
+                onError: error => {
+                    errors.push(error);
+                },
+            });
+            const response = await keys.handle(createNote(), options, handler().run);
+            expect(response.status).to.equal(201);
+            expect(errors).to.deep.equal([failure]);
+        }
+    );
 });
