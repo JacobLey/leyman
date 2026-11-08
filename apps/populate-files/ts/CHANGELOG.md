@@ -1,5 +1,14 @@
 # populate-files
 
+## 1.2.3
+
+### Patch Changes
+
+- fe4dff1: `populateFiles` decides every file before writing or removing any, so a refusal (such as an edited file it may not overwrite) leaves every file as it was. It used to write files in parallel, so other files could already be written when one was refused. `populateFile` likewise decides its file and manifest before writing either.
+- 23eaeee: The package's repository directory is now `apps/populate-files/ts`, beside the Go implementation and the shared test vectors.
+- Updated dependencies [3b36dd0]
+  - generated-signature@0.3.1
+
 ## 1.2.2
 
 ### Patch Changes

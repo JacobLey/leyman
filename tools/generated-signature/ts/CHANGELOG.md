@@ -1,5 +1,11 @@
 # generated-signature
 
+## 0.3.1
+
+### Patch Changes
+
+- 3b36dd0: The package's repository directory is now `tools/generated-signature/ts`, beside the Go implementation and the shared test vectors.
+
 ## 0.3.0
 
 ### Minor Changes

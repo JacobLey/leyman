@@ -1,5 +1,19 @@
 # genever
 
+## 0.10.3
+
+### Patch Changes
+
+- 07a5e4b: An OpenAPI document without `components` can refer to schemas in other files: they're embedded in a new `components.schemas`. They were put in `$defs`, which a document's references don't resolve to, so generating failed as "Only references within the same document are supported".
+- c4b4cf7: The README links to genever for Go, which generates Go types from the same schemas with the same strict checks.
+- c8d8144: A URL that redirects to a schema already loaded, by another reference or by its `$id`, refers to that schema. It was embedded a second time, which failed as its `$id` "is already declared".
+- f864a4f: The package's repository directory is now `apps/genever/ts`, beside the Go implementation and the shared test vectors.
+- Updated dependencies [3b36dd0]
+- Updated dependencies [fe4dff1]
+- Updated dependencies [23eaeee]
+  - generated-signature@0.3.1
+  - populate-files@1.2.3
+
 ## 0.10.2
 
 ### Patch Changes
