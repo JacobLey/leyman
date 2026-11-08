@@ -1,0 +1,92 @@
+diff --git a/lib/cjs/fast-check.js b/lib/cjs/fast-check.js
+index a411dddbbe23fe5058e9f96a923b27a840bedda9..f7b3d61a6e9267d2e5ad7b9919ef9071d816f179 100644
+--- a/lib/cjs/fast-check.js
++++ b/lib/cjs/fast-check.js
+@@ -5707,6 +5707,32 @@ function getAlphabetRanges(alphabet) {
+ 	}
+ }
+ /** @internal */
++/** @internal */
++function indexToCodePointRangesUnmapperFor(ranges) {
++	const codePointRanges = [];
++	let from = 0;
++	for (const range of ranges) {
++		const first = range[0];
++		const last = range.length === 1 ? range[0] : range[1];
++		safePush(codePointRanges, { from, first, last });
++		from += last - first + 1;
++	}
++	return function indexToCodePointRangesUnmapper(value) {
++		const codePoint = typeof value === "string" ? value.codePointAt(0) : void 0;
++		if (codePoint !== void 0 && value.length === (codePoint > 65535 ? 2 : 1)) {
++			let min = 0;
++			let max = codePointRanges.length;
++			while (max - min > 1) {
++				const mid = ~~((min + max) / 2);
++				if (codePoint < codePointRanges[mid].first) max = mid;
++				else min = mid;
++			}
++			const range = codePointRanges[min];
++			if (range.first <= codePoint && codePoint <= range.last) return range.from + codePoint - range.first;
++		}
++		throw new SError("Unknown value encountered cannot be built using these code point ranges");
++	};
++}
+ function getOrCreateStringUnitInstance(type, alphabet) {
+ 	const key = `${type}:${alphabet}`;
+ 	const registered = registeredStringUnitInstancesMap[key];
+@@ -5725,7 +5751,7 @@ function getOrCreateStringUnitInstance(type, alphabet) {
+ 			});
+ 		}
+ 	}
+-	const stringUnitInstance = mapToConstant(...entries);
++	const stringUnitInstance = entries.length !== ranges.length ? mapToConstant(...entries) : nat({ max: computeNumChoices(entries) - 1 }).map(indexToMappedConstantMapperFor(entries), indexToCodePointRangesUnmapperFor(ranges));
+ 	registeredStringUnitInstancesMap[key] = stringUnitInstance;
+ 	return stringUnitInstance;
+ }
+diff --git a/lib/fast-check.js b/lib/fast-check.js
+index 5a979916fcb4a398c2ba061425d0f838570a3b3d..f68ac8f50867e24ac5b2550e8ac972a74a042cfd 100644
+--- a/lib/fast-check.js
++++ b/lib/fast-check.js
+@@ -5692,6 +5692,32 @@ function getAlphabetRanges(alphabet) {
+ 	}
+ }
+ /** @internal */
++/** @internal */
++function indexToCodePointRangesUnmapperFor(ranges) {
++	const codePointRanges = [];
++	let from = 0;
++	for (const range of ranges) {
++		const first = range[0];
++		const last = range.length === 1 ? range[0] : range[1];
++		safePush(codePointRanges, { from, first, last });
++		from += last - first + 1;
++	}
++	return function indexToCodePointRangesUnmapper(value) {
++		const codePoint = typeof value === "string" ? value.codePointAt(0) : void 0;
++		if (codePoint !== void 0 && value.length === (codePoint > 65535 ? 2 : 1)) {
++			let min = 0;
++			let max = codePointRanges.length;
++			while (max - min > 1) {
++				const mid = ~~((min + max) / 2);
++				if (codePoint < codePointRanges[mid].first) max = mid;
++				else min = mid;
++			}
++			const range = codePointRanges[min];
++			if (range.first <= codePoint && codePoint <= range.last) return range.from + codePoint - range.first;
++		}
++		throw new SError("Unknown value encountered cannot be built using these code point ranges");
++	};
++}
+ function getOrCreateStringUnitInstance(type, alphabet) {
+ 	const key = `${type}:${alphabet}`;
+ 	const registered = registeredStringUnitInstancesMap[key];
+@@ -5710,7 +5736,7 @@ function getOrCreateStringUnitInstance(type, alphabet) {
+ 			});
+ 		}
+ 	}
+-	const stringUnitInstance = mapToConstant(...entries);
++	const stringUnitInstance = entries.length !== ranges.length ? mapToConstant(...entries) : nat({ max: computeNumChoices(entries) - 1 }).map(indexToMappedConstantMapperFor(entries), indexToCodePointRangesUnmapperFor(ranges));
+ 	registeredStringUnitInstancesMap[key] = stringUnitInstance;
+ 	return stringUnitInstance;
+ }

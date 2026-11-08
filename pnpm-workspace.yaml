@@ -278,6 +278,11 @@ patchedDependencies:
   # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`
   # to `s.startsWith('p{N}')`
   '@typescript-eslint/eslint-plugin@8.72.1': patches/@typescript-eslint__eslint-plugin@8.72.1.patch
+  # The first string of a unit made of code point ranges (`binary`, and so `webUrl`, `webPath` and the other web
+  # arbitraries) fills a Map with all 1.1 million code points to unmap it: ~0.5s and 85MB per process, which times out
+  # the first property test on CI. Unmaps from the ranges instead. Drop once a release fixing
+  # https://github.com/dubzzz/fast-check/issues/7551 is 7 days old
+  fast-check@4.10.2: patches/fast-check@4.10.2.patch
   # Without the daemon, as in Docker and CI, each wave of task hashing copies the whole task graph to native code with
   # every result written onto it so far, about 112s of a warm `verify`. Nx prunes those results for the daemon only
   nx@23.3.1: patches/nx@23.3.1.patch

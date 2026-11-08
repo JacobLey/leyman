@@ -221,6 +221,10 @@
       "why": "a wrong autofix under the v flag, which the eslint config's rules reach"
     },
     {
+      "path": "patches/fast-check@4.10.2.patch",
+      "why": "fast-check's first Unicode or web string fills a Map of every code point (~0.5s), timing out property tests"
+    },
+    {
       "path": "scripts/commands/serve",
       "when": "local-ingress",
       "why": "runs a project's dev server at the worktree's URL"
