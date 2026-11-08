@@ -23,7 +23,8 @@ type JsonBody<Body> = Body extends { content: Record<'application/json', infer J
     : never;
 
 /**
- * What a call to the operation takes: its `path` and `query` parameters, and its JSON `body`, each only if it has one.
+ * What a call to the operation takes: its `path`, `query` and `header` parameters, and its JSON `body`, each only if
+ * it has one.
  *
  * @template Id - Which operation, as the spec names it
  */
@@ -31,6 +32,7 @@ export type OperationInput<Id extends OperationId> = Field<
     'body',
     JsonBody<Operations[Id]['requestBody']>
 > &
+    Field<'header', Operations[Id]['parameters']['header']> &
     Field<'path', Operations[Id]['parameters']['path']> &
     Field<'query', Operations[Id]['parameters']['query']>;
 

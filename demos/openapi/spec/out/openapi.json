@@ -93,6 +93,17 @@
             ]
           }
         ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Any unique value, such as a UUID, sent again with each retry of the same request. The first request with it runs; a retry gets the first's response again (with `Idempotent-Replayed: true`), waits while the first still runs, and is a 409 if it still runs after 10 seconds. The same key on a different request is a 422. Each caller's keys are their own, and last 24 hours.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -144,8 +155,28 @@
               }
             }
           },
+          "409": {
+            "description": "A request with the same Idempotency-Key is still running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "413": {
             "description": "The body is larger than any valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The Idempotency-Key was already used on a different request",
             "content": {
               "application/json": {
                 "schema": {

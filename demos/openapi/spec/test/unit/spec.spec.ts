@@ -11,6 +11,7 @@ const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'tr
 
 interface Operation {
     readonly operationId?: string;
+    readonly parameters?: readonly { readonly name: string; readonly in: string }[];
     readonly security?: readonly Record<string, readonly string[]>[];
     readonly responses: Record<string, unknown>;
 }
@@ -61,6 +62,20 @@ suite('spec', () => {
     test('Answers a request that does not match with 400', () => {
         for (const { operation } of operations()) {
             expect(operation.responses).to.have.property('400');
+        }
+    });
+
+    test('Takes an Idempotency-Key only on writes, documenting its 409 and 422', () => {
+        for (const { method, operation } of operations()) {
+            const hasKey = (operation.parameters ?? []).some(
+                parameter => parameter.in === 'header' && parameter.name === 'Idempotency-Key'
+            );
+            expect(hasKey).to.equal(method === 'post');
+            if (!hasKey) {
+                continue;
+            }
+            expect(operation.responses).to.have.property('409');
+            expect(operation.responses).to.have.property('422');
         }
     });
 

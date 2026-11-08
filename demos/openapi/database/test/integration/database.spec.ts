@@ -7,6 +7,7 @@ import { getTableConfig } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { notes } from '@leyman/demo-openapi-database';
 import { expect } from '@leyman/expect';
+import { createTableSql, PostgresStore } from 'idempotency-keys';
 import { before, suite } from 'mocha-chain';
 import { PgDolly } from 'pg-dolly';
 
@@ -74,6 +75,26 @@ suite('Database', () => {
         expect(rows.map(({ indexname }) => indexname)).to.deep.equal(
             getTableConfig(notes).indexes.map(({ config }) => config.name)
         );
+    });
+
+    withDb.test('Creates idempotency_keys as idempotency-keys declares it', async () => {
+        // A custom migration, written as the library exports it (and its spec pins), so the two can't drift
+        const migration = await readFile(
+            new URL('../../migrations/0003_add-idempotency-keys.sql', import.meta.url),
+            'utf8'
+        );
+
+        expect(migration).to.equal(createTableSql());
+    });
+
+    withDb.test('Has the table idempotency-keys stores in', async ({ pool }) => {
+        await pool.query(
+            "INSERT INTO idempotency_keys (identity, fingerprint, expires_at) VALUES ('\\x00', '\\x00', now())"
+        );
+
+        const store = new PostgresStore({ client: pool });
+
+        expect(await store.deleteExpired()).to.equal(1);
     });
 
     withDb.test('Has every migration recorded, so migrating does nothing', async ({ db, pool }) => {

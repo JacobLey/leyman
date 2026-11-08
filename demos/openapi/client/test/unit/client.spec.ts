@@ -33,7 +33,12 @@ suite('NotesClient', () => {
         expectTypeOf<OperationInput<'listNotes'>>().toEqualTypeOf<{
             readonly query?: { q?: string; limit?: number };
         }>();
-        expectTypeOf<OperationInput<'createNote'>>().toEqualTypeOf<{ readonly body: NewNote }>();
+        expectTypeOf<OperationInput<'createNote'>>().toEqualTypeOf<
+            {
+                // eslint-disable-next-line @typescript-eslint/naming-convention -- The header's name, as the spec has it
+                readonly header?: { 'Idempotency-Key'?: string };
+            } & { readonly body: NewNote }
+        >();
     });
 
     test('Returns each documented response', () => {
@@ -136,6 +141,25 @@ suite('NotesClient', () => {
         expect(requests[0]?.method).to.equal('POST');
         expect(requests[0]?.headers.get('content-type')).to.equal('application/json');
         expect(await requests[0]?.json()).to.deep.equal({ title: 'Dolly', body: 'A sheep' });
+    });
+
+    withFetch.test('Sends header parameters', async ({ requests, fetch, respond }) => {
+        respond(note, 201);
+        const client = new NotesClient({ baseUrl: 'http://notes.test', fetch });
+
+        await client.call('createNote', {
+            body: { title: 'Dolly', body: 'A sheep' },
+            header: { 'Idempotency-Key': 'key-1' },
+        });
+        await client.call('createNote', {
+            body: { title: 'Dolly', body: 'A sheep' },
+            header: {},
+        });
+
+        expect(requests.map(({ headers }) => headers.get('idempotency-key'))).to.deep.equal([
+            'key-1',
+            null,
+        ]);
     });
 
     withFetch.test('Sends the token', async ({ requests, fetch, respond }) => {

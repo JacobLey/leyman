@@ -72,7 +72,7 @@ export class NotesClient {
      * Calls an operation.
      *
      * @param operationId - Operation, as named in the spec
-     * @param input - Its `path` and `query` parameters, and `body`
+     * @param input - Its `path`, `query` and `header` parameters, and `body`
      * @returns The response, as `{ status, body }`
      * @rejects {NotesClientUnexpectedStatusError} When the status isn't one the spec documents for the operation
      */
@@ -81,9 +81,10 @@ export class NotesClient {
         input: OperationInput<Id>
     ): Promise<OperationResult<Id>> {
         const route = routes.get(operationId)!;
-        const { path, query, body } = input as {
+        const { path, query, header, body } = input as {
             readonly path?: Readonly<Record<string, string>>;
             readonly query?: Readonly<Record<string, number | string | undefined>>;
+            readonly header?: Readonly<Record<string, string | undefined>>;
             readonly body?: unknown;
         };
 
@@ -105,6 +106,13 @@ export class NotesClient {
         }
 
         const headers = new Headers({ accept: 'application/json' });
+        // OpenAPI ignores header parameters named Accept, Content-Type or Authorization, so none is overwritten below
+        const headerParameters = Object.entries(header ?? {});
+        for (const [name, value] of headerParameters) {
+            if (value !== undefined) {
+                headers.set(name, value);
+            }
+        }
         if (body !== undefined) {
             headers.set('content-type', 'application/json');
         }

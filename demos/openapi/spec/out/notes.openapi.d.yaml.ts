@@ -162,7 +162,12 @@ export type Operations = {
     createNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /**
+                 * Any unique value, such as a UUID, sent again with each retry of the same request. The first request with it runs; a retry gets the first's response again (with `Idempotent-Replayed: true`), waits while the first still runs, and is a 409 if it still runs after 10 seconds. The same key on a different request is a 422. Each caller's keys are their own, and last 24 hours.
+                 */
+                'Idempotency-Key'?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -217,9 +222,31 @@ export type Operations = {
                 };
             };
             /**
+             * A request with the same Idempotency-Key is still running
+             */
+            '409': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
              * The body is larger than any valid request
              */
             '413': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * The Idempotency-Key was already used on a different request
+             */
+            '422': {
                 headers: {
                     [key: string]: unknown;
                 };
@@ -358,7 +385,12 @@ type OperationRequestParameters = {
     };
     createNote: {
         query?: never;
-        header?: never;
+        header?: {
+            /**
+             * Any unique value, such as a UUID, sent again with each retry of the same request. The first request with it runs; a retry gets the first's response again (with `Idempotent-Replayed: true`), waits while the first still runs, and is a 409 if it still runs after 10 seconds. The same key on a different request is a 422. Each caller's keys are their own, and last 24 hours.
+             */
+            'Idempotency-Key'?: string;
+        };
         path?: never;
         cookie?: never;
     };

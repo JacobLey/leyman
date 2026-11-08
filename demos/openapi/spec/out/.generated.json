@@ -2,13 +2,13 @@
   "version": 1,
   "files": {
     "notes.openapi.d.yaml.ts": {
-      "hash": "v1:ea9e727140235f42b2a7928b1e5923c0"
+      "hash": "v1:ba7e0f1059d6c5b5178c9ccff63ff8b0"
     },
     "notes.openapi.yaml": {
-      "hash": "v1:d5ce0530c1fc1ca60d8013d3c846a222"
+      "hash": "v1:cd3bf5c8bb3a076e2990f1d813a4a192"
     },
     "openapi.json": {
-      "hash": "v1:a3ee6e187d12c7a63ec26adfe4194335"
+      "hash": "v1:2630064b678887b1672be6c09f617ec9"
     }
   }
 }

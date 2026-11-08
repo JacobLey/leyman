@@ -6,13 +6,13 @@ Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ## The API
 
-| Operation    | Method and path        | Auth                  | Responses                              |
-| ------------ | ---------------------- | --------------------- | -------------------------------------- |
-| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`    |
-| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
-| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404` |
+| Operation    | Method and path        | Auth                  | Responses                                            |
+| ------------ | ---------------------- | --------------------- | ---------------------------------------------------- |
+| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`                  |
+| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `409`, `413`, `422` |
+| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404`               |
 
-Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
+Every error is an `ApiError` (`{ code, message }`). `createNote` takes an optional `Idempotency-Key` header, so a retry gets the first request's response again rather than adding the note twice: `409` while the first still runs (after waiting 10 seconds for it), `422` for the key reused on a different request. The [server](../server/README.md#retrying-safely) says how. `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 
 ## How it's built
 
@@ -30,3 +30,4 @@ The tests check that the document:
 - requires a bearer token for every operation, with `notes:read` to read and `notes:write` to write, and documents its `401` and `403`
 - uses only security schemes it defines
 - documents a `400` for every operation, since the server rejects requests that don't match
+- takes an `Idempotency-Key` on its write (and only there), documenting the `409` and `422` it may answer

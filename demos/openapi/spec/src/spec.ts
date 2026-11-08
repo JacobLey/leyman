@@ -49,7 +49,27 @@ const errors = {
         content: json(errorSchema),
     },
     404: { description: 'No such note', content: json(errorSchema) },
+    409: {
+        description: 'A request with the same Idempotency-Key is still running',
+        content: json(errorSchema),
+    },
     413: { description: 'The body is larger than any valid request', content: json(errorSchema) },
+    422: {
+        description: 'The Idempotency-Key was already used on a different request',
+        content: json(errorSchema),
+    },
+} as const;
+
+/**
+ * Makes a write safe to retry: the first request with a key runs, and a retry with it gets the first's response
+ * again, rather than writing twice. Optional, so a client that never retries needs none.
+ */
+const idempotencyKey = {
+    name: 'Idempotency-Key',
+    in: 'header',
+    description:
+        "Any unique value, such as a UUID, sent again with each retry of the same request. The first request with it runs; a retry gets the first's response again (with `Idempotent-Replayed: true`), waits while the first still runs, and is a 409 if it still runs after 10 seconds. The same key on a different request is a 422. Each caller's keys are their own, and last 24 hours.",
+    schema: stringSchema({ minLength: 1 }),
 } as const;
 
 /**
@@ -115,12 +135,15 @@ export const spec = serializeSpec({
                 operationId: 'createNote',
                 summary: "Add a note, as the caller's",
                 security: needs('notes:write'),
+                parameters: [idempotencyKey],
                 requestBody: { required: true, content: json(newNoteSchema) },
                 responses: {
                     201: { description: 'The note added', content: json(noteSchema) },
                     400: errors[400],
                     ...secured,
+                    409: errors[409],
                     413: errors[413],
+                    422: errors[422],
                 },
             },
         },

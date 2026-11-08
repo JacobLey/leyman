@@ -18,7 +18,10 @@ switch (created.status) {
         break;
     case 400:
     case 401:
+    case 403:
+    case 409:
     case 413:
+    case 422:
         console.error(created.body.message); // `body` is an `ApiError`
         break;
 }
@@ -26,9 +29,19 @@ switch (created.status) {
 
 ## How it works
 
-- **Types come from the spec.** `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by [genever-content-mapper](../../../apps/genever-content-mapper) as `tsc` runs, so no file is generated or committed. It needs TypeScript 7.1 (this package is on its beta, `catalog:typescript-next`): `tsconfig.json` registers the mapper for `.openapi.yaml` in `contentMappers`, `package.json` trusts it in `trustedContentMappers`, and the `tsc` targets run [trusted-tsc](../../../apps/trusted-tsc), which runs `tsc` with the mapper in Node's permission sandbox. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
+- **Types come from the spec.** `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by [genever-content-mapper](../../../apps/genever-content-mapper) as `tsc` runs, so no file is generated or committed. It needs TypeScript 7.1 (this package is on its beta, `catalog:typescript-next`): `tsconfig.json` registers the mapper for `.openapi.yaml` in `contentMappers`, `package.json` trusts it in `trustedContentMappers`, and the `tsc` targets run [trusted-tsc](../../../apps/trusted-tsc), which runs `tsc` with the mapper in Node's permission sandbox. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `header` parameters and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
 - **Routes come from the spec too.** The method and path of each operation, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
 - **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the spec package is rebuilt.
+- **Header parameters are sent as headers**: `createNote`'s optional `Idempotency-Key` makes a retry safe. Send the same key with every retry of one note, and a new one for the next:
+
+  ```ts
+  const key = crypto.randomUUID();
+  const created = await client.call('createNote', {
+      body: { title: 'Dolly', body: 'A sheep' },
+      header: { 'Idempotency-Key': key },
+  });
+  ```
+
 - **The token can be a function**, called before every request, so a token that expires is refreshed rather than baked in.
 - **A status the spec doesn't document** (say, a 500) throws `NotesClientUnexpectedStatusError` rather than being returned as if it matched a type.
 

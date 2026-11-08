@@ -20,6 +20,9 @@
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {
+      "path": "../../../tools/idempotency-keys/ts"
+    },
+    {
       "path": "../../../leyman/expect"
     },
     {

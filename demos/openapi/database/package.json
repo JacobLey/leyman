@@ -46,6 +46,7 @@
     "c8": "catalog:",
     "drizzle-kit": "catalog:",
     "eslint": "catalog:",
+    "idempotency-keys": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "pg": "catalog:",

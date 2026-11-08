@@ -34,13 +34,13 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 ## The spec
 
-| Operation    | Method and path        | Auth                  | Responses                              |
-| ------------ | ---------------------- | --------------------- | -------------------------------------- |
-| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`    |
-| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
-| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404` |
+| Operation    | Method and path        | Auth                  | Responses                                            |
+| ------------ | ---------------------- | --------------------- | ---------------------------------------------------- |
+| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`                  |
+| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `409`, `413`, `422` |
+| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404`               |
 
-Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
+Every error is an `ApiError` (`{ code, message }`). `createNote` takes an optional `Idempotency-Key` header, so a retry gets the first request's response again rather than adding the note twice: `409` while the first still runs (after waiting 10 seconds for it), `422` for the key reused on a different request (see [Retrying safely](#retrying-safely)). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 
 ### How it's built
 
@@ -91,7 +91,7 @@ const spec = serializeSpec({
 
 A `populate-files` target writes it to `out/openapi.json`, and the same document as YAML to `out/notes.openapi.yaml`, both committed, and CI fails if either is stale. The package exports only those files: the client and server read the JSON at runtime, and import their types from the YAML through the content mapper, never the TypeScript. The YAML's name ends in `.openapi.yaml` because TypeScript won't map a `.json` file, and a compound extension leaves other YAML files alone. Beside it, `notes.openapi.d.yaml.ts` holds the same types for typescript-eslint, until it can run content mappers.
 
-The spec's tests check that the document is valid OpenAPI 3.1 with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser)), that every operation requires a bearer token with its scope (`notes:read` or `notes:write`) and documents its `401` and `403`, that it uses only security schemes it defines, and that every operation documents a `400`, since the server rejects requests that don't match.
+The spec's tests check that the document is valid OpenAPI 3.1 with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser)), that every operation requires a bearer token with its scope (`notes:read` or `notes:write`) and documents its `401` and `403`, that it uses only security schemes it defines, that every operation documents a `400`, since the server rejects requests that don't match, and that only the write takes an `Idempotency-Key`, documenting its `409` and `422`.
 
 ## The client
 
@@ -111,15 +111,18 @@ switch (created.status) {
     case 400:
     case 401:
     case 403:
+    case 409:
     case 413:
+    case 422:
         console.error(created.body.message);
         break;
 }
 ```
 
-- **Types come from the spec.** `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by genever-content-mapper as `tsc` runs (the types are genever's, see [genever's OpenAPI guide](/packages/genever/guides/openapi)), so no file is generated or committed. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
+- **Types come from the spec.** `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by genever-content-mapper as `tsc` runs (the types are genever's, see [genever's OpenAPI guide](/packages/genever/guides/openapi)), so no file is generated or committed. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `header` parameters and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
 - **Routes come from the spec too.** The method and path of each operation, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
 - **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the spec package is rebuilt.
+- **Header parameters are sent as headers**: `createNote`'s optional `Idempotency-Key` makes a retry safe. Send the same key with every retry of one note, and a new one for the next.
 - **The token can be a function**, called before every request, so a token that expires is refreshed rather than baked in. Every operation needs one.
 - **A status the spec doesn't document** (say, a 500) throws `NotesClientUnexpectedStatusError`, rather than being returned as if it matched a type.
 
@@ -208,6 +211,7 @@ With `protectedResource`, the API also serves its Protected Resource Metadata (R
 - **The schema is a package of its own**, so `schema.sql` (generated against a real database) is an output the server consumes, like `openapi.json`, and only rebuilds when the migrations or the Postgres versions change, not on every handler edit.
 - **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run. Each note has an `owner` (the `sub` of the token that made it), and the index `listNotes` reads leads with it: one owner's notes, newest first.
 - **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers. `0002_add-note-owner` adds `owner` as `NOT NULL` with no default, which only works on an empty table: right for a demo with no deployed data, while a table with rows would need it added in steps (nullable, backfilled, then `NOT NULL`).
+- **`idempotency_keys` is [idempotency-keys](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/ts)'s table.** `0003_add-idempotency-keys` is a custom migration (`drizzle-kit generate --custom`) holding the library's `createTableSql()` as is, and a test checks the two are identical, so it matches the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#postgres) other implementations share. The library queries it with its own SQL, so it isn't a Drizzle table, and `drizzle-kit generate` leaves it alone.
 - **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/packages/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
 - **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
 

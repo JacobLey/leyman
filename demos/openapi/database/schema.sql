@@ -51,6 +51,21 @@ CREATE SEQUENCE drizzle.__drizzle_migrations_id_seq
 ALTER SEQUENCE drizzle.__drizzle_migrations_id_seq OWNED BY drizzle.__drizzle_migrations.id;
 
 --
+-- Name: idempotency_keys; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.idempotency_keys (
+    identity bytea NOT NULL,
+    fingerprint bytea NOT NULL,
+    token text,
+    lease_expires_at timestamp with time zone,
+    expires_at timestamp with time zone NOT NULL,
+    status smallint,
+    headers jsonb,
+    body bytea
+);
+
+--
 -- Name: notes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -74,6 +89,13 @@ ALTER TABLE ONLY drizzle.__drizzle_migrations ALTER COLUMN id SET DEFAULT nextva
 
 ALTER TABLE ONLY drizzle.__drizzle_migrations
     ADD CONSTRAINT __drizzle_migrations_pkey PRIMARY KEY (id);
+
+--
+-- Name: idempotency_keys idempotency_keys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.idempotency_keys
+    ADD CONSTRAINT idempotency_keys_pkey PRIMARY KEY (identity);
 
 --
 -- Name: notes notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -115,12 +137,13 @@ SET row_security = off;
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (1, '3bb9d0ed48944c41ccbf18827df6036b388d557b142ad1a257657f6d56d4aef0', 1792534466473);
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (2, 'f7aa51d15a7f5c0cb731f0ea583a764636c5a924ac9290fc78c1b4b1502ba581', 1792558435695);
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (3, 'e13277da3aad7a38a23c0631ac2b1feb7dff93a4e4be23f3146a8098613eb53e', 1792768308134);
+INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (4, '8989dd4b41356644cac1d19e8473116fe6850489ff32db37ba57d7a7210c4c68', 1794119812528);
 
 --
 -- Name: __drizzle_migrations_id_seq; Type: SEQUENCE SET; Schema: drizzle; Owner: -
 --
 
-SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 3, true);
+SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 4, true);
 
 --
 -- PostgreSQL database dump complete
