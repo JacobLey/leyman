@@ -100,7 +100,7 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 
 | Page | Contents |
 |------|----------|
-| `index.md` | `<ProjectHeader />`, one-line pitch, a short example, **Get started →**, Features bullets, Compared to, `## Related` + `<ProjectRelated />` (when anything is related). |
+| `index.md` | `<ProjectHeader />`, a short introduction (the problem, then the package, as in the README: see [Prose](../writing-readmes/SKILL.md#the-introduction)), a short example, **Get started →**, Features (plain-sentence bullets, no bold labels), Compared to, `## Related` + `<ProjectRelated />` (when anything is related). |
 | `getting-started.md` | Install (npm/pnpm/yarn `code-group`), the smallest working setup, Next steps. |
 | `guides/*.md` | One topic each, for users who have the basics. |
 | `reference/*.md` | Every option, flag and export, in tables. |

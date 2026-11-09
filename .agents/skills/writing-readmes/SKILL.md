@@ -5,7 +5,7 @@ description: Writing and maintaining package READMEs
 
 # Writing Package READMEs
 
-> Examples from leyman: [`../../../tools/haywire/README.md`](../../../tools/haywire/README.md) · [`../../../apps/juniper/README.md`](../../../apps/juniper/README.md)
+> Examples from leyman: [`../../../tools/lease-cache/README.md`](../../../tools/lease-cache/README.md) · [`../../../tools/idempotency-keys/ts/README.md`](../../../tools/idempotency-keys/ts/README.md)
 
 ## Purpose
 
@@ -15,11 +15,11 @@ The README is also how the package is found and judged. npm search, web search, 
 
 ## README vs WHY File
 
-**README.md** — How to use the package, opened by a short pitch: a few **Highlights** bullets naming what sets it apart, and a link to the WHY file. The pitch is a summary, at most ~25 lines; everything after it guides an active user. When alternatives exist, a short **Compared to alternatives** section near the end (before **Also See**) names them in a table or list.
+**README.md** — How to use the package, opened by a short introduction: the problem or concept, the package as the solution, what sets it apart, when not to use it, and a link to the WHY file (see [Prose](#prose) for how to write it). The introduction is at most ~25 lines; everything after it guides an active user. When alternatives exist, a short **Compared to alternatives** section near the end (before **Also See**) names them in a table or list.
 
 **WHY-\<PACKAGE\>.md** — The long form: the problem it solves with worked examples, design decisions, non-goals, and the full comparison to alternatives. Especially useful for more complicated packages. Link it from the end of the README's pitch.
 
-**Rule:** The README says *that* the package is different and from what, in a few lines. The WHY file says *why* at length. Anything longer than a bullet or table row belongs in WHY-\<PACKAGE\>.md.
+**Rule:** The README introduces the problem and says *that* the package is different, in a few short paragraphs. The WHY file says *why* at length: worked examples, design decisions and the full comparison belong in WHY-\<PACKAGE\>.md.
 
 See leyman's [`tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
 
@@ -40,8 +40,13 @@ One-sentence description of what it does (same as `package.json` `description`).
 
 </div>
 
-- **Highlight** — what sets it apart, in a line.
-- **Highlight** — 3–5 of these.
+A paragraph introducing the problem or concept, for a reader who hasn't met it.
+
+`<package>` is a library that ... (what it does about the problem, in a few sentences).
+
+Plain-sentence bullets for the details that set it apart, if there is a real list.
+
+When not to use it, in a sentence or two.
 
 For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.com/<owner>/<repo>/blob/main/<path>/WHY-<PACKAGE>.md).
 
@@ -153,12 +158,45 @@ The same applies to WHY files, which link back to the README via its npm page.
 
 ## Prose
 
-Write plainly, and avoid the patterns that make text read as AI-written. This applies to READMEs, WHY files, docs site pages and code comments:
+READMEs, WHY files and docs site pages must read as if the maintainer wrote them for a colleague, not as AI-written. Code comments follow the same rules, with less weight. Reference voice: the original [juniper README](https://github.com/JacobLey/leyman/blob/b783c7ac/apps/juniper/README.md#introduction) and the introductions of the two example READMEs above.
 
-- Headings say what the section covers ("Cost", "wrangler and OpenTofu"), not a slogan ("Two tools, split by who runs them").
-- Use the plain word: a client *sends* or *identifies* a server rather than *naming* it; avoid *lands*, *surfaces*, *earns its place*, *load-bearing*, *seam*, *story*.
-- Skip catchphrases and set-ups like "bounded by design", "by construction", "X is a target:", "That is the whole trick:". State the fact.
-- Don't stack "not X, but Y" contrasts, rule-of-three lists or short moral-like sentences at the end of a paragraph for rhetorical effect.
+### The introduction
+
+Build the concept up, then present the package as what delivers it. The lease-cache README opens:
+
+> A read-through cache computes an "expensive" value (most likely a database query) and stores it in a cache (either memory or something like Valkey) for future reads.
+>
+> Ideally the cache also makes sure two parallel reads don't run competing queries. Instead, one (or many) requests can simply wait on the single process that does the actual work, and they all share its result.
+
+1. Define the problem or concept plainly, with parenthetical examples, or a concrete scenario ("When a client sends a `POST` and the connection drops before the response arrives...").
+2. Describe the ideal behavior, then name the package as the subject: "`lease-cache` is a read-through cache on Valkey (or Redis) that...", "`idempotency-keys` is a library to handle these requests on the server...".
+3. Explain the value in full sentences. Bullets are fine for a real list (the tricky cases it handles), each a plain sentence, not a bold slogan followed by a colon and a packed clause.
+4. Say what it doesn't do, or when not to use it.
+
+The introduction doesn't try to be complete: exact headers, every edge case and status codes go in Usage or API. The one-line description under the title (and in `package.json`) is held to the same bar: a plain sentence, not a colon followed by a list of guarantees.
+
+### Voice
+
+- Explain, don't perform. No staged narration ("The first is the stampede. The second is quieter."), flourishes ("Nobody did anything wrong, yet..."), rhetorical openers ("X is easy to describe.") or short punchy sentences for rhythm.
+- Full sentences with articles. "The table name is quoted as given", not "Quoted as given." (Terse is fine in API tables and parameter descriptions.)
+- The reader, the package or the code as subjects: "you pass", "Juniper solves this by". Don't personify ("`handle()` answers itself", "a crashed request holds up no one").
+- Plain, common words a reader never stops to decode ("Valkey is lax", "runs unprotected", "one caller's keys never touch another's"). Use the plain verb: a client *sends* a server rather than *naming* it; avoid *lands*, *surfaces*, *earns its place*, *load-bearing*, *seam*, *story*.
+- Give the reason with "so", "because" or "since" in the same sentence, rather than a colon then a fragment.
+
+### Tells to remove
+
+- Colon chains as the default sentence shape: "X: a does b, c does d, and e."
+- Bold-label bullets: "- **Thing in bold**: dense explanation; another clause (aside)."
+- "X, never Y" and "not X, but Y" contrasts for emphasis; rule-of-three lists; a short moral at the end of a paragraph.
+- Stock transitions: "A few more things it handles:", "It also covers the cases that are easy to get wrong:" (once is fine; not in every README).
+- Slogan headings ("Two tools, split by who runs them"). Headings say what the section covers.
+- Catchphrases and set-ups: "by construction", "bounded by design", "X is a target:", "That is the whole trick:".
+- Every caveat packed into the first sentence that mentions a feature.
+- The same feature list repeated near-verbatim across the README, the docs site and sibling packages.
+
+### Checking a rewrite
+
+A blind read catches what the writer misses: give another agent (Sonnet is enough) only the text, ask it to quote every sentence that reads as AI-written and why, then fix those. Keep every fact when rewriting; move detail lower rather than dropping it.
 
 ## What NOT to Put in a README
 
