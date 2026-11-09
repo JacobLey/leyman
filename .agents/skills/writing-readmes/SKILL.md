@@ -196,7 +196,7 @@ The introduction doesn't try to be complete: exact headers, every edge case and 
 
 ### Checking a rewrite
 
-A blind read catches what the writer misses: give another agent (Sonnet is enough) only the text, ask it to quote every sentence that reads as AI-written and why, then fix those. Keep every fact when rewriting; move detail lower rather than dropping it.
+A blind read catches what the writer misses: give another agent (Sonnet is enough) only the text, ask it to quote every sentence that reads as AI-written and why, then fix the quotes that match a tell above. Asked to find tells, it always finds some: on a good draft most of its quotes are plain factual sentences, and it flags the maintainer's own wording ("a few issues pop up", "Except that is the wrong keyword") as readily as real tells. Leave those. Keep every fact when rewriting; move detail lower rather than dropping it.
 
 ## What NOT to Put in a README
 
@@ -208,7 +208,7 @@ A blind read catches what the writer misses: give another agent (Sonnet is enoug
 
 ## package.json Discoverability
 
-`description` is the line npm search, Google snippets and agent search results show. Name the category and the differentiator, not just the category: "Compile-time checked dependency injection for TypeScript — no decorators", not "Type safe dependency injection". Package names that don't say what they do (juniper, haywire) rely on it entirely.
+`description` is the line npm search, Google snippets and agent search results show. Name the category and the differentiator, not just the category: "Dependency injection for TypeScript that checks the wiring at compile time, without decorators", not "Type safe dependency injection". Package names that don't say what they do (juniper, haywire) rely on it entirely.
 
 `keywords` should cover the terms someone would search for: the category (`dependency-injection`, `di`, `ioc`), the ecosystem (`typescript`, `nx-plugin`, `tanstack-query`) and the distinguishing feature (`no-decorators`, `compile-time`). Don't add competitor names.
 
