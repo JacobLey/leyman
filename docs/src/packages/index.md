@@ -7,6 +7,6 @@ next: false
 
 # Packages
 
-TypeScript libraries and tools for Node.js ESM environments, each published to npm. For how they fit together in practice, see the [demos](/demos/).
+TypeScript libraries and tools for Node.js, each published to npm as ESM. To see how they fit together in practice, look at the [demos](/demos/).
 
 <PackageCards />

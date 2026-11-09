@@ -1,7 +1,7 @@
 {
   "name": "@leyman/vscode-tests",
   "version": "0.0.1",
-  "description": "Run and debug a single test from VS Code: a play button next to each test and suite, and in the Testing panel.",
+  "description": "Run and debug a single test from VS Code, with a play button next to each test and suite and in the Testing panel.",
   "engines": {
     "node": ">=26"
   },

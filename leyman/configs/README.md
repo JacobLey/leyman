@@ -2,20 +2,20 @@
 
 # @leyman/configs
 
-Strict shared configs for TypeScript ESM packages: tsconfig bases per Node.js support floor, SWC, c8 at 100% coverage, Biome and Vitest, each consumed by extending or pointing at the installed file.
+Strict TypeScript, SWC, c8, Biome and Vitest configs for TypeScript ESM packages, with a tsconfig for each Node.js support floor.
 
 [![npm package](https://badge.fury.io/js/@leyman%2Fconfigs.svg)](https://www.npmjs.com/package/@leyman/configs)
 [![License](https://img.shields.io/npm/l/@leyman/configs.svg)](https://github.com/JacobLey/leyman/blob/main/leyman/configs/LICENSE)
 
 </div>
 
-- **A tsconfig per support floor** — `tsconfig.node-22.json` and `tsconfig.node-24.json` hold only the `lib` and `target` that Node.js version has, so using a newer API is a compile error, not a crash for users on the oldest supported version.
-- **Strict type checking** — `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noImplicitOverride` and more, with declarations emitted for project references.
-- **Tests checked as consumers see them** — `tsconfig.test.json` type-checks tests without emitting, against the package's built declarations.
-- **100% coverage** — c8 fails below 100% of lines, statements, functions and branches.
-- **One formatter config** — Biome formats TypeScript, JSON, Markdown and YAML; linting is left to ESLint ([`@leyman/eslint-config`](https://www.npmjs.com/package/@leyman/eslint-config)).
+`@leyman/configs` holds the tool configs that the packages of the [leyman](https://github.com/JacobLey/leyman) monorepo share, published as they are, so another package can use them instead of keeping its own copies. Each tool either extends the installed file or is pointed at it.
 
-It is the config of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be strict and to change: see [Versioning](#versioning).
+There is a TypeScript config for each Node.js support floor. `tsconfig.node-22.json` and `tsconfig.node-24.json` only include the `lib` and `target` that Node.js version has, so code that uses a newer API fails to compile, rather than crashing for users on the oldest supported version. They all turn on strict type checking (`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noImplicitOverride` and more) and emit declarations for project references. `tsconfig.test.json` type-checks tests against the package's built declarations, the way a consumer sees them, without emitting anything.
+
+The c8 config fails below 100% coverage of lines, statements, functions and branches. The Biome config formats TypeScript, JSON, Markdown and YAML, and leaves linting to ESLint (see [`@leyman/eslint-config`](https://www.npmjs.com/package/@leyman/eslint-config)).
+
+Expect the configs to be strict, and to change between releases (see [Versioning](#versioning)).
 
 ## Contents
 

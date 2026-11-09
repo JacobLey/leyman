@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-read-through-cache",
   "version": "0.0.1",
-  "description": "Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, one load per key across instances with lease-cache, and sharding with weighted rendezvous hashing.",
+  "description": "A read-through cache on Valkey built from BentoCache and lease-cache, with a memory tier, stale-while-revalidate, one load per key across instances, and sharding with weighted rendezvous hashing.",
   "engines": {
     "node": ">=26"
   },

@@ -70,7 +70,7 @@ pnpm warns that eslint-plugin-react and eslint-plugin-jsx-a11y want an older ESL
 pnpm nx g @leyman/nx-plugin:package packages/my-app --description "Uses my-lib." --published --repository https://github.com/owner/repo --author Me --license MIT
 ```
 
-A published package takes the tsconfig of its Node.js support floor (`--floor`, a version, 22.12.0 by default: the oldest mocha and vitest start on) and gets a `check-package` target. That target packs the package and checks it as npm would get it. Add a `LICENSE` at the root first, and the generator copies it into each published package. To pass the same options every time, set them once in `nx.json`:
+A published package takes the tsconfig of its Node.js support floor (`--floor`, 22.12.0 by default, the oldest version mocha and vitest start on) and gets a `check-package` target. That target packs the package and checks it as npm would get it. Add a `LICENSE` at the root first, and the generator copies it into each published package. To pass the same options every time, set them once in `nx.json`:
 
 ```json
 {

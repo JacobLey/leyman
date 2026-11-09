@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-agents-mcp",
   "version": "0.0.1",
-  "description": "An MCP server over the notes API: tools shaped for agents, an OAuth resource server, calling the API as the agent's user by token exchange.",
+  "description": "An MCP server that gives AI agents a few task-shaped tools over the notes API, and calls the API as the agent's user through OAuth token exchange.",
   "engines": {
     "node": ">=26"
   },

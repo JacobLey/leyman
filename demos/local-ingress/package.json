@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-local-ingress",
   "version": "0.0.1",
-  "description": "A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy.",
+  "description": "A Vite dev server behind tools/local-ingress, so each worktree is served at https://<worktree>.<repo>.localhost with hot reload through the proxy.",
   "engines": {
     "node": ">=26"
   },

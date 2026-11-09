@@ -1,6 +1,8 @@
 # Hosted Nx remote cache
 
-One Nx cache for CI and every devcontainer, on Cloudflare: anyone can read it, only CI on `main` can write to it. Also this repository's worked example of a cloud deployment, with wrangler and OpenTofu. Written up for readers on the docs site: [Hosted Nx cache](https://jacobley.github.io/leyman/infrastructure/nx-cache/). This README is the maintainer's runbook.
+This is one Nx cache shared by CI and every devcontainer, hosted on Cloudflare. Anyone can read from it, and only CI on `main` can write to it. It is also this repository's worked example of a cloud deployment, using wrangler and OpenTofu.
+
+The [Hosted Nx cache](https://jacobley.github.io/leyman/infrastructure/nx-cache/) page on the docs site writes it up for readers. This README is the maintainer's runbook.
 
 | Part | What | Run by |
 |---|---|---|
@@ -16,13 +18,19 @@ CI (main):    Nx ──> runner's cache server ──read/write (GitHub OIDC)─
 
 ## Why it is built this way
 
-- **Writes need a GitHub OIDC token from CI on `main`** (a push or a scheduled run), which the Worker checks itself. No pull request, from a fork or not, can write a result that `main` then trusts: that is cache poisoning, e.g. CVE-2025-36852 against bucket-backed Nx caches. There is no long-lived write secret to leak: the token is minted per job, lasts minutes, and the cache server requests a new one as it expires.
-- **Results in use are refreshed.** Nx never uploads a result it read, and R2's lifecycle counts from upload, so on `main` the cache server uploads a result it serves again once it is 5 days old (`NX_CACHE_REFRESH_AFTER_DAYS` in `ci.yml`, `refreshAfterDays` in `worker/wrangler.jsonc`, kept equal). It does so in the background after serving it, so Nx never waits, and CI's `Stop Nx cache server` step waits for those uploads. A result `main` keeps reading never expires; one it stops reading does. CI's `test` also runs nightly on `main` and writes like a push, so results in use are read, and refreshed, even in a week without pushes: a refresh age of 5 of the 7 days leaves two nights to refresh a result.
-- **Reads are public.** Results are built from this public repository, so they hold nothing that isn't already public.
-- **Nx never talks to the Worker directly.** The existing cache server reads through to it and, on `main`, writes through. So Dagger's wiring didn't change, credentials never enter Dagger, and if the hosted cache is down, a run is only slower.
-- **OpenTofu by hand, wrangler from CI.** OpenTofu owns what is set up once and holds credentials, run by the maintainer. A public repository's pull requests must never get Cloudflare credentials, so CI only runs `tofu fmt` and `tofu validate`, never `plan`. wrangler owns the Worker's code, which changes with the repository: CI deploys it from an environment only `main` can use, with a token that may only deploy Workers. wrangler's Miniflare also runs the Worker locally for its tests.
-- **OpenTofu, not Terraform**: its state encryption keeps the deploy token unreadable in the state bucket, and its backend block can use variables (the account ID).
-- **Free tier**: R2 gives 10 GB, 1M writes and 10M reads a month; Workers 100k requests a day. A cold CI run makes about 1.4k reads and 1.4k writes, and results expire after 7 days. Keep the account on the Workers free plan: its daily limit stops requests rather than billing them, and since the bucket is reachable only through the Worker, a flood of public reads can at worst make the cache unavailable until the limit resets, never cost anything. On Workers Paid, both would be billed per request, without a cap.
+Only CI on `main` (a push or a scheduled run) can write, using a GitHub OIDC token that the Worker checks itself. That way no pull request, from a fork or not, can write a result that `main` then trusts. That attack is cache poisoning, such as CVE-2025-36852 against bucket-backed Nx caches. There is also no long-lived write secret to leak, because the token is minted per job and lasts minutes, and the cache server requests a new one as it expires.
+
+Reads are public, since results are built from this public repository and hold nothing that isn't already public.
+
+Results that are still in use get refreshed. Nx never uploads a result it read, and R2's lifecycle counts from the upload, so on `main` the cache server uploads a result it serves again once it is 5 days old. The age is set twice and the two must stay equal: `NX_CACHE_REFRESH_AFTER_DAYS` in `ci.yml` and `refreshAfterDays` in `worker/wrangler.jsonc`. The upload happens in the background after the result is served, so Nx never waits, and CI's `Stop Nx cache server` step waits for those uploads to finish. A result that `main` keeps reading never expires, and one it stops reading does. CI's `test` also runs nightly on `main` and writes like a push, so results in use are read and refreshed even in a week without pushes. Refreshing at 5 days out of 7 leaves two nights to refresh a result.
+
+Nx never talks to the Worker directly. The cache server that was already there reads through to it and, on `main`, writes through. Because of that, Dagger's wiring didn't change and credentials never enter Dagger. If the hosted cache is down, a run is only slower.
+
+The maintainer runs OpenTofu by hand, and CI runs wrangler. OpenTofu owns what is set up once and holds credentials. A public repository's pull requests must never get Cloudflare credentials, so CI only runs `tofu fmt` and `tofu validate`, which need none. wrangler owns the Worker's code, which changes with the repository, so CI deploys it from an environment only `main` can use, with a token that may only deploy Workers. wrangler's Miniflare also runs the Worker locally for its tests.
+
+OpenTofu is used instead of Terraform because its state encryption keeps the deploy token unreadable in the state bucket, and its backend block can use variables (for the account ID).
+
+All of it fits in the free tiers. R2 gives 10 GB, 1M writes and 10M reads a month, and Workers give 100k requests a day. A cold CI run makes about 1.4k reads and 1.4k writes, and results expire after 7 days. Keep the account on the Workers free plan, because its daily limit stops requests rather than billing them. Since the bucket is reachable only through the Worker, a flood of public reads can at worst make the cache unavailable until the limit resets, and it can't cost anything. On Workers Paid, both would be billed per request, with no cap.
 
 ## Setting it up
 
@@ -30,9 +38,9 @@ Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 
 
 1. **Find your account ID**: the 32 hex characters after `dash.cloudflare.com/` in any dashboard URL (also on the account's home page).
 2. **Make the state bucket by hand**: R2 → *Create bucket*, named `leyman-tofu-state`. It can't be managed by OpenTofu, as it holds the state of everything OpenTofu creates.
-3. **Make a token for OpenTofu**: My Profile → *API Tokens* → *Create Token* → *Custom token*, for your account: *Workers R2 Storage: Edit* and *Account API Tokens: Edit*. It creates the cache bucket and the deploy token, and reaches the state bucket too: R2's S3 credentials are derived from it.
+3. **Make a token for OpenTofu**: My Profile → *API Tokens* → *Create Token* → *Custom token*, for your account: *Workers R2 Storage: Edit* and *Account API Tokens: Edit*. It creates the cache bucket and the deploy token, and since R2's S3 credentials are derived from it, it reaches the state bucket too.
 4. **Choose a passphrase** for the state's encryption, at least 16 characters. Keep it, and the token, in a password manager. The passphrase is the one secret that can't be replaced: without it the state can't be read (the resources stay, and could be imported again). The token can be remade at any time, or created with an expiry for each apply.
-5. **Apply**, from `infra/nx-cache/tofu`. [`env.sh`](tofu/env.sh) asks for the account ID, the token and the passphrase (paste them: secrets aren't shown), derives the state bucket's S3 credentials from the token, and exports what `tofu` needs into your shell, never its history:
+5. **Apply**, from `infra/nx-cache/tofu`. [`env.sh`](tofu/env.sh) asks for the account ID, the token and the passphrase (paste them, since secrets aren't shown). It derives the state bucket's S3 credentials from the token, and exports what `tofu` needs into your shell without putting any of it in the shell's history:
 
    ```sh
    . ./env.sh
@@ -42,7 +50,7 @@ Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 
    tofu output -raw deploy_token    # for step 6
    ```
 
-6. **Let CI deploy**: on GitHub, *Settings* → *Environments* → *New environment* `nx-cache`, with *Deployment branches* limited to `main`, and a secret `CLOUDFLARE_API_TOKEN`: the deploy token. Then *Settings* → *Secrets and variables* → *Actions* → *Variables*: `CLOUDFLARE_ACCOUNT_ID`, the account ID.
+6. **Let CI deploy**: on GitHub, *Settings* → *Environments* → *New environment* `nx-cache`, with *Deployment branches* limited to `main`, and a secret `CLOUDFLARE_API_TOKEN` holding the deploy token. Then, under *Settings* → *Secrets and variables* → *Actions* → *Variables*, add `CLOUDFLARE_ACCOUNT_ID` with the account ID.
 7. **Deploy**: the next push to `main` runs the `nx-cache` job (or re-run the latest run). Its log ends with the Worker's URL, `https://leyman-nx-cache.leyman.workers.dev` (the Worker's name, then the account's `workers.dev` subdomain, `leyman`). Check it:
 
    ```sh
@@ -61,5 +69,5 @@ Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 
 
 ## What it doesn't fix
 
-- Most of CI's misses are real: a "Version Packages" commit or a lockfile change invalidates most hashes. It helps devcontainers most: a fresh worktree starts with `main`'s results.
+- Most of CI's misses are real, because a "Version Packages" commit or a lockfile change invalidates most hashes. The cache helps devcontainers most, since a fresh worktree starts with `main`'s results.
 - Dagger's own layers (apt, Playwright's dependencies, `pnpm install`) still rebuild every run. Their only remote cache is Dagger Cloud, which is paid and not scoped by branch.

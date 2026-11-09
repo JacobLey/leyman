@@ -534,7 +534,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'blake3-go',
         title: 'BLAKE3 from Go through WASM',
-        pitch: 'The same Rust crate called from Go with no cgo: a C ABI built to bare WASM, run by wazero, and measured against BLAKE3 in Go and native Rust to find where it pays off.',
+        pitch: 'The same Rust crate called from Go without cgo, built to bare WASM behind a C ABI, run by wazero, and measured against BLAKE3 in Go and native Rust to find where it pays off.',
         source: 'demos/blake3-go',
         files: [
             { label: 'The C ABI', path: 'demos/blake3-go/rust/src/ffi.rs' },
@@ -549,7 +549,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'read-through-cache',
         title: 'Read-through cache',
-        pitch: 'BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances, and sharding over several nodes with weighted rendezvous hashing.',
+        pitch: 'A read-through cache built from BentoCache and lease-cache on Valkey, with a memory tier kept in sync, stale-while-revalidate, one load per key across instances, and sharding over several nodes with weighted rendezvous hashing.',
         source: 'demos/read-through-cache',
         files: [
             {
@@ -570,7 +570,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'openapi',
         title: 'OpenAPI',
-        pitch: 'A notes API from spec to database: an OpenAPI 3.1 document built from Juniper schemas, genever types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a database per test.',
+        pitch: 'A small notes API built properly from the spec down to the database, with an OpenAPI 3.1 document written with Juniper, genever types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a database per test.',
         source: 'demos/openapi',
         files: [
             { label: 'The spec', path: 'demos/openapi/spec/src/spec.ts' },
@@ -604,7 +604,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'mcp-server',
         title: 'MCP server',
-        pitch: 'Making the notes API easy for AI agents that connect to services: tools shaped for tasks, an OAuth resource server with step-up scopes, and token exchange to call the API as the agent’s user.',
+        pitch: 'An MCP server that makes the notes API easy for AI agents to use, with tools shaped around tasks, OAuth with step-up scopes, and token exchange so it calls the API as the agent’s user.',
         source: 'demos/agents/mcp',
         files: [
             { label: 'Tools', path: 'demos/agents/mcp/src/lib/tools.ts' },
@@ -624,7 +624,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'agent-cli',
         title: 'CLI for agents',
-        pitch: 'Making the notes API easy for AI agents with a shell: one short command per task, logging in once from the API’s URL, with tokens, refresh and errors handled inside.',
+        pitch: 'A CLI that makes the notes API easy for AI agents with a shell, with one short command per task and a login that starts from nothing but the API’s URL.',
         source: 'demos/agents/cli',
         files: [
             { label: 'Commands', path: 'demos/agents/cli/src/commands' },
@@ -641,7 +641,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'local-ingress',
         title: 'Local ingress',
-        pitch: 'A Vite dev server behind one machine-wide Caddy: every worktree at its own https://<worktree>.<repo>.localhost, with a locally trusted certificate, hot reload through the proxy, and tunnels for phones.',
+        pitch: 'A Vite dev server behind one machine-wide Caddy, so every worktree has its own https://<worktree>.<repo>.localhost, with a locally trusted certificate, hot reload through the proxy, and tunnels for phones.',
         source: 'demos/local-ingress',
         files: [
             { label: 'Vite config', path: 'demos/local-ingress/src/vite-config.ts' },
@@ -668,7 +668,7 @@ export const infrastructure: readonly Demo[] = [
     {
         slug: 'nx-cache',
         title: 'Hosted Nx cache',
-        pitch: 'One Nx cache for CI and every devcontainer, on a Cloudflare Worker and R2: anyone can read it, only CI on main can write to it, with GitHub OIDC. Deployed with wrangler, its bucket and tokens managed with OpenTofu.',
+        pitch: 'One Nx cache shared by CI and every devcontainer, on a Cloudflare Worker and R2. Anyone can read from it, and only CI on main can write to it, using GitHub OIDC. The Worker is deployed with wrangler, and OpenTofu manages its bucket and tokens.',
         source: 'infra/nx-cache',
         files: [
             { label: 'The Worker', path: 'infra/nx-cache/worker/src/handle.ts' },

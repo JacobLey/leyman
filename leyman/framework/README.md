@@ -9,10 +9,11 @@ Audits how much of the leyman framework a repository has adopted, tier by tier, 
 
 </div>
 
-- **Measures against the tiers**: runs one set of checks for each of the four [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (checks, shared configs, the Nx plugin and lifecycle, and the devcontainer, CI and skills), and reports the highest tier the repository meets.
-- **Every failure comes with its fix**: what failed, where, and what to do about it.
-- **Works at any tier**: reads the repository's files and needs nothing installed, so it audits a repository that has adopted nothing yet.
-- **An agent brief for the rest**: a skill for the judgment calls no script can make (package design, READMEs, comments, tests and versions), against the [principles](https://jacobley.github.io/leyman/framework/principles).
+The leyman framework is the setup of the [leyman](https://github.com/JacobLey/leyman) monorepo, split into four [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) that another repository can take one at a time: checks, shared configs, the Nx plugin and lifecycle, and the devcontainer, CI and skills.
+
+`@leyman/framework` audits a repository against those tiers. It runs one set of checks for each tier and reports the highest tier the repository meets, and each failed check says what failed, where, and how to fix it. It only reads the repository's files and needs nothing installed, so it can audit a repository that hasn't adopted anything yet.
+
+Some parts of a repository need judgment that a script can't make, such as its package design, READMEs, comments, tests and versions. For those, the package ships a skill that has a coding agent audit the repository against the [principles](https://jacobley.github.io/leyman/framework/principles).
 
 ## Contents
 

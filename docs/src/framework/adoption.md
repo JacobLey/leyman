@@ -28,8 +28,8 @@ Install [`@leyman/check-package`](https://www.npmjs.com/package/@leyman/check-pa
 **What it buys**
 
 - `check-package` packs a package with your package manager and checks the tarball: publint, Are The Types Wrong, a strict typecheck of the published declarations, the Node.js support floor (`engines.node`, `@types/node` and every runtime dependency agree), and that every top-level file is either published or known not to be. Most broken releases fail one of these.
-- `@leyman/eslint-config` turns on nearly every rule of ESLint and ten plugins, type-aware, with each exception explained, generated from the package's `package.json`. Its plugins take patch releases only, so new rules arrive with a release of the config.
-- [`@leyman/expect`](https://www.npmjs.com/package/@leyman/expect) is optional: Chai and chai-as-promised as one import, which this setup's tests use.
+- `@leyman/eslint-config` turns on nearly every rule of ESLint and ten plugins, including type-aware ones, and explains each exception. It is generated from the package's `package.json`. Its plugins take patch releases only, so new rules arrive with a release of the config.
+- [`@leyman/expect`](https://www.npmjs.com/package/@leyman/expect) is optional. It is Chai and chai-as-promised as one import, which this setup's tests use.
 
 **What it costs**
 
@@ -60,14 +60,14 @@ In an Nx workspace, run `nx add @leyman/nx-plugin`. It installs [`@leyman/nx-plu
 **What it buys**
 
 - Every package's targets inferred from its files: an SWC build with a `tsc` typecheck, Mocha or Vitest under c8 with one coverage report across them, ESLint, Biome, `check-package` for public packages, and the TypeScript project references kept in sync.
-- Precise caching: each target hashes only what its result depends on, its sources, the shared configs and its dependencies' built output, so changing one package's tests reruns nothing downstream.
-- One order for everything: install, prepare, check, build, test and verify, wired by nx-lifecycle. `nx run-many -t verify` is the whole check of the workspace.
+- Precise caching. Each target hashes only what its result depends on (its sources, the shared configs and its dependencies' built output), so changing one package's tests reruns nothing downstream.
+- One order for every task (install, prepare, check, build, test and verify), wired by nx-lifecycle. `nx run-many -t verify` is the whole check of the workspace.
 - A `package` generator that writes a new package with its targets declared, so it is verified from its first commit.
 
 **What it costs**
 
 - Nx, and this layout in every package: `src/` built to `dist/`, tests in `test/unit/` and `test/integration/`.
-- pnpm with `injectWorkspacePackages`, which `init` sets: a package's dependents get it as published, not its source, and a `sync-injected` target keeps those copies current after each build.
+- pnpm with `injectWorkspacePackages`, which `init` sets. A package's dependents get it as it would be published rather than its source, and a `sync-injected` target keeps those copies current after each build.
 - Tiers 1 and 2, as the targets run them.
 
 ## 4. Devcontainer, CI and skills

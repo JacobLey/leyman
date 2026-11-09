@@ -6,4 +6,4 @@ Checks that eslint-config's hand-written package.json schema matches what junipe
 
 This package depends on both, and tests that the schema and its `PackageJson` type are equal to the ones juniper builds and infers. When the test fails, update the hand-written schema (or type) in eslint-config to match.
 
-It is not published, and has no source of its own: only tests.
+It is not published, and has no source of its own, only tests.

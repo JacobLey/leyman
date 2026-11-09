@@ -9,9 +9,9 @@ Chai's expect and assert with chai-as-promised registered, as one ESM import, so
 
 </div>
 
-- **No setup file** — importing it registers chai-as-promised, so `rejectedWith` and `eventually` work in any test, whatever the runner or its config.
-- **One dependency instead of four** — `chai`, `chai-as-promised` and both `@types` packages come with it.
-- **Types included** — the declarations load chai-as-promised's type augmentations, so `.rejectedWith` type-checks without importing it yourself.
+[chai-as-promised](https://github.com/chaijs/chai-as-promised#readme) adds assertions on promises to Chai (`rejectedWith`, `eventually`), but it has to be registered with `chai.use()` before a test can use them, usually in a setup file.
+
+`@leyman/expect` registers it when it is imported, so those assertions work in any test, whatever the runner or its config. It depends on `chai`, `chai-as-promised` and both of their `@types` packages, so a package installs one dependency instead of four. Its declarations load chai-as-promised's type augmentations too, so `.rejectedWith` type-checks without importing chai-as-promised yourself.
 
 ## Contents
 

@@ -1,10 +1,12 @@
 # @leyman/nx-cache-tofu
 
-OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token. Results are deleted a day after the Worker stops serving them, and the token may only deploy Workers. See [`../README.md`](../README.md) for why, and for setting it up.
+OpenTofu configuration for the hosted Nx cache's Cloudflare R2 bucket, its lifecycle rule, and the token CI deploys with.
 
-State is in a separate R2 bucket made by hand, through R2's S3 API, encrypted before it leaves your machine (OpenTofu's state encryption): it holds the deploy token. Nx runs `tofu-fmt` and `tofu-validate` here, which need no credentials. `tofu plan` and `tofu apply` are only ever run by hand.
+The lifecycle rule deletes results a day after the Worker stops serving them, and the token may only deploy Workers. See [`../README.md`](../README.md) for why it is built this way, and for setting it up.
 
-Before running `tofu`, source [`env.sh`](env.sh) (`. ./env.sh`): it asks for the Cloudflare token and the passphrase, and sets the variables `tofu` reads, including the state bucket's S3 credentials, derived from the token.
+The state is kept in a separate R2 bucket, made by hand and reached through R2's S3 API. Since the state holds the deploy token, OpenTofu's state encryption encrypts it before it leaves your machine. Nx runs `tofu-fmt` and `tofu-validate` here, which need no credentials, and `tofu plan` and `tofu apply` are only ever run by hand.
+
+Before running `tofu`, source [`env.sh`](env.sh) (`. ./env.sh`). It asks for the Cloudflare token and the passphrase (and the account ID, unless it is already set), and sets the variables `tofu` reads, including the state bucket's S3 credentials, which it derives from the token.
 
 | File                  | What                                                                                                                                                                                                       |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

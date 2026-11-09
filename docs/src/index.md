@@ -19,27 +19,29 @@ hero:
       link: /framework/
 ---
 
+Leyman is a monorepo of TypeScript packages for Node.js. It also holds the shared configs and tooling they are built with, demos tested against real services, and the infrastructure that CI and every devcontainer run on.
+
 ## Packages
 
-Published to npm, each with a getting-started guide, guides and a full reference. [All packages →](/packages/)
+Each package is published to npm on its own, and has a getting-started page, guides and a full reference here. [All packages →](/packages/)
 
 <CategoryCards />
 
 ## Demos
 
-Worked examples, never published: small packages fully tested against real services, each with a page on what it does and why. [All demos →](/demos/)
+Worked examples of open-source projects and services used together. Each one is a small package that isn't published, fully tested against real services, with a page on what it does and why. [All demos →](/demos/)
 
 <DemoCards />
 
 ## Infrastructure
 
-What this repository runs on: real, deployed systems, and how they are built. [All infrastructure →](/infrastructure/)
+The real, deployed systems this repository runs on, and how they are built. [All infrastructure →](/infrastructure/)
 
 <InfrastructureCards />
 
 ## Framework
 
-The setup these packages are built on, as a framework another repository can adopt in slices. [Start here →](/framework/)
+The setup these packages are built on, written up as a framework that another repository can adopt a piece at a time. [Start here →](/framework/)
 
 ## For AI agents
 

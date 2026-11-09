@@ -1,7 +1,7 @@
 {
   "name": "@leyman/nx-cache-worker",
   "version": "0.0.1",
-  "description": "Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write.",
+  "description": "The hosted Nx remote cache, a Cloudflare Worker on R2 that anyone can read from and only CI on main can write to.",
   "engines": {
     "node": ">=26"
   },

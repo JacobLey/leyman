@@ -4,16 +4,16 @@ description: "The principles behind this repository's setup, and why: the bar fo
 
 # Principles
 
-The repository's skills say how things are done. This page says why, so a judgment call that no skill covers still lands in the same place. When a design or review question has no rule, decide it by these. Code-level conventions (types, DI, tests, errors) are in the [coding-patterns skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/coding-patterns/SKILL.md).
+The repository's skills say how things are done. This page says why, so a judgment call that no skill covers still ends up in the same place. When a design or review question has no rule, decide it by these. Code-level conventions (types, DI, tests, errors) are in the [coding-patterns skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/coding-patterns/SKILL.md).
 
 ## The bar for a package
 
 A package is **simple, deterministic, predictable and, most of all, useful**.
 
 - **Useful** comes first: judge a change by whether it makes the package more useful to the person calling it.
-- **Simple**: no more surface than the use warrants. Cut a confusing feature rather than keep it, and split a natural extension into its own package rather than grow this one.
-- **Deterministic**: same input, same output. Stable ordering, no unseeded randomness, no output that depends on when or where it runs.
-- **Predictable**: no hidden state, silent fallbacks or surprising defaults. When something can't work, fail loudly and say what to do instead.
+- **Simple** means no more surface than the use warrants. Cut a confusing feature rather than keep it, and split a natural extension into its own package rather than grow this one.
+- **Deterministic** means the same input always gives the same output, with stable ordering, no unseeded randomness, and no output that depends on when or where it runs.
+- **Predictable** means no hidden state, silent fallbacks or surprising defaults. When something can't work, fail loudly and say what to do instead.
 
 Audits and reviews flag anything that misses one of these.
 
@@ -21,17 +21,17 @@ Audits and reviews flag anything that misses one of these.
 
 - A **major** is for a meaningful change. A bug fix is a patch, a minor at most, even when correcting a wrong type breaks someone's compile.
 - Ship the non-breaking part first. Put breaking changes in their own commits, so they go out together in one major.
-- Every breaking change offers an explicit, `unsafe`-prefixed option that restores the old behaviour, so migrating means setting one option, not rewriting code.
+- Every breaking change offers an explicit, `unsafe`-prefixed option that restores the old behaviour, so migrating means setting one option rather than rewriting code.
 - Data written by an earlier version stays readable.
 - A change limited to something not yet released isn't breaking. Before calling something breaking, check what has actually shipped.
 
-How changes are recorded: the [versioning skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/versioning/SKILL.md).
+The [versioning skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/versioning/SKILL.md) says how changes are recorded.
 
 ## Newest toolchain, lowest floor
 
-Development and CI run the newest runtimes and tools. Each published package supports the oldest runtime it can **without losing functionality**: never swap a newer API for a weaker stand-in to reach a lower floor. A package's floor is never below any of its runtime dependencies' floors. Upgrading the toolchain doesn't raise a package's floor. Only that package needing something newer does. In this repository, every published package's TypeScript floor is 6.0: its declarations and type tests must check there as well as on the newest.
+Development and CI run the newest runtimes and tools. Each published package supports the oldest runtime it can **without losing functionality**. Never swap a newer API for a weaker stand-in to reach a lower floor. A package's floor is never below any of its runtime dependencies' floors. Upgrading the toolchain doesn't raise a package's floor. Only that package needing something newer does. In this repository, every published package's TypeScript floor is 6.0, so its declarations and type tests must check there as well as on the newest.
 
-How floors are declared and checked: [Support floors](https://github.com/JacobLey/leyman/blob/main/.agents/skills/typescript/SKILL.md#support-floors).
+[Support floors](https://github.com/JacobLey/leyman/blob/main/.agents/skills/typescript/SKILL.md#support-floors) says how floors are declared and checked.
 
 ## Lean where it ships, free where it doesn't
 
@@ -45,7 +45,7 @@ Rules push code onto one well-aligned path and end debates over style. So:
 - Every disable gives its reason (`-- reason`) at the narrowest scope that works: the line, then the file, then config. A disable whose reason has gone away is removed.
 - Fix the code in its own commits first, each passing both the old and the new rules. The version bump goes in a separate commit with only the version, lockfile and config.
 
-How to run and fix: the [linting-formatting skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/linting-formatting/SKILL.md).
+The [linting-formatting skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/linting-formatting/SKILL.md) says how to run lint and fix it.
 
 ## Generate what can be derived
 
@@ -64,4 +64,4 @@ A patch, dependency override, pinned version or disabled check carries a note na
 - Split multi-part work into steps and commit each one once it works. A local commit that hasn't reached a shared branch costs nothing to rework.
 - Run the narrowest check while iterating (one spec, lint on the changed files). Run full verification often, and always before anything that is hard to undo: a merge, a push, a release, or work that builds on top of what you just did.
 
-How to verify: the [nx-run-tasks skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/nx-run-tasks/SKILL.md). How to write the commit: the [commit-messages skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/commit-messages/SKILL.md).
+The [nx-run-tasks skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/nx-run-tasks/SKILL.md) says how to verify, and the [commit-messages skill](https://github.com/JacobLey/leyman/blob/main/.agents/skills/commit-messages/SKILL.md) how to write the commit.

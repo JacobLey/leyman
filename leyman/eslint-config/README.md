@@ -2,20 +2,20 @@
 
 # @leyman/eslint-config
 
-Strict, opinionated ESLint flat config for TypeScript ESM packages, generated from each package's package.json: nearly every rule on, every exception explained.
+An ESLint flat config for TypeScript ESM packages with nearly every rule on and a reason given for each exception, generated from each package's package.json.
 
 [![npm package](https://badge.fury.io/js/@leyman%2Feslint-config.svg)](https://www.npmjs.com/package/@leyman/eslint-config)
 [![License](https://img.shields.io/npm/l/@leyman/eslint-config.svg)](https://github.com/JacobLey/leyman/blob/main/leyman/eslint-config/LICENSE)
 
 </div>
 
-- **Every rule on** — every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks, JSX accessibility) is an error, read from the installed plugins, so a new rule is on as soon as this package takes the plugin release that adds it.
-- **Every exception explained** — each rule turned off or configured has a comment saying why.
-- **Generated from package.json** — workspace dependencies become internal imports, `engines.node` turns off rules that suggest APIs the package's oldest supported Node.js lacks, and React rules follow whether the package uses React.
-- **Type-aware** — typescript-eslint's type-checked rules run through the project service, with no `parserOptions.project` to maintain.
-- **Formatting left out** — every formatting rule is off, for Biome or Prettier to own.
+`@leyman/eslint-config` turns on every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks and JSX accessibility) as an error. The rules are read from the installed plugins, so a new rule is on as soon as this package takes the plugin release that adds it. Each rule that is turned off or configured has a comment saying why.
 
-It is the config of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be strict and to change: see [Versioning](#versioning).
+The config is generated from the package's `package.json`. Its workspace dependencies are treated as internal imports, rules that suggest APIs the package's oldest supported Node.js (`engines.node`) lacks are turned off, and the React rules depend on whether the package uses React. typescript-eslint's type-checked rules run through its project service, so there is no `parserOptions.project` to maintain.
+
+All formatting rules are off, so Biome or Prettier can handle formatting.
+
+It is the config of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be strict and to change (see [Versioning](#versioning)).
 
 ## Contents
 
@@ -51,7 +51,7 @@ Then run `eslint .` from the package directory.
 
 ## Usage
 
-The package is ESM only. The config returned is a flat config array: append your own entries to change it, as with any flat config.
+The package is ESM only. The config returned is a flat config array, so you change it by appending your own entries, as with any flat config.
 
 It expects this layout, per package:
 
@@ -92,7 +92,7 @@ What it reads from `packageJson`:
 
 ### `nonDeprecatedRules(name, plugin)`
 
-Every non-deprecated rule of `plugin` that applies to JavaScript, as `'error'`, prefixed with `name/`. What the config uses for each plugin; useful to turn on another plugin the same way.
+Every non-deprecated rule of `plugin` that applies to JavaScript, as `'error'`, prefixed with `name/`. The config builds each plugin's rules with it, and you can use it to turn on another plugin the same way.
 
 ### `baseNamingConvention`, `reactComponentNamingConvention`
 
@@ -110,4 +110,4 @@ Every rule a plugin ships is on, so the plugins (and `@eslint/js` and typescript
 
 ## Known issues
 
-- **`@typescript-eslint/prefer-string-starts-ends-with` misreads `v`-flag regular expressions** (typescript-eslint 8.72), and its autofix can change behavior: `/^\p{N}/v.test(s)` becomes `s.startsWith('p{N}')`. `regexp/require-unicode-sets-regexp`, which is on, moves every regular expression to the `v` flag, so expect to hit it. The fix ([typescript-eslint#13102](https://github.com/typescript-eslint/typescript-eslint/pull/13102)) is merged but not yet released. Until it is, leyman applies [a patch](https://github.com/JacobLey/leyman/blob/main/patches/@typescript-eslint__eslint-plugin@8.72.1.patch) (pnpm's `patchedDependencies`); run `--fix` with care on `v`-flag expressions, or apply the same patch.
+- In typescript-eslint 8.72, `@typescript-eslint/prefer-string-starts-ends-with` misreads regular expressions with the `v` flag, and its autofix can change behavior. For example, `/^\p{N}/v.test(s)` becomes `s.startsWith('p{N}')`. Since `regexp/require-unicode-sets-regexp` (which is on) moves every regular expression to the `v` flag, you are likely to run into it. The fix ([typescript-eslint#13102](https://github.com/typescript-eslint/typescript-eslint/pull/13102)) is merged but not yet released. Until it is, leyman applies [a patch](https://github.com/JacobLey/leyman/blob/main/patches/@typescript-eslint__eslint-plugin@8.72.1.patch) (pnpm's `patchedDependencies`); run `--fix` with care on `v`-flag expressions, or apply the same patch.

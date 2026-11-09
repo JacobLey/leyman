@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-openapi-client",
   "version": "0.0.1",
-  "description": "A typed client for the OpenAPI demo's notes API: types imported from the spec through a content mapper, routes read from openapi.json at runtime.",
+  "description": "A typed client for the OpenAPI demo's notes API, with types imported from the spec through a content mapper and routes read from openapi.json at runtime.",
   "engines": {
     "node": ">=26"
   },

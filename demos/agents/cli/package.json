@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-agents-cli",
   "version": "0.0.1",
-  "description": "A CLI for the notes API, made for agents and people: one short command per task, with login, tokens and errors handled inside.",
+  "description": "A CLI for the notes API, made for agents as well as people, with one short command per task and login, tokens and errors handled inside.",
   "engines": {
     "node": ">=26"
   },

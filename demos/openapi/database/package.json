@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-openapi-database",
   "version": "0.0.1",
-  "description": "The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone.",
+  "description": "The Postgres schema for the OpenAPI demo, with its Drizzle tables, the migrations that build them, and a schema.sql snapshot of the result for tests to clone.",
   "engines": {
     "node": ">=26"
   },

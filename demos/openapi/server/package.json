@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-openapi-server",
   "version": "0.0.1",
-  "description": "The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication (static tokens or JWTs) and scopes.",
+  "description": "The notes API for the OpenAPI demo, a Hono server on Postgres with Drizzle that validates every request and response against openapi.json, and checks bearer tokens (static tokens or JWTs) and their scopes.",
   "engines": {
     "node": ">=26"
   },

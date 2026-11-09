@@ -1,6 +1,6 @@
 # vscode-tests
 
-Run and debug a single test from VS Code: a play button next to each test and suite, and in the Testing panel.
+Run and debug a single test from VS Code, with a play button next to each test and suite and in the Testing panel.
 
 ## Using it
 
@@ -12,7 +12,7 @@ nx run @leyman/vscode-tests:build
 
 Then reload the window. The extension is in [`.vscode/extensions/leyman-tests`](../../.vscode/extensions/leyman-tests), and only loads this package's build from its own worktree, so every worktree runs its own code. After changing this package, build it and reload the window.
 
-A button:
+Pressing a button:
 
 1. Builds with the project's `test:compile` target, as tests run from compiled output. A type error stops the run here, and shows in the test output.
 2. Runs Mocha or Vitest directly on that spec, selecting by title. This skips coverage and Nx's cache, so a test always runs.

@@ -2,22 +2,22 @@
 
 # @leyman/nx-plugin
 
-Nx plugin inferring the build, test, lint and package-check targets of TypeScript ESM packages: SWC and tsc builds, Mocha or Vitest under c8, ESLint, Biome and check-package.
+An Nx plugin that infers the build, test, lint and package-check targets of TypeScript ESM packages from their files, with each target hashing only what its result depends on.
 
 [![npm package](https://badge.fury.io/js/@leyman%2Fnx-plugin.svg)](https://www.npmjs.com/package/@leyman/nx-plugin)
 [![License](https://img.shields.io/npm/l/@leyman/nx-plugin.svg)](https://github.com/JacobLey/leyman/blob/main/leyman/nx-plugin/LICENSE)
 
 </div>
 
-- **Targets from files** — a project with `src/` and `tsconfig.json` gets `tsc`, one with `test/unit` and Mocha installed gets `mocha-unit-test`, a public one gets `check-package`, and so on.
-- **Cached precisely** — each target hashes only what its result depends on: its sources, the shared configs, and the built output of its dependencies (not their source), so editing a dependency's tests reruns nothing downstream.
-- **Builds that respect the support floor** — SWC compiles to the ES year of the oldest Node.js `engines.node` allows, and `tsc` checks types and writes declarations.
-- **Coverage over all of a project's tests** — each test target runs under c8, and `coverage-report` checks the coverage of all of them together.
-- **Overridable** — rename a target, turn it off, include or exclude projects, or override any part in `project.json`.
-- **Generators** — `init` sets an Nx workspace up for the plugin (`nx add @leyman/nx-plugin` runs it), and `package` adds a package with the targets it gets already declared.
-- **Or written out** — a workspace that can't load the plugin (because it builds it, say) writes the same targets into `nx.json` and each `project.json` with the `targets` executor, which fails on drift in CI.
+An Nx plugin can infer a project's targets from the files it has, instead of each `project.json` spelling them out.
 
-It is the setup of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be opinionated and to change: see [Versioning](#versioning).
+`@leyman/nx-plugin` does this for TypeScript ESM packages. A project with `src/` and `tsconfig.json` gets `tsc`, one with `test/unit` and Mocha installed gets `mocha-unit-test`, a public one gets `check-package`, and so on. The build compiles with SWC to the ES year of the oldest Node.js that `engines.node` allows, then `tsc` checks types and writes declarations. Each test target runs under c8, and `coverage-report` checks the coverage of all of them together. ESLint and Biome get targets too.
+
+Each target hashes only what its result depends on: its sources, the shared configs, and the built output of its dependencies (rather than their source). So editing a dependency's tests reruns nothing downstream.
+
+You can rename a target, turn it off, include or exclude projects, or override any part of a target in `project.json`. The `init` generator sets an Nx workspace up for the plugin (`nx add @leyman/nx-plugin` runs it), and `package` adds a package with the targets it gets already declared. A workspace that can't load the plugin (because it builds it, say) can write the same targets into `nx.json` and each `project.json` with the `targets` executor, which fails in CI when they drift.
+
+It is the setup of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be opinionated and to change (see [Versioning](#versioning)).
 
 ## Contents
 
@@ -71,7 +71,7 @@ nx run-many -t mocha-unit-test
 
 ## Usage
 
-The plugin infers targets for each project with a `project.json`. It says how each target runs and what it hashes, not when: wire the order yourself with `dependsOn` (in `nx.json` `targetDefaults` or `project.json`), or with [nx-lifecycle](https://www.npmjs.com/package/nx-lifecycle), binding each target to a stage. nx-lifecycle wires the targets a `project.json` declares, so declare them there as `{}`.
+The plugin infers targets for each project with a `project.json`. It says how each target runs and what it hashes, but not when it runs. Wire the order yourself with `dependsOn` (in `nx.json` `targetDefaults` or `project.json`), or with [nx-lifecycle](https://www.npmjs.com/package/nx-lifecycle), binding each target to a stage. nx-lifecycle wires the targets a `project.json` declares, so declare them there as `{}`.
 
 Targets run from the project's directory. The defaults read the shared configs from the project's own `node_modules/@leyman/configs`, so each project installs [`@leyman/configs`](https://www.npmjs.com/package/@leyman/configs), as its `tsconfig.json` extends it anyway.
 

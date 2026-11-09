@@ -3,7 +3,7 @@
 <!-- @manual-start intro -->
 # @leyman/docs
 
-Documentation site for the packages in this repo, built with [VitePress](https://vitepress.dev/) and deployed to GitHub Pages from `main`. Not published to npm.
+The documentation site for the packages in this repo, built with [VitePress](https://vitepress.dev/) and deployed to GitHub Pages from `main`. It isn't published to npm.
 <!-- @manual-end intro -->
 
 Documents [`barrelify`](../apps/barrelify), [`entry-script`](../tools/entry-script), [`generated-signature`](../tools/generated-signature/ts), [`genever`](../apps/genever/ts), [`haywire`](../tools/haywire), [`haywire-launcher`](../tools/haywire-launcher), [`idempotency-keys`](../tools/idempotency-keys/ts), [`juniper`](../apps/juniper), [`juniper-arbitrary`](../apps/juniper-arbitrary), [`juniper-validator`](../apps/juniper-validator), [`lease-cache`](../tools/lease-cache), [`load-populate-files`](../apps/populate-files/load-populate-files), [`mocha-chain`](../tools/test-chain/mocha-chain), [`normalized-react-query`](../tools/normalized-react-query), [`nx-lifecycle`](../apps/nx-lifecycle), [`pg-dolly`](../tools/pg-dolly), [`pg-dolly-schema`](../apps/pg-dolly-schema), [`populate-files`](../apps/populate-files/ts), [`unknown-error`](../tools/unknown-error) and [`vitest-chain`](../tools/test-chain/vitest-chain) so far, plus the demos.
@@ -30,7 +30,7 @@ arraySchema().maxLength(10);
 
 Twoslash only checks types. Output shown in comments, like `// { type: 'string' }`, is not checked.
 
-Links between pages are checked too: a dead link fails the build.
+Links between pages are checked too, and a dead link fails the build.
 
 ## Developing
 
@@ -41,7 +41,7 @@ nx run @leyman/docs:build           # build into dist/, failing on any type erro
 
 A package's docs live in `src/packages/<package>/`, and a demo's in `src/demos/<demo>/`. Each has an entry in [`.vitepress/projects.ts`](./.vitepress/projects.ts), from which [`.vitepress/config.ts`](./.vitepress/config.ts) builds the nav, sidebars, redirects and `/llms.txt`, and the theme's components the home page, lists and cross-links. Pages are Markdown, with VitePress's [containers and code groups](https://vitepress.dev/guide/markdown). Document a package's types by adding it to `devDependencies` (`workspace:^`).
 
-The package lists in the root `README.md`, this file, the projects and docs-site skills, the issue templates' package dropdowns, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json` by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed: edit them only inside their manual sections, and CI fails when one is out of date.
+The package lists in the root `README.md`, this file, the projects and docs-site skills, the issue templates' package dropdowns, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json` by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed, so edit them only inside their manual sections. CI fails when one is out of date.
 
 VitePress 2 is in alpha, so its version is pinned exactly in the catalog. Bump it deliberately and check the build.
 <!-- @manual-end rest -->

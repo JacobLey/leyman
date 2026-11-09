@@ -6,7 +6,7 @@ description: "This repository's setup (Nx task lifecycle, shared configs, checks
 
 The packages on this site are built on a setup of their own: an Nx monorepo with one task lifecycle (prepare, check, build, test, verify), shared configs, strict checks on what gets published, a devcontainer per git worktree, and skills that let a coding agent work in it from the first session.
 
-This section is about that setup, so another repository can adopt it. The goal is a framework rather than a template: install versioned packages, upgrade when you choose, copy only what can't be a package, and take as much or as little as fits.
+This section is about that setup, so another repository can adopt it. The goal is a framework rather than a template. You install versioned packages and upgrade when you choose, copy only what can't be a package, and take as much or as little as fits.
 
 The setup is built to be worked on mostly by coding agents. Most of its documentation is in skills (`.agents/skills/` in the repository), listed in [`AGENTS.md`](https://github.com/JacobLey/leyman/blob/main/AGENTS.md). A page here is the source of a skill's text where people need it too, and the skill points to it, so an agent and a person read the same thing.
 
