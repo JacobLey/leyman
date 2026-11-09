@@ -1,5 +1,11 @@
 # @leyman/expect
 
+## 0.1.2
+
+### Patch Changes
+
+- ebb0dbb: Rewrite the README to introduce the package in plainer prose.
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # iso-crypto
 
+## 3.1.3
+
+### Patch Changes
+
+- 9c82c6d: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+
 ## 3.1.2
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # lease-cache
 
+## 0.4.2
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- 1e6aa0a: Rewrite the README introduction to explain the problem before the package, and simplify the description.
+
 ## 0.4.1
 
 ### Patch Changes

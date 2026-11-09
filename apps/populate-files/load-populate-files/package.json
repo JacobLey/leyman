@@ -1,6 +1,6 @@
 {
   "name": "load-populate-files",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Load and dynamically populate file content based on a single file's config.",
   "engines": {
     "node": ">=24"

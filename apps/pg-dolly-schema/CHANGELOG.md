@@ -1,5 +1,16 @@
 # pg-dolly-schema
 
+## 0.1.5
+
+### Patch Changes
+
+- 9c82c6d: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+- Updated dependencies [9c82c6d]
+  - entry-script@4.2.2
+  - pg-dolly@0.3.2
+  - populate-files@1.2.4
+
 ## 0.1.4
 
 ### Patch Changes

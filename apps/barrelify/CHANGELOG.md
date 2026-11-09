@@ -1,5 +1,17 @@
 # barrelify
 
+## 2.2.6
+
+### Patch Changes
+
+- 9c82c6d: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+- Updated dependencies [9c82c6d]
+  - entry-script@4.2.2
+  - parse-cwd@2.1.2
+  - populate-files@1.2.4
+  - unknown-error@0.2.2
+
 ## 2.2.5
 
 ### Patch Changes

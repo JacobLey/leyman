@@ -1,5 +1,13 @@
 # mocha-chain
 
+## 1.2.1
+
+### Patch Changes
+
+- 9c82c6d: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9c82c6d]
+  - test-chain-core@0.2.2
+
 ## 1.2.0
 
 ### Minor Changes

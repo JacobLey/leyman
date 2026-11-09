@@ -1,6 +1,6 @@
 {
   "name": "juniper",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "description": "A JSON Schema builder for TypeScript that infers each schema's type and catches schema mistakes at compile time, with JSON Schema 2020-12 and OpenAPI 3.0 output.",
   "engines": {
     "node": ">=22.13.0"

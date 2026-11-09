@@ -1,6 +1,6 @@
 {
   "name": "populate-files",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Populate static files with dynamic content, and make sure they stay in sync.",
   "engines": {
     "node": ">=24"

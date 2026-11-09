@@ -1,5 +1,14 @@
 # @leyman/nx-plugin
 
+## 0.4.1
+
+### Patch Changes
+
+- ebb0dbb: Rewrite the README to introduce the package in plainer prose.
+- Updated dependencies [9e82d20]
+  - juniper@2.8.1
+  - juniper-validator@0.6.1
+
 ## 0.4.0
 
 ### Minor Changes
