@@ -14,6 +14,7 @@ export type Language = 'go' | 'ts';
  * target already hashes the Go sources (`^goSource`), so a change to them reruns it. Go's build cache keeps a
  * rebuild to about a second.
  */
+// eslint-disable-next-line unicorn/no-missing-local-resource -- Built by the tests below, so absent from a clean checkout
 const goBinary = fileURLToPath(new URL('../../bin/idempotency-keys-interop-go', import.meta.url));
 const goProject = fileURLToPath(new URL('../../../idempotency-keys-interop-go', import.meta.url));
 // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `server.ts`, beside this module
