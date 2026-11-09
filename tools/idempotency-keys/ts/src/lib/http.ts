@@ -57,14 +57,16 @@ export const problemResponse = (kind: ProblemKind): Response => {
 
 /**
  * The request target, as the spec hashes it: the path of the request's URL, plus `?` and its query when that isn't
- * empty, without the fragment. `Request.url` is already the WHATWG URL serialization the spec takes.
+ * empty, without the fragment. `Request.url` is the WHATWG URL serialization the spec takes, which percent-encodes `^`
+ * in a path ([path percent-encode set](https://url.spec.whatwg.org/#path-percent-encode-set)). Node.js 22.12 and
+ * earlier leave it as is, so it is encoded here to hash the same on every runtime.
  *
  * @param url - The request's full URL
  * @returns Path and query, as the URL has them
  */
 export const requestTarget = (url: string): string => {
     const { pathname, search } = new URL(url);
-    return pathname + search;
+    return pathname.replaceAll('^', '%5E') + search;
 };
 
 /**
