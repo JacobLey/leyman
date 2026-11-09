@@ -1,6 +1,6 @@
 {
   "name": "@leyman/expect",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Chai's expect and assert with chai-as-promised registered, as one ESM import, so async assertions work in any test file without setup.",
   "engines": {
     "node": ">=22.12.0"

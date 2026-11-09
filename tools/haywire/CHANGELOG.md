@@ -1,5 +1,11 @@
 # haywire
 
+## 2.0.7
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+
 ## 2.0.6
 
 ### Patch Changes

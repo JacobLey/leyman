@@ -1,6 +1,6 @@
 {
   "name": "@leyman/nx-plugin",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "An Nx plugin that infers the build, test, lint and package-check targets of TypeScript ESM packages from their files, with each target hashing only what its result depends on.",
   "engines": {
     "node": ">=22.13.0"

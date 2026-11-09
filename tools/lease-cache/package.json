@@ -1,6 +1,6 @@
 {
   "name": "lease-cache",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A read-through cache for Valkey or Redis that shares one load per key across all your servers, and handles invalidating a key while it loads.",
   "engines": {
     "node": ">=22.12.0"

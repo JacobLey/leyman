@@ -1,5 +1,11 @@
 # Change Log
 
+## 4.1.2
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+
 ## 4.1.1
 
 ### Patch Changes

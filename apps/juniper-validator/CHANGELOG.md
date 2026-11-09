@@ -1,5 +1,14 @@
 # juniper-validator
 
+## 0.6.1
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+  - default-import@3.1.2
+  - juniper@2.8.1
+
 ## 0.6.0
 
 ### Minor Changes

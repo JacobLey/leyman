@@ -1,6 +1,6 @@
 {
   "name": "parse-cwd",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Convert a relative path or URL to an absolute directory path.",
   "engines": {
     "node": ">=22.12.0"

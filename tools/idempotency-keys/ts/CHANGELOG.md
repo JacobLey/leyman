@@ -1,5 +1,11 @@
 # idempotency-keys
 
+## 0.1.1
+
+### Patch Changes
+
+- 1e6aa0a: Rewrite the README introduction to explain the problem before the package, and simplify the description.
+
 ## 0.1.0
 
 ### Minor Changes

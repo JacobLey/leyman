@@ -1,6 +1,6 @@
 {
   "name": "enum-to-array",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Convert TypeScript enums to a strongly typed array.",
   "engines": {
     "node": ">=22.12.0"

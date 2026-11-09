@@ -1,5 +1,11 @@
 # @leyman/configs
 
+## 0.2.1
+
+### Patch Changes
+
+- ebb0dbb: Rewrite the README to introduce the package in plainer prose.
+
 ## 0.2.0
 
 ### Minor Changes

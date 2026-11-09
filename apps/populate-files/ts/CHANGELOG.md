@@ -1,5 +1,17 @@
 # populate-files
 
+## 1.2.4
+
+### Patch Changes
+
+- 9c82c6d: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+- Updated dependencies [9c82c6d]
+  - format-file@1.3.2
+  - parse-cwd@2.1.2
+  - generated-signature@0.3.2
+  - unknown-error@0.2.2
+
 ## 1.2.3
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # find-import
 
+## 2.2.2
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+  - parse-cwd@2.1.2
+
 ## 2.2.1
 
 ### Patch Changes

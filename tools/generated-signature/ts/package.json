@@ -1,6 +1,6 @@
 {
   "name": "generated-signature",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Sign generated files so hand edits are detected, while keeping manual sections editable.",
   "engines": {
     "node": ">=22.13.0"

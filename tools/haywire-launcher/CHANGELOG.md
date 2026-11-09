@@ -1,5 +1,14 @@
 # haywire-launcher
 
+## 1.1.2
+
+### Patch Changes
+
+- 9e82d20: Rewrite the README (and WHY file, where there is one) to introduce the problem before the package, in plainer prose.
+- Updated dependencies [9e82d20]
+  - entry-script@4.2.2
+  - haywire@2.0.7
+
 ## 1.1.1
 
 ### Patch Changes

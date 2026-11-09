@@ -1,5 +1,13 @@
 # @leyman/framework
 
+## 0.1.1
+
+### Patch Changes
+
+- ebb0dbb: Rewrite the README to introduce the package in plainer prose.
+- Updated dependencies [9e82d20]
+  - entry-script@4.2.2
+
 ## 0.1.0
 
 ### Minor Changes

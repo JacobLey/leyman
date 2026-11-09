@@ -1,6 +1,6 @@
 {
   "name": "@leyman/framework",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Audits how much of the leyman framework a repository has adopted, tier by tier, with the fix for each gap.",
   "engines": {
     "node": ">=22.12.0"

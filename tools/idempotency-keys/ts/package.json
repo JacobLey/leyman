@@ -1,6 +1,6 @@
 {
   "name": "idempotency-keys",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.",
   "engines": {
     "node": ">=22.12.0"
