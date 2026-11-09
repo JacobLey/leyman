@@ -43,7 +43,7 @@ The databases it made are dropped at the end, except the one a failed migrate co
 
 ## Migrate commands
 
-The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database: a command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database.
+The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database. A command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database instead.
 
 | Tool            | Command                                                                                           | Notes                                                                                                                                                                |
 | --------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

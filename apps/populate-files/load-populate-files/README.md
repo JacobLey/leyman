@@ -9,6 +9,8 @@ Load and dynamically populate file content based on a single file's config.
 
 </div>
 
+`load-populate-files` runs [`populate-files`](https://www.npmjs.com/package/populate-files) from a config module. Instead of calling `populateFiles()` yourself, you default-export the list of files from a module, and `loadAndPopulateFiles()` (or the `load-populate-files` CLI) loads it and writes them. The module only describes what to generate, and the CLI, a script or an Nx target decides where and when to write it.
+
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/populate-files/), including [Config modules](https://jacobley.github.io/leyman/packages/populate-files/guides/config-modules) for this package.
 
 ## Contents
@@ -99,7 +101,7 @@ Options are passed through to the underlying `populateFiles()` call. They are al
 
 ### `PopulateFileParams`
 
-The type of a single exported config entry — equivalent to the params accepted by `populateFiles()`. Use with the `satisfies` keyword to validate your config at compile time.
+The type of a single exported config entry, the same as the params accepted by `populateFiles()`. Use with the `satisfies` keyword to validate your config at compile time.
 
 ```ts
 import type { PopulateFileParams } from 'load-populate-files';
@@ -112,7 +114,7 @@ export default {
 
 This type can also be imported directly from [`populate-files`](https://www.npmjs.com/package/populate-files).
 
-Configs may set `signed: true` (with string content) to sign the file and keep its manual sections, see [signed files](https://www.npmjs.com/package/populate-files#signed-files).
+Configs may set `signed: true` (with string content) to sign the file and keep its manual sections. See [signed files](https://www.npmjs.com/package/populate-files#signed-files).
 
 ## Also See
 

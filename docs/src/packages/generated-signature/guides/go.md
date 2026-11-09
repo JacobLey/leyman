@@ -4,7 +4,7 @@ description: The Go implementation of generated-signature, whose signatures, man
 
 # Go
 
-generated-signature has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/generated-signature/test-vectors) as the TypeScript package: a file signed by either verifies with the other, manual sections merge the same way, and both read and write the same manifests. So a Go generator can share files with TypeScript tooling, and the [ESLint rule](/packages/generated-signature/guides/eslint) checks what it signs. It needs Go 1.24 or later.
+generated-signature has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/generated-signature/test-vectors) as the TypeScript package. A file signed by either verifies with the other, manual sections merge the same way, and both read and write the same manifests. So a Go generator can share files with TypeScript tooling, and the [ESLint rule](/packages/generated-signature/guides/eslint) checks what it signs. It needs Go 1.24 or later.
 
 ```sh
 go get github.com/JacobLey/leyman/tools/generated-signature/go@latest

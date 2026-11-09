@@ -8,7 +8,7 @@ go get github.com/JacobLey/leyman/apps/populate-files/go@latest
 
 It needs Go 1.24 or later. Versions are listed in the [changelog](./CHANGELOG.md).
 
-It writes generated files and keeps them in sync, with the same rules as the TypeScript package: a check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go/), so the files and manifests it writes are read the same way by the TypeScript tools.
+It writes generated files and keeps them in sync, with the same rules as the TypeScript package. A check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go/), so the files and manifests it writes are read the same way by the TypeScript tools.
 
 ```go
 import populatefiles "github.com/JacobLey/leyman/apps/populate-files/go"
@@ -22,7 +22,7 @@ results, err := populatefiles.PopulateFiles([]populatefiles.File{
 
 Compared to the TypeScript package:
 
-- Content is bytes. Nothing is formatted: JSON content is the caller's to write, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
+- Content is bytes, and nothing is formatted. The caller writes JSON content as it should appear, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
 - `Check` is a plain option, where the TypeScript package defaults it to whether it runs in CI.
 - Stale files without a manifest are found in sorted order.
 
@@ -34,4 +34,4 @@ Run through Nx, like any other project:
 nx run @leyman/populate-files-go:verify
 ```
 
-It has no `package.json`. generated-signature is a Go dependency: `go.mod` requires its module, with a `replace` pointing at the workspace copy, and Nx (through the gonx plugin) infers the dependency from the import. The tests read the [test vectors](../test-vectors/) by path, an implicit dependency in `project.json`, so `go test ./...` also works directly.
+It has no `package.json`. generated-signature is a Go dependency. `go.mod` requires its module, with a `replace` pointing at the workspace copy, and Nx (through the gonx plugin) infers the dependency from the import. The tests read the [test vectors](../test-vectors/) by path, an implicit dependency in `project.json`, so `go test ./...` also works directly.

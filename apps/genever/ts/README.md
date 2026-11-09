@@ -5,18 +5,23 @@
 Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.
 
 [![npm package](https://badge.fury.io/js/genever.svg)](https://www.npmjs.com/package/genever)
-[![License](https://img.shields.io/npm/l/genever.svg)](https://github.com/JacobLey/leyman/blob/main/apps/genever/LICENSE)
+[![License](https://img.shields.io/npm/l/genever.svg)](https://github.com/JacobLey/leyman/blob/main/apps/genever/ts/LICENSE)
 
 </div>
 
-- **Types that match the schema** — tuples (`prefixItems`), `oneOf` unions you can narrow, `patternProperties` keys like `` `x-${string}` ``, recursive `$defs` and `if`/`then`/`else` all become precise types, not `any` or `unknown[]`.
-- **Round-trips Juniper** — a schema built with [Juniper](https://www.npmjs.com/package/juniper), serialized and read back by genever, gives the same type Juniper inferred. Every release is tested against that.
-- **Strict by default** — unknown keywords, keywords that don't apply to the schema's type, undeclared `required` properties, and contradictions like `minLength` over `maxLength` fail generation, instead of silently changing what the schema accepts. Without strict mode, the type follows exactly what a validator accepts.
-- **One file from many** — `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says.
-- **Generated files stay in sync** — a `--ci` mode fails when a committed file is out of date, like [populate-files](https://www.npmjs.com/package/populate-files).
-- **Types only** — the output is plain TypeScript types, with no runtime dependency.
+A JSON Schema is often shared as a plain file (an API's OpenAPI spec, or the schema of a config format), and whoever reads it gets a JSON object without any TypeScript types. Tools that infer types inside TypeScript need the schema pasted into the code `as const`, so a schema that arrives as a file still needs its type written by hand.
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/genever/). For the motivation, and how it compares to other generators, see [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md).
+`genever` is a code generator that reads a JSON Schema file or OpenAPI document and writes the TypeScript types for it. You run it as a build step and commit the output, and `--ci` fails when the committed file is out of date, like [populate-files](https://www.npmjs.com/package/populate-files). The output is plain TypeScript types, with no runtime dependency.
+
+The types are as precise as TypeScript allows. Tuples (`prefixItems`), `oneOf` unions you can narrow, `patternProperties` keys like `` `x-${string}` ``, recursive `$defs` and `if`/`then`/`else` each get a matching type, where other generators often fall back to `any` or `unknown[]`. For a schema built with [Juniper](https://www.npmjs.com/package/juniper), serialized and read back, genever gives the same type Juniper inferred, and every release is tested against that.
+
+Strict mode is on by default. Unknown keywords, keywords that don't apply to the schema's type, undeclared `required` properties, and contradictions like `minLength` over `maxLength` fail generation, because a validator would quietly ignore them and accept more (or less) than the schema seems to say. With strict mode off, the type follows exactly what a validator accepts.
+
+A `$ref` to another file or a URL is loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says.
+
+genever only writes types, and doesn't validate data. Use [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator) with the same schema for that. Constraints TypeScript can't express, such as `minLength` or `format`, stay in the schema, and show up in the types only as JSDoc tags.
+
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/genever/). For the motivation, and how it compares to other generators, see [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/ts/WHY-GENEVER.md).
 
 ## Contents
 

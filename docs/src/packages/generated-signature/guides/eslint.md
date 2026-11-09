@@ -47,7 +47,7 @@ export const custom = 2; // ✅ manual sections may be edited
 | Generated file was edited outside of its manual sections. Regenerate it instead. | The signature doesn't match. Reported on the token.                                                                                                |
 | Generated file is malformed: `<reason>`.                                         | The token or markers can't be read. Reported on the line at fault, with a [`MalformedReason`](/packages/generated-signature/reference/api#errors). |
 
-There is no autofix: re-signing would just approve the edit. Regenerate the file instead, or move the change into a manual section.
+There is no autofix, since re-signing would just approve the edit. Regenerate the file instead, or move the change into a manual section.
 
 ## Files ESLint doesn't lint
 

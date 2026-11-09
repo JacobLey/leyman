@@ -29,11 +29,11 @@ try {
 
 ## Features
 
-- **Never throws**: Safe on Proxies that throw from every trap, throwing getters, and `toJSON` or `toString` that throw. Handling an error can't raise a new one inside your `catch`.
-- **Any realm, any runtime**: Recognizes Errors from `vm`, iframes and workers, where `instanceof Error` fails. Runs in Node.js, Deno, Bun and browsers, using `Error.isError` where it exists.
-- **Keeps what it can**: Rebuilds error-shaped objects (from JSON, RPC or `postMessage`) with their name, stack, cause and `code`. Describes anything else readably, including circular objects and BigInts. See [Converting caught values](/packages/unknown-error/guides/converting).
-- **Whole error trees**: Walks `cause` chains and `AggregateError` entries without recursion, so circular or 100,000-deep chains end instead of overflowing the stack. See [Cause chains](/packages/unknown-error/guides/cause-chains).
-- **Doesn't modify your errors**: Errors are returned as they are, never patched in place.
+- It's safe on Proxies that throw from every trap, on throwing getters, and on `toJSON` or `toString` that throw, so handling an error can't raise a new one inside your `catch`.
+- Errors from `vm`, iframes and workers are recognized, even though `instanceof Error` fails for them. It runs in Node.js, Deno, Bun and browsers, and uses `Error.isError` where it exists.
+- Error-shaped objects (from JSON, RPC or `postMessage`) are rebuilt with their name, stack, cause and `code`, and anything else gets a readable description, circular objects and BigInts included. See [Converting caught values](/packages/unknown-error/guides/converting).
+- `cause` chains and `AggregateError` entries are walked without recursion, so circular or 100,000-deep chains end instead of overflowing the stack. See [Cause chains](/packages/unknown-error/guides/cause-chains).
+- Your errors are returned as they are, and aren't patched in place.
 
 ## Compared to
 

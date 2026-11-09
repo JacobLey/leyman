@@ -9,11 +9,13 @@ Turn any caught `unknown` into a real Error without throwing, even for hostile v
 
 </div>
 
-- **Never throws**: Safe on Proxies that throw from every trap, throwing getters, and `toJSON` or `toString` that throw. Handling an error can't raise a new one inside your `catch`.
-- **Any realm, any runtime**: Recognizes Errors from `vm`, iframes and workers, where `instanceof Error` fails. Runs in Node.js, Deno, Bun and browsers, using `Error.isError` where it exists.
-- **Keeps what it can**: Rebuilds error-shaped objects (from JSON, RPC or `postMessage`) with their name, stack, cause and `code`. Describes anything else readably, including circular objects and BigInts, instead of `[object Object]`.
-- **Whole error trees**: Walks `cause` chains and `AggregateError` entries without recursion, so circular or 100,000-deep chains end instead of overflowing the stack.
-- **Doesn't modify your errors**: Errors are returned as they are, never patched in place.
+In TypeScript's `strict` mode, a `catch` variable is `unknown`, because JavaScript can throw anything. Most codebases convert it with something like `value instanceof Error ? value : new Error(String(value))`, which works for an Error or a thrown string. But an Error from another realm (a `vm` context, an iframe or a worker) fails `instanceof Error` and loses its name and stack, and a plain error object from JSON becomes `Error: [object Object]`. If the value is a Proxy or has a throwing getter, the conversion itself throws, inside the `catch` that was meant to handle the error.
+
+`unknown-error` turns any caught value into an Error without throwing, whatever the value is. Real Errors, including ones from other realms, are returned as they are, without being patched in place. Error-shaped objects (from JSON, RPC or `postMessage`) are rebuilt with their name, stack, cause and `code`. Anything else is wrapped in a `NonError` with a readable description, even for circular objects and BigInts.
+
+It can also walk and print a whole error tree, following `cause` chains and `AggregateError` entries. The walk doesn't recurse, so circular or 100,000-deep chains end instead of overflowing the stack.
+
+It runs in Node.js, Deno, Bun and browsers, and uses `Error.isError` where the runtime has it. It doesn't serialize errors for sending over JSON (use [serialize-error](https://www.npmjs.com/package/serialize-error) for that), but it can rebuild them on the other side.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/unknown-error/). For why it exists and the design decisions behind it, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md).
 

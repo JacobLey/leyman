@@ -2,20 +2,22 @@
 
 # constant-consistent-hash
 
-Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.
+Stateless consistent hashing in constant time with no loops, which only moves keys into a newly added bucket. Specified so any language can return the same buckets.
 
 [![npm package](https://badge.fury.io/js/constant-consistent-hash.svg)](https://www.npmjs.com/package/constant-consistent-hash)
 [![License](https://img.shields.io/npm/l/constant-consistent-hash.svg)](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/LICENSE)
 
 </div>
 
-- **Constant time, no loops**: a fixed amount of work per lookup, whatever the number of buckets (up to 2^48), unlike Jump hash (O(log n)) or Power consistent hashing and JumpBackHash (constant on average, but loop).
-- **Minimal disruption**: growing from n to n + 1 buckets moves only 1/(n + 1) of keys, all of them to the new bucket.
-- **Evenly balanced**: every bucket is equally likely, with no virtual nodes or tuning.
-- **Stateless**: no ring or table to build, store or keep in sync. A key and a bucket count are all it needs.
-- **Portable**: specified over UTF-8 bytes and 32-bit integer operations, with test vectors, so other languages can produce the same buckets.
+Spreading keys across buckets (database shards, cache nodes, workers) with `hash(key) % n` balances well, but adding a bucket moves almost every key. A consistent hash keeps the buckets balanced while moving as few keys as possible. Going from `n` to `n + 1` buckets, only the `1/(n + 1)` of keys the new bucket needs should move, and all of them into that new bucket.
 
-Not suited to removing arbitrary buckets from the middle, or to keys chosen by an attacker. For the design and the full comparison, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md).
+`constant-consistent-hash` does this with a fixed amount of work per lookup, whatever the number of buckets (up to 2^48). Jump hash also needs no stored state, but it loops, which makes a lookup O(log n). Power consistent hashing and JumpBackHash are constant time on average, but still loop a number of times that depends on the key, where this package doesn't loop at all.
+
+A lookup only needs the key and the bucket count, so there is no ring or table to build, store or keep in sync. Every bucket is equally likely, without virtual nodes or any tuning.
+
+The algorithm is specified over UTF-8 bytes and 32-bit integer operations, with test vectors, so other languages can produce the same buckets.
+
+Buckets can only be added and removed at the end, so it doesn't suit removing an arbitrary bucket from the middle. The key hash is fast rather than cryptographic, so it isn't meant for keys chosen by an attacker either. For the design and the full comparison, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md).
 
 ## Contents
 
@@ -50,7 +52,7 @@ consistentHash('00000000-0000-4000-8000-000000000000', 8);
 
 `constant-consistent-hash` is an ESM module with no dependencies, and works in Node.js and browsers. To load from a CommonJS module, use dynamic import: `const { consistentHash } = await import('constant-consistent-hash');`.
 
-Buckets are numbered `0` to `range - 1`. Add buckets at the end, and remove them from the end: keys in a removed bucket are spread across the rest, and no other key moves. To take a bucket out of the middle, keep the range and map that bucket number to a replacement in your own code.
+Buckets are numbered `0` to `range - 1`. Add buckets at the end, and remove them from the end. The keys in a removed bucket are spread across the rest, and no other key moves. To take a bucket out of the middle, keep the range and map that bucket number to a replacement in your own code.
 
 Keys are hashed with a fast non-cryptographic hash. It distributes self-generated keys such as UUIDs evenly, but someone who can choose keys can deliberately put them all in one bucket.
 
@@ -86,11 +88,11 @@ const shard = consistentHash(key, shardCount, { seed: 1 });
 const node = consistentHash(key, nodesPerShard, { seed: 2 });
 ```
 
-Changing the seed moves almost every key, so a seed is fixed for the lifetime of the data it places. It is not a secret: it does not stop crafted keys from targeting a bucket.
+Changing the seed moves almost every key, so a seed is fixed for the lifetime of the data it places. It is not a secret, and does not stop crafted keys from targeting a bucket.
 
 ### `hashKey(key, options?)`
 
-The hash `consistentHash` places a key with: two independent unsigned 32-bit integers, from the key's UTF-8 bytes. For building other hashing schemes on, such as [weighted-rendezvous-hash](https://www.npmjs.com/package/weighted-rendezvous-hash), with the same results in every language that implements SPEC.md.
+Returns the hash `consistentHash` places a key with, as two independent unsigned 32-bit integers computed from the key's UTF-8 bytes. Use it to build other hashing schemes, such as [weighted-rendezvous-hash](https://www.npmjs.com/package/weighted-rendezvous-hash), with the same results in every language that implements SPEC.md.
 
 | Parameter      | Type     | Default | Description                                                               |
 | -------------- | -------- | ------- | ------------------------------------------------------------------------- |

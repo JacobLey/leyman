@@ -6,7 +6,7 @@ description: Sign generated files so hand edits are detected, while keeping manu
 
 <ProjectHeader />
 
-Sign generated files so hand edits are detected, while keeping manual sections editable.
+Generated files often start with a "do not edit" comment, but nothing enforces it. generated-signature signs a generated file with a hash of its content, so a hand edit can be detected, and leaves manual sections in it for people to edit:
 
 ```ts
 import { manualSection, sign, verify } from 'generated-signature';
@@ -35,17 +35,17 @@ export const custom = 1;
 
 ## Features
 
-- **Offline check**: `verify()` needs only the file, not the generator, so it is cheap enough for a lint rule or a pre-commit hook.
-- **Manual sections**: mark regions a person may edit. Their content is left out of the signature, and `mergeSections()` carries it over when the file is regenerated.
-- **Any text format**: markers own whole lines, so `verify()` doesn't need to know the comment syntax. Helpers write markers for [common file types](/packages/generated-signature/reference/api#commentstyle-filepath).
-- **ESLint rule**: `generated-signature/eslint` reports hand-edited files in the editor. See [ESLint](/packages/generated-signature/guides/eslint).
-- **Manifest**: files that can't hold a comment, like JSON, are hashed in a [manifest](/packages/generated-signature/reference/format#manifest) instead.
-- **Zero dependencies**: only `node:crypto`. `eslint` is an optional peer, for the ESLint entry point only.
-- **Go too**: a Go implementation signs and verifies exactly the same way. See [Go](/packages/generated-signature/guides/go).
+- `verify()` needs only the file, not the generator, so it is cheap enough for a lint rule or a pre-commit hook.
+- Manual sections mark regions a person may edit. Their content is left out of the signature, and `mergeSections()` carries it over when the file is regenerated.
+- The markers take up whole lines, so `verify()` doesn't need to know the comment syntax. Helpers write markers for [common file types](/packages/generated-signature/reference/api#commentstyle-filepath).
+- An [ESLint rule](/packages/generated-signature/guides/eslint), `generated-signature/eslint`, reports hand-edited files in the editor.
+- Files that can't hold a comment, like JSON, are hashed in a [manifest](/packages/generated-signature/reference/format#manifest) instead.
+- It has no dependencies besides `node:crypto`. `eslint` is an optional peer, for the ESLint entry point only.
+- A [Go implementation](/packages/generated-signature/guides/go) signs and verifies exactly the same way.
 
-[populate-files](/packages/populate-files/) is the intended writer: with `signed: true` it does the signing and merging for you. This package works on plain strings, for generators that write their own files, and for tools that only check them.
+[populate-files](/packages/populate-files/) is the intended writer, and with `signed: true` it does the signing and merging for you. This package works on plain strings, for generators that write their own files, and for tools that only check them.
 
-A valid signature means nobody edited the file, not that it is up to date: regenerating it could still produce something else. Check freshness by regenerating, e.g. with populate-files' `check`.
+A valid signature means nobody edited the file. It doesn't mean the file is up to date, since regenerating it could still produce something else. To check that, regenerate it, for example with populate-files' `check`.
 
 ## Compared to
 

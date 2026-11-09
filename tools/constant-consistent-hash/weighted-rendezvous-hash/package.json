@@ -1,7 +1,7 @@
 {
   "name": "weighted-rendezvous-hash",
   "version": "0.2.1",
-  "description": "Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.",
+  "description": "Weighted rendezvous hashing, where nodes can be added, removed or resized anywhere and each gets a share of keys in proportion to its size.",
   "engines": {
     "node": ">=22.12.0"
   },

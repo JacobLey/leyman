@@ -9,13 +9,15 @@
 
 </div>
 
-Declare your workflow once — `build` runs hooks `pre` → `run` → `post`, `test` runs after `build` — then bind tools to hooks (`tsc` → `build:run`, `mocha` → `test:run`). Then `nx run <project>:build` runs the right steps, in the right order, in any project.
+Nx targets each do one task, such as codegen, type checking, linting, running tests or enforcing coverage. Some depend on each other, and others can run in parallel. Nx orders them with each target's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson), but writing those by hand means every target has to know about the others, including those of its dependencies. Adding a step in the middle (a post-build step after `tsc`, say) means updating every target that depended on the step before it, in every project that has it.
 
-- **Add a step in one place** — binding a new target (codegen, lint, a post-build step) rewires every dependent automatically, across every project.
-- **Per-project implementations** — each project opts into the bound targets it declares, so TypeScript, Go and Java projects can all answer to the same `build` and `test`.
-- **Nothing to commit** — the plugin infers targets when Nx builds the project graph, and fails with the fix if a project's `dependsOn` breaks the wiring. An executor that writes the config to files is also available.
+`nx-lifecycle` is an Nx plugin that splits this into two parts. You declare the high-level stages once, like a `build` stage with hooks `pre`, `run` and `post`, and a `test` stage that runs after `build`. Then you bind your actual targets to those hooks (`tsc` to `build:run`, `mocha` to `test:run`), and the plugin works out every `dependsOn`. Running `nx run <project>:build` then runs whatever building means for that project, in the right order.
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/nx-lifecycle/). For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
+Adding a step (codegen, lint, a post-build step) is one new binding, and every target after it is rewired in every project. Each project only gets the bound targets it declares, so TypeScript, Go and Java projects can all share the same `build` and `test` stages.
+
+The plugin infers these targets when Nx builds the project graph, so there is nothing to commit. If a project's own `dependsOn` breaks the wiring, it fails and tells you the entry to add. If you would rather have the wiring in your files, an executor writes it out instead.
+
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/nx-lifecycle/). For a worked example of the problem and how the stages solve it, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Contents
 
@@ -42,12 +44,12 @@ npm i -D nx-lifecycle
 
 `nx-lifecycle` wires targets in one of two ways:
 
-- **[Plugin](#plugin)** (recommended): infers the lifecycle targets whenever Nx builds the project graph. Nothing is written to files.
-- **[Executor](#executor)**: writes the lifecycle targets into `nx.json` and every `project.json`, to be committed. CI checks they are up to date.
-
-The package ships a skill for coding agents, `skills/nx-lifecycle/SKILL.md`: how the workspace orders its targets, and how to add one without breaking the wiring. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `nx-lifecycle: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
+- The [plugin](#plugin) (recommended) infers the lifecycle targets whenever Nx builds the project graph. Nothing is written to files.
+- The [executor](#executor) writes the lifecycle targets into `nx.json` and every `project.json`, to be committed. CI checks they are up to date.
 
 Both take the same [stages](#stages) and [bindings](#bindings). Requires Node.js 24 or later. `nx` and `@nx/devkit` (`^23.3.0`) are regular dependencies of `nx-lifecycle` (not peers), so use the same Nx major version in the workspace.
+
+The package ships a skill for coding agents, `skills/nx-lifecycle/SKILL.md`, which explains how the workspace orders its targets and how to add one without breaking the wiring. pnpm (12.11 or later) links it into your agent's skills once you approve it, with `pnpm approve` or `nx-lifecycle: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 ## Plugin
 
@@ -80,16 +82,16 @@ Add the plugin to `nx.json`, with stages and bindings as its options. Install `n
 }
 ```
 
-The options are typed as `LifecyclePluginOptions`: `import type { LifecyclePluginOptions } from 'nx-lifecycle/plugin'`, e.g. `const options = { stages, bindings } satisfies LifecyclePluginOptions;`.
+The options type is `LifecyclePluginOptions`, exported from `nx-lifecycle/plugin` (`import type { LifecyclePluginOptions } from 'nx-lifecycle/plugin'`), so options written in TypeScript can be checked with `const options = { stages, bindings } satisfies LifecyclePluginOptions;`.
 
-Every project with a `project.json` gets the [stage targets](#generated-targets), even if it declares nothing bound to them. A bound target is wired in a project when its `project.json` declares it, e.g. `"tsc": {}`; the implementation can still come from `targetDefaults`. `nx show project <name>` lists the inferred targets.
+Every project with a `project.json` gets the [stage targets](#generated-targets), even if it declares nothing bound to them. A bound target is wired in a project when its `project.json` declares it (`"tsc": {}`), even if the implementation comes from `targetDefaults`. `nx show project <name>` lists the inferred targets.
 
 ### Overriding inferred targets
 
 Nx applies `nx.json` `targetDefaults` and `project.json` on top of inferred targets. A `dependsOn` there replaces the inferred one rather than merging with it. So:
 
 - Don't define the stage targets (`build`, `build:_`, `build:run`…) yourself.
-- If a bound target sets its own `dependsOn`, include its lifecycle dependency: the hook before its own, or `<stage>:_` for the first hook.
+- If a bound target sets its own `dependsOn`, include its lifecycle dependency, which is the hook before its own (or `<stage>:_` for the first hook).
 
 ```json
 // project.json, with "e2e-test": "test:run"
@@ -122,7 +124,7 @@ Every time Nx builds the project graph, the plugin checks the merged configurati
 
 Use the [plugin](#plugin) unless the workspace develops `nx-lifecycle` itself, or you want every `dependsOn` visible in the files.
 
-Register it as a target in a `project.json`. Because `lifecycle` manages dependencies for the rest of your targets, it should live in a project outside your normal build/test graph — for example, a root-level management package. See [Nx-lifecycle's own monorepo config](https://github.com/JacobLey/leyman/blob/main/leyman/main/lifecycle.json) for a real example.
+Register it as a target in a `project.json`. Because `lifecycle` manages dependencies for the rest of your targets, it should live in a project outside your normal build and test graph, such as a root-level management package. See [Nx-lifecycle's own monorepo config](https://github.com/JacobLey/leyman/blob/main/leyman/main/lifecycle.json) for a real example.
 
 ```json
 {
@@ -140,12 +142,9 @@ Register it as a target in a `project.json`. Because `lifecycle` manages depende
 
 `nx-lifecycle` reads your stage and binding configuration, then writes `dependsOn` entries into `nx.json` and all relevant `project.json` files. The generated targets use the [noop](https://nx.dev/nx-api/nx/executors/noop) executor and should never be invoked directly or have their configuration edited by hand. Commit the generated output to version control, and rerun the executor whenever you add, remove, or rename targets.
 
-You may declare any of your own targets as depending on a lifecycle-managed target. That is the intended use: your targets reference abstract stage targets, and `nx-lifecycle` ensures those stages wire up to the correct concrete implementations.
+Your own targets can depend on lifecycle-managed targets, and that is how it is meant to be used. Your targets depend on the abstract stages, and `nx-lifecycle` wires each stage to the concrete targets bound to it.
 
-Configuration can be provided in two ways:
-
-- **Inline** — pass `stages` and `bindings` directly in the executor `options` inside `project.json`
-- **Config file** — point the executor at a separate JSON file (defaults to `lifecycle.json` in the project root)
+You can pass `stages` and `bindings` inline in the executor's `options` in `project.json`, or point the executor at a separate JSON file (`lifecycle.json` in the project root by default).
 
 ```json
 // project.json — inline config
@@ -215,12 +214,12 @@ Configuration can be provided in two ways:
 
 Required. No default.
 
-Declares the abstract workflow stages that `nx-lifecycle` will own. Each key is a stage name; the value configures that stage's structure and upstream dependencies.
+Declares the abstract workflow stages that `nx-lifecycle` will own. Each key is a stage name, and its value configures the stage's hooks and upstream dependencies.
 
-| Field       | Type          | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ----------- | ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hooks`     | `string[]`    | —       | Ordered list of sub-steps within the stage. The resulting target names are `stage:hook` (e.g. `build:run`). If omitted, the stage has no sub-steps and is referenced directly by name.                                                                                                                                                                                                                                     |
-| `dependsOn` | `dependsOn[]` | —       | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson): `"build"` (this project's stage), `"^build"` (the stage of every dependency project), `{ "target": "build", "projects": ["my-server"] }`. Can name a stage or any other target, but not another stage's anchor or hook (`^build:post` is rejected: depend on `build`). |
+| Field       | Type          | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------- | ------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks`     | `string[]`    | —       | Ordered list of sub-steps within the stage. The resulting target names are `stage:hook` (e.g. `build:run`). If omitted, the stage has no sub-steps and is referenced directly by name.                                                                                                                                                                                                                                                |
+| `dependsOn` | `dependsOn[]` | —       | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson): `"build"` (this project's stage), `"^build"` (the stage of every dependency project), `{ "target": "build", "projects": ["my-server"] }`. Can name a stage or any other target, but not another stage's anchor or hook (`^build:post` is rejected, so depend on `build` instead). |
 
 **Note:** If a stage declares `hooks`, bindings must reference a specific hook (`build:run`), not the stage name alone (`build`). A stage without hooks still generates an anchor: `lint:_ → eslint → lint`.
 
@@ -272,7 +271,7 @@ build:_ → build:pre → build:run → build:post → build
 
 Required. No default.
 
-Maps your project's concrete target names to lifecycle stage hooks. Each key is the name of an existing Nx target (e.g. `tsc`, `mocha`); the value is the stage or stage hook it should be bound to.
+Maps your project's concrete target names to lifecycle stage hooks. Each key is the name of an existing Nx target (like `tsc` or `mocha`), and its value is the stage or hook it runs in.
 
 ```json
 {
@@ -335,7 +334,7 @@ When `true`, performs all computation but skips writing any files. Can still fai
 
 ## CLI
 
-`nx-lifecycle` installs an `nx-lifecycle` command (also available as `lifecycle`). It does what the executor does. Configuration must be provided via a config file — inline options are not supported from the CLI.
+`nx-lifecycle` installs an `nx-lifecycle` command (also available as `lifecycle`). It does what the executor does. The CLI has no inline options, so it reads its configuration from a config file.
 
 ```sh
 pnpx nx-lifecycle --help

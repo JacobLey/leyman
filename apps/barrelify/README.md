@@ -9,13 +9,15 @@ Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/C
 
 </div>
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/barrelify/).
+A barrel file is an `index.ts` that re-exports the other files in its directory. Keeping one up to date by hand is easy to forget, and under Node ESM (or TypeScript's `nodenext` resolution) each specifier also needs the right extension, like `./foo.js` for `foo.ts` and `./foo.cjs` for `foo.cts`.
 
-- **Specifiers that resolve** — writes `./foo.js`, `./foo.cjs` and `./foo.mjs` (never extensionless paths, and `.tsx` components export as `./Button.js`), so barrels work under Node ESM and TypeScript's `nodenext` resolution.
-- **ESM/CJS aware** — reads the nearest `package.json` `"type"` and only re-exports files the index can actually load (a CommonJS index never re-exports `.mts`).
-- **Opt-in** — only rewrites `index.ts` files that start with `// AUTO-BARREL`; it never creates files or touches hand-written barrels.
-- **CI check** — `barrel --ci` fails when a committed barrel is stale.
-- **Keeps type-only exports** — lines you change to `export type *` stay type-only on later runs.
+`barrelify` scans your directories for `index.ts` files that start with a `// AUTO-BARREL` comment, and rewrites each one as a barrel of the other TypeScript files in its directory. It doesn't create files, and leaves hand-written barrels alone. Every export uses an extension that resolves (`./foo.js`, `./foo.cjs` or `./foo.mjs`, and `./Button.js` for a `.tsx` component), never an extensionless path, so the barrels work under Node ESM and `nodenext`.
+
+It reads the nearest `package.json` `"type"`, and only re-exports files the barrel can actually load, so a CommonJS barrel doesn't re-export an `.mts` file. A line you change to `export type *` stays type-only on later runs.
+
+Barrel files should be committed. `barrel --ci` fails when a committed barrel is out of date.
+
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/barrelify/).
 
 ## Contents
 
@@ -82,7 +84,7 @@ The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
 
 It is also available as a CLI via `npx barrel` or `npx barrelify`.
 
-Mark any `index.ts` (or `index.tsx`, `index.cts`, `index.mts`) file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling `.ts`, `.cts`, `.mts` and `.tsx` files, sorted by name (if `foo.ts` and `foo.tsx` both exist, `./foo.js` is exported once). Subdirectories are only re-exported when the marker is `// AUTO-BARREL subdirectories`: then each subdirectory with its own index file is exported as `export * from './sub/index.js';`. Declaration files (`.d.ts`) are skipped. `.tsx` files follow the same ESM/CJS rules as `.ts`, and are exported as `.js`, matching TypeScript's `react-jsx` output.
+Mark any `index.ts` (or `index.tsx`, `index.cts`, `index.mts`) file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify doesn't create new index files, and only rewrites files that are already opted in. Each barrel re-exports its sibling `.ts`, `.cts`, `.mts` and `.tsx` files, sorted by name (if `foo.ts` and `foo.tsx` both exist, `./foo.js` is exported once). Subdirectories are only re-exported when the marker is `// AUTO-BARREL subdirectories`, and then each subdirectory with its own index file is exported as `export * from './sub/index.js';`. Declaration files (`.d.ts`) are skipped. `.tsx` files follow the same ESM/CJS rules as `.ts`, and are exported as `.js`, matching TypeScript's `react-jsx` output.
 
 To re-export a file's types only, change its line to `export type * from './foo.js';`. Barrelify keeps it type-only when it rewrites the file.
 
@@ -110,9 +112,9 @@ Programmatic entry point. Scans for `// AUTO-BARREL` index files and rewrites th
 | --------- | ------------------ | ------- | ---------------------------------- |
 | `options` | `BarrelifyOptions` | `{}`    | Optional. See [Options](#options). |
 
-**Returns** `Promise<string[]>` — absolute paths of the barrel files that changed (or would change, with `dryRun`).
+**Returns** `Promise<string[]>`, the absolute paths of the barrel files that changed (or would change, with `dryRun`).
 
-**Throws** (rejects) `Error` with `Directory not found: <path>` if `cwd` doesn't exist, or if the nearest `package.json` of a barrel is malformed. There is no `ci` option: to check from code, call with `dryRun: true` and fail when the result is not empty.
+**Throws** (rejects) `Error` with `Directory not found: <path>` if `cwd` doesn't exist, or if the nearest `package.json` of a barrel is malformed. There is no `ci` option, so to check from code, call with `dryRun: true` and fail when the result is not empty.
 
 ```ts
 import { barrelify } from 'barrelify';

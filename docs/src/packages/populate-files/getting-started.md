@@ -50,7 +50,7 @@ Commit the generated files, like any other source file.
 
 ## Check files in CI
 
-Run the same script in CI. It checks instead of writing: it computes every file, and fails if any would be created or changed, without writing anything:
+Run the same script in CI. There it checks instead of writing, computing every file and failing if any would be created or changed:
 
 ```
 PopulateFilesCheckError: File /repo/generated/config.json not up to date. Reason: content-changed

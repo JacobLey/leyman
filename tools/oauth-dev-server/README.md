@@ -2,19 +2,23 @@
 
 # oauth-dev-server
 
-A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow.
+A local OAuth 2.1 authorization server for tests, built on oidc-provider with a dev login, that issues audience-bound JWT access tokens through the real flow.
 
 </div>
 
-A real authorization server ([oidc-provider](https://github.com/panva/node-oidc-provider)) with a fake user, so tests of a client or a resource server run the same OAuth flow they would in production, with no hosted identity provider, no account and no network. Only the login page is skipped.
+Testing an OAuth client, or a resource server that accepts OAuth tokens, usually means either a hosted identity provider (with an account to set up, and the network) or a mock server. Mocks issue a token for any client and request, so a client that gets the flow wrong still passes.
 
-- **Strict, like a real provider.** Clients, redirect URIs, resources and scopes are registered up front, PKCE is required, and every token is for one resource (`aud`). A client that gets the flow wrong fails here, as it would in production.
-- **The grants a native app or a service uses**: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), with revocation.
-- **JWT access tokens** (RFC 9068), signed with a key generated at startup and verified against its JWKS, as a resource server would verify any provider's.
-- **Plays the user too**: `userTokens` signs a user in for a token in one call, and `followAuthorization` and `approveDevice` play the browser for a client under test, signing in as any account. For MCP, `oauth-dev-server/mcp` has an `OAuthClientProvider` that does the same for the SDK's client.
-- **Local only.** It approves every login, so it refuses to serve anywhere but this machine unless told otherwise.
+`oauth-dev-server` runs a real authorization server ([oidc-provider](https://github.com/panva/node-oidc-provider)) locally, with a fake user. Tests of a client or a resource server go through the same OAuth flow they would in production, and only the login page is skipped.
 
-Private for now: depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). Runner-agnostic: plain functions, and a server to close.
+It is as strict as a real provider. Clients, redirect URIs, resources and scopes are registered up front, PKCE is required, and every token is for one resource (`aud`), so a client that gets the flow wrong fails here as it would in production.
+
+It supports the grants a native app or a service uses: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), along with revocation. Access tokens are JWTs (RFC 9068), signed with a key generated at startup, and a resource server verifies them against the server's JWKS as it would any provider's.
+
+It can play the user too. `userTokens` signs a user in and returns their tokens in one call, while `followAuthorization` and `approveDevice` act as the browser for a client under test, signing in as any account. For MCP, `oauth-dev-server/mcp` has an `OAuthClientProvider` that does the same for the SDK's client.
+
+Since it approves every login, it refuses to serve anywhere but this machine unless told otherwise.
+
+It is private for now, so depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). It works with any test runner, since it is plain functions and a server to close.
 
 ## Contents
 
@@ -244,56 +248,56 @@ Every error extends `DevAuthorizationError`. The types `ListenOptions`, `Listeni
 | Redirect           | Loopback, any port (RFC 8252): `http://127.0.0.1/callback` matches every port                   | None                                                                             |
 | Token's subject    | The user who logged in                                                                          | The client itself (`sub` is its `client_id`, RFC 9068); the user, when exchanged |
 
-A public client may opt out of refresh tokens (`refreshTokens: false`): its login then lasts as long as one access token. It may opt in to the device grant (`deviceAuthorization: true`), which is off by default: a device code can be phished (someone starts a login, and asks you to approve their code), so a client should have it only when it runs where there's no browser.
+A public client may opt out of refresh tokens (`refreshTokens: false`): its login then lasts as long as one access token. It may opt in to the device grant (`deviceAuthorization: true`). That is off by default because a device code can be phished (someone starts a login, and asks you to approve their code), so a client should have it only when it runs where there's no browser.
 
 A service's `scopes` are the most it may be granted. `tokenExchange: { subjectAudience }` lets it trade a user's token issued for `subjectAudience` (the service itself, as a resource) for one for another resource, as that user.
 
-A resource server should tell a service's own token from a user's: both have a `sub`, and a service's is its `client_id`.
+A resource server should tell a service's own token from a user's. Both have a `sub`, and a service's is its `client_id`.
 
 ## What's real
 
-- **Discovery**: metadata at `/.well-known/oauth-authorization-server` (RFC 8414) and `/.well-known/openid-configuration`.
-- **Authorization code flow with PKCE**, S256 only, required for every client.
-- **Resource indicators** (RFC 8707): a client sends the server a token is for in the authorization and the token request. There is no default audience: a token is never valid everywhere.
-- **JWT access tokens** (RFC 9068, `typ: at+jwt`), with `aud`, `scope` and `client_id`, signed with an ES256 key generated at startup. A resource server verifies them against the issuer's JWKS, without calling back.
-- **`iss` in authorization responses** (RFC 9207), so a client can tell which server answered.
-- **Refresh tokens** for native apps, and the **client credentials grant** for services.
-- **The device authorization grant** (RFC 8628) for native apps that opt in: the user approves at `/device` on another device, confirming the code the device shows. The response sets the poll `interval`.
-- **Token exchange** (RFC 8693) for a service that is itself a resource: it trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` identifying the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have, never outlives the token it came from, and is signed like every other, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`).
-- **Revocation** (RFC 7009) of refresh tokens: revoking one revokes the grant it came from, and every refresh token issued under it. A client revokes only its own. Access tokens can't be revoked (`unsupported_token_type`): they're JWTs, which resource servers check without calling back, so a revoked login's access tokens stay good until they expire.
-- **Scopes per resource**: a token carries only scopes its resource understands, and a service only those it's registered for (asking for more is `invalid_scope`).
+- Discovery, with metadata at `/.well-known/oauth-authorization-server` (RFC 8414) and `/.well-known/openid-configuration`.
+- The authorization code flow with PKCE, S256 only, required for every client.
+- Resource indicators (RFC 8707). A client sends the server a token is for in the authorization and the token request. There is no default audience, so no token is valid everywhere.
+- JWT access tokens (RFC 9068, `typ: at+jwt`), with `aud`, `scope` and `client_id`, signed with an ES256 key generated at startup. A resource server verifies them against the issuer's JWKS, without calling back.
+- `iss` in authorization responses (RFC 9207), so a client can tell which server answered.
+- Refresh tokens for native apps, and the client credentials grant for services.
+- The device authorization grant (RFC 8628), for native apps that opt in. The user approves at `/device` on another device, confirming the code the device shows, and the response sets the poll `interval`.
+- Token exchange (RFC 8693), for a service that is itself a resource. It trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` identifying the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have. It doesn't outlive the token it came from, and is signed like every other token, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`).
+- Revocation (RFC 7009) of refresh tokens. Revoking one revokes the grant it came from, and every refresh token issued under it, and a client can revoke only its own. Access tokens can't be revoked (`unsupported_token_type`), because they're JWTs that resource servers check without calling back, so a revoked login's access tokens stay good until they expire.
+- Scopes per resource. A token carries only scopes its resource understands, and a service's token only those the service is registered for (asking for more is `invalid_scope`).
 
 ## What's fake
 
-- **The login.** There's no login page: the interaction route signs in as the account given in the authorization request (`login_hint`), else `accountId`, and grants what was asked for. It signs in as any account asked for, which tests of per-user data need, and is why it must never be reachable.
-- **The storage.** Everything is kept in memory, and dropped once it expires: restart the server and every grant and refresh token is gone.
-- **The lifetimes.** A login (its session, grant and refresh tokens) lasts a day, and has 10 minutes to finish (an interaction, or approving a device's code). An access token or ID token lasts `accessTokenTtl`.
-- **The keys and cookie secret**, generated at startup.
-- **The device pages** (enter the code, confirm it, done): plain HTML, a sentence and a form each.
+- There's no login page. The interaction route signs in as the account given in the authorization request (`login_hint`), or else `accountId`, and grants what was asked for. Signing in as any account is what tests of per-user data need, and it is why the server must never be reachable from other machines.
+- Everything is stored in memory, and dropped once it expires. Restarting the server loses every grant and refresh token.
+- A login (its session, grant and refresh tokens) lasts a day, and has 10 minutes to finish (an interaction, or approving a device's code). An access token or ID token lasts `accessTokenTtl`.
+- The keys and the cookie secret are generated at startup.
+- The device pages (enter the code, confirm it, done) are plain HTML, with a sentence and a form each.
 
 ## Replacing it
 
-A client or resource server tested against it depends on nothing here but URLs and standards: an issuer, its metadata, and the JWTs it signs. Moving to Keycloak or a hosted provider means registering the same clients, resources and scopes there and pointing the issuer at it, provided the provider issues what the verifier expects. Not every one does by default:
+A client or resource server tested against it depends on nothing here but URLs and standards: an issuer, its metadata, and the JWTs it signs. Moving to Keycloak or a hosted provider means registering the same clients, resources and scopes there and pointing the issuer at it, as long as the provider issues what the verifier expects. Not every provider does by default:
 
-- **RFC 9068 access tokens** (`typ: at+jwt`), with `scope` as a space-separated string and `client_id`. Keycloak sends `typ: JWT` unless a client opts in, Entra and Okta put scopes in `scp`, and Keycloak puts the client in `azp` on users' tokens.
-- **Token exchange** (RFC 8693): Keycloak 26.2+ supports it, Okta does, and Entra has its own on-behalf-of flow instead.
-- **Resource indicators** (RFC 8707), so `aud` is the server the token is for. Experimental in Keycloak 26.x; elsewhere `aud` comes from configured audience mappers, and client credentials may ignore `resource`.
-- **Discovery** at `/.well-known/openid-configuration` appended to the issuer, and the authorization server's metadata.
-- **Loopback redirects on any port** (RFC 8252) for native clients, which providers support unevenly.
+- RFC 9068 access tokens (`typ: at+jwt`), with `scope` as a space-separated string, and `client_id`. Keycloak sends `typ: JWT` unless a client opts in, Entra and Okta put scopes in `scp`, and Keycloak puts the client in `azp` on users' tokens.
+- Token exchange (RFC 8693). Keycloak 26.2+ supports it, Okta does, and Entra has its own on-behalf-of flow instead.
+- Resource indicators (RFC 8707), so that `aud` is the server the token is for. They are experimental in Keycloak 26.x. Elsewhere `aud` comes from configured audience mappers, and client credentials may ignore `resource`.
+- Discovery at `/.well-known/openid-configuration` appended to the issuer, and the authorization server's metadata.
+- Loopback redirects on any port (RFC 8252) for native clients, which providers support unevenly.
 
 ## Notes on oidc-provider
 
-What building it on oidc-provider took, for anyone configuring it themselves:
+Building it on oidc-provider ran into a few things worth knowing for anyone configuring it themselves:
 
-- **It signs ID tokens with RS256 by default**, and refuses a client when the only key is ES256: `clientDefaults.id_token_signed_response_alg` has to say ES256.
-- **Its interaction route is Koa middleware.** Answering there (`provider.use`) rather than in front of its listener means an error (an expired interaction, a missing cookie) is rendered as oidc-provider renders its own, e.g. a 400.
-- **Client credentials asking for a scope the client isn't registered for fails** (`invalid_scope`), where the authorization code flow drops the scopes a resource doesn't understand.
-- **A token from client credentials has a `sub`**: the client's id (RFC 9068).
-- **It has no token exchange**, but registers custom grants (`registerGrantType`): it authenticates the client, checks it's allowed the grant, and resolves `resource` (refusing one it doesn't know) before the handler runs. A grant type the client isn't allowed is `invalid_request`, where RFC 6749 says `unauthorized_client`.
-- **Its JWT access tokens can't be minted outside a grant it runs**, so exchanged tokens are signed with `jose` and the same key, with the claims it would give (`typ: at+jwt`, `iss`, `sub`, `aud`, `client_id`, `scope`, `jti`).
-- **Its device authorization response names no `interval`**, which means 5 seconds to a client, so this server adds one. And **`verification_uri_complete` doesn't skip the code**: it opens a form, filled in, that posts itself (a browser's script does it), and then asks the user to confirm.
-- **It logs a notice or warning for each default you should change**: the in-memory adapter, every artifact's `ttl`, `clientBasedCORS` and `renderError`, and each page of a feature left enabled (RP-initiated logout is, by default). Setting them, and disabling what isn't used, leaves it quiet.
-- **Client ID Metadata Documents** need an `https` client id, which a local test can't serve, so clients here are pre-registered.
+- It signs ID tokens with RS256 by default, and refuses a client when the only key is ES256, so `clientDefaults.id_token_signed_response_alg` has to say ES256.
+- Its interaction route is Koa middleware. Answering there (`provider.use`) rather than in front of its listener means an error (an expired interaction, a missing cookie) is rendered the way oidc-provider renders its own, e.g. a 400.
+- Client credentials asking for a scope the client isn't registered for fails (`invalid_scope`), where the authorization code flow drops the scopes a resource doesn't understand.
+- A token from client credentials has a `sub`, which is the client's id (RFC 9068).
+- It has no token exchange, but it can register custom grants (`registerGrantType`). It authenticates the client, checks that the client is allowed the grant, and resolves `resource` (refusing one it doesn't know) before the handler runs. A grant type the client isn't allowed is `invalid_request`, where RFC 6749 says `unauthorized_client`.
+- Its JWT access tokens can't be minted outside a grant it runs, so exchanged tokens are signed with `jose` and the same key, with the claims it would give (`typ: at+jwt`, `iss`, `sub`, `aud`, `client_id`, `scope`, `jti`).
+- Its device authorization response has no `interval`, which means 5 seconds to a client, so this server adds one. And `verification_uri_complete` doesn't skip the code. It opens a form with the code filled in, which posts itself (a browser's script does it), and then asks the user to confirm.
+- It logs a notice or warning for each default you should change: the in-memory adapter, every artifact's `ttl`, `clientBasedCORS` and `renderError`, and each page of a feature left enabled (RP-initiated logout is, by default). Setting them, and disabling what isn't used, keeps it quiet.
+- Client ID Metadata Documents need an `https` client id, which a local test can't serve, so clients here are pre-registered.
 
 ## Not covered
 
@@ -306,5 +310,5 @@ What building it on oidc-provider took, for anyone configuring it themselves:
 
 ## Compared to alternatives
 
-- [oauth2-mock-server](https://www.npmjs.com/package/oauth2-mock-server) (Node.js) and [navikt's mock-oauth2-server](https://github.com/navikt/mock-oauth2-server) (JVM, or a container) are lenient by design: they issue tokens for any client and request, and let a test shape the tokens. Good for testing a resource server's checks; a client that gets the flow wrong still passes. oauth-dev-server is the opposite trade: a real provider's checks, with less control over what it signs.
-- Keycloak in a container is the real thing, with its configuration to keep in step and a JVM to start; see [Replacing it](#replacing-it).
+- [oauth2-mock-server](https://www.npmjs.com/package/oauth2-mock-server) (Node.js) and [navikt's mock-oauth2-server](https://github.com/navikt/mock-oauth2-server) (JVM, or a container) are lenient by design. They issue tokens for any client and request, and let a test shape the tokens. That is good for testing a resource server's checks, but a client that gets the flow wrong still passes. oauth-dev-server makes the opposite trade, with a real provider's checks and less control over what it signs.
+- Keycloak in a container is the real thing, but it has its own configuration to keep in step, and a JVM to start (see [Replacing it](#replacing-it)).

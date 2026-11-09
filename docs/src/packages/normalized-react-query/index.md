@@ -1,12 +1,12 @@
 ---
-description: Type-safe query definitions for TanStack Query. Define each key and fetcher once, and link related queries so they prefetch together.
+description: Type-safe TanStack Query definitions that pair each key with its fetcher, and link related queries so they prefetch together.
 ---
 
 # normalized-react-query
 
 <ProjectHeader />
 
-Type-safe query definitions for [TanStack Query](https://tanstack.com/query/latest). Define each key and fetcher once, and link related queries so they prefetch together.
+Type-safe [TanStack Query](https://tanstack.com/query/latest) definitions that pair each key with its fetcher, and link related queries so they prefetch together.
 
 ```ts
 interface Author {
@@ -41,12 +41,12 @@ Every component that needs a book calls `useNormalizedQuery(books, { bookId })`.
 
 ## Features
 
-- **One definition per query**: `resource()` pairs a key with its fetcher, so one key can never hold two kinds of data, and the same data is never fetched under two keys.
-- **Typed by params**: call sites pass `{ bookId: 1 }`, not a hand-built key array. Reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
-- **Linked queries, no waterfalls**: `.propagate()` declares the queries a result leads to, which start loading as soon as it does. See [Linked queries](/packages/normalized-react-query/guides/linked-queries).
-- **Server rendering in one call**: `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate. See [Server rendering](/packages/normalized-react-query/guides/server-rendering).
-- **Every hook**: plain, suspense, nullable (`skipToken`), infinite and prefetched versions of TanStack's hooks. See [Infinite queries](/packages/normalized-react-query/guides/infinite-queries).
-- **Just TanStack underneath**: caching, refetching and subscriptions are TanStack's own. This package only decides keys, fetchers and types.
+- Each query is defined once, by `resource()`, which pairs a key with its fetcher. One key can't end up holding two kinds of data, and the same data isn't fetched under two keys.
+- Call sites pass params like `{ bookId: 1 }` instead of building key arrays. Reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
+- `.propagate()` declares the queries a result leads to, and they start loading as soon as it does, instead of waiting for the components that use them to render. See [Linked queries](/packages/normalized-react-query/guides/linked-queries).
+- For server rendering, `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate. See [Server rendering](/packages/normalized-react-query/guides/server-rendering).
+- TanStack's hooks all have versions here, in plain, suspense, nullable (`skipToken`), infinite and prefetched variants. See [Infinite queries](/packages/normalized-react-query/guides/infinite-queries).
+- Caching, refetching and subscriptions are TanStack's own. This package only decides keys, fetchers and types.
 
 ## Compared to
 

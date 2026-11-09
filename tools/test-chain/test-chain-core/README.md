@@ -9,6 +9,8 @@ Framework-agnostic internals for chaining test hooks with typed context.
 
 </div>
 
+This is the shared implementation behind [mocha-chain](https://www.npmjs.com/package/mocha-chain) and [vitest-chain](https://www.npmjs.com/package/vitest-chain), which let test hooks return typed context to the hooks and tests chained from them. You probably want one of those instead, since this package is meant for writing a wrapper for another test framework.
+
 ## Contents
 
 - [Install](#install)
@@ -22,7 +24,7 @@ Framework-agnostic internals for chaining test hooks with typed context.
 npm i test-chain-core
 ```
 
-ESM only, for Node.js 22.12 or later. It has no peer dependencies: the framework's native methods are passed in.
+ESM only, for Node.js 22.12 or later. It has no peer dependencies, since the framework's native methods are passed in.
 
 ## Usage
 

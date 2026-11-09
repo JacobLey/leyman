@@ -6,7 +6,7 @@ description: Generate TypeScript types from JSON Schema files and OpenAPI docume
 
 <ProjectHeader />
 
-Generate TypeScript types from a JSON Schema file, or the schemas of an OpenAPI document, with strict checks of the schema itself.
+A JSON Schema file or OpenAPI document has no TypeScript types of its own, so whoever reads it ends up writing them by hand. genever generates those types from the file, and checks the schema itself for mistakes along the way.
 
 Point it at a schema:
 
@@ -52,13 +52,13 @@ Commit the result, and run `genever --ci` in CI to fail when it is out of date.
 
 ## Features
 
-- **Types that match the schema**: tuples, `oneOf` unions that narrow, `^prefix` patterns as template literals, closed `patternProperties`, recursive `$defs`, `if`/`then`/`else` and `minItems` all become precise types, not `any` or `unknown[]`. See [Type mapping](/packages/genever/reference/types).
-- **Round-trips Juniper**: a schema built with [Juniper](/packages/juniper/), serialized and read back, gives the same type Juniper inferred. See [Juniper round trip](/packages/genever/guides/juniper-round-trip).
-- **Strict by default**: unknown keywords, keywords that don't apply to the type, undeclared `required` properties and contradictions like `minLength` over `maxLength` fail generation. Without strict mode, types follow exactly what a validator accepts. See [Strict mode](/packages/genever/guides/strict-mode).
-- **One file from many**: `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says. See [References to other files](/packages/genever/guides/references).
-- **OpenAPI documents**: every `components.schemas` entry of an OpenAPI 3.0 or 3.1 document becomes a type, and its operations become `Paths` and `Operations` types, shaped like openapi-typescript's. See [OpenAPI documents](/packages/genever/guides/openapi).
-- **Types only**: the output is plain TypeScript, with no runtime dependency.
-- **Go too**: genever-go reads the same schemas, with the same checks, and writes Go types. See [Go](/packages/genever/guides/go).
+- Tuples, `oneOf` unions that narrow, `^prefix` patterns as template literals, closed `patternProperties`, recursive `$defs`, `if`/`then`/`else` and `minItems` all get precise types, rather than `any` or `unknown[]`. See [Type mapping](/packages/genever/reference/types).
+- A schema built with [Juniper](/packages/juniper/), serialized and read back, gives the same type Juniper inferred. See [Juniper round trip](/packages/genever/guides/juniper-round-trip).
+- Strict mode is the default, so unknown keywords, keywords that don't apply to the type, undeclared `required` properties and contradictions like `minLength` over `maxLength` fail generation. Without it, types follow exactly what a validator accepts. See [Strict mode](/packages/genever/guides/strict-mode).
+- `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says. See [References to other files](/packages/genever/guides/references).
+- Every `components.schemas` entry of an OpenAPI 3.0 or 3.1 document becomes a type, and its operations become `Paths` and `Operations` types, in the shape openapi-typescript uses. See [OpenAPI documents](/packages/genever/guides/openapi).
+- The output is plain TypeScript, with no runtime dependency.
+- genever-go reads the same schemas, with the same checks, and writes Go types. See [Go](/packages/genever/guides/go).
 
 ## Compared to
 

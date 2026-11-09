@@ -2,7 +2,7 @@
   "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/genever-go",
   "metadata": {
-    "description": "Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of genever."
+    "description": "Generate Go types from JSON Schema files and OpenAPI documents, with the same strict schema checks as genever."
   },
   "implicitDependencies": [
     "@leyman/genever-test-vectors"

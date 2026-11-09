@@ -2,20 +2,20 @@
 
 # pg-dolly-schema
 
-Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale.
+Keep a schema.sql of what your Postgres migrations build, for any migration tool, and fail CI when the committed file is stale.
 
 [![npm package](https://badge.fury.io/js/pg-dolly-schema.svg)](https://www.npmjs.com/package/pg-dolly-schema)
 [![License](https://img.shields.io/npm/l/pg-dolly-schema.svg)](https://github.com/JacobLey/leyman/blob/main/apps/pg-dolly-schema/LICENSE)
 
 </div>
 
-- **The real schema, triggers included**: it's what Postgres says the migrations built (`pg_dump --schema-only`), not an ORM's model of it, so hand-written triggers, functions and views are all there.
-- **Migrations are applied from empty on every run**: a migration that can't run cleanly fails, and a PR's diff of `schema.sql` shows the real schema change.
-- **Any migration tool**: you give it the command (`drizzle-kit migrate`, `prisma migrate deploy`, a Kysely script); it runs it with `DATABASE_URL` set to a fresh, empty database.
-- **Stable text**: the same schema always dumps to the same file, with no versions or random keys in it, and the file is plain SQL that any client can run.
-- **Ready for tests**: `schema.sql` is what [`pg-dolly`](https://www.npmjs.com/package/pg-dolly) builds each test's database from, and the dump is built as a template on the way, which proves it applies.
+One way to keep track of a Postgres schema is to commit a dump of it next to the migrations (the `structure.sql` approach). A PR's diff then shows the real schema change, and tests can build a database from one file. That only works while the file matches what the migrations actually build, and someone has to notice when it doesn't.
 
-The `structure.sql` approach, for any stack. For why the schema is SQL, see [pg-dolly's WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md#why-the-schema-is-sql).
+`pg-dolly-schema` runs your migrate command (`drizzle-kit migrate`, `prisma migrate deploy`, a Kysely script) with `DATABASE_URL` set to a fresh, empty database, dumps the result with `pg_dump --schema-only`, and writes it to `schema.sql`. In CI it checks the file instead, and fails if it would change.
+
+The file is what Postgres says the migrations built, rather than an ORM's model of the schema, so triggers, functions and views written by hand are all in it. Since every run applies the migrations from empty, a migration that can't run cleanly fails too. The same schema always dumps to the same text, with no versions or random keys in it, and the file is plain SQL that any client can run.
+
+[`pg-dolly`](https://www.npmjs.com/package/pg-dolly) builds each test's database from `schema.sql`, and the dump is built as a pg-dolly template along the way, which proves it applies. For why the schema is SQL, see [pg-dolly's WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md#why-the-schema-is-sql).
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly-schema/).
 
@@ -46,7 +46,7 @@ This clones an empty database on the server, runs the migrate command with `DATA
 
 ## Migrate commands
 
-The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database: a command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database.
+The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database. A command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database instead.
 
 | Tool            | Command                                                                                           | Notes                                                                                                                                                                |
 | --------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -69,7 +69,7 @@ Migrating a database built from that file then does nothing. The rows come from 
 
 The file is checked, rather than written, when `CI` is set (or with `--check`), so CI fails when someone changed the migrations without regenerating `schema.sql`, or edited it by hand. Regenerate it locally by running the command again.
 
-As an Nx target, set the command in `env`, not as an option: Nx passes options to the command in double quotes, where the shell expands `$DATABASE_URL` before the migrations see the database they should migrate.
+As an Nx target, set the command in `env` rather than as an option, because Nx passes options to the command in double quotes, where the shell expands `$DATABASE_URL` before the migrations see the database they should migrate.
 
 ```json
 {
@@ -112,7 +112,7 @@ pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--d
 | `--data`          | —                         | Table to keep the rows of too, e.g. the migration tool's own. Repeat for several. See [Migrate commands](#migrate-commands). |
 | `--prefix`        | `pg_dolly`                | Prefix of the databases created, as in [`PgDolly.connect()`](https://www.npmjs.com/package/pg-dolly#options).                |
 
-Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`). The server is always `DATABASE_URL`: the CLI has no `--url`.
+Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`). The server is always `DATABASE_URL`, since the CLI has no `--url`.
 
 On a failed migration, a missing `DATABASE_URL` or an outdated file (with `--check`), the CLI prints the error's message and exits with code 1. Other errors print their stack trace.
 

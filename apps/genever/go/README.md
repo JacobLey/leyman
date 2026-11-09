@@ -1,12 +1,12 @@
 # genever-go
 
-Generate Go types from JSON Schema files, with strict schema checks: the Go parallel of [genever](../ts/).
+Generate Go types from JSON Schema files and OpenAPI documents, with the same strict schema checks as [genever](../ts/).
 
-- **Same schemas, same checks**: a port of genever's converter, held to the [shared vectors](../test-vectors/), so both accept the same schemas and reject the same mistakes, at the same JSON Pointers.
-- **Types that hold every valid value**: unions, tuples, `null` and absent properties each get a Go type that tells them apart, with the `MarshalJSON`/`UnmarshalJSON` they need written into the file.
-- **No runtime dependency**: the few helpers the types use (`Optional`, `Null`, `Never`) are written into the generated file.
-- **Loads what schemas reference**: files and URLs (with a host allowlist), JSON or YAML, OpenAPI 3.0 and 3.1 documents, and the files of path items, parameters and responses an OpenAPI document refers to.
-- **Kept in sync**: writes through the [Go populate-files](../../populate-files/go/), optionally signed and listed in a manifest, compatible with the TypeScript tools.
+genever-go is a port of genever's converter. Both are held to the [shared vectors](../test-vectors/), so they accept the same schemas and reject the same mistakes, at the same JSON Pointers.
+
+The types hold every valid value. Unions, tuples, `null` and absent properties each get a Go type that tells them apart, and the `MarshalJSON`/`UnmarshalJSON` methods they need are written into the file, along with the few helpers the types use (`Optional`, `Null`, `Never`). So the generated code has no runtime dependency.
+
+Like genever, it loads what a schema references: files and URLs (with a host allowlist), in JSON or YAML. That includes OpenAPI 3.0 and 3.1 documents, and the files that an OpenAPI document's path items, parameters and responses refer to. It writes through the [Go populate-files](../../populate-files/go/), so the output can be signed and listed in a manifest, compatible with the TypeScript tools.
 
 ## Contents
 

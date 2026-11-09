@@ -2,18 +2,22 @@
 
 # normalized-react-query
 
-Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.
+Type-safe TanStack Query definitions that pair each key with its fetcher, and link related queries so they prefetch together.
 
 [![npm package](https://badge.fury.io/js/normalized-react-query.svg)](https://www.npmjs.com/package/normalized-react-query)
 [![License](https://img.shields.io/npm/l/normalized-react-query.svg)](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/LICENSE)
 
 </div>
 
-- **One definition per query** — `resource()` pairs a key with its fetcher, so the same key can never serve different data and the same data is never fetched under two keys.
-- **Typed by params** — call sites pass `{ id: 123 }`, not a hand-built key array; reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
-- **Linked queries, no waterfalls** — `.propagate()` declares the queries a result leads to (a book's author, every user on a list page), which start prefetching the moment the parent loads.
-- **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
-- **Every hook flavor** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
+[TanStack Query](https://tanstack.com/query/latest) caches each API call under a key (like `['users', 'get', 123]`) that you pair with the function that fetches it. Nothing checks that pairing, though. Two calls can share a key but expect different data, and the second one silently gets the first one's cached result, with the wrong type. Or two calls can use different keys for the same data, and both fetch it.
+
+`normalized-react-query` has you define each query once, as a `resource()` that pairs the key with its fetcher, and reuse it everywhere. Call sites pass typed params (`{ id: 123 }`) rather than building key arrays, and reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data. Caching, refetching and subscriptions are still TanStack's.
+
+Related data (a book's author, every user on a list page) tends to load in a waterfall, since the child's request can't start until the parent's data has loaded and the child has rendered. `.propagate()` declares those relationships next to the query, and the linked queries start prefetching as soon as the parent loads. For server rendering, `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
+
+Each of TanStack's hooks has a version here, in plain, suspense, nullable (`skipToken`), infinite and prefetched variants.
+
+If you only want to share a key and fetcher between call sites, without the typed cache helpers or linked queries, TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) covers that.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/normalized-react-query/). For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 
@@ -91,13 +95,13 @@ const useExample = (queryClient: QueryClient) => {
 
 `normalized-react-query` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { resource } = await import('normalized-react-query');`.
 
-This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
+This package enforces typing and structure, and leaves all caching, revalidation and subscription logic to React Query.
 
-Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations. `Linked` is exported as a type too; [`LinkOf<typeof res>`](#linkoft) fills in its generics from a resource.
+Instances created by `resource()` and `infinite()` are meant to be singletons, created once and imported everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations. `Linked` is exported as a type too; [`LinkOf<typeof res>`](#linkoft) fills in its generics from a resource.
 
 A resource that takes no params uses `void` as its `TParams` and a fixed `key` (`resource<void, Settings>({ key: ['settings'], ... })`); hooks and cache methods then take `undefined` as the params.
 
-Links are not stored in the cache: it holds the plain `queryFn` data, and `propagate` runs again whenever data is read (like a `select`), which keeps the cache serializable for SSR. Cache methods such as `setQueryData` therefore take the original data, not the propagated data.
+Links are not stored in the cache. It holds the plain `queryFn` data, and `propagate` runs again whenever data is read (like a `select`), which keeps the cache serializable for SSR. Cache methods such as `setQueryData` therefore take the original data, not the propagated data.
 
 ## API
 
@@ -147,7 +151,7 @@ Returns fresh cached data, or fetches it, like `queryClient.query`. Triggers pro
 - `select`: transforms the propagated data this call resolves with, without affecting the cache.
 - `awaitLinks`: also waits for linked resources to load, and rejects if any fail (unless the link sets `isolateErrors`).
 
-To load everything a server-side render needs, pass `{ staleTime: 'static', awaitLinks: true }`: cached data is used as-is, and every link is loaded.
+To load everything a server-side render needs, pass `{ staleTime: 'static', awaitLinks: true }`, so cached data is used as it is, and every link is loaded.
 
 ##### `.fetchQuery(queryClient, params, options?): Promise<TData>`
 
@@ -167,13 +171,13 @@ Sets data directly in the cache. The updater can be a value or a callback receiv
 
 ##### `.populate(queryClient, params, updater, options?): TParams`
 
-Calls `setQueryData` and returns the params. Useful for chaining — the returned params can be passed directly to hooks.
+Calls `setQueryData` and returns the params. Useful for chaining, since the returned params can be passed directly to hooks.
 
 ##### `.link(params, options?): Linked`
 
 Must be called inside a `propagate` callback. Triggers a prefetch of this resource and returns a `Linked` reference for downstream hooks. Throws an `Error` (`Cannot call \`link()\` outside of \`propagate\``) if called outside of `propagate`. Linking the same query twice is safe.
 
-`options` are the options of `.prefetchQuery()`, plus `isolateErrors`: when `true`, a failure of this link does not fail a parent loaded with `awaitLinks`.
+`options` are the options of `.prefetchQuery()`, plus `isolateErrors`. When it's `true`, a failure of this link does not fail a parent loaded with `awaitLinks`.
 
 ##### `.propagate(map): Resource`
 
@@ -309,7 +313,7 @@ Attaches a per-page transformation. The `map` callback receives `{ page, pagePar
 
 ### Hooks
 
-All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource — do not pass them manually. `options` are the TanStack hook's options minus `queryKey` and `queryFn`; `select` receives the propagated data (the result of `.propagate()`, with `Linked` references), not the cached data.
+All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource, so don't pass them yourself. `options` are the TanStack hook's options minus `queryKey` and `queryFn`; `select` receives the propagated data (the result of `.propagate()`, with `Linked` references), not the cached data.
 
 Like TanStack's hooks, each hook stays on the query client it first renders with. The `useNormalizedPrefetched*` hooks read the link's client, and the context client while they have no link (`null` or `skipToken`). A hook that renders without a link first therefore only accepts links on the context client, and needs a `QueryClientProvider` to accept any link at all. Given a link on any other client, it throws, rather than reading a different cache. [TanStack/query#12257](https://github.com/TanStack/query/pull/12257) would let hooks follow a client change, and remove this restriction.
 
@@ -422,8 +426,8 @@ type UserLink = LinkOf<typeof fetchUser>;
 
 ## Compared to alternatives
 
-- TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) — also pairs a key with its fetcher, but per call site; there are no params-typed cache helpers or linked prefetching.
-- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) — organizes keys (and optionally fetchers) into a typed tree; it does not link queries or wrap the hooks.
+- TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) also pairs a key with its fetcher, but per call site, without params-typed cache helpers or linked prefetching.
+- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) organizes keys (and optionally fetchers) into a typed tree. It doesn't link queries or wrap the hooks.
 
 ## Also See
 

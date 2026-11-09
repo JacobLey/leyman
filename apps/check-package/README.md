@@ -2,18 +2,22 @@
 
 # @leyman/check-package
 
-Check an npm package exactly as it would be published: publint, Are The Types Wrong, a strict typecheck of its declarations, its Node.js support floor and an allow-list of published files, in one CLI.
+Check an npm package as it would be published, running publint, Are The Types Wrong, a strict typecheck of its declarations, and checks of its Node.js support floor and published files.
 
 [![npm package](https://badge.fury.io/js/@leyman%2Fcheck-package.svg)](https://www.npmjs.com/package/@leyman/check-package)
 [![License](https://img.shields.io/npm/l/@leyman/check-package.svg)](https://github.com/JacobLey/leyman/blob/main/apps/check-package/LICENSE)
 
 </div>
 
-- **Checks the tarball, not the source** — packs the package with your package manager (pnpm or npm), so `workspace:` and `catalog:` versions and `files` are what npm will get.
-- **publint and Are The Types Wrong together** — entry points exist and are well formed, and resolve to types under the module resolutions you support (`strict`, `node16` or `esm-only`).
-- **Declarations type-checked strictly** — the published `.d.ts` files with `strict` and `skipLibCheck: false`, as the strictest consumer compiles them. An error a `@ts-expect-error` hid in source fails here.
-- **Support floor** — `engines.node` must name a floor (`>=22`), the installed `@types/node` must match it, and every runtime dependency must support it.
-- **Nothing published by accident, nothing left out** — every top-level path Git doesn't ignore must be either published or on a list of paths that never are, so a new `data/` can't be forgotten in `files`.
+A package can build and pass its tests, and still be broken once it is published. An entry point might not exist, its types might be wrong under one of the module resolutions, or a new folder might be missing from `files`.
+
+`check-package` is a CLI that packs the package with your package manager (pnpm or npm) and checks the tarball, so `workspace:` and `catalog:` versions and `files` are what npm will get. On that tarball it runs publint and Are The Types Wrong, which check that the entry points exist, are well formed, and resolve to types under the module resolutions you support (the `strict`, `node16` or `esm-only` profile).
+
+It adds a few checks of its own:
+
+- The published `.d.ts` files are type-checked with `strict` and `skipLibCheck: false`, the way the strictest consumer compiles them. An error that a `@ts-expect-error` hid in the source fails here.
+- `engines.node` must name a floor (like `>=22`), the installed `@types/node` must match it, and every runtime dependency must support it.
+- Every top-level path that Git doesn't ignore must be either published or on a list of paths that never are, so a new `data/` folder can't be forgotten in `files`.
 
 ## Contents
 
@@ -48,9 +52,9 @@ It exits with 1 when it finds a problem, so it fails a CI step.
 
 ## Usage
 
-Run it from the package's directory, or pass `--cwd`. Build the package first: it checks what is built.
+Run it from the package's directory, or pass `--cwd`. Build the package first, since it checks what is built.
 
-The workspace root is the nearest directory with a lockfile, from the package up, and the lockfile says which package manager packs the package: `pnpm-lock.yaml` for pnpm, `package-lock.json` or `npm-shrinkwrap.json` for npm. Yarn and Bun aren't supported for packing; pass `--root` and `--pack-with` to use pnpm or npm in such a workspace.
+The workspace root is the nearest directory with a lockfile, from the package up, and the lockfile says which package manager packs the package (`pnpm-lock.yaml` for pnpm, `package-lock.json` or `npm-shrinkwrap.json` for npm). Yarn and Bun aren't supported for packing; pass `--root` and `--pack-with` to use pnpm or npm in such a workspace.
 
 What it checks, in order of what it prints:
 
@@ -104,7 +108,7 @@ const { problems, suggestions } = await checkPackage({ cwd: 'packages/my-package
 
 **Returns** `Promise<{ problems: readonly string[]; suggestions: readonly string[] }>`: each problem as the CLI prints it, and publint's suggestions.
 
-**Rejects** with a `CheckPackageError` when the check itself can't run: `CheckPackageRootError` when no lockfile is found, the package isn't inside `root`, or the package manager can't be told; `CheckPackageTscError` when the package publishes declarations and no `tsc` is found. A problem with the package is never thrown.
+**Rejects** with a `CheckPackageError` when the check itself can't run: `CheckPackageRootError` when no lockfile is found, the package isn't inside `root`, or the package manager can't be told; `CheckPackageTscError` when the package publishes declarations and no `tsc` is found. Problems with the package are returned in `problems` instead of thrown.
 
 ### Also exported
 
@@ -115,4 +119,4 @@ const { problems, suggestions } = await checkPackage({ cwd: 'packages/my-package
 ## Compared to alternatives
 
 - [publint](https://www.npmjs.com/package/publint) and [`@arethetypeswrong/cli`](https://www.npmjs.com/package/@arethetypeswrong/cli): this runs both on one tarball, and adds the declarations typecheck, the support floor and the published files check.
-- `npm pack --dry-run`: lists what is published, for a person to read; this fails on what shouldn't be there or is missing.
+- `npm pack --dry-run`: lists what is published, for a person to read. check-package fails on what shouldn't be there or is missing.

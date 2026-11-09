@@ -2,17 +2,19 @@
 
 # genever-content-mapper
 
-A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file.
+A TypeScript 7.1 content mapper that gives an imported OpenAPI document or JSON Schema file genever's types, without a generated file.
 
 </div>
 
-- **No codegen step.** `import type { Paths } from './api.openapi.yaml'` is typed straight from the document, so nothing is generated, committed or checked for drift.
-- **The same types as genever.** It runs [genever](../genever/) on the file, with the same strict checks and options, so switching from a generated file changes nothing.
-- **Errors where they are.** A strict mode mistake, or an invalid schema, is reported by `tsc` (and editors) at its line and column in the YAML file.
-- **Go to definition into the document.** In an editor, a type's name leads to its schema's key, `Note:` under `components.schemas`, and a property (`note.body`) to its key under `properties`. Hover shows the type.
-- **Inert.** It reads only the text TypeScript sends it: no other files, no network, no environment variables.
+genever normally writes a file of types that you commit and keep in sync with the schema. TypeScript 7.1 adds content mappers, programs the compiler runs to get the types of a file it can't read itself, so the types can come straight from the document instead.
 
-**Requires TypeScript 7.1** (`typescript@7.1.0-beta` or later), whose content mappers are new and may still change before its stable release. Private for now, and not on npm yet.
+`genever-content-mapper` runs [genever](../genever/) on each document you import, with the same strict checks and options. `import type { Paths } from './api.openapi.yaml'` is typed straight from the document, so nothing is generated, committed or checked for drift, and switching from a generated file doesn't change the types.
+
+A strict mode mistake, or an invalid schema, is reported by `tsc` (and editors) at its line and column in the YAML file. In an editor, go to definition on a type's name leads to its schema's key (`Note:` under `components.schemas`), and on a property (`note.body`) to its key under `properties`. Hover shows the type.
+
+The mapper reads only the text TypeScript sends it, and no other files, network or environment variables. That also means a `$ref` to another file or a URL is an error (see [Limitations](#limitations)), so use genever's CLI for documents split across files.
+
+It requires TypeScript 7.1 (`typescript@7.1.0-beta` or later), whose content mappers are new and may still change before its stable release. The package is private for now, and not on npm yet.
 
 ## Contents
 

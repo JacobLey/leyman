@@ -12,4 +12,4 @@ The tests check that:
 
 The client runs in [Happy DOM](https://github.com/capricorn86/happy-dom), registered globally before `react-dom` loads.
 
-It is not published, and has no source of its own: only tests.
+It is not published, and has no source of its own, only tests.

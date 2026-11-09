@@ -9,6 +9,19 @@ Populate static files with dynamic content, and make sure they stay in sync.
 
 </div>
 
+Some files in a repo are generated, but still committed, like a JSON schema built from code or a version constant. They have to be regenerated whenever what they're built from changes, and nothing stops someone from forgetting to, or from editing the output by hand.
+
+`populate-files` is a small library to write those files from code. You give it a file path and the content (a string, bytes, or an object written as formatted JSON), and it writes the file. Missing directories are created, and a file that already has that content is left alone. With `check`, which is on by default in CI, it writes nothing and fails if any file is out of date, so CI catches a file nobody regenerated.
+
+It can also protect generated files from hand edits:
+
+- A signed file (`signed: true`) carries a [`generated-signature`](https://www.npmjs.com/package/generated-signature) token. A hand edit outside its manual sections is refused instead of overwritten, and the manual sections are kept when the file is regenerated.
+- Files that can't hold a comment, like JSON, can be recorded with their hashes in a manifest instead. The manifest also lets `clean` remove only the files an earlier run wrote.
+
+`populateFiles()` decides every file before writing or removing any, so a failure leaves all of them as they were.
+
+To keep the list of files in a separate module and run it from a CLI, use [`load-populate-files`](https://www.npmjs.com/package/load-populate-files). A [Go implementation](https://github.com/JacobLey/leyman/tree/main/apps/populate-files/go) follows the same rules.
+
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/populate-files/).
 
 ## Contents
@@ -57,7 +70,7 @@ await populateFile(
 
 `populate-files` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { populateFiles } = await import('populate-files');`.
 
-Provide the file path and content, and the file will be written. Optionally specify `check: true` to fail when the file content would change — useful for enforcing that generated files are committed and up to date in CI.
+Provide the file path and content, and the file will be written. Optionally specify `check: true` to fail when the file content would change, which is useful in CI to make sure generated files are committed and up to date.
 
 Missing directories are created, and a file that already has this content is not written again. By default the file is overwritten whatever it contains. Set `signed: true` to sign it instead, so hand edits are detected and manual sections survive regeneration (see [Signed files](#signed-files)).
 
@@ -156,15 +169,15 @@ ${manualSection({ id: 'overrides', body: 'export const timeout = 1000;', filePat
 
 On each write:
 
-1. If the file exists, it must have a valid signature (unless `force`): someone editing outside a manual section, or a file that was never signed, fails with a [`PopulateFilesOwnershipError`](#errors) instead of losing their work.
+1. If the file exists, it must have a valid signature (unless `force`). A file edited outside a manual section, or one that was never signed, fails with a [`PopulateFilesOwnershipError`](#errors), so the edits aren't lost.
 2. Each manual section's content is taken from the existing file, matched by id. A section the new content no longer has fails the write if it has content, unless `force`.
-3. The result is signed. A signature line is inserted at the top, using the file's comment syntax, unless the content already contains a token, e.g. from `signatureToken()` in a generator's own header.
+3. The result is signed. A signature line is inserted at the top, using the file's comment syntax, unless the content already contains a token (for example, from `signatureToken()` in a generator's own header).
 
-`check` compares the result, so a file whose manual sections were edited is still up to date. Files without comments, like JSON, can't be signed: use a [manifest](#manifest) instead.
+`check` compares the result, so a file whose manual sections were edited is still up to date. Files without comments, like JSON, can't be signed, so use a [manifest](#manifest) for them instead.
 
 ## Manifest
 
-With `manifest: './generated.json'`, a run records every file it writes in a [`generated-signature` manifest](https://www.npmjs.com/package/generated-signature#manifest): a hash for each unsigned file, and `signature: "inline"` for each `signed` one.
+With `manifest: './generated.json'`, a run records every file it writes in a [`generated-signature` manifest](https://www.npmjs.com/package/generated-signature#manifest), with a hash for each unsigned file and `signature: "inline"` for each `signed` one.
 
 ```ts
 await populateFiles(
@@ -176,10 +189,10 @@ await populateFiles(
 );
 ```
 
-- **Edits are detected for any file type.** An unsigned file that exists but doesn't match its hash fails with `edited`, and one the manifest doesn't list fails with `not-owned`, unless `force`. A file that already has exactly the content being written is fine, so adding a manifest to existing output needs no `force`. Signed files are still checked by their own token.
-- **`clean` only removes files the manifest lists.** Files the previous manifest lists that this run doesn't write are removed (failing with `edited` if they were changed, unless `force`). Nothing else in `targetDir` is touched, so the output can share a directory with other files.
-- **The manifest is a generated file too.** It lists exactly this run's files. `check` fails if it would change, and `dryRun` doesn't write it. `populateFile` updates only its own file's entry, keeping the others. Calls writing the same manifest must not run concurrently: use one `populateFiles` call instead.
-- **`manifestInputs`** on a file records hashes of what produced it (e.g. source files and the generator's version), so a generator can tell its output is up to date without regenerating.
+- Edits are detected for any file type. An unsigned file that exists but doesn't match its hash fails with `edited`, and one the manifest doesn't list fails with `not-owned`, unless `force`. A file that already has exactly the content being written is fine, so adding a manifest to existing output needs no `force`. Signed files are still checked by their own token.
+- `clean` only removes files the manifest lists. Files the previous manifest lists that this run doesn't write are removed (failing with `edited` if they were changed, unless `force`). Nothing else in `targetDir` is touched, so the output can share a directory with other files.
+- The manifest is a generated file too, and it lists exactly this run's files. `check` fails if it would change, and `dryRun` doesn't write it. `populateFile` updates only its own file's entry, keeping the others. Calls writing the same manifest must not run concurrently, so write those files in one `populateFiles` call instead.
+- `manifestInputs` on a file records hashes of what produced it (such as source files and the generator's version), so a generator can tell its output is up to date without regenerating.
 
 ## Also See
 

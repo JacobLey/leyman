@@ -2,19 +2,22 @@
 
 # weighted-rendezvous-hash
 
-Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.
+Weighted rendezvous hashing, where nodes can be added, removed or resized anywhere and each gets a share of keys in proportion to its size.
 
 [![npm package](https://badge.fury.io/js/weighted-rendezvous-hash.svg)](https://www.npmjs.com/package/weighted-rendezvous-hash)
 [![License](https://img.shields.io/npm/l/weighted-rendezvous-hash.svg)](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/weighted-rendezvous-hash/LICENSE)
 
 </div>
 
-- **Any set of nodes**: add, remove or resize any node, not just the last one. Nodes are identified by name, in any order.
-- **Weighted by proportion**: every key goes to a node with probability size / total size, exactly. Sizes of 1, 2 and 3 assign keys the same as 1000, 2000 and 3000.
-- **Few keys move**: an added or grown node only takes keys, a removed or shrunk node only gives them up. Resizing several nodes at once moves less than twice the minimum, and `moved()` says exactly how many to expect.
-- **Stateless**: the result only depends on the nodes given. There is no ring or table to build, and no history to keep in sync between clients.
+Rendezvous hashing (also called highest random weight hashing) assigns a key to a node by scoring every node for that key, and picking the highest score. Since each node's score doesn't depend on the others, a node can be added or removed anywhere in the list, not just at the end.
 
-Lookups take time in proportion to the number of nodes, about 1µs for 100 nodes. For nodes numbered `0` to `n - 1` that are only added and removed at the end, [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash) takes constant time, and moves the minimum number of keys.
+`weighted-rendezvous-hash` gives each node a size, and a key goes to a node with probability size / total size, exactly. Only the proportions matter, so sizes of 1, 2 and 3 assign keys the same as 1000, 2000 and 3000. Nodes are identified by name, and can be given in any order.
+
+When the nodes change, a node that is added or grows only takes keys, and a node that is removed or shrinks only gives them up. Resizing several nodes at once moves less than twice the minimum number of keys, and `moved()` tells you exactly what share of keys to expect to move.
+
+The result only depends on the nodes you pass in, so there is no ring or table to build, and no history to keep in sync between clients.
+
+A lookup takes time in proportion to the number of nodes, about 1µs for 100 nodes. If your nodes are numbered `0` to `n - 1` and are only added and removed at the end, [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash) takes constant time instead, and moves the minimum number of keys.
 
 ## Contents
 

@@ -48,7 +48,7 @@ Every method that uses the cache takes the `QueryClient` first, then the params.
 | `link(params, options?)`                                    | Only inside `propagate`. Starts loading this query, and returns a [`Linked`](#linked). Takes `prefetchQuery` options, plus `isolateErrors`, which keeps its failure from failing a parent loaded with `awaitLinks`. Throws outside `propagate`. |
 | `propagate(map)`                                            | A new resource with the same key and cache entry, whose data is `map(data)`. `map` may call `link()`. See [Linked queries](/packages/normalized-react-query/guides/linked-queries).                                                             |
 
-`fetchQuery()` and `ensureQueryData()` are deprecated: use `query()`, with `{ staleTime: 'static', awaitLinks: true }` for `ensureQueryData()`.
+`fetchQuery()` and `ensureQueryData()` are deprecated. Use `query()` instead, with `{ staleTime: 'static', awaitLinks: true }` for `ensureQueryData()`.
 
 ## `infinite(params)`
 
@@ -81,7 +81,7 @@ Shares `getKey`, `getParams`, `invalidateQuery`, `refetchQuery`, `cancelQuery`, 
 | `getInfiniteQueryData(client, params)`                              | Same as `getQueryData()`.                                                               |
 | `propagate(map)`                                                    | Like a resource's, but `map` runs per page, with `{ page, pageParam }`.                 |
 
-`fetchInfiniteQuery()` and `ensureInfiniteQueryData()` are deprecated: use `infiniteQuery()`.
+`fetchInfiniteQuery()` and `ensureInfiniteQueryData()` are deprecated. Use `infiniteQuery()` instead.
 
 ## Hooks
 

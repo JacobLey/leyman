@@ -41,7 +41,7 @@ export default defineConfig({
 });
 ```
 
-Without it, a hook that runs too early fails with `HookOrderError`, rather than receiving an incomplete context.
+Without it, a hook that runs too early fails with `HookOrderError` instead of receiving an incomplete context.
 
 ## Chain hooks
 

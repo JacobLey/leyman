@@ -6,8 +6,8 @@ description: Using pg-dolly with mocha-chain, Mocha and Vitest - connect once pe
 
 pg-dolly works with any test runner. The pattern is the same in each:
 
-- **Once per run** (a root hook, or once per file): `connect()` and `template()`, and `close()` at the end. Calls in other processes or files reuse the template, so only the first builds it.
-- **For each test that needs one:** `clone()` before it, and `keep()` after it if it failed.
+- Once per run (in a root hook, or once per file), call `connect()` and `template()`, and `close()` at the end. Calls in other processes or files reuse the template, so only the first builds it.
+- For each test that needs a database, call `clone()` before it, and `keep()` after it if it failed.
 
 ## mocha-chain
 
@@ -109,7 +109,7 @@ suite('Items', () => {
 });
 ```
 
-The second test only works because the insert commits: in a transaction rolled back after the test, the notification would never be sent.
+The second test only works because the insert commits. In a transaction rolled back after the test, the notification would never be sent.
 
 ::: warning
 Only `before` and `after` belong at the top level of the helper. A `beforeEach` there would also be a root hook, cloning a database for every test, whether it needs one or not.

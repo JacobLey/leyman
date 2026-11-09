@@ -1,7 +1,7 @@
 {
   "name": "@leyman/check-package",
   "version": "0.1.0",
-  "description": "Check an npm package exactly as it would be published: publint, Are The Types Wrong, a strict typecheck of its declarations, its Node.js support floor and an allow-list of published files, in one CLI.",
+  "description": "Check an npm package as it would be published, running publint, Are The Types Wrong, a strict typecheck of its declarations, and checks of its Node.js support floor and published files.",
   "engines": {
     "node": ">=22.12.0"
   },

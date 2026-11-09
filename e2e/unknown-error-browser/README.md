@@ -11,7 +11,7 @@ The tests check, in every browser and both modes, that:
 - cause chains and `AggregateError` entries are walked and formatted, with the `Name: message` line that Firefox and Safari stacks leave out
 - very deep and circular cause chains end
 
-It is not published, and has no source of its own: only tests.
+It is not published, and has no source of its own, only tests.
 
 ## Browsers
 

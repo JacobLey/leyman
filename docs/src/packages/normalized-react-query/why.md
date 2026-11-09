@@ -6,12 +6,12 @@ description: Why normalized-react-query exists - keys and fetchers that drift ap
 
 ## The Problem
 
-[TanStack Query](https://tanstack.com/query/latest) (React Query) pairs "keys" (unique identifiers for a specific API call + params) with query functions. React Query handles caching, deduplication, and subscription behind the scenes.
+[TanStack Query](https://tanstack.com/query/latest) (React Query) pairs "keys" (unique identifiers for a specific API call and its params) with query functions. React Query handles caching, deduplication and subscriptions behind the scenes.
 
-The problem with manually pairing keys to functions is that nothing enforces consistency. The same key can be paired with different functions, and the same function can be registered under different keys. This leads to two failure modes:
+The problem with pairing keys to functions by hand is that nothing keeps them consistent. The same key can be paired with different functions, and the same function can be registered under different keys. That goes wrong in two ways.
 
-- **Cache collision** — two calls share a key but expect different data. The second call silently uses the cached result of the first, with an incorrect type.
-- **Cache miss** — two calls use different keys for the same data. Both fetch independently, defeating caching entirely.
+- Two calls can share a key but expect different data (a cache collision). The second call silently uses the cached result of the first, with the wrong type.
+- Two calls can use different keys for the same data (a cache miss). Both fetch it, so the cache doesn't help at all.
 
 ```ts
 // @noErrors
@@ -44,14 +44,14 @@ const useExample = () => {
 };
 ```
 
-`normalized-react-query` solves this by forcing the key and query function to be defined together in one place, then reused as a singleton. Every call site uses the same key and the same function, so they can't diverge. Call sites pass typed params instead of building keys, and the cache helpers (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
+`normalized-react-query` solves this by having you define the key and query function together in one place, then reuse them as a singleton. Every call site uses the same key and the same function, so they can't diverge. Call sites pass typed params instead of building keys, and the cache helpers (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
 
 
 ## Request Waterfalls
 
-Data is often related: a book has an author, a list page has users. Fetching the related data in the component that renders it creates a waterfall — the child's request can't start until the parent's data has loaded _and_ the child has rendered. On the server, rendering has to wait for each level in turn.
+Data is often related (a book has an author, a list page has users). Fetching the related data in the component that renders it creates a waterfall, because the child's request can't start until the parent's data has loaded _and_ the child has rendered. On the server, rendering has to wait for each level in turn.
 
-`.propagate()` declares the relationship next to the query, once:
+`.propagate()` declares the relationship once, next to the query:
 
 ```ts
 // @noErrors
@@ -69,11 +69,11 @@ As soon as a book loads, its author starts prefetching, and the component receiv
 
 ## Infinite Queries
 
-TanStack stores infinite (paginated) queries in a different shape from regular queries, so they need their own hooks and cache helpers. `infinite()` gives them the same treatment as `resource()`: one definition pairing the key, the query function and the page params, reused everywhere. It wraps TanStack's own `useInfiniteQuery` and `useSuspenseInfiniteQuery`, and supports `.propagate()`, so each page can link to the resources it contains.
+TanStack stores infinite (paginated) queries in a different shape from regular queries, so they need their own hooks and cache helpers. `infinite()` does for them what `resource()` does for regular queries, with one definition of the key, the query function and the page params, reused everywhere. It wraps TanStack's own `useInfiniteQuery` and `useSuspenseInfiniteQuery`, and supports `.propagate()`, so each page can link to the resources it contains.
 
 
 ## Comparisons
 
-- [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) — TanStack's own helper for sharing a key and query function with full typing. It is the closest built-in alternative. It is a plain options object per params value, so there are no params-typed cache helpers, linked prefetching, or SSR loading of related queries.
-- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) — Organizes query keys (and optionally query functions) into a typed tree. It focuses on key structure and invalidation by prefix, not on linking queries or wrapping the hooks.
-- [normalizr](https://www.npmjs.com/package/normalizr) — Normalizes nested API responses into entity tables. It is a different kind of normalization: `normalized-react-query` normalizes the mapping from key to fetcher, and leaves storage to TanStack's cache.
+- [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) is TanStack's own helper for sharing a key and query function with full typing, and the closest built-in alternative. It is a plain options object per params value, so there are no params-typed cache helpers, linked prefetching, or SSR loading of related queries.
+- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) organizes query keys (and optionally query functions) into a typed tree. It focuses on key structure and invalidation by prefix, and doesn't link queries or wrap the hooks.
+- [normalizr](https://www.npmjs.com/package/normalizr) normalizes nested API responses into entity tables. That's a different kind of normalization, since `normalized-react-query` normalizes the mapping from key to fetcher, and leaves storage to TanStack's cache.

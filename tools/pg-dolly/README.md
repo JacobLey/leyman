@@ -9,15 +9,15 @@ A fresh Postgres database for every test, cloned from a template built once from
 
 </div>
 
-pg-dolly gives each test its own Postgres database. It builds a template from your schema once, and every test gets a copy of it (`CREATE DATABASE … TEMPLATE`), which takes a few milliseconds.
+Tests that use Postgres should each start from the same state: the schema, and nothing a developer's database happens to hold or a previous test left behind. The usual shortcuts each give something up. Rolling back a transaction after each test means nothing is ever committed, so a test can't check a `LISTEN`, a lock or what a second connection sees. Clearing one shared database between tests means they can't run in parallel.
 
-- Tests run against a real database of their own, so they can commit, `LISTEN`, take locks and open several connections. Rolling back a transaction after each test rules all of that out.
-- The template is kept between runs, under a hash of the SQL, so it's only built again when the schema changes.
-- It can share a server with your dev databases and with other test runs. It only ever drops databases it created, and parallel runs never see each other's.
-- Bring your own migrations, client and test runner. It takes SQL, and gives back a connection URL.
-- A failed test's database is kept so you can look at it. Everything else is dropped, including what a crashed run left behind.
+`pg-dolly` gives each test a Postgres database of its own. It builds a template from your schema's SQL once, and each test gets a copy of it (`CREATE DATABASE … TEMPLATE`), which takes a few milliseconds. The template is kept between runs under a hash of the SQL, so it's only built again when the schema changes.
 
-Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly/).
+It can share a server with your dev databases and with other test runs, since it only drops databases it created, and parallel runs each get their own. A failed test's database is kept so you can look at it. Everything else is dropped, including whatever a crashed run left behind.
+
+pg-dolly takes SQL and gives back a connection URL, so it works with any migration tool, database client and test runner. It doesn't start a server for you, and needs one in `DATABASE_URL`. If your code never commits, listens or races connections, a transaction rolled back per test is cheaper.
+
+The name comes from Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly/).
 
 ## Contents
 
@@ -101,8 +101,8 @@ Don't write it by hand. [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dol
 
 pg-dolly doesn't depend on a test runner. Whatever you use, the pattern is the same:
 
-- **Once per run:** `connect()` and `template()` before the tests, and `close()` after them.
-- **For each test that needs a database:** `clone()` before it, and `keep()` after it if it failed.
+- Once per run, call `connect()` and `template()` before the tests, and `close()` after them.
+- For each test that needs a database, call `clone()` before it, and `keep()` after it if it failed.
 
 With [mocha-chain](https://www.npmjs.com/package/mocha-chain), all of that lives in one helper file, and the clone reaches each test as a typed fixture.
 
@@ -180,7 +180,7 @@ suite('Items', () => {
 });
 ```
 
-The second test only works because the insert commits: in a transaction rolled back after the test, the notification would never be sent.
+The second test only works because the insert commits. In a transaction rolled back after the test, the notification would never be sent.
 
 The docs site shows the same with [Mocha and Vitest](https://jacobley.github.io/leyman/packages/pg-dolly/guides/test-runners).
 
@@ -219,11 +219,11 @@ docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:18 \
 
 ## How it works
 
-- **Templates.** `template(sql)` hashes the SQL and looks for a template with that name. If there isn't one, it creates a database (from `template0`), runs the SQL in it, marks it as a template nothing can connect to (`IS_TEMPLATE true ALLOW_CONNECTIONS false`), then renames it to the real name. A rename is atomic, so a half-built template never has the real name. Runs building the same template wait for each other on an advisory lock. A template that allows connections again may have been changed, so it's dropped and built again.
-- **Clones.** `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's files rather than running the SQL again. A clone doesn't inherit database settings, so each gets `settings` again.
-- **Markers.** Every database it creates has the prefix and a JSON comment marking it, with the run it belongs to. It only drops databases that have both, or no comment at all and a name only it gives (`<prefix>_<run>_<n>`), which a run that crashed before marking one leaves.
-- **Runs.** Each `PgDolly` holds an advisory lock on its own run id until it closes. A run that can take another run's lock knows that run is gone, and drops what it left. Each run also holds a shared lock on the templates it uses, so no other run drops them as unused.
-- **Cleanup.** `close()` drops the run's clones, except those kept. `connect()` drops the clones of runs that ended without closing, templates no run has used for `retainMs`, and kept clones that old.
+- `template(sql)` hashes the SQL and looks for a template with that name. If there isn't one, it creates a database (from `template0`), runs the SQL in it, marks it as a template nothing can connect to (`IS_TEMPLATE true ALLOW_CONNECTIONS false`), then renames it to the real name. A rename is atomic, so a half-built template never has the real name. Runs building the same template wait for each other on an advisory lock. A template that allows connections again may have been changed, so it's dropped and built again.
+- `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's files rather than running the SQL again. A clone doesn't inherit database settings, so each gets `settings` again.
+- Every database pg-dolly creates has the prefix and a JSON comment marking it, with the run it belongs to. It only drops databases that have both, or no comment at all and a name only it gives (`<prefix>_<run>_<n>`), which a run that crashed before marking one leaves.
+- Each `PgDolly` holds an advisory lock on its own run id until it closes. A run that can take another run's lock knows that run is gone, and drops what it left. Each run also holds a shared lock on the templates it uses, so no other run drops them as unused.
+- `close()` drops the run's clones, except those kept. `connect()` drops the clones of runs that ended without closing, templates no run has used for `retainMs`, and kept clones that old.
 
 ## API
 
@@ -273,7 +273,7 @@ Creates a fresh database from the template, for one test.
 
 Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing. After it, `template()` and `clone()` reject with `PgDollyClosedError`, and `keep()` throws it.
 
-Close the tests' connections to their clones first: dropping a database ends any left open.
+Close the tests' connections to their clones first, since dropping a database ends any left open.
 
 ### `dumpSchema(url, options?)`
 

@@ -1,14 +1,16 @@
 # local-ingress
 
-`https://<worktree>.<repo>.localhost` into any devcontainer: one HTTPS reverse proxy per machine, shared by every repo, routing by host name to containers that ask for it with Docker labels.
+One HTTPS reverse proxy per machine, shared by every repo, that serves each devcontainer at its own `https://<worktree>.<repo>.localhost` through Docker labels.
 
-- **Production-like URLs, over HTTPS.** Each worktree gets its own origin (cookies, storage and OAuth redirect URIs don't collide), with a certificate a browser trusts.
-- **Nothing to install on the host** beyond Docker. Browsers resolve `*.localhost` to loopback themselves ([RFC 6761](https://www.rfc-editor.org/rfc/rfc6761#section-6.3)), so there's no DNS or `/etc/hosts` to edit. Not tied to OrbStack or Docker Desktop.
-- **Trust once.** Certificates come from a certificate authority (CA) created on this machine and kept in a Docker volume. Its root is trusted once; leaf certificates are issued per host and renewed automatically.
-- **Off the shelf.** [Caddy](https://caddyserver.com/) through [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy), whose label format is used as-is.
-- **Local only.** It listens on `127.0.0.1` and `::1`, never on other interfaces.
+`local-ingress` gives every worktree's app a URL like production's, over HTTPS with a certificate the browser trusts. A container joins by adding Docker labels with its host name, and the proxy routes requests for that name to it. Since each worktree has its own origin, cookies, storage and OAuth redirect URIs don't collide between worktrees.
 
-Private, not a package: a Docker image and compose project, started by [`ensure`](ensure).
+Browsers resolve `*.localhost` to loopback themselves ([RFC 6761](https://www.rfc-editor.org/rfc/rfc6761#section-6.3)), so there's no DNS or `/etc/hosts` to edit, and nothing to install on the host beyond Docker. It isn't tied to OrbStack or Docker Desktop.
+
+Certificates come from a certificate authority (CA) created on this machine and kept in a Docker volume. You trust its root once, and a certificate for each host is issued and renewed automatically.
+
+The proxy is [Caddy](https://caddyserver.com/) through [caddy-docker-proxy](https://github.com/lucaslorentz/caddy-docker-proxy), and containers use caddy-docker-proxy's label format as it is. It only listens on `127.0.0.1` and `::1`, so other machines can't reach it.
+
+It is private and not a package, just a Docker image and compose project started by [`ensure`](ensure).
 
 ## Contents
 
@@ -75,22 +77,22 @@ networks:
 ```
 
 - Only the container serving the app joins. Its sidecars stay off the network, so names like `postgres` keep resolving to the project's own copies.
-- The network is external: `ensure` creates it, so run `ensure` (or `docker network create local-ingress`) before `docker compose up`.
+- The network is external and `ensure` creates it, so run `ensure` (or `docker network create local-ingress`) before `docker compose up`.
 - `caddy` may list several hosts, separated by spaces, e.g. a [tunnel's](#tunnels) host as well.
 - Name hosts `<worktree>.<repo>.localhost`, and further services `<service>.<worktree>.<repo>.localhost`. Each DNS label is at most 63 characters.
-- Cookies stay host-only: never set `Domain=.<repo>.localhost`, or worktrees share them.
+- Keep cookies host-only. A cookie set with `Domain=.<repo>.localhost` is shared between worktrees.
 
 Labels are read when a container starts, with no ingress restart. A container that stops drops out of the routes.
 
 ## How it routes
 
-| Request                                                 | Answer                                                                                                                                                                                                                                 |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `https://<host>` labeled by a running container         | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto`                                                                                                                                                              |
-| `https://<host>.localhost` nothing serves               | The help page, with a 404 saying nothing serves it. A name exists only while a container labeled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
-| `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt`                                                                                                                                                                                                          |
-| Any other `http://`                                     | A temporary redirect (302) to `https://`. There's no HSTS, which browsers would remember                                                                                                                                               |
-| A host outside `.localhost`                             | Refused: no certificate is issued for it                                                                                                                                                                                               |
+| Request                                                 | Answer                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `https://<host>` labeled by a running container         | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto`                                                                                                                                                                                |
+| `https://<host>.localhost` nothing serves               | The help page, with a 404 saying nothing serves it. A name exists only while a container labeled with it runs. A devcontainer's exists while it's up (and loads while its dev server listens), and a name a script started exists until the script stops |
+| `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt`                                                                                                                                                                                                                            |
+| Any other `http://`                                     | A temporary redirect (302) to `https://`. There's no HSTS, since browsers would remember it                                                                                                                                                              |
+| A host outside `.localhost`                             | Refused, since no certificate is issued for it                                                                                                                                                                                                           |
 
 The configuration is [`Caddyfile`](Caddyfile), merged with the sites generated from labels. A certificate for a host nothing serves is issued on demand, only for `*.localhost` names.
 
@@ -108,7 +110,7 @@ URLs then carry the port (`https://main.leyman.localhost:8443`), and redirects k
 
 The ingress only listens on loopback, so a phone or a colleague reaches a worktree through a tunnel you bring: [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/), [ngrok](https://ngrok.com/), or similar. The tunnel's own public certificate is what they see, so they never need the local CA. Anyone with the URL reaches your dev server, so stop the tunnel when you're done.
 
-Every recipe connects to the ingress over HTTPS as the worktree's `.localhost` name (the TLS server name, which picks the certificate), and verifies it against the root you downloaded for [trusting the CA](#trusting-the-ca). Plain HTTP doesn't work: the ingress would redirect the tunnel's requests to `https://`, in a loop.
+Every recipe connects to the ingress over HTTPS as the worktree's `.localhost` name (the TLS server name, which picks the certificate), and verifies it against the root you downloaded for [trusting the CA](#trusting-the-ca). Plain HTTP doesn't work, because the ingress would redirect the tunnel's requests to `https://` in a loop.
 
 ### Quick: no setup
 
@@ -120,7 +122,7 @@ docker run --rm --network local-ingress -v "$PWD/local-ingress-root.crt:/root.cr
   --origin-server-name feat-x.leyman.localhost --http-host-header feat-x.leyman.localhost --origin-ca-pool /root.crt
 ```
 
-It prints a random `https://<words>.trycloudflare.com`. The catch: the app sees `Host: feat-x.leyman.localhost`, so absolute URLs it builds (redirects, OAuth redirect URIs) point at `.localhost`, which the phone can't load. A dev server alone, like Vite's, works.
+It prints a random `https://<words>.trycloudflare.com`. The catch is that the app sees `Host: feat-x.leyman.localhost`, so absolute URLs it builds (redirects, OAuth redirect URIs) point at `.localhost`, which the phone can't load. A dev server alone, like Vite's, works.
 
 ### The tunnel's own host
 
@@ -160,12 +162,12 @@ Checked with the demo: both cloudflared quick tunnel recipes (page, compiled mod
 
 ## Upgrading
 
-One ingress serves every worktree, on whatever branch, so its configuration is versioned:
+One ingress serves every worktree, on whatever branch, so its configuration is versioned.
 
-- **The image is the whole configuration.** The `Caddyfile` and help page are copied into `local-ingress:<VERSION>`, built from this folder, and nothing is mounted from a checkout. Deleting a worktree never breaks the running ingress.
-- **`ensure` only moves forward.** A checkout with a newer [`VERSION`](VERSION) replaces the container. One with the same version changes nothing (its build comes from cache; only uncommitted edits to the ingress's files would replace it), and one with an older version leaves it running, so worktrees on old branches don't downgrade it.
-- **The CA is kept.** It lives in the `local-ingress-data` volume, which upgrades never touch.
-- **Changes are additive.** A newer ingress keeps serving older worktrees' labels and network. A breaking change (network name, label format, ports) gets its own version and migration notes here.
+- The image holds the whole configuration. The `Caddyfile` and help page are copied into `local-ingress:<VERSION>`, built from this folder, and nothing is mounted from a checkout, so deleting a worktree doesn't break the running ingress.
+- `ensure` only moves forward. A checkout with a newer [`VERSION`](VERSION) replaces the container. One with the same version changes nothing (its build comes from cache, and only uncommitted edits to the ingress's files would replace it), and one with an older version leaves it running, so worktrees on old branches don't downgrade it.
+- The CA lives in the `local-ingress-data` volume, which upgrades don't touch.
+- Changes are additive, so a newer ingress keeps serving older worktrees' labels and network. A breaking change (network name, label format, ports) gets its own version and migration notes here.
 
 When changing anything in the image or the compose file (base image digest included), bump `VERSION`, then run `tools/local-ingress/check-version --record`. The Nx target `check-version` fails if they changed without a bump. The help page footer shows the running version.
 

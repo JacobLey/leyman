@@ -6,7 +6,7 @@
 
 ## The Problem
 
-Mocha's `beforeEach` hook is the standard way to set up fresh state before each test. But using it with TypeScript reveals a tension between type safety and test isolation.
+Mocha's `beforeEach` hook is the standard way to set up fresh state before each test. With TypeScript, though, it makes you choose between type safety and test isolation.
 
 ### `beforeEach` forces unsafe variable declarations
 
@@ -27,7 +27,7 @@ suite('Division.divide', () => {
 });
 ```
 
-TypeScript knows `division` could be `null` — it was declared that way. So every test has to assert non-null with `!`, or cast the type, or initialize with a fake value. The type annotation is wrong: the variable is always set by test time, but nothing in the type system reflects that guarantee.
+TypeScript knows `division` could be `null`, since it was declared that way. So every test has to assert non-null with `!`, cast the type, or initialize the variable with a fake value. The variable is always set by the time a test runs, but its type doesn't say so.
 
 ### Hoisting the variable out doesn't help for mutable state
 
@@ -37,7 +37,7 @@ The obvious fix is to construct once and share:
 const division = new Division();
 ```
 
-Now the type is clean. But this only works for immutable values. The moment the object has state — a database connection, a Sinon mock, a per-test counter — sharing it across tests means one test can corrupt another.
+Now the type is clean, but this only works for immutable values. Once the object has state (a database connection, a Sinon mock, a per-test counter), sharing it across tests means one test can corrupt another.
 
 ### Per-test construction without hooks violates DRY
 
@@ -50,7 +50,7 @@ test('success', () => {
 });
 ```
 
-But this loses everything that makes hooks useful: setup runs once per context, teardown is guaranteed even on failure, and shared setup logic lives in one place.
+But this gives up what hooks are for. A hook keeps shared setup in one place and runs it once per context, and teardown hooks run even when a test fails.
 
 ---
 
@@ -68,9 +68,6 @@ withDivision.test('success', ({ division }) => {
 });
 ```
 
-- `division` is always `Division`, never `Division | null`
-- No `!` assertions, no unsafe casts
-- Each test gets a fresh instance from the hook, isolated from every other test
-- Teardown hooks (`afterEach`, `after`) receive the same context, so cleanup is type-safe too
+`division` is typed `Division` rather than `Division | null`, so the test needs no `!` assertion or cast. Each test still gets a fresh instance from the hook, and the teardown hooks (`afterEach`, `after`) receive the same context, so cleanup is type-safe too.
 
 → [Back to README](https://www.npmjs.com/package/mocha-chain)

@@ -64,7 +64,7 @@ Creates a fresh database from the template, for one test.
 
 Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing.
 
-Close every connection to the clones first: dropping a database ends any left open.
+Close every connection to the clones first, since dropping a database ends any left open.
 
 **Returns** `Promise<void>`.
 

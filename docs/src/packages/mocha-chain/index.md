@@ -29,18 +29,18 @@ suite('Counter', () => {
 });
 ```
 
-`counter` is a `Counter` in every test, never `Counter | undefined`, and each test gets a new one.
+`counter` is typed `Counter` in every test (not `Counter | undefined`), and each test gets a new one.
 
 **[Get started →](/packages/mocha-chain/getting-started)**
 
 ## Features
 
-- **Typed context**: a hook returns an object, and the hooks and tests chained to it receive it as their first parameter, merged with what earlier hooks returned.
-- **Isolated tests**: each test gets a shallow copy of the context, from hooks that ran for it.
-- **Just Mocha**: every function calls Mocha's own, so `this.timeout()`, `.only()`, `.skip()`, retries and reporters all work, and native Mocha calls can be mixed in.
-- **Catches misplaced tests**: a test or hook declared inside another test or hook throws, where Mocha would silently ignore it.
-- **Teardown with the same context**: `afterEach` and `after` receive what setup returned, so cleanup is typed too.
-- **For Vitest too**: [vitest-chain](/packages/vitest-chain/) is the same API for Vitest.
+- A hook returns an object, and the hooks and tests chained to it receive it as their first parameter, merged with what earlier hooks returned.
+- Each test gets its own shallow copy of the context, from the hooks that ran for it.
+- Every function calls Mocha's own, so `this.timeout()`, `.only()`, `.skip()`, retries and reporters all work, and you can mix in native Mocha calls.
+- A test or hook declared inside another test or hook throws, where Mocha would silently ignore it.
+- `afterEach` and `after` receive what setup returned, so cleanup is typed too.
+- [vitest-chain](/packages/vitest-chain/) has the same API for Vitest.
 
 ## Compared to
 

@@ -32,10 +32,10 @@ describe('Counter', () => {
 
 ## Features
 
-- **Typed context**: a hook's return value is passed to the hooks and tests chained to it, so test state is never `T | undefined`.
-- **Vitest's own context too**: chained callbacks receive the chain's context first, then Vitest's usual arguments, like the test context.
-- **Just Vitest**: every function calls Vitest's own, and native Vitest calls can be mixed in.
-- **Order checked**: a hook that runs before one it's chained to fails with `HookOrderError`, rather than getting an incomplete context.
+- A hook's return value is passed to the hooks and tests chained to it, so test state doesn't have to be typed `T | undefined`.
+- Chained callbacks receive the chain's context first, then Vitest's usual arguments, like the test context.
+- Every function calls Vitest's own, and you can mix in native Vitest calls.
+- A hook that runs before one it's chained to fails with `HookOrderError` instead of getting an incomplete context.
 
 [Why mocha-chain](/packages/mocha-chain/why) explains the problem both solve, and [Chaining hooks](/packages/mocha-chain/guides/chaining) how chains work. Both apply to vitest-chain, with `beforeAll` and `afterAll` for Mocha's `before` and `after`.
 

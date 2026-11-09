@@ -36,7 +36,7 @@ Before overwriting a signed file that exists, populate-files checks it was writt
 
 These fail with or without `check`, so an edit fails locally and in CI instead of being lost. Move the change into the generator, or into a manual section, and regenerate. To discard the edit, pass `force: true` (`--force`) once.
 
-`force` is also how to start signing a file that already exists unsigned: the first signed run would otherwise fail with `'not-owned'`.
+`force` is also how to start signing a file that already exists unsigned, since the first signed run would otherwise fail with `'not-owned'`.
 
 ## Manual sections
 
@@ -106,4 +106,4 @@ export default [generatedSignature.configs.recommended];
 
 ## Files without comments
 
-JSON can't hold a comment, so it can't be signed: `signed: true` on a new `.json` file fails with `GeneratedSignatureCommentStyleError`. Record it in a [manifest](/packages/populate-files/guides/manifest) instead, which keeps its hash in a separate file.
+JSON can't hold a comment, so it can't be signed, and `signed: true` on a new `.json` file fails with `GeneratedSignatureCommentStyleError`. Record it in a [manifest](/packages/populate-files/guides/manifest) instead, which keeps its hash in a separate file.

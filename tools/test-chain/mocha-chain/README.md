@@ -9,6 +9,16 @@ Chain mocha BDD methods together for deterministic and type safe tests.
 
 </div>
 
+Mocha's `beforeEach` is the usual place to create fresh state for each test (a database connection, a Sinon stub). The hook has no way to hand that state to the test, though, so it gets assigned to a `let` variable in the suite. With TypeScript, that variable has to be typed `T | null` and asserted non-null in every test that uses it.
+
+`mocha-chain` wraps Mocha's hooks so they can return values instead. The object a hook returns is merged into a context, and the hooks and tests chained from that hook receive it as their first parameter, fully typed. Each test gets its own shallow copy of the context. `afterEach` and `after` receive it too, so teardown is typed as well.
+
+Every function calls Mocha's own, so `this.timeout()`, `.only()`, `.skip()` and reporters work as usual, and you can mix native Mocha calls into the same suite. A test or hook declared inside another test or hook throws, where Mocha would silently ignore it.
+
+For Vitest, use [vitest-chain](https://www.npmjs.com/package/vitest-chain), which has the same API.
+
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/mocha-chain/). For more on the problem and the design, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
+
 ## Contents
 
 - [Install](#install)
@@ -23,17 +33,15 @@ Chain mocha BDD methods together for deterministic and type safe tests.
   - [afterEach](#aftereachtitle-fn)
   - [after](#aftertitle-fn)
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/mocha-chain/). For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
-
 ## Install
 
 ```sh
 npm i --save-dev mocha-chain mocha @types/mocha
 ```
 
-`mocha-chain` is an ESM package for Node.js 22.12 or later, and must be imported (not required), so test files must be ES modules. It is not a replacement for mocha — it wraps mocha's native methods. `mocha` is a required peer dependency, and `@types/mocha` an optional one (for TypeScript). The two are fully interchangeable; you can mix `mocha-chain` and native mocha calls in the same suite.
+`mocha-chain` is an ESM package for Node.js 22.12 or later, and must be imported (not required), so test files must be ES modules. It wraps mocha's native methods rather than replacing mocha, so `mocha` is a required peer dependency, and `@types/mocha` an optional one (for TypeScript). You can mix `mocha-chain` and native mocha calls in the same suite.
 
-The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
+The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`, which covers chaining context and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 ## Example
 
@@ -135,7 +143,7 @@ withUser.test('User has a name', ({ user }) => {
 
 The context object passed to each hook or test is a **shallow clone** of the accumulated context, so reassigning a key in one test does not affect others. Objects inside it, like `db`, are shared.
 
-A hook returns a plain object, a `Promise` of one, or nothing (`undefined`, `null` or a `Promise<void>`). Only the object's own enumerable properties are copied into the context, so return `{ db }` rather than a class instance (`return db`), whose methods would be missing from the context. A number or a string, and an array, function, `Map`, `Set`, `Date` or `RegExp`, is a type error. Types can't tell a class instance from a plain object, so a hook that returns one (or any object whose prototype isn't `Object.prototype` or `null`) fails with `HookContextError` (from [test-chain-core](https://www.npmjs.com/package/test-chain-core)). A hook written as an arrow function without braces (`beforeEach(() => db.clear())`) returns whatever that call returns, and merges it: use braces when the hook shouldn't add context.
+A hook returns a plain object, a `Promise` of one, or nothing (`undefined`, `null` or a `Promise<void>`). Only the object's own enumerable properties are copied into the context, so return `{ db }` rather than a class instance (`return db`), whose methods would be missing from the context. A number or a string, and an array, function, `Map`, `Set`, `Date` or `RegExp`, is a type error. Types can't tell a class instance from a plain object, so a hook that returns one (or any object whose prototype isn't `Object.prototype` or `null`) fails with `HookContextError` (from [test-chain-core](https://www.npmjs.com/package/test-chain-core)). A hook written as an arrow function without braces (`beforeEach(() => db.clear())`) returns whatever that call returns, and merges it, so use braces when the hook shouldn't add context.
 
 If two hooks return the same key, the later value replaces the earlier at runtime, but the type is the intersection of both (`never` for unrelated types). Return a new key instead.
 
@@ -143,7 +151,7 @@ A callback that declares a second parameter after the context gets mocha's `done
 
 All mocha features are preserved: async callbacks, named hooks, `this` as the hook/test instance, `.only()`, and `.skip()`.
 
-`mocha-chain` also enforces that tests and hooks are not nested inside other tests or hooks. Native mocha silently ignores such nesting; `mocha-chain` throws immediately, causing the enclosing test to fail visibly.
+`mocha-chain` also enforces that tests and hooks are not nested inside other tests or hooks. Native mocha silently ignores such nesting, while `mocha-chain` throws immediately, so the enclosing test fails.
 
 A hook that runs before the hook it is chained from fails with `HookOrderError` (from [test-chain-core](https://www.npmjs.com/package/test-chain-core)) instead of receiving an incomplete context.
 
@@ -171,7 +179,7 @@ before(() => {
 });
 ```
 
-The chain only decides which context a test receives. Which hooks _run_ is up to Mocha, as usual: every `beforeEach` in a suite runs before each of its tests, including tests chained from an earlier handle that never see its context. A hook whose side effects only some tests want (inserting rows, starting a server) belongs in a nested `suite` with those tests. See [Branching](https://jacobley.github.io/leyman/packages/mocha-chain/guides/chaining#branching).
+The chain only decides which context a test receives. Which hooks _run_ is up to Mocha, as usual, so every `beforeEach` in a suite runs before each of its tests, including tests chained from an earlier handle that never see its context. A hook whose side effects only some tests want (inserting rows, starting a server) belongs in a nested `suite` with those tests. See [Branching](https://jacobley.github.io/leyman/packages/mocha-chain/guides/chaining#branching).
 
 A handle can be used inside nested suites, where a hook chained from it runs only for that suite's tests.
 

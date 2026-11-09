@@ -1,7 +1,7 @@
 {
   "name": "genever-content-mapper",
   "version": "0.0.1",
-  "description": "A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file.",
+  "description": "A TypeScript 7.1 content mapper that gives an imported OpenAPI document or JSON Schema file genever's types, without a generated file.",
   "engines": {
     "node": ">=26"
   },

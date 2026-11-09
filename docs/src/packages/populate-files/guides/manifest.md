@@ -63,7 +63,7 @@ Without a manifest, `clean` removes every file in `targetDir` that this run didn
 ## The manifest is generated too
 
 - It lists exactly the files of the last run, and is rewritten after it. With `check`, a manifest that would change fails the check like any other file. `dryRun` doesn't write it.
-- `populateFile` (one file) updates only its own entry, and keeps the others. Separate calls writing the same manifest must not run at the same time: write the files with one `populateFiles` call instead.
+- `populateFile` (one file) updates only its own entry, and keeps the others. Separate calls writing the same manifest must not run at the same time, so write those files with one `populateFiles` call instead.
 - It is never checked for edits. Editing it by hand, e.g. to accept a change to a generated file, is deliberate.
 - An invalid manifest fails the run with `GeneratedSignatureManifestError`, from `generated-signature`.
 

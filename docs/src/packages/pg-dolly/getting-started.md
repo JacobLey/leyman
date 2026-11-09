@@ -23,7 +23,7 @@ yarn add --dev pg-dolly
 :::
 
 ::: tip
-pg-dolly is ESM only, for Node.js 22.12 or later. Its one dependency is [`pg`](https://www.npmjs.com/package/pg), for its own admin connection: tests connect with whatever client the project uses.
+pg-dolly is ESM only, for Node.js 22.12 or later. Its one dependency is [`pg`](https://www.npmjs.com/package/pg), for its own admin connection, and tests connect with whatever client the project uses.
 :::
 
 ## A server
@@ -34,13 +34,13 @@ pg-dolly needs a Postgres server, in `DATABASE_URL`, as a user that can create d
 export DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
 ```
 
-A local server, a devcontainer sidecar or a CI service all work. Without one, it fails rather than skipping the tests, so integration tests are never left out by accident.
+A local server, a devcontainer sidecar or a CI service all work. Without one, it fails rather than skipping the tests, so integration tests can't be left out by accident.
 
 Test databases don't need to survive a restart, so a server only for tests can run with `fsync=off`, `synchronous_commit=off` and `full_page_writes=off`, and its data on a `tmpfs`.
 
 ## A schema
 
-The schema is SQL: ideally a dump of what your migrations build, committed as `schema.sql`. [pg-dolly-schema](/packages/pg-dolly-schema/) keeps that file for any migration tool, and fails CI when it's stale. See [The schema](/packages/pg-dolly/guides/schema) for other ways.
+The schema is SQL, ideally a dump of what your migrations build, committed as `schema.sql`. [pg-dolly-schema](/packages/pg-dolly-schema/) keeps that file for any migration tool, and fails CI when it's stale. See [The schema](/packages/pg-dolly/guides/schema) for other ways.
 
 ## Connect once, clone per test
 
@@ -96,7 +96,7 @@ declare const dolly: PgDolly;
 await dolly.close();
 ```
 
-Close every connection to the clones first: dropping a database ends any left open.
+Close every connection to the clones first, since dropping a database ends any left open.
 
 ## Next steps
 

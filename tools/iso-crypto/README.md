@@ -2,22 +2,24 @@
 
 # iso-crypto
 
-Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH.
+Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypto, for hashing, AES encryption (including GCM), PBKDF2 and HKDF key derivation, and ECDH.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
 
 </div>
 
-- **Same code everywhere** — one async API that uses `node:crypto` on Node.js and `crypto.subtle` in the browser, picked by package `imports` conditions.
-- **Less ceremony than raw WebCrypto** — no `importKey`/`CryptoKey` handling; secrets, keys and IVs are plain `Uint8Array`s or strings.
-- **Authenticated encryption by default** — AES-256-GCM detects tampering: `decrypt` rejects altered content or the wrong secret, and can bind a ciphertext to its context with additional authenticated data.
-- **Password-safe keys** — `deriveKey` with PBKDF2 (passwords) or HKDF (high-entropy secrets), on both platforms.
-- **ECDH encryption in one call** — `eccEncrypt`/`eccDecrypt` derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
-- **ECC key utilities** — generate keys and compress/decompress public keys on P-256, P-384 and P-521.
-- **Encoding helpers** — isomorphic text, hex, base64 and base64url encoding, plus secure random bytes.
+Node.js and browsers both have cryptography built in, but with different APIs. Node.js has the [`node:crypto`](https://nodejs.org/api/crypto.html) module, and browsers have WebCrypto ([`crypto.subtle`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto)), which also wants every key imported as a `CryptoKey` before it will use it.
 
-**When not to use it:** `encrypt` stretches its secret with a single hash, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519; for those see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
+`iso-crypto` provides one async API for both, for hashing, encryption, key derivation and ECDH. Package `imports` conditions pick `node:crypto` on Node.js and `crypto.subtle` in the browser, so the same code runs in both. Secrets, keys and IVs are plain `Uint8Array`s or strings, so there's no `importKey` or `CryptoKey` to deal with.
+
+- `encrypt` defaults to AES-256-GCM, which detects tampering. `decrypt` rejects altered content or the wrong secret, and additional authenticated data can bind a ciphertext to its context.
+- `deriveKey` makes a key from a password with PBKDF2, or from a high-entropy secret with HKDF, on both platforms.
+- `eccEncrypt` and `eccDecrypt` encrypt between two parties in one call. They derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
+- ECC keys can be generated, and public keys compressed or decompressed, on P-256, P-384 and P-521.
+- Some lower level utilities are included too, like text, hex, base64 and base64url encoding, and secure random bytes.
+
+`encrypt` stretches its secret with a single hash, which isn't enough for a password, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519. For those, see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
 
 ## Contents
 
@@ -81,7 +83,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 - ✅ aes-128-gcm
 - ✅ aes-256-gcm
 
-192-bit keys are deprecated: Chromium-based browsers (Chrome, Edge, …) do not support them, so `aes-192-*` rejects there. They still work on Node.js, Firefox and Safari, so existing data stays readable, but use 128 or 256 bits for anything new. GCM only accepts 128 or 256 bits.
+192-bit keys are deprecated, because Chromium-based browsers (Chrome, Edge, …) do not support them, so `aes-192-*` rejects there. They still work on Node.js, Firefox and Safari, so existing data stays readable, but use 128 or 256 bits for anything new. GCM only accepts 128 or 256 bits.
 
 ### Key Derivation
 

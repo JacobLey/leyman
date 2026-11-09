@@ -6,9 +6,9 @@ description: Nx plugin that derives every dependsOn from declared lifecycle stag
 
 <ProjectHeader />
 
-An [Nx](https://nx.dev/) plugin that derives every `dependsOn` from lifecycle stages you declare once, and the targets you bind to them.
+Nx orders targets with each one's `dependsOn`, and written by hand, adding a step in the middle means editing every target that came after it, in every project.
 
-Declare your workflow (`build` runs hooks `pre` → `run` → `post`, and `test` runs after `build`), then bind tools to hooks (`tsc` to `build:run`, `mocha` to `test:run`):
+nx-lifecycle is an [Nx](https://nx.dev/) plugin that works out those `dependsOn` for you. You declare the stages of your workflow once (`build` runs hooks `pre`, `run` and `post`, and `test` runs after `build`), then bind your targets to those hooks (`tsc` to `build:run`, `mocha` to `test:run`):
 
 ```json
 // nx.json
@@ -31,16 +31,16 @@ Declare your workflow (`build` runs hooks `pre` → `run` → `post`, and `test`
 }
 ```
 
-Then `nx run <project>:build` runs the right steps, in the right order, in any project.
+Then `nx run <project>:build` runs whatever building means for that project, in the right order.
 
 **[Get started →](/packages/nx-lifecycle/getting-started)** · [Why nx-lifecycle?](/packages/nx-lifecycle/why)
 
 ## Features
 
-- **Add a step in one place**: Binding a new target, like codegen, lint or a post-build step, rewires every target that depends on its stage, in every project.
-- **Per-project implementations**: Each project opts into the bound targets it declares, so TypeScript, Go and Java projects can all answer to the same `build` and `test`.
-- **Nothing to commit**: The plugin infers targets when Nx builds the project graph, and fails with the fix if a project's `dependsOn` breaks the wiring. An [executor](/packages/nx-lifecycle/guides/executor) that writes the targets to files is also available.
-- **See what runs**: [`nx-lifecycle explain`](/packages/nx-lifecycle/reference/cli#explain) prints a project's stages in the order they run, with what is bound to each.
+- Adding a step, like codegen, lint or a post-build step, is one new binding, and every target that depends on its stage is rewired in every project.
+- Each project only gets the bound targets it declares, so TypeScript, Go and Java projects can all share the same `build` and `test`.
+- The plugin infers targets when Nx builds the project graph, so there is nothing to commit. If a project's `dependsOn` breaks the wiring, it fails and says what to add. An [executor](/packages/nx-lifecycle/guides/executor) that writes the targets to files is also available.
+- [`nx-lifecycle explain`](/packages/nx-lifecycle/reference/cli#explain) prints a project's stages in the order they run, with what is bound to each.
 
 ## Compared to
 

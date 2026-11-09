@@ -59,7 +59,7 @@ A stage's `dependsOn` takes the same entries as Nx's [`dependsOn`](https://nx.de
 | `{ "target": "build", "projects": ["my-server"] }` | `build` of specific projects.                           |
 | `{ "target": "build", "params": "forward" }`       | Forward command line arguments to `build`.              |
 
-A stage can depend on another stage, or on any other target, but not on another stage's anchor or hooks: depend on `build`, not `build:post`. Depending on a hook would run part of a stage, so nx-lifecycle rejects it and suggests the stage instead.
+A stage can depend on another stage, or on any other target, but not on another stage's anchor or hooks. Depending on a hook like `build:post` would run only part of a stage, so nx-lifecycle rejects it and suggests the stage (`build`) instead.
 
 A real workflow can have a stage for setup before building, and one to run every check:
 

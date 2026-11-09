@@ -96,9 +96,9 @@ The algorithm needs a few independent random values per key. They come from one 
 
 The lanes themselves supply the 48 bits that pick a block, and each other value is a single lowbias32 call on one lane, indexed by block and purpose. Only the top bits a value needs are drawn: a position within a block up to 2^32 is one call, while larger blocks combine both lanes, so every position stays reachable rather than the 2^32 a single 32-bit seed could reach.
 
-- **Not cryptographic**, as keys are expected to be self-generated (e.g. UUIDs), so speed matters more than resisting crafted keys. A cryptographic hash such as SHA-1 is several times slower, and does not stop an attacker who can find colliding keys offline anyway.
-- **UTF-8 bytes**, rather than JavaScript's UTF-16 code units, so any language can hash the same input.
-- **32-bit integer operations, and IEEE-754 doubles only where results are exact or rounded once**, so every language produces the same bucket. See [SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md).
+The hash is not cryptographic, because keys are expected to be self-generated (e.g. UUIDs), so speed matters more than resisting crafted keys. A cryptographic hash such as SHA-1 is several times slower, and doesn't stop an attacker who can find colliding keys offline anyway.
+
+It reads UTF-8 bytes rather than JavaScript's UTF-16 code units, so any language can hash the same input. And it only uses 32-bit integer operations, with IEEE-754 doubles only where results are exact or rounded once, so every language produces the same bucket. See [SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md) for the details.
 
 ## Compared to alternatives
 
@@ -114,12 +114,12 @@ The lanes themselves supply the 48 bits that pick a block, and each other value 
 | [JumpBackHash](https://arxiv.org/abs/2403.18682)                                                  | O(1) on average                          | none                     | minimal                                         | ❌                 |
 | [AnchorHash](https://arxiv.org/abs/1812.09674), [MementoHash](https://arxiv.org/abs/2306.09783)   | O(1) on average, more with many removals | state per removed bucket | minimal                                         | ✅                 |
 
-- **Hash rings and rendezvous** suit clusters where any node can fail and leave. They need the list of nodes, and rings need many virtual nodes per node to balance well.
-- **Jump, Power and JumpBackHash** share this package's model (buckets numbered `0` to `n - 1`, added and removed at the end). They map keys to different buckets than this package, so they cannot be swapped in for each other on existing data.
-- **AnchorHash and MementoHash** add arbitrary removals to that model, at the cost of tracking the removed buckets.
+Hash rings and rendezvous hashing suit clusters where any node can fail and leave. They need the list of nodes, and rings need many virtual nodes per node to balance well.
+
+Jump, Power and JumpBackHash share this package's model, with buckets numbered `0` to `n - 1` that are added and removed at the end. They map keys to different buckets than this package, though, so one can't be swapped in for another on existing data. AnchorHash and MementoHash add arbitrary removals to that model, at the cost of tracking the removed buckets.
 
 ## Non-goals
 
-- **Removing buckets from the middle.** Keep the count, and redirect the removed bucket's number in your own code, or use a hash ring, rendezvous or AnchorHash.
-- **Weighted buckets.** Every bucket gets an equal share. Give a larger node several bucket numbers instead.
-- **Keys chosen by an attacker.** The key hash is fast, not cryptographic. The `seed` option selects independent hash functions for layering, it is not a secret key.
+- Removing buckets from the middle. To take one out, keep the count and redirect the removed bucket's number in your own code, or use a hash ring, rendezvous or AnchorHash.
+- Weighted buckets. Every bucket gets an equal share, so give a larger node several bucket numbers instead.
+- Keys chosen by an attacker. The key hash is fast rather than cryptographic, and the `seed` option only selects independent hash functions for layering. It is not a secret key.

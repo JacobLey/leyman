@@ -4,7 +4,7 @@ description: Declare the queries a result leads to with propagate() and link(), 
 
 # Linked queries
 
-Data is often related: a book has an author, a list has its items. Loading the related data in the component that shows it creates a waterfall. The author's request can't start until the book has loaded, and the author component has rendered.
+Data is often related (a book has an author, a list has its items). Loading the related data in the component that shows it creates a waterfall. The author's request can't start until the book has loaded, and the author component has rendered.
 
 `.propagate()` declares the relationship next to the query, once. Inside it, `.link()` starts loading another resource, and returns a `Linked` reference to it:
 
@@ -82,10 +82,10 @@ export const useAuthorName = (linked: LinkOf<typeof authors>) =>
 ## Rules for links
 
 - `.link()` only works inside a `propagate` callback, and throws anywhere else. To start loading outside one, use `.prefetchQuery()` or `useNormalizedPrefetchQuery()`, which return a `Linked` too.
-- Links aren't stored in the cache: the cache holds the plain data, and `propagate` runs again when the data is read, like a `select`. That keeps the cache serializable, for [server rendering](/packages/normalized-react-query/guides/server-rendering).
+- Links aren't stored in the cache. The cache holds the plain data, and `propagate` runs again when the data is read, like a `select`. That keeps the cache serializable, for [server rendering](/packages/normalized-react-query/guides/server-rendering).
 - Linking the same query twice is safe. TanStack dedupes the requests.
 - A linked resource can link further. The book's author can link to their publisher, and so on.
-- `.link(params, options)` takes the options of `prefetchQuery`, plus `isolateErrors`: when `true`, a failure of that link doesn't fail a parent loaded with `awaitLinks`.
+- `.link(params, options)` takes the options of `prefetchQuery`, plus `isolateErrors`. When it's `true`, a failure of that link doesn't fail a parent loaded with `awaitLinks`.
 
 ## Lists
 

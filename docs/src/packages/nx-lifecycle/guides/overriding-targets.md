@@ -7,7 +7,7 @@ description: Add dependencies to one project's bound target, and what the plugin
 Nx applies `nx.json` `targetDefaults` and `project.json` on top of the targets a plugin infers. A `dependsOn` there **replaces** the inferred one, rather than merging with it. So:
 
 - Don't define the stage targets (`build`, `build:_`, `build:run`…) yourself.
-- If a bound target sets its own `dependsOn`, include its lifecycle dependency: the hook before its own, or `<stage>:_` for the first hook.
+- If a bound target sets its own `dependsOn`, include its lifecycle dependency, which is the hook before its own (or `<stage>:_` for the first hook).
 
 ## Extra dependencies for a bound target
 

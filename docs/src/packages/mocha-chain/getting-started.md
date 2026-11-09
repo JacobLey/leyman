@@ -23,10 +23,10 @@ yarn add -D mocha-chain
 :::
 
 ::: tip
-mocha-chain wraps Mocha, which is a peer dependency, along with `@types/mocha`. It is ESM only, so test files must be ES modules. Run tests with `mocha` as usual: nothing changes in its configuration.
+mocha-chain wraps Mocha, which is a peer dependency, along with `@types/mocha`. It is ESM only, so test files must be ES modules. Run tests with `mocha` as usual, without changing its configuration.
 :::
 
-The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
+The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`, which covers chaining context and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 ## Return context from a hook
 
@@ -64,7 +64,7 @@ suite('Users', () => {
 });
 ```
 
-- The context is the merge of everything returned along the chain: `withUser`'s tests get both `db` and `user`.
+- The context is the merge of everything returned along the chain, so `withUser`'s tests get both `db` and `user`.
 - A hook that returns nothing (or `undefined`) passes the context on unchanged.
 - Each test gets a shallow copy, so reassigning a field in one test doesn't affect another. Objects inside it, like `db`, are shared, as they would be with variables.
 - Titles are optional for hooks, as in Mocha.

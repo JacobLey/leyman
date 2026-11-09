@@ -4,7 +4,7 @@ description: Define paginated TanStack queries with infinite(), including their 
 
 # Infinite queries
 
-TanStack keeps paginated ("infinite") queries in a different shape from other queries, so they have their own hooks and cache methods. `infinite()` defines them like `resource()`: one definition holding the key, the fetcher and the page params.
+TanStack keeps paginated ("infinite") queries in a different shape from other queries, so they have their own hooks and cache methods. `infinite()` defines them the same way `resource()` does, with one definition holding the key, the fetcher and the page params.
 
 ```ts
 interface Post {
