@@ -6,11 +6,13 @@
 //   node audit-fork-manifest.mjs [--with go,rust,...] [--keep]
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { apply, drift, inspect } from './fork-manifest.mjs';
+
+const repositoryRoot = path.resolve(import.meta.dirname, '../../..');
 
 const samplePackage = 'tools/parse-cwd';
 const millisecondsPerSecond = 1000;
@@ -34,6 +36,25 @@ const env = {
     NX_NO_CLOUD: 'true',
     NX_SKIP_NX_CACHE: 'true',
     PATH: `${path.join(to, 'leyman/main/node_modules/.bin')}:${process.env.PATH}`,
+};
+
+/**
+ * Lets the install take this repository's own packages the day they are released. The fork's `minimumReleaseAge` is for
+ * what others publish: the audit proves the manifest, not that a fork waits a week after a release of ours.
+ *
+ * @returns The names of the packages this repository publishes
+ */
+const publishedNames = () => {
+    // eslint-disable-next-line sonarjs/no-os-command-from-path -- the checkout's own Git, in a script run by hand or CI
+    const manifests = spawnSync('git', ['ls-files', '*package.json'], {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+    }).stdout.split('\n');
+    return manifests
+        .filter(file => file !== '')
+        .map(file => JSON.parse(readFileSync(path.join(repositoryRoot, file), 'utf8')))
+        .filter(({ name, private: isPrivate }) => name !== undefined && isPrivate !== true)
+        .map(({ name }) => name);
 };
 
 const run = (label, command, ...args) => {
@@ -61,6 +82,14 @@ try {
         throw new Error(problems.join('\n'));
     }
     console.log(`Applied ${files.length} files to ${to}`);
+
+    appendFileSync(
+        path.join(to, 'pnpm-workspace.yaml'),
+        `\nminimumReleaseAgeExclude:\n${publishedNames()
+            .toSorted((a, b) => a.localeCompare(b, 'en'))
+            .map(name => `  - '${name}'`)
+            .join('\n')}\n`
+    );
 
     run('Git', 'git', 'init', '--quiet');
     run('Install', 'pnpm', 'install', '--no-frozen-lockfile');
