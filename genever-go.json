@@ -1,0 +1,211 @@
+{
+  "generatedAt": "2026-11-09T21:02:19.826007662Z",
+  "commit": "0ef3124ddcac5b784727cb015569c3feca381918",
+  "suites": {
+    "jsonSchema": [
+      {
+        "feature": "Nullable",
+        "description": "holds a string"
+      },
+      {
+        "feature": "Nullable",
+        "description": "holds null, apart from absent"
+      },
+      {
+        "feature": "Nullable",
+        "description": "rejects a number"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds a string member"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds a number member"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds null"
+      },
+      {
+        "feature": "Tuple",
+        "description": "holds two numbers"
+      },
+      {
+        "feature": "Tuple",
+        "description": "rejects a string member"
+      },
+      {
+        "feature": "oneOf objects",
+        "description": "holds one branch"
+      },
+      {
+        "feature": "oneOf objects",
+        "description": "holds the other branch"
+      },
+      {
+        "feature": "oneOf objects",
+        "description": "rejects a branch with a property of the wrong type"
+      },
+      {
+        "feature": "Recursion",
+        "description": "holds a nested value"
+      },
+      {
+        "feature": "Recursion",
+        "description": "rejects a wrong value three levels down"
+      },
+      {
+        "feature": "patternProperties",
+        "description": "holds a matching key"
+      },
+      {
+        "feature": "patternProperties",
+        "description": "rejects a value of the wrong type"
+      },
+      {
+        "feature": "Properties",
+        "description": "holds a string property"
+      },
+      {
+        "feature": "Properties",
+        "description": "holds an object's properties"
+      },
+      {
+        "feature": "Properties",
+        "description": "rejects a property of the wrong type"
+      }
+    ],
+    "openApi": [
+      {
+        "feature": "Request body",
+        "description": "holds a valid body"
+      },
+      {
+        "feature": "Request body",
+        "description": "rejects a property of the wrong type"
+      },
+      {
+        "feature": "Tuple",
+        "description": "holds two numbers"
+      },
+      {
+        "feature": "Tuple",
+        "description": "rejects a string member"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds a string member"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds a number member"
+      },
+      {
+        "feature": "Mixed enum",
+        "description": "holds null, apart from absent"
+      }
+    ]
+  },
+  "benchmark": {
+    "definitions": 500,
+    "runs": 5
+  },
+  "tools": [
+    {
+      "name": "genever-go",
+      "packageName": "github.com/JacobLey/leyman/apps/genever/go",
+      "version": "0.1.0",
+      "results": {
+        "jsonSchema": {
+          "typeErrors": [],
+          "probes": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "generateMs": 28.707213
+        },
+        "openApi": {
+          "typeErrors": [],
+          "probes": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "generateMs": 37.051349
+        }
+      }
+    },
+    {
+      "name": "go-jsonschema",
+      "packageName": "github.com/atombender/go-jsonschema",
+      "version": "0.24.1",
+      "results": {
+        "jsonSchema": {
+          "typeErrors": [],
+          "probes": [
+            true,
+            false,
+            true,
+            true,
+            true,
+            false,
+            true,
+            false,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            true
+          ],
+          "generateMs": 424.992579
+        }
+      }
+    },
+    {
+      "name": "oapi-codegen",
+      "packageName": "github.com/oapi-codegen/oapi-codegen/v2",
+      "version": "2.8.2",
+      "results": {
+        "openApi": {
+          "typeErrors": [],
+          "probes": [
+            true,
+            true,
+            true,
+            false,
+            true,
+            true,
+            false
+          ],
+          "generateMs": 48.573585
+        }
+      }
+    }
+  ]
+}

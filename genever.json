@@ -1,6 +1,6 @@
 {
-  "commit": "543fa2f06c2b72cf864d675d6efb20d94cc25390",
-  "generatedAt": "2026-11-07T16:37:48.030Z",
+  "commit": "0ef3124ddcac5b784727cb015569c3feca381918",
+  "generatedAt": "2026-11-09T21:02:01.772Z",
   "suites": {
     "jsonSchema": [
       {
@@ -147,7 +147,7 @@
     {
       "name": "genever",
       "packageName": "genever",
-      "version": "0.10.2",
+      "version": "0.10.5",
       "results": {
         "jsonSchema": {
           "typeErrors": [],
@@ -176,7 +176,7 @@
             true,
             true
           ],
-          "generateMs": 81.64750099999992
+          "generateMs": 37.706308000000035
         },
         "openApi": {
           "typeErrors": [],
@@ -192,7 +192,7 @@
             true,
             true
           ],
-          "generateMs": 96.33372200000008
+          "generateMs": 48.3415040000001
         }
       }
     },
@@ -228,7 +228,7 @@
             true,
             false
           ],
-          "generateMs": 287.9875540000003
+          "generateMs": 122.98534399999994
         }
       }
     },
@@ -264,7 +264,7 @@
             true,
             false
           ],
-          "generateMs": 508.59441699999934
+          "generateMs": 260.46661099999983
         }
       }
     },
@@ -394,7 +394,7 @@
             true,
             true
           ],
-          "generateMs": 302.3469420000001
+          "generateMs": 143.54177100000015
         }
       }
     }
