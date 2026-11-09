@@ -4,7 +4,7 @@ description: Which schema keywords juniper-arbitrary aims at, which it filters, 
 
 # How values are generated
 
-Generators aim at each keyword, then a validator checks the result. How a keyword is handled decides how fast generation is, never whether a value is valid.
+Generators aim at each keyword, then a validator checks the result. How a keyword is handled only affects how quickly values are generated, since every value is checked either way.
 
 | Keywords                                                                                                                                                                                                                                                                                                                                     | Handling                                                                                                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -17,10 +17,10 @@ Generators aim at each keyword, then a validator checks the result. How a keywor
 
 ## Deliberate limits
 
-- **Objects get a few undeclared properties** unless `additionalProperties` says otherwise, since a real payload can have them.
-- **Recursion stops a few levels deep**, as each level multiplies the size of a value.
-- **Numbers mix doubles with integers**, since doubles alone are nearly all huge or tiny.
-- **A schema with a great many conditionals** only reaches its first 64 combinations.
+- Objects get a few undeclared properties unless `additionalProperties` says otherwise, since a real payload can have them.
+- Recursion stops a few levels deep, as each level multiplies the size of a value.
+- Numbers mix doubles with integers, since doubles alone are nearly all huge or tiny.
+- A schema with a great many conditionals only reaches its first 64 combinations.
 
 ## When generation gives up
 

@@ -6,7 +6,7 @@ description: Write a Node.js script whose main() only runs when it is the entry 
 
 <ProjectHeader />
 
-Write a Node.js script whose `main()` only runs when it's the entry point, so tests can import it without side effects.
+A script that does its work as soon as the file loads (connecting to a database, say) can't be imported by a test without that work happening too. With entry-script, the work goes in a `main()` method that only runs when Node was started with that file, so importing the script from a test is safe.
 
 ```ts
 import { EntryScript } from 'entry-script';
@@ -26,11 +26,10 @@ export default new Greet();
 
 ## Features
 
-- **No side effects on import**: a script's work happens in `main()`, which only runs when Node was started with that file.
-- **Testable**: construct the class with test doubles, and call `main()` with the arguments you want.
-- **Arguments without the noise**: `main()` receives the command-line arguments only, without the Node binary and script path.
-- **Class or instance**: export an instance and implement `main`, or export the class and implement `static main`.
-- **With dependency injection**: [haywire-launcher](/packages/haywire-launcher/) builds the script from a [Haywire](/packages/haywire/) container, only when it runs.
+- A test can construct the class with test doubles and call `main()` with the arguments it wants.
+- `main()` receives only the command-line arguments, without the Node binary and script path.
+- You can export an instance and implement `main`, or export the class and implement `static main`.
+- [haywire-launcher](/packages/haywire-launcher/) builds the script from a [Haywire](/packages/haywire/) container, only when it runs.
 
 ## Compared to
 

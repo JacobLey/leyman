@@ -45,8 +45,8 @@ bind(pluginId.list('multi')).withFactory(() => [{ name: 'auth' }, { name: 'cache
 
 ## Things to know
 
-- **Order is only kept within a provider.** Elements from different bindings come in no guaranteed order, not the order they were added.
-- **`nullable()` and `undefinable()` apply to each element.** A list can only be depended on as non-null if every binding is non-null, so one `.nullable()` binding makes the whole list nullable.
+- Order is only kept within a provider. Elements from different bindings come in no guaranteed order, so don't rely on the order they were added.
+- `nullable()` and `undefinable()` apply to each element. A list can only be depended on as non-null if every binding is non-null, so one `.nullable()` binding makes the whole list nullable.
 - A nullable `list('multi')` provider that returns `null` contributes one `null` element. Return `[]` to contribute nothing.
 - The same binding added more than once, for example through two merged modules, is included once. Separate bindings are always included, even if they return equal values.
 - Lists work with [scopes](/packages/haywire/guides/scopes), [suppliers](/packages/haywire/guides/suppliers) and [deferred ids](/packages/haywire/guides/circular-dependencies). Each binding in the list is scoped on its own.

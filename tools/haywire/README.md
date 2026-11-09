@@ -2,20 +2,30 @@
 
 # haywire
 
-Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.
+Dependency injection for TypeScript that checks the wiring at compile time, without decorators or reflect-metadata.
 
 [![npm package](https://badge.fury.io/js/haywire.svg)](https://www.npmjs.com/package/haywire)
 [![License](https://img.shields.io/npm/l/haywire.svg)](https://github.com/JacobLey/leyman/blob/main/tools/haywire/LICENSE)
 
 </div>
 
-Missing bindings, mismatched types and duplicate registrations are all TypeScript errors, so a container that compiles has everything it needs.
+With dependency injection, a class takes what it needs (a logger, a database client) as constructor parameters, and a container builds those dependencies and passes them in. Most JavaScript containers only find out that a dependency was never registered when they try to build it, at runtime.
 
-- **Wiring mistakes are type errors** — a missing dependency, a duplicate binding, the wrong id passed to `container.get()`, or a nullable value injected into a non-nullable parameter all fail to build.
-- **Plain JavaScript** — constructor injection with no decorators, `experimentalDecorators` or `reflect-metadata`. Works with private fields, and in plain JS too.
-- **Type-based ids, not strings** — `identifier<T>()` distinguishes two `string` dependencies (say a database URL and password) at the type level.
-- **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call; `await using` disposal of what the container created.
-- **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own and swap in fakes with a type-checked `replaceBinding()`.
+`haywire` is a dependency injection library that tracks every binding and dependency in TypeScript's types. A missing dependency, a second binding for the same id, the wrong id passed to `container.get()`, or a nullable value passed to a parameter that isn't nullable all fail to compile, so a container that compiles has a binding for everything it needs.
+
+It is plain constructor injection, with no decorators, `experimentalDecorators` or `reflect-metadata`, so it works with private fields and in plain JavaScript too. Dependencies are identified by ids made with `identifier<T>()` rather than by strings, so two `string` dependencies (say a database URL and password) are told apart by their types.
+
+It has:
+
+- Singleton, request and transient scopes.
+- Async initialization, for the bindings that opt into it.
+- Circular dependencies, when you declare them.
+- Runtime values (like an HTTP request) supplied per call.
+- Disposing what the container created, with `await using`.
+
+Modules don't change once created, and containers share no global registry, so each test can build its own container and swap in fakes with `replaceBinding()`, which is type-checked as well.
+
+Some mistakes can't be caught by types, like a circular dependency with no deferred side, or a sync supplier of an async value. `container.check()` finds those without building anything, so call it in a test.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/haywire/). For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
 
@@ -786,7 +796,7 @@ Container factories can only be provided with instances, you cannot define a new
 
 ### Disposing containers
 
-Singletons often hold resources that must be released on shutdown: database pools, sockets, file handles. `container.disposeAsync()` releases every singleton the container created, in reverse creation order, so each instance is disposed before the instances it depends on. Containers are also `AsyncDisposable`, so `await using` works too.
+Singletons often hold resources that must be released on shutdown, like database pools, sockets and file handles. `container.disposeAsync()` releases every singleton the container created, in reverse creation order, so each instance is disposed before the instances it depends on. Containers are also `AsyncDisposable`, so `await using` works too.
 
 By default, an instance is disposed with its own `Symbol.asyncDispose` or `Symbol.dispose` method, if it has one. Use `.withDisposer()` for anything else, or `.withDisposer(null)` to leave an instance alone.
 
@@ -815,9 +825,9 @@ process.on('SIGTERM', async () => {
 });
 ```
 
-- **Only singletons are disposed.** Request-scoped and transient instances belong to whoever requested them. Setting a disposer on any other scope fails `container.check()`.
-- **Instances you provide are yours.** Bindings made with `withInstance()` or `factory.bindInstance()` are not disposed, unless you set a disposer on them.
-- **Once disposal starts, the container is closed.** Requests already in progress finish first, so their singletons are disposed too. Every new request, including from suppliers, throws.
+- Only singletons are disposed. Request-scoped and transient instances belong to whoever requested them, and setting a disposer on any other scope fails `container.check()`.
+- Bindings made with `withInstance()` or `factory.bindInstance()` are not disposed, unless you set a disposer on them.
+- Once disposal starts, the container is closed. Requests already in progress finish first, so their singletons are disposed too, but every new request (including from suppliers) throws.
 - If disposers fail, the rest still run, and `disposeAsync()` rejects with the error (or a `HaywireMultiError` of all of them).
 
 #### Per-request containers
@@ -857,7 +867,7 @@ app.use(async (ctx, next) => {
 });
 ```
 
-`requestScope` is narrower than an HTTP request: it is a single `get()` call. Those instances are never disposed by the container, so resources that should be released per HTTP request belong in `singletonScope` on a per-request container.
+`requestScope` is narrower than an HTTP request, since it covers a single `get()` call. Those instances are never disposed by the container, so resources that should be released per HTTP request belong in `singletonScope` on a per-request container.
 
 For this pattern in Hono, Fastify and Next.js route handlers, see [Web frameworks](https://jacobley.github.io/leyman/packages/haywire/guides/frameworks). Moving from InversifyJS or TSyringe? See [Migrating](https://jacobley.github.io/leyman/packages/haywire/guides/migrating).
 

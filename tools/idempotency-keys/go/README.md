@@ -1,14 +1,16 @@
 # idempotency-keys-go
 
-Idempotency-Key handling for Go HTTP writes on Postgres or Valkey: a retried request runs once across every instance, waits on a running duplicate, and replays the first response. The Go implementation of [idempotency-keys](../ts/), sharing its keys.
+Server-side support for the Idempotency-Key header in Go, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.
 
-- **One run per key, across every instance**: a duplicate of a running request waits for its response (or gets a `409`), and a later one gets the stored response back, marked `Idempotent-Replayed: true`.
-- **A reused key on a different request is a `422`**, never a replay of another request's response: the method, path, query, body and the headers you name must match.
-- **A crashed request holds up no one for long**: its claim is a lease, and once it runs out a waiting request takes over. A response that comes after that isn't stored.
-- **Postgres or Valkey**: pass your own `pgx` pool or `valkey-go` client. Postgres is strict and durable; Valkey is lax (a failover can forget a key). Notifications through either, or none, only make waiting faster.
-- **Shares keys with TypeScript**: hashes, rows and notifications follow the [idempotency-keys specification](../SPEC.md), held to the same [test vectors](../test-vectors/), so a Go server and a TypeScript server on one store serve one set of keys.
+When a client sends a `POST` and the connection drops before the response arrives, it can't tell whether the server handled the request, and a retry might create the same order twice. The `Idempotency-Key` header, popularized by Stripe and now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), lets the client send one unique key with every attempt of a request, so the server can recognize a retry and send back what it answered the first time.
 
-It doesn't fit a write that must never run twice whatever happens to the store: on Valkey, a failover that loses writes or a flush forgets keys. Use the Postgres store for payments.
+This module handles that header in a Go server, with `net/http` middleware. The first request with a key runs your handler, and its status, headers and body are saved in Postgres or Valkey, through your own `pgx` pool or `valkey-go` client. A retry with the same key gets that response back, marked `Idempotent-Replayed: true`, on whichever instance it reaches. A request only counts as a retry if its method, path, query, body and any headers you name match the first one, and a key reused on a different request gets a `422`.
+
+A retry that comes in while the first request is still running waits for it to finish, or gets a `409` if the wait runs out. The first request's claim on the key is a lease, so if its server crashes, a waiting request takes over once the lease runs out. A response the first request sends after that isn't stored.
+
+It is the Go side of [idempotency-keys](../ts/). Both implementations follow one [specification](../SPEC.md) for their hashes, rows and notifications, and pass the same [test vectors](../test-vectors/), so Go and TypeScript servers on one store share the same keys.
+
+Use the Postgres store for payments and anything else where a duplicate would really hurt. On Valkey, a failover that loses writes, or a flush, forgets keys, and a retry after that runs again.
 
 Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempotency-keys/guides/go), are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
 
@@ -30,7 +32,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
 go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest
 ```
 
-It needs Go 1.25 or later. Versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies; the `postgres` package uses [pgx](https://github.com/jackc/pgx) v5 (`database/sql` can't `LISTEN`), and the `valkey` package [valkey-go](https://github.com/valkey-io/valkey-go).
+It needs Go 1.25 or later, and versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies. The `postgres` package uses [pgx](https://github.com/jackc/pgx) v5, because `database/sql` can't `LISTEN`, and the `valkey` package uses [valkey-go](https://github.com/valkey-io/valkey-go).
 
 ## Example
 
@@ -57,13 +59,17 @@ mux.Handle("POST /notes", requireUser(limitBody(keys.Middleware(func(r *http.Req
 })(createNote))))
 ```
 
-A request without an `Idempotency-Key` header runs as usual (set `Required` to answer it with a `400` instead). The first request with a key runs, and its response is stored. A retry gets the same status, headers and body back. A retry while the first still runs waits up to the wait (10 seconds by default) for it.
+Requests without an `Idempotency-Key` header go straight to the handler. If you'd rather reject them, set `Required` and they get a `400`.
+
+A retry that arrives while the first request with its key is still running waits for up to 10 seconds by default (`WithWait`). The notifier is optional. Without it, a waiting retry polls the store, 50 ms after its first try and then twice as long each time, up to a second apart. With it, the retry is woken as soon as the first request finishes, even on another instance.
 
 ## Usage
 
-Each key has an identity: the `Scope` (who is calling, such as a user or tenant id), the optional `Operation` (any name you pick, such as an OpenAPI `operationId`), and the key. One caller's keys never touch another's. With an `Operation`, the same key on another operation is another key; without one, reusing a key on another endpoint is a `422`.
+Keys are kept per caller. Pass the user or tenant id as `Scope`, so that two users who happen to send the same key don't collide.
 
-`Handle` and `Middleware` answer themselves with an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (`application/problem+json`), with the status codes of the [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07):
+`Operation` is optional. If you set it (any name you pick, such as an OpenAPI `operationId`), a client can reuse the same key on different endpoints and each is treated separately. If you leave it empty, a key belongs to the caller as a whole, and reusing it on another endpoint gets a `422`.
+
+When `Handle` or `Middleware` turns a request away itself, it responds with an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (`application/problem+json`), using the status codes from the [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07):
 
 | Status | When                                                                                                |
 | ------ | --------------------------------------------------------------------------------------------------- |
@@ -71,13 +77,13 @@ Each key has an identity: the `Scope` (who is calling, such as a user or tenant 
 | `409`  | A request with the key is still running, and waiting for it ran out.                                |
 | `422`  | The key was used on a different request (another method, path, query, body or named header).        |
 | `413`  | The body is over an `http.MaxBytesReader` limit set before it.                                      |
-| `500`  | The store failed before the request ran, so it never runs unprotected.                              |
+| `500`  | The store failed before the request ran, so the handler wasn't called.                              |
 
-Pass `WithProblem` and `WithErrorHandler` to answer differently.
+To send something else, pass `WithProblem` and `WithErrorHandler`.
 
-The request target is hashed as a WHATWG URL serializes it, as the TypeScript implementation gets it from `Request.url`: `RequestTarget` parses `r.RequestURI` with the URL Standard's rules for an http(s) path and query, so `/a/../notes` and `/notes` are one request, `/café` is `/caf%C3%A9`, and an absolute-form target (`http://host/notes`) hashes as its path.
+The path and query are hashed the way a WHATWG URL serializes them, which is how the TypeScript implementation sees them through `Request.url`. `RequestTarget` parses `r.RequestURI` with the URL Standard's rules for an http(s) path and query. That means `/a/../notes` and `/notes` count as the same request, `/café` is hashed as `/caf%C3%A9`, and an absolute-form target (`http://host/notes`) is hashed as just its path.
 
-A Postgres store never deletes expired rows on its own. Call `DeleteExpired` from a scheduled job, or leave them to be overwritten by the next request with the key.
+Keys expire after 24 hours by default (`WithTTL`). Postgres doesn't delete expired rows by itself. They do no harm, since the next request with the same key overwrites the row, but the table keeps growing, so call `DeleteExpired` from a scheduled job.
 
 ### Valkey
 
@@ -89,11 +95,11 @@ notifier, _ := valkeystore.Listen(ctx, client, valkeystore.NotifierOptions{})
 keys, _ := idempotencykeys.New(valkeystore.NewStore(client, valkeystore.StoreOptions{}), idempotencykeys.WithNotifier(notifier))
 ```
 
-The store runs the spec's Lua scripts with `EVAL`, one key each, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) until `Close`. Either notifier works with either store: a Postgres store with a Valkey notifier is fine.
+The store runs the spec's Lua scripts with `EVAL`, and each script touches a single key, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) and keeps it until `Close`. You can mix stores and notifiers, so a Postgres store with a Valkey notifier is fine.
 
 ### Without net/http
 
-`Begin` is the same flow for any framework. Hash the request with `ComputeFingerprint`, then run, replay, or answer as it says:
+`Begin` gives you the same flow in any framework. Hash the request with `ComputeFingerprint`, call `Begin`, and then run the handler, replay the stored response, or send an error, depending on the outcome:
 
 ```go
 key, err := idempotencykeys.ParseKey(headerValues) // a *KeyHeaderError: a 400
@@ -119,11 +125,11 @@ case idempotencykeys.OutcomeMismatch:
 }
 ```
 
-An attempt that never ends (its server crashed, or the handler panicked) holds the key until its lease runs out, then the next request with the key runs.
+If an attempt never ends, because its server crashed or the handler panicked, it holds the key until its lease runs out. After that, the next request with the key runs.
 
 ### Which responses are stored
 
-By default every response is stored except a `429` (Too Many Requests), which says nothing was done. That includes a `5xx`: a handler that failed halfway may have written something, and running it again could write it twice. If your handlers are transactional, release `5xx` responses too, so a retry runs again:
+By default every response is stored except a `429` (Too Many Requests), since that status says nothing was done. That includes `5xx` responses, because a handler that failed halfway may already have written something, and running it again could write it twice. If your handlers are transactional, you can release `5xx` responses too, so that a retry runs again:
 
 ```go
 keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r idempotencykeys.StoredResponse) idempotencykeys.Action {
@@ -136,7 +142,7 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 
 ## API
 
-The API follows the TypeScript package's, with Go's conventions. The full reference is in the package docs (`go doc`).
+The API follows the TypeScript package's, adapted to Go's conventions. The full reference is in the package docs (`go doc`).
 
 | TypeScript                                       | Go                                                                                                                                                                           |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -154,23 +160,27 @@ The API follows the TypeScript package's, with Go's conventions. The full refere
 | `new ValkeyStore({ connection, prefix? })`       | `valkey.NewStore(valkey.Client, StoreOptions)`                                                                                                                               |
 | `ValkeyNotifier.listen(...)`                     | `valkey.Listen(ctx, valkey.Client, NotifierOptions)`; `Close()`                                                                                                              |
 
-Durations are `time.Duration`s of whole milliseconds, as the spec's options are. An empty name (`Operation`, a table, prefix or channel) means none or the default. Errors match with `errors.Is`: `ErrOption` (an `*OptionError` with its `Option` and `Value`), `ErrKeyHeader` (a `*KeyHeaderError` with its `Values`) and `ErrStoredRecord` (a store holding a record no implementation writes). A Postgres listening connection that fails is reported to `NotifierOptions.OnError`, as is a Valkey subscription that drops; waiting requests then only poll, so listen again on a new connection to get notifications back.
+Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 
-Go strings are bytes, so a header value is hashed and stored as the bytes received, where TypeScript reads each byte as one character; the spec makes both the same. Go moves `Host` out of the request's headers, so `Handle` takes it from `r.Host` when it is a fingerprint header.
+Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, and `ErrStoredRecord` means the store holds a record that no implementation writes.
+
+If a Postgres listening connection fails, or a Valkey subscription drops, the error is reported to `NotifierOptions.OnError`. Waiting requests then fall back to polling, so to get notifications back, listen again on a new connection.
+
+Go strings are bytes, so a header value is hashed and stored as the bytes received, while TypeScript reads each byte as one character. The spec makes both come out the same. Go also moves `Host` out of the request's headers, so when `Host` is a fingerprint header, `Handle` reads it from `r.Host`.
 
 ## Limits
 
-- **Responses are buffered** to be stored: `next` writes to a recorder, so it can't flush, hijack the connection, or send informational (`1xx`) responses, and the response is sent once it returns.
-- **Headers are stored by name, in byte order.** Go's `http.Header` is a map, so it has no other order to keep; each name's values keep theirs.
-- **A request whose `RequestURI` is empty** (built for a handler, not read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped its own way.
-- **No lease renewal.** Set the lease above your slowest handler: a request that runs longer can be taken over, and run twice.
+- **Responses are buffered** so they can be stored. `next` writes to a recorder, which means it can't flush, hijack the connection or send informational (`1xx`) responses, and the response is only sent once `next` returns.
+- **Headers are stored by name, in byte order.** Go's `http.Header` is a map, so there is no other order to keep. The values under each name keep their order.
+- **A request with an empty `RequestURI`** (one built to call a handler directly, rather than read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped in its own way.
+- **No lease renewal.** Set the lease above your slowest handler, since a request that runs longer can be taken over and run twice.
 
 ## Development
 
-Run through Nx, like any other project:
+Run it through Nx, like any other project:
 
 ```sh
 nx run @leyman/idempotency-keys-go:verify
 ```
 
-It has no `package.json`. The tests read the [test vectors](../test-vectors/) by path, an implicit dependency in `project.json`, and run against the Postgres (`$DATABASE_URL`) and Valkey (`valkey:6379`) sidecars of the devcontainer, so `go test ./...` also works directly there.
+It has no `package.json`. The tests read the [test vectors](../test-vectors/) by path, which `project.json` lists as an implicit dependency. They run against the devcontainer's Postgres (`$DATABASE_URL`) and Valkey (`valkey:6379`) sidecars, so `go test ./...` also works directly there.

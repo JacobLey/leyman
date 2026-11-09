@@ -1,11 +1,11 @@
 # idempotency-keys specification
 
-What every implementation of idempotency-keys does, and everything two of them share: the hashes, what they write to a
-store, and the notification that wakes a waiting request. A TypeScript server and a Go server on the same store and
-notifier serve one set of keys as if they were one server. The [test vectors](./test-vectors/) pin every hash and every
-scenario below; an implementation passes them all, against every store.
-The [interop e2e](../../e2e/idempotency-keys-interop/) runs a server in each language on every store and notifier, and
-drives them against each other.
+This document describes what every implementation of idempotency-keys does, and everything two implementations have
+to agree on: the hashes, what they write to a store, and the notification that wakes a waiting request. Because both
+follow it, a TypeScript server and a Go server on the same store and notifier serve one set of keys as if they were one
+server. The [test vectors](./test-vectors/) pin every hash and every scenario below, and an implementation must pass
+all of them against every store. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a server in each language
+on every store and notifier, and drives them against each other.
 
 Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field][draft] (draft 07): `400` for a key that
 can't be read, `409` for a request whose key is in use, and `422` for a key reused on a different request.

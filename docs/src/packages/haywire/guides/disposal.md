@@ -4,7 +4,7 @@ description: Release the singletons a container created, like database pools and
 
 # Disposal
 
-Singletons often hold resources that must be released on shutdown: database pools, sockets, file handles. `container.disposeAsync()` releases every singleton the container created, in reverse creation order, so each instance is disposed before the instances it depends on. Containers are `AsyncDisposable`, so `await using` works too.
+Singletons often hold resources that must be released on shutdown, like database pools, sockets and file handles. `container.disposeAsync()` releases every singleton the container created, in reverse creation order, so each instance is disposed before the instances it depends on. Containers are `AsyncDisposable`, so `await using` works too.
 
 By default, an instance is disposed with its own `Symbol.asyncDispose` or `Symbol.dispose` method, if it has one. Use `.withDisposer()` for anything else, or `.withDisposer(null)` to leave an instance alone.
 
@@ -45,9 +45,9 @@ const container = createContainer(
 await container.disposeAsync();
 ```
 
-- **Only singletons are disposed.** Request-scoped and transient instances belong to whoever requested them. A disposer on any other scope fails `container.check()`.
-- **Instances you provide are yours.** Values bound with `withInstance()` or a container factory's `bindInstance()` are not disposed, unless you set a disposer on them.
-- **Once disposal starts, the container is closed.** Requests already in progress finish first, so their singletons are disposed too. Every new request, including from suppliers, throws a `HaywireError`.
+- Only singletons are disposed. Request-scoped and transient instances belong to whoever requested them, and a disposer on any other scope fails `container.check()`.
+- Values bound with `withInstance()` or a container factory's `bindInstance()` are not disposed, unless you set a disposer on them.
+- Once disposal starts, the container is closed. Requests already in progress finish first, so their singletons are disposed too, but every new request (including from suppliers) throws a `HaywireError`.
 - If disposers fail, the rest still run, and `disposeAsync()` rejects with the error, or with one listing every error in `causes`.
 
 `disposeAsync()` is safe to call more than once.
@@ -109,6 +109,6 @@ const handleRequest = async () => {
 };
 ```
 
-[`requestScope`](/packages/haywire/guides/scopes#requests) is narrower than an HTTP request: it is a single `get()` call, and those instances are never disposed. Resources to release per HTTP request belong in `singletonScope` on a per-request container.
+[`requestScope`](/packages/haywire/guides/scopes#requests) is narrower than an HTTP request, since it covers a single `get()` call, and those instances are never disposed. Resources to release per HTTP request belong in `singletonScope` on a per-request container.
 
 See [Web frameworks](/packages/haywire/guides/frameworks) for per-request containers in Hono, Fastify and Next.js.

@@ -2,24 +2,31 @@
 
 # Juniper
 
-Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.
+A JSON Schema builder for TypeScript that infers each schema's type and catches schema mistakes at compile time, with JSON Schema 2020-12 and OpenAPI 3.0 output.
 
 [![npm package](https://badge.fury.io/js/juniper.svg)](https://www.npmjs.com/package/juniper)
 [![License](https://img.shields.io/npm/l/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper/LICENSE)
 
 </div>
 
-- **One source of truth** — write the schema once, get its TypeScript type with `SchemaType<typeof schema>`. Nothing to keep in sync.
-- **Mistakes are compile errors** — each schema type only exposes the keywords that apply to it, so `maxLength` on an array or a `required` key missing from `properties` fails to build instead of silently validating everything.
-- **Strict, deterministic output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), with no unknown or misapplied keywords, and render the same JSON every time, so a committed spec only changes when a schema does.
-- **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0, from the same definition. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise.
-- **Standard JSON Schema** — every schema implements [Standard JSON Schema](https://standardschema.dev/), so tools that accept it can take Juniper schemas directly.
-- **Reusable definitions** — `.define('User')` emits a schema as a `$ref` and bundles it into `$defs` (or OpenAPI `components`) automatically, so references never dangle.
-- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely reused: narrowed with `pick`, `omit` and `partial`, or combined with `extend`.
+[JSON Schema](https://json-schema.org/) is a vocabulary for describing data formats that is both human and machine readable. Validators accept almost any schema, though, so a mistake like `maxLength` on an array (instead of `maxItems`), or a `required` key that doesn't match one in `properties`, quietly changes what the schema accepts. And since a schema is just JSON, the TypeScript type for the same data has to be written and kept in sync by hand.
 
-Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator).
+Juniper is a JSON Schema generator that focuses on solving two problems:
 
-Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need: juniper-validator does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats) (with `strict: true`, compiling a schema with `format: 'email'` throws `unknown format "email" ignored` without it).
+1. Writing strict and maintainable JSON Schemas.
+2. Using those enforced schemas as TypeScript types.
+
+Each schema type (`objectSchema()`, `arraySchema()`, ...) only exposes the keywords that apply to it, so mistakes like the ones above fail to compile. The schemas it emits pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html). `SchemaType<typeof schema>` is the TypeScript type of the data a schema accepts, so the schema is the only place the shape is written down.
+
+Other features:
+
+- The same schema renders as JSON Schema 2020-12 (which OpenAPI 3.1 uses), or as OpenAPI 3.0 with `toJSON({ openApi30: true })`. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise.
+- `.define('User')` makes a schema a reusable definition. It is emitted as a `$ref`, and added to `$defs` (or OpenAPI `components`) for you.
+- Schemas are immutable, since every method returns a new one. A shared base schema can be narrowed with `pick`, `omit` and `partial`, or combined with `extend`, without changing it.
+- The output is deterministic, so a committed spec only changes when a schema does.
+- Every schema implements [Standard JSON Schema](https://standardschema.dev/), so tools that accept it can take Juniper schemas directly.
+
+Juniper builds schemas, and doesn't validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator) for that.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper/). For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
@@ -43,6 +50,8 @@ npm i juniper
 ```
 
 Requires Node.js 22.13 or later. `eslint` is an optional peer dependency, only needed for the [ESLint rules](#eslint-rules). The Example below also needs `npm i ajv`.
+
+Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need. juniper-validator does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats) (with `strict: true`, compiling a schema with `format: 'email'` throws `unknown format "email" ignored` without it).
 
 ## Example
 
@@ -130,7 +139,7 @@ console.log(schema1.toJSON()); // { type: 'integer' }
 console.log(schema2.toJSON()); // { type: 'integer', multipleOf: 5 }
 ```
 
-Juniper is designed to be used with TypeScript. While it can be used in a JavaScript environment, a significant portion of the value — including type inference and compile-time schema validation — requires TypeScript. Many schema restrictions are enforced only at the TypeScript level:
+Juniper is designed to be used with TypeScript. It can be used from JavaScript, but much of its value, including type inference and the compile-time checks on schemas, needs TypeScript. Many schema restrictions are enforced only by the types:
 
 ```ts
 import { booleanSchema, objectSchema } from 'juniper';
@@ -230,9 +239,9 @@ arraySchema(user).toJSON();
 type User = SchemaType<typeof user>;
 ```
 
-- **Derived schemas:** a schema derived from a definition keeps the `$ref` when it only adds annotations (`description`, `title`, `examples`, ...) or is made `nullable()`. Any other change, such as `omit()` or an extra constraint, makes it a different schema, so it is emitted inline. Define it under its own name to share it too: `user.omit(['id']).define('NewUser')`.
-- **Names are unique:** two different schemas defined with the same name throw when serialized. The same schema can be used any number of times.
-- **`.ref(path)`** remains for schemas Juniper doesn't own, where the path is up to you.
+- A schema derived from a definition keeps the `$ref` when it only adds annotations (`description`, `title`, `examples`, ...) or is made `nullable()`. Any other change, such as `omit()` or an extra constraint, makes it a different schema, so it is emitted inline. Define it under its own name to share it too: `user.omit(['id']).define('NewUser')`.
+- Definition names are unique. Two different schemas defined with the same name throw when serialized. The same schema can be used any number of times.
+- `.ref(path)` is still there for schemas Juniper doesn't own, where the path is up to you.
 
 ### Recursive schemas
 
@@ -361,7 +370,7 @@ All three are equivalent. Every constructor takes a single options object. Every
 stringSchema({ maxLength: 5 }) == StringSchema.create().maxLength(5) == new StringSchema({}).maxLength(5)
 ```
 
-Not every property can be set in the constructor — some must be set via method due to TypeScript inference limitations. Schema constructors make heavy use of TypeScript generics. These generics are internal and may change without announcement. The exception is `CustomSchema`, whose type is provided via the generic parameter.
+Not every property can be set in the constructor. Some must be set with a method, because of limits on what TypeScript can infer. Schema constructors make heavy use of TypeScript generics. These generics are internal and may change without announcement. The exception is `CustomSchema`, whose type is provided via the generic parameter.
 
 Every method returns a clone of the original instance (immutable).
 
@@ -584,7 +593,7 @@ Attaches custom data to a JSON Schema. Useful for extensions like [`x-` prefixes
 
 Alternatively, pass a single object `{ key1: val1, key2: val2 }` to set multiple metadata entries at once.
 
-`numberSchema().metadata('maximum', 5)` is forbidden — `maximum` is an existing keyword.
+`numberSchema().metadata('maximum', 5)` is forbidden, because `maximum` is an existing keyword.
 
 ---
 

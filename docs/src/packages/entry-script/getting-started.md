@@ -58,14 +58,14 @@ export class CountUsers extends EntryScript {
 export default new CountUsers();
 ```
 
-Run it with `node count-users.js json`: `main` receives `['json']`, the arguments after the script path.
+Run it with `node count-users.js json`, and `main` receives `['json']`, the arguments after the script path.
 
 ## When `main` runs
 
 When Node starts, entry-script imports the script Node was started with (`process.argv[1]`), and calls `main` on its default export, if that's an `EntryScript` instance or subclass. Importing the module from anywhere else does nothing.
 
 - The check is on the entry point's default export, wherever it was defined. A `bin.mjs` that only does `export { default } from './dist/cli.js';` runs the script it re-exports.
-- An error thrown by `main` is an unhandled rejection: Node prints it and exits with code 1.
+- An error thrown by `main` is an unhandled rejection, so Node prints it and exits with code 1.
 - Exactly one of `main` and `static main` must be implemented. Calling the other throws `MainNotImplementedError`.
 
 ## Test it

@@ -9,10 +9,11 @@ Statically typed event emitter.
 
 </div>
 
-- **Native** — a thin subclass of `EventTarget`, so it runs in Node.js, browsers, Deno and Bun with no dependencies, and works anywhere an `EventTarget` is accepted.
-- **Typed** — declare an event map once; event names, details, listeners and dispatched events are all checked.
-- **Detail helpers** — `on`/`once`/`next`/`emit` deal in plain detail values instead of `CustomEvent` boilerplate.
-- **Abortable** — every subscription returns an unsubscribe function and accepts an `AbortSignal`.
+A plain `EventTarget` accepts any string as an event name and gives listeners a generic `Event`, so using an event's data means either checking it again or casting it.
+
+`static-emitter` lets you declare the events once, as a type that maps each event name to its detail (or to an `Event` subclass), and then checks event names, details, listeners and dispatched events against it. `StaticEmitter` is a thin subclass of `EventTarget`, so it has no dependencies, runs in Node.js, browsers, Deno and Bun, and works anywhere an `EventTarget` is accepted. It adds `on`, `once`, `next` and `emit` helpers that take and return plain detail values instead of `CustomEvent`s. Every subscription returns an unsubscribe function and accepts an `AbortSignal`.
+
+When you only want the typed `EventTarget` methods, without the helpers, use `StaticEventTarget`.
 
 ## Contents
 
@@ -78,7 +79,7 @@ Event names must be strings, as required by `EventTarget`.
 
 The map can be an `interface`, a type alias or an inline object type.
 
-A detail of `undefined` (or a type including it) can be left out of `emit()`, but a detail of `null` cannot: `emit('done', null)`. (`new TypedCustomEvent` is the opposite: it may omit a `null` detail, not an `undefined` one.) A `StaticEmitter` listener receives `undefined` when none was given.
+A detail of `undefined` (or a type including it) can be left out of `emit()`, but a detail of `null` cannot: `emit('done', null)`. (`new TypedCustomEvent` works the other way around, since it may omit a `null` detail but not an `undefined` one.) A `StaticEmitter` listener receives `undefined` when none was given.
 
 Subclasses that should allow further events can forward a generic (`EventMap` and `NoEvents` are exported types):
 

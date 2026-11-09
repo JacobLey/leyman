@@ -9,6 +9,8 @@ Convert a relative path or URL to an absolute directory path.
 
 </div>
 
+Functions that take a `cwd` option might be given a relative path, a file URL such as `import.meta.url`, or nothing at all. `parse-cwd` turns any of those into an absolute directory path, using the parent directory when it is given a file, and rejects if the path doesn't exist.
+
 ## Contents
 
 - [Install](#install)

@@ -8,6 +8,8 @@
 
 </div>
 
+TypeScript enums are plain objects at runtime, but numeric members also get [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings) (`{ FOO: 0, 0: 'FOO' }`), so `Object.keys` and `Object.values` return extra entries. `enum-to-array` lists an enum's keys, values, or key-value pairs without them, typed to the enum's own keys and values.
+
 ## Contents
 
 - [Install](#install)

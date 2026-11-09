@@ -4,12 +4,7 @@ description: Which responses idempotency-keys stores and which free the key, the
 
 # Which responses are stored
 
-The request that holds a key ends its attempt with its response, in one of two ways:
-
-- **complete**: the response is stored, and replayed to every later request with the key, until the key expires (`ttlMs`, 24 hours by default).
-- **release**: the record is deleted, and the next request with the key runs.
-
-Which one is up to `respondPolicy`, a function of the response.
+The request that holds a key ends its attempt with its response, and `respondPolicy`, a function of the response, decides how. To **complete** is to store the response and replay it to every later request with the key, until the key expires (`ttlMs`, 24 hours by default). To **release** is to delete the record, so the next request with the key runs.
 
 ## The default policy
 
@@ -34,13 +29,13 @@ const keys = new IdempotencyKeys({
 });
 ```
 
-A handler that may have partly written must not release: the retry would write again.
+A handler that may have partly written must not release, because the retry would write again.
 
 ## Requests that never answer
 
-A request that fails before it has a response (its server crashed, or the handler threw) neither completes nor releases. Its claim is a lease (`leaseMs`, 60 seconds by default): once it runs out, a waiting or later request with the same key and fingerprint takes over, and runs.
+A request that fails before it has a response (its server crashed, or the handler threw) neither completes nor releases. Its claim is a lease (`leaseMs`, 60 seconds by default), and once that runs out, a waiting or later request with the same key and fingerprint takes over and runs.
 
-So set `leaseMs` above your slowest handler. There is no lease renewal: a request that runs longer than its lease can be taken over, and run twice. Its own caller still gets its response, but it isn't stored, since the request that took over will store its own.
+So set `leaseMs` above your slowest handler. There is no lease renewal, so a request that runs longer than its lease can be taken over and run twice. Its own caller still gets its response, but it isn't stored, since the request that took over will store its own.
 
 `handle()` rejects with the handler's error, so your framework answers as it would without the library, and the key stays held until the lease runs out.
 
@@ -48,7 +43,7 @@ So set `leaseMs` above your slowest handler. There is no lease renewal: a reques
 
 A request that has a response but fails to store or release it (the store went away) still sends that response to its caller, who then has no reason to retry. `handle()` reports the failure to `onError`, and the key is held until its lease runs out.
 
-A store that fails before the request runs fails the request: `handle()` rejects, and the handler never runs unprotected.
+A store that fails before the request runs fails the request. `handle()` rejects, and the handler doesn't run unprotected.
 
 ## What a replay sends
 

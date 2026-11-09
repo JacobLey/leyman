@@ -9,6 +9,10 @@ StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/j
 
 </div>
 
+Juniper builds JSON Schemas and infers their TypeScript types, but it doesn't validate data. `juniper-validator` compiles a Juniper schema with [Ajv](https://ajv.js.org/) and returns a validator typed by that schema. `is()` and `assert()` narrow an `unknown` value to the schema's type, and `validate()` returns the issues when the value doesn't match.
+
+The validator implements [Standard Schema](https://standardschema.dev/), so libraries that accept standard validators (form libraries, OpenAPI tooling and so on) can use it directly. Ajv runs in strict mode, with the options Juniper's output needs already set. Standard formats like `email`, `uuid` and `date-time` are checked with [ajv-formats](https://www.npmjs.com/package/ajv-formats). A plain JSON Schema object, such as one loaded from a file, works too.
+
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-validator/).
 
 ## Contents
@@ -69,7 +73,7 @@ if (result.issues) {
 
 Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValidator`. The returned validator implements the [StandardSchema v1](https://standardschema.dev/) interface, making it compatible with any library that accepts standard validators (e.g. form libraries, OpenAPI tooling).
 
-Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`); pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
+Ajv is used internally to compile and run validation. The `strict` option is always `true`. Keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`). Pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
 
 Ajv stops at the first failure within a schema, so `validate` reports one issue for an object missing two properties unless you pass `allErrors: true`.
 

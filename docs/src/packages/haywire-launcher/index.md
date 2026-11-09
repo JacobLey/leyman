@@ -24,12 +24,12 @@ export default launch(container, Cli);
 
 ## Features
 
-- **No container on import**: `container.getAsync()` at a module's top level builds every dependency (and opens every connection) as soon as anything imports it. `launch()` waits until the script runs.
-- **Checked at compile time**: a container that can't provide the id, or an id whose type has no `main(argv)`, is a type error.
-- **Any `Main`**: the script can be any class with a `main(argv)` method, not only an `EntryScript` subclass.
-- **Testable**: `getOriginal()` returns the instance the container builds, for testing the wiring itself.
+- Calling `container.getAsync()` at a module's top level builds every dependency (and opens every connection) as soon as anything imports the module. `launch()` waits until the script runs.
+- A container that can't provide the id, or an id whose type has no `main(argv)`, is a type error.
+- The script can be any class with a `main(argv)` method, not only an `EntryScript` subclass.
+- `getOriginal()` returns the instance the container builds, for testing the wiring itself.
 
-Every multi-command CLI in this repository (nx-lifecycle, …) starts this way.
+nx-lifecycle's CLI starts this way.
 
 ## Related
 

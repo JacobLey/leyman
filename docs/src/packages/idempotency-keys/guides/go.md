@@ -4,7 +4,7 @@ description: The Go implementation of idempotency-keys, with net/http middleware
 
 # Go
 
-idempotency-keys has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) as the TypeScript package. It hashes, stores and announces keys as the [specification](/packages/idempotency-keys/reference/specification) says, so a Go server and a TypeScript server on one store and notifier serve one set of keys: either replays, waits on, takes over or rejects the other's requests. It needs Go 1.25 or later.
+idempotency-keys has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) as the TypeScript package. It hashes, stores and announces keys as the [specification](/packages/idempotency-keys/reference/specification) says, so a Go server and a TypeScript server on one store and notifier serve one set of keys, and either one replays, waits on, takes over or rejects the other's requests. It needs Go 1.25 or later.
 
 ```sh
 go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest
@@ -57,7 +57,7 @@ Besides the statuses of the TypeScript package, `Handle` answers two of its own,
 
 `WithProblem` changes the answer to the first three, and `WithErrorHandler` to the last two.
 
-`next` writes to a recorder, so its response is buffered and sent once it returns: it can't flush, hijack the connection, or send informational (`1xx`) responses.
+`next` writes to a recorder, so its response is buffered and only sent once it returns. That means it can't flush, hijack the connection, or send informational (`1xx`) responses.
 
 ## Valkey
 
@@ -69,7 +69,7 @@ notifier, _ := valkeystore.Listen(ctx, client, valkeystore.NotifierOptions{})
 keys, _ := idempotencykeys.New(valkeystore.NewStore(client, valkeystore.StoreOptions{}), idempotencykeys.WithNotifier(notifier))
 ```
 
-The store runs the specification's Lua scripts with `EVAL`, one key each, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) until `Close`. As in TypeScript, either notifier works with either store, and the [Stores](/packages/idempotency-keys/guides/stores#choosing) advice holds: Valkey can forget a key on a failover, so use Postgres for payments.
+The store runs the specification's Lua scripts with `EVAL`, one key each, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) until `Close`. As in TypeScript, either notifier works with either store, and the [Stores](/packages/idempotency-keys/guides/stores#choosing) advice holds too. Valkey can forget a key on a failover, so use Postgres for payments.
 
 ## Options
 
@@ -86,7 +86,7 @@ The store runs the specification's Lua scripts with `EVAL`, one key each, so it 
 | `problem`            | `WithProblem(ProblemWriter)`       |
 | `onError`            | `WithOnError(func(err, identity))` |
 
-Durations are whole milliseconds, as the specification's are; `New` returns an `*OptionError` (matching `ErrOption`) for one that isn't, for a nil store, or for a lease not below the TTL. An empty name (`Operation`, a table, prefix or channel) means none or the default.
+Durations are whole milliseconds, as the specification's are. `New` returns an `*OptionError` (matching `ErrOption`) for one that isn't, for a nil store, or for a lease not below the TTL. An empty name (`Operation`, a table, prefix or channel) means none or the default.
 
 To release `5xx` responses as well as `429`:
 
@@ -101,13 +101,13 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 
 ## Without net/http
 
-`keys.Begin(ctx, BeginParams)` is the flow of [`begin()`](/packages/idempotency-keys/guides/other-frameworks): parse the key with `ParseKey` (`""` without a header), hash the request with `ComputeFingerprint`, passing the target through `RequestTarget(rawTarget)`, and switch on the result's `Outcome` (`OutcomeRun`, `OutcomeReplay`, `OutcomeConflict`, `OutcomeMismatch`). End a run with `Attempt.Respond(ctx, StoredResponse)` or `Attempt.Release(ctx)`.
+`keys.Begin(ctx, BeginParams)` is the flow of [`begin()`](/packages/idempotency-keys/guides/other-frameworks). Parse the key with `ParseKey` (`""` without a header), hash the request with `ComputeFingerprint`, passing the target through `RequestTarget(rawTarget)`, and switch on the result's `Outcome` (`OutcomeRun`, `OutcomeReplay`, `OutcomeConflict`, `OutcomeMismatch`). End a run with `Attempt.Respond(ctx, StoredResponse)` or `Attempt.Release(ctx)`.
 
 ## Differences from TypeScript
 
-The two agree on every hash and every record. Where Go's HTTP types differ from `fetch`'s, they are made to agree:
+The two agree on every hash and every record. Where Go's HTTP types differ from `fetch`'s, the Go implementation makes up for it:
 
-- The request target is hashed as a WHATWG URL serializes it, as TypeScript gets it from `Request.url`: `RequestTarget` parses `r.RequestURI` with the URL Standard's rules, so `/a/../notes` and `/notes` are one request, `/café` is `/caf%C3%A9`, and an absolute-form target (`http://host/notes`) hashes as its path. A request whose `RequestURI` is empty (built for a handler, not read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped its own way.
+- The request target is hashed as a WHATWG URL serializes it, as TypeScript gets it from `Request.url`. `RequestTarget` parses `r.RequestURI` with the URL Standard's rules, so `/a/../notes` and `/notes` are one request, `/café` is `/caf%C3%A9`, and an absolute-form target (`http://host/notes`) hashes as its path. A request whose `RequestURI` is empty (built for a handler, not read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped its own way.
 - Go strings are bytes, so a header value is hashed and stored as the bytes received, where TypeScript reads each byte as one character.
 - Go moves `Host` out of the request's headers, so `Handle` takes it from `r.Host` when it is a fingerprint header.
 - Go's `http.Header` is a map, so a response's headers are stored by name in byte order, each name's values in order.

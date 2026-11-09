@@ -9,10 +9,13 @@ fast-check arbitraries from Juniper schemas.
 
 </div>
 
-- **Valid by construction, then checked** — generators aim at each keyword, and a validator has the last word, so a value that comes out always validates.
-- **Typed** — `makeArbitrary(schema)` is an `Arbitrary` of the schema's `SchemaType`.
-- **Fails loudly** — a schema nothing matches throws with the path to the part responsible, where a plain `.filter()` would hang.
-- **Plain JSON** — values survive a JSON round trip unchanged: no `-0`, `undefined` or null-prototype objects.
+A property-based test runs against many generated values instead of a few hand-picked ones, and [fast-check](https://www.npmjs.com/package/fast-check) builds those values from "arbitraries". When the input is already described by a schema, the generated values should be ones that schema accepts, and writing an arbitrary by hand repeats the schema.
+
+`juniper-arbitrary` makes a fast-check arbitrary from a [Juniper](https://www.npmjs.com/package/juniper) schema. `makeArbitrary(schema)` aims a generator at each keyword, then checks every value with a validator, so each value it produces validates against the schema. The arbitrary is typed as the schema's `SchemaType`.
+
+If nothing can match a schema, it throws with the path to the part responsible, where a plain `.filter()` would hang. Values also survive a JSON round trip unchanged, so you won't get `-0`, `undefined` or null-prototype objects.
+
+It is a poor fit for a schema random values rarely satisfy, such as a `pattern` with a backreference (see [Usage](#usage)).
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-arbitrary/).
 
@@ -57,7 +60,7 @@ fc.assert(
 
 ## Usage
 
-Every JSON Schema keyword Juniper emits is covered. How each is handled decides how fast generation is, never whether a value is valid:
+Every JSON Schema keyword Juniper emits is covered. How a keyword is handled only affects how quickly values are generated, since every value is checked by the validator either way:
 
 | Keywords                                                                                                                                                                                                                                                                                                                                     | Handling                                                                                                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -70,10 +73,10 @@ Every JSON Schema keyword Juniper emits is covered. How each is handled decides 
 
 Some shapes are deliberately limited:
 
-- **Objects get a few undeclared properties** unless `additionalProperties` says otherwise, since a real payload can have them.
-- **Recursion stops a few levels deep**, as each level multiplies the size of a value.
-- **Numbers mix doubles with integers**, since doubles alone are nearly all huge or tiny.
-- **A schema with a great many conditionals** only reaches its first 64 combinations.
+- Objects get a few undeclared properties unless `additionalProperties` says otherwise, since a real payload can have them.
+- Recursion stops a few levels deep, as each level multiplies the size of a value.
+- Numbers mix doubles with integers, since doubles alone are nearly all huge or tiny.
+- A schema with a great many conditionals only reaches its first 64 combinations.
 
 A value is rejected up to 1000 times in a row before generation gives up, which only happens for a schema random values rarely satisfy, such as a backreference in a `pattern`. Use a simpler schema, or a hand-written arbitrary with `.chain()`, for that part.
 

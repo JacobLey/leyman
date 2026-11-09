@@ -9,11 +9,22 @@ Node.js scripts whose main() only runs when they are the entry point, so tests c
 
 </div>
 
+Many Node.js scripts start doing their work the moment the file is loaded:
+
+```ts
+// bin.ts
+import { database } from './my-database.js';
+await database.connect();
+```
+
+That makes the file hard to test, because importing it connects to the real database before a test has a chance to mock anything.
+
+`entry-script` gives you a base class to extend and export as the module's `default`, with the script's work in a `main()` method. When Node is started with that file, `main()` runs with the command-line arguments. When a test (or any other module) imports it, nothing runs, so the test can construct the class with mocks and call `main()` itself.
+
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/entry-script/).
 
 ## Contents
 
-- [The Problem](#the-problem)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -22,18 +33,6 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
   - [Main](#main)
   - [MainNotImplementedError](#mainnotimplementederror)
 - [Also See](#also-see)
-
-## The Problem
-
-Many top-level NodeJS executables execute side effects the moment the file is loaded:
-
-```ts
-// bin.ts
-import { database } from './my-database.js';
-await database.connect();
-```
-
-This makes the file untestable — any import of it triggers real network calls, with no opportunity to mock dependencies. `entry-script` solves this by providing a base class to extend and export as `default`. The internals detect whether the module is the actual entry point: if so, execution proceeds; if imported by a test or another module, nothing runs.
 
 ## Install
 
@@ -99,8 +98,8 @@ export default MyApp;
 `entry-script` is an ESM module, for Node.js 22.12 or later. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
 
 The `default` export of a module using `entry-script` must be either:
-- An **instance** of an `EntryScript` subclass — the instance `main(argv)` method will be called.
-- The **class** itself (an `EntryScript` subclass) — the static `main(argv)` method will be called.
+- An instance of an `EntryScript` subclass, in which case the instance `main(argv)` method is called.
+- The `EntryScript` subclass itself, in which case the static `main(argv)` method is called.
 
 Exactly one of the static or instance `main` must be implemented.
 
@@ -139,7 +138,7 @@ The method to implement is determined by the export pattern:
 
 **Throws** `MainNotImplementedError` (as a rejection, since `main` is `async`) — if the `main` that was called (static or instance) has not been overridden.
 
-`EntryScript` is abstract: `new EntryScript()` is a type error, so extend it.
+`EntryScript` is abstract, so `new EntryScript()` is a type error. Extend it instead.
 
 ### `Main`
 

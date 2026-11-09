@@ -9,6 +9,8 @@ Find and load the first matching JS/JSON file by searching parent directories.
 
 </div>
 
+Finding a config file usually means checking the current directory, then its parent, and so on up to `/`, and then loading whatever was found. `find-import` searches each directory for the first of a list of file names and loads it, parsing JSON and importing `.js`, `.cjs` and `.mjs` files. It returns the file's path along with its content. By default the closest match wins, and with `direction: 'down'` the top-most one does instead.
+
 ## Contents
 
 - [Install](#install)

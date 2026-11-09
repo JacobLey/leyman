@@ -9,6 +9,10 @@ Format files and text with Biome or Prettier, whichever the project uses.
 
 </div>
 
+Generated code and config files are often checked into version control, so they should follow the repository's formatting rules like the rest of the code. `format-file` formats them with the project's own [Biome](https://biomejs.dev/) or [Prettier](https://prettier.io/) setup, whichever is installed and configured. It can format files in place, or format a string of text and return the result.
+
+Formatting is best-effort. If no formatter is installed, or the formatter fails on the input, the content is left as it was (see [Usage](#usage)).
+
 ## Contents
 
 - [Install](#install)
@@ -53,7 +57,7 @@ const result = await formatText(
 
 `format-file` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { formatFile } = await import('format-file');`.
 
-Formatting is best-effort and never throws because of the formatter. If neither biome nor prettier is installed, files and text are left unchanged. So is anything a formatter fails on (such as a syntax error), a file that does not exist, and a file the formatter's own ignore settings exclude. Nothing is reported, so check the result if it matters. It is recommended to produce reasonable output before formatting (e.g. `JSON.stringify(data, null, 2)`), treating formatting as a polish step rather than a correctness requirement.
+Formatting is best-effort and never throws because of the formatter. If neither biome nor prettier is installed, files and text are left unchanged. So is anything a formatter fails on (such as a syntax error), a file that does not exist, and a file the formatter's own ignore settings exclude. Nothing is reported, so check the result if it matters. Since the output may not be formatted at all, it is best to generate reasonable output to begin with (for example `JSON.stringify(data, null, 2)`).
 
 Every file passed is formatted, even when `.gitignore` lists it, since generated files are often ignored. Biome runs with its VCS integration off and Prettier reads only `.prettierignore`, so each formatter's own ignore settings (Biome's `files.includes`, `.prettierignore`) still apply. Prettier also skips files in `node_modules` and version control directories (`.git`...), as its CLI does.
 

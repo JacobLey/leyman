@@ -9,6 +9,8 @@ ESM and TypeScript port of the punycode.js library.
 
 </div>
 
+[punycode.js](https://github.com/mathiasbynens/punycode.js) by Mathias Bynens converts Unicode domain names to and from Punycode (`mañana.com` and `xn--maana-pta.com`). Native ESM projects and TypeScript with `moduleResolution: nodenext` can have trouble importing it, so `punycode-esm` is a port of it written in TypeScript and published as ESM. The logic is the same as punycode.js (currently in sync with v2.3.1).
+
 ## Contents
 
 - [Install](#install)

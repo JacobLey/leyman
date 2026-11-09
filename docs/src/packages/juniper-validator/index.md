@@ -35,10 +35,10 @@ if (validator.is(input)) {
 
 ## Features
 
-- **Typed by the schema**: `is()` and `assert()` narrow `unknown` to the schema's TypeScript type, with no type to write by hand.
-- **[Standard Schema](https://standardschema.dev/)**: Works with any library that accepts Standard Schema validators, such as form libraries and API frameworks. See [Standard Schema](/packages/juniper-validator/guides/standard-schema).
-- **Strict Ajv underneath**: Compiles with [Ajv](https://ajv.js.org/) in strict mode, and validates standard formats like `email`, `uuid` and `date-time`.
-- **Any JSON Schema**: Takes a Juniper schema, or a rendered JSON Schema object.
+- `is()` and `assert()` narrow `unknown` to the schema's TypeScript type, with no type to write by hand.
+- Validators implement [Standard Schema](https://standardschema.dev/), so they work with any library that accepts Standard Schema validators, such as form libraries and API frameworks. See [Standard Schema](/packages/juniper-validator/guides/standard-schema).
+- Schemas are compiled with [Ajv](https://ajv.js.org/) in strict mode, and standard formats like `email`, `uuid` and `date-time` are validated.
+- It takes a Juniper schema, or a rendered JSON Schema object.
 
 ## Related
 

@@ -8,6 +8,10 @@ description: Server-side support for the Idempotency-Key header, so clients can 
 
 Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey, in TypeScript and Go.
 
+A client whose connection drops while it sends a `POST` can't tell whether the server got the request, and a retry might do the work twice. The `Idempotency-Key` header, popularized by Stripe and now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), lets the client send the same unique key with every attempt, so the server can answer a retry with the response it already gave.
+
+idempotency-keys handles the header on the server. `handle()` runs the first request with a key and stores its response in Postgres or Valkey. Later requests with that key get the stored response instead of running the handler again, whichever instance they reach.
+
 ```ts
 import type { Pool } from 'pg';
 
@@ -28,14 +32,14 @@ export const POST = async (request: Request): Promise<Response> =>
 
 ## Features
 
-- One run per key, across every instance: a duplicate of a running request waits for its response (or gets a `409`), and a later one gets the stored response back, marked `Idempotent-Replayed: true`.
-- A reused key on a different request is a `422`, never a replay of another request's response: the method, path, query, body and the headers you name must match.
-- A crashed request holds up no one for long: its claim is a lease, and once it runs out a waiting request takes over. See [Which responses are stored](/packages/idempotency-keys/guides/responses).
-- Postgres or Valkey, with no client dependency: pass your own `pg` pool or ioredis connection. Postgres is strict and durable; Valkey is lax, as a failover can forget a key. See [Stores](/packages/idempotency-keys/guides/stores).
-- Notifications through Postgres `LISTEN` or Valkey pub/sub wake a waiting request as soon as the running one ends, on any instance. They only make waiting faster: without them, waiting requests poll. See [Notifiers](/packages/idempotency-keys/guides/notifiers).
-- TypeScript and Go: both follow one [specification](/packages/idempotency-keys/reference/specification), so servers in either language on the same store serve one set of keys. See [Go](/packages/idempotency-keys/guides/go).
+- A duplicate that arrives while the first request is still running waits for its response, and gets a `409` if the wait runs out. Duplicates after that get the stored response, marked `Idempotent-Replayed: true`.
+- A key that comes back on a different request gets a `422` instead of the first request's response. The method, path, query, body and any headers you name all have to match.
+- A request's claim on its key is a lease, so if its server crashes, a waiting request takes over once the lease runs out. See [Which responses are stored](/packages/idempotency-keys/guides/responses).
+- You pass your own `pg` pool or ioredis connection, so the package has no client dependency. Postgres keeps keys durably, while Valkey can forget one after a failover. See [Stores](/packages/idempotency-keys/guides/stores).
+- Notifications through Postgres `LISTEN` or Valkey pub/sub wake a waiting request as soon as the running one ends, on any instance. Waiting requests poll the store either way, so a notifier only makes waiting faster. See [Notifiers](/packages/idempotency-keys/guides/notifiers).
+- The TypeScript and Go implementations follow one [specification](/packages/idempotency-keys/reference/specification), so servers in either language can share a store and its keys. See [Go](/packages/idempotency-keys/guides/go).
 
-Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07) (draft 07). It doesn't fit a write that must never run twice whatever happens to the store: use the Postgres store for payments, not Valkey.
+Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07) (draft 07). For payments, or any write that must not run twice whatever happens to the store, use the Postgres store rather than Valkey.
 
 ## Compared to
 

@@ -8,9 +8,9 @@ description: The stampede and invalidation race in read-through caches, how leas
 
 A read-through cache returns the cached value, or loads it on a miss and caches it. Two things go wrong once several instances (processes, pods) share the cache.
 
-**Every instance loads the same miss.** When a popular key expires, every instance misses it at once, and each sends the same query to the database: a stampede. Most libraries merge concurrent misses _within_ an instance, so 100 requests in one process become one load. With 20 instances, the database still sees 20.
+When a popular key expires, every instance misses it at once, and each sends the same query to the database (a "stampede"). Most libraries merge concurrent misses _within_ an instance, so 100 requests in one process become one load, but with 20 instances the database still sees 20.
 
-**A slow load caches outdated data.** The usual way to keep a cache current is to invalidate a key after changing its data. But a load already in progress can undo that:
+A slow load can also cache outdated data. The usual way to keep a cache current is to invalidate a key after changing its data, but a load already in progress can undo that:
 
 ```
 reader                        writer
@@ -22,9 +22,9 @@ miss, start loading
   cache what was read (old)
 ```
 
-The invalidation happened, yet the old row is now cached, and served until it expires. Neither side did anything wrong: the reader read before the update, and the writer invalidated after it. The race is between the reader's read and its write to the cache.
+The invalidation happened, but the old row is now cached, and served until it expires. The reader read before the update, and the writer invalidated after it. The race is between the reader's read and its write to the cache, where an invalidation has nothing to delete yet.
 
-Both are well known, and [memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf) (Nishtala et al., NSDI 2013, section 3.2.1) solves both with one mechanism: **leases**. This package implements them on Valkey (or Redis).
+Both problems are well known. [memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf) (Nishtala et al., NSDI 2013, section 3.2.1) solves both with one mechanism, **leases**, and this package implements them on Valkey (or Redis).
 
 ## How it works
 
@@ -35,11 +35,11 @@ Each key has a value and a lease, stored next to each other. A lease is a random
 3. **Wait.** A reader that finds the lease taken checks again every `pollMs`, and returns the value once the holder caches it.
 4. **Invalidate** deletes the value and the lease together.
 
-With `staleMs`, step 4 first copies the value to a stale key that lives for `staleMs`, and a reader in step 3 returns it instead of waiting. The lease holder still loads, and its fill deletes the stale value. This is memcache's "stale values" (section 3.2.1 again): for reads that can live with data from just before the change, an invalidation then costs no waiting.
+With `staleMs`, step 4 first copies the value to a stale key that lives for `staleMs`, and a reader in step 3 returns it instead of waiting. The lease holder still loads, and its fill deletes the stale value. This is memcache's "stale values" (section 3.2.1 again). For reads that can live with data from just before the change, an invalidation then costs no waiting.
 
-Each step is one Lua script, which Valkey runs atomically: no other command runs between its check and its write.
+Each step is one Lua script, which Valkey runs atomically, so no other command can run between its check and its write.
 
-The stampede is gone because only the lease holder loads: every other instance waits for its value. The race is gone because of step 2's check, below.
+This stops the stampede because only the lease holder loads, and every other instance waits for its value. Step 2's check stops the race, as the next section shows.
 
 ## Why it is correct
 
@@ -61,20 +61,20 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 
 **What is safe without extra care:**
 
-- **A load that outlives its lease.** Another reader may take the lease and load too: a duplicate load, never a wrong value, since the first reader's fill then fails its check. Set `leaseMs` above the usual load time to keep it rare.
-- **Clocks.** Lease and value expiry are measured by Valkey. No client clock decides correctness.
+- **A load that outlives its lease.** Another reader may take the lease and load too. That costs a duplicate load but can't cache a wrong value, since the first reader's fill then fails its check. Set `leaseMs` above the usual load time to keep it rare.
+- **Clocks.** Lease and value expiry are measured by Valkey, so the clients' clocks don't affect correctness.
 - **A reader that stops waiting** (`waitMs`) loads without a lease, and so never caches. Its value is current when its read began.
-- **Stale values** (`staleMs`) are only returned to readers that would otherwise wait, never cached as the value, so the claim above still holds. Each fill deletes the stale value, so a reader is never handed one older than a value cached since.
+- **Stale values** (`staleMs`) are only returned to readers that would otherwise wait, and aren't cached as the value, so the claim above still holds. Each fill deletes the stale value, so a reader is never handed one older than a value cached since.
 - **A crashed holder** leaves a lease that runs out after `leaseMs`, then a waiting reader takes over.
 - **Valkey going down.** Reads reject, or with `onUnavailable` load without caching, which caches nothing it could later serve wrong. `invalidate()` always rejects, so a writer knows when an invalidation didn't happen.
 
 ## Design decisions
 
-- **Lua scripts, not a client library.** Each step needs a check and a write with nothing in between, which a script gives in one round trip. The only command needed is `EVAL`, so any Valkey or Redis client works (`LeaseCacheConnection` is that one method). It has ioredis's signature, so ioredis and iovalkey fit as they are, and other clients need a few lines, each tested. A client that runs scripts by hash, like Valkey GLIDE, keeps doing so behind its adapter, which is why the interface has no `EVALSHA` of its own.
+- **Lua scripts.** Each step needs a check and a write with nothing in between, which a script gives in one round trip. The only command needed is `EVAL`, so any Valkey or Redis client works (`LeaseCacheConnection` is that one method). It has ioredis's signature, so ioredis and iovalkey fit as they are, and other clients need a few lines, each tested. A client that runs scripts by hash, like Valkey GLIDE, keeps doing so behind its adapter, which is why the interface has no `EVALSHA` of its own.
 - **Hash tags.** The value, lease and stale value keys share a `{key}` tag, so a cluster places them on the same node, which a script touching several requires. A key that is empty or starts with `}` would have an empty tag, and a prefix with `{` would change the tag, so both are rejected.
-- **Polling, not pub/sub.** A waiting reader checks again every `pollMs`. Pub/sub would answer faster, but needs a subscriber connection per process and handling for messages missed while subscribing. Waits are short (one load), so a few cheap `GET`s each are simpler.
+- **Polling.** A waiting reader checks again every `pollMs` instead of subscribing to a channel. Pub/sub would answer faster, but needs a subscriber connection per process and handling for messages missed while subscribing. Waits are short (one load), so a few cheap `GET`s each are simpler.
 - **`invalidate` frees the lease too.** The next reader takes a new lease and loads right away, rather than waiting on a load already known to be outdated.
-- **Stale values only after an invalidation, and opt-in.** A value that expires on its own has no stale copy: `ttlMs` is the longest a value may be served, and stale-while-revalidate on expiry belongs to the cache in front (e.g. BentoCache's grace periods). An invalidation is different: the data is known to have changed, and only the caller knows whether the old value is still useful for a moment.
+- **Stale values only after an invalidation, and opt-in.** A value that expires on its own has no stale copy, because `ttlMs` is the longest a value may be served, and stale-while-revalidate on expiry belongs to the cache in front (e.g. BentoCache's grace periods). An invalidation is different, since the data is known to have changed, and only the caller knows whether the old value is still useful for a moment.
 - **JSON values.** One format every client can read, and `null` caches like any value, so a missing row isn't looked up again on every read.
 
 ## Compared to alternatives
@@ -90,7 +90,7 @@ As of October 2026:
 | Memory tier, stale-while-revalidate on expiry, tags | ❌                                | ✅                                   | some                                                    | some                                                  |
 | Stores                                              | Valkey, Redis                     | many                                 | many (Keyv)                                             | many (adapters)                                       |
 
-BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but not the race: the lock decides who loads, not whether the result may still be cached.
+BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but it doesn't help with the race. The lock only decides who loads, and has no say in whether the result may still be cached when the load finishes.
 
 lease-cache covers one part of a cache, and works alongside a fuller cache rather than replacing one. The [read-through cache demo](/demos/read-through-cache/) makes it the shared tier under BentoCache's memory tier and stale-while-revalidate.
 

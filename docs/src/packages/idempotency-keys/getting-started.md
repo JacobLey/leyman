@@ -113,11 +113,11 @@ app.post(
 );
 ```
 
-The middleware assigns `c.res` rather than returning the response: once the handler has set `c.res`, Hono ignores a middleware's return value ([compose.ts](https://github.com/honojs/hono/blob/v4.13.14/src/compose.ts#L67)), and would send the handler's response, whose body `handle()` already read to store it.
+The middleware assigns `c.res` rather than returning the response, because once the handler has set `c.res`, Hono ignores a middleware's return value ([compose.ts](https://github.com/honojs/hono/blob/v4.13.14/src/compose.ts#L67)), and would send the handler's response, whose body `handle()` already read to store it.
 
 ## Clean up expired keys
 
-Postgres never deletes rows on its own. An expired row is overwritten by the next request with its key, so it does no harm, but the table grows. Call `deleteExpired()` from a scheduled job:
+Postgres doesn't delete rows on its own. An expired row is overwritten by the next request with its key, so it does no harm, but the table grows. Call `deleteExpired()` from a scheduled job:
 
 ```ts
 import type { PostgresStore } from 'idempotency-keys';

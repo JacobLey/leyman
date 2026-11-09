@@ -6,7 +6,7 @@ description: fast-check arbitraries from Juniper schemas, for property-based tes
 
 <ProjectHeader />
 
-Generate test values from a [Juniper](/packages/juniper/) schema, typed by it and always valid against it.
+Make a fast-check arbitrary from a [Juniper](/packages/juniper/) schema, for property-based tests. The values are typed by the schema, and each one is checked against it before your test sees it.
 
 ```ts
 import * as fc from 'fast-check';
@@ -33,10 +33,10 @@ fc.assert(
 
 ## Features
 
-- **Valid by construction, then checked**: Generators aim at each keyword, and a validator has the last word, so a value that comes out always validates.
-- **Typed by the schema**: An `Arbitrary` of the schema's `SchemaType`, with no type to write by hand.
-- **Fails loudly**: A schema nothing matches throws with the path to the part responsible, where a plain `.filter()` would hang.
-- **Plain JSON**: Values survive a JSON round trip unchanged, with no `-0`, `undefined` or null-prototype objects.
+- Generators aim at each keyword, and a validator checks every value, so a generated value always validates.
+- The arbitrary is typed as the schema's `SchemaType`.
+- A schema nothing matches throws an error with the path to the part responsible.
+- Values survive a JSON round trip unchanged, with no `-0`, `undefined` or null-prototype objects.
 
 ## Related
 

@@ -4,7 +4,7 @@ description: Choosing between the Postgres store (strict and durable) and the Va
 
 # Stores
 
-A store holds one record per key: running (claimed by one request, holding its lease) or completed (holding its response). Every time is the store's own clock, never a server's, so servers whose clocks drift agree on every lease.
+A store holds one record per key: running (claimed by one request, holding its lease) or completed (holding its response). Every time comes from the store's own clock rather than a server's, so servers whose clocks drift still agree on every lease.
 
 |                           | `PostgresStore`                                            | `ValkeyStore`                                             |
 | ------------------------- | ---------------------------------------------------------- | --------------------------------------------------------- |
@@ -16,7 +16,7 @@ A store holds one record per key: running (claimed by one request, holding its l
 
 ## Postgres
 
-The strict store, and the one to use unless the writes are cheap to repeat. A claim is a committed row, so it is exclusive and survives a restart.
+Postgres is the strict store, and the one to use unless the writes are cheap to repeat. A claim is a committed row, so it is exclusive and survives a restart.
 
 ```ts
 import pg from 'pg';
@@ -30,15 +30,15 @@ const keys = new IdempotencyKeys({
 });
 ```
 
-The table comes from [`createTableSql()`](/packages/idempotency-keys/reference/api#createtablesql-table), in a migration. Its name is quoted as given, so it is case-exact, at most 63 bytes (past which Postgres would silently cut it down to another name), and can't name a schema: a table in another schema is found through the client's `search_path`. The store never closes the client, so it can share the pool your handlers use.
+The table comes from [`createTableSql()`](/packages/idempotency-keys/reference/api#createtablesql-table), in a migration. Its name is quoted as given, so it is case-exact and at most 63 bytes (past which Postgres would silently cut it down to another name). It can't name a schema, so a table in another schema is found through the client's `search_path`. The store never closes the client, so it can share the pool your handlers use.
 
-Every time is `clock_timestamp()`, the time of the statement, not `now()`, the time its transaction started: a client inside a long transaction would otherwise write leases that had already run out.
+Every time is `clock_timestamp()`, the time of the statement, rather than `now()`, the time its transaction started, because a client inside a long transaction would otherwise write leases that had already run out.
 
-Postgres never deletes expired rows on its own. Call `deleteExpired()` from a scheduled job, or leave them to be overwritten by the next request with the key.
+Postgres doesn't delete expired rows on its own. Call `deleteExpired()` from a scheduled job, or leave them to be overwritten by the next request with the key.
 
 ## Valkey
 
-The lax store: a claim is a hash with a time to live. Use it for deduplicating notifications or non-financial creates, never payments: a failover that loses writes, or a `FLUSHALL`, forgets keys, and a retry after that runs again.
+Valkey is the lax store, where a claim is a hash with a time to live. Use it for deduplicating notifications or non-financial creates, but not for payments, since a failover that loses writes, or a `FLUSHALL`, forgets keys, and a retry after that runs again.
 
 Its connection needs one method, `eval(script, numKeys, ...args)`, which must reply with bytes, so a binary body comes back as it was stored. ioredis's own `eval` decodes replies as text, which the store rejects with `IdempotencyKeysReplyError` on the first replay. Send `EVAL` through `callBuffer` instead:
 
@@ -59,12 +59,12 @@ Each record is a hash at `<prefix>:<identity>`, expiring with the key (`ttlMs`).
 
 ## Choosing
 
-Use Postgres when the write behind the request must not happen twice: payments, orders, anything a customer would notice twice. It is also the simpler choice when the handlers already use Postgres: the keys sit in the same database and its backups.
+Use Postgres when the write behind the request must not happen twice: payments, orders, anything a customer would notice twice. It is also the simpler choice when the handlers already use Postgres, since the keys sit in the same database and its backups.
 
 Use Valkey when a repeat after a failover is an annoyance rather than a harm, such as a duplicate notification, or when the service has Valkey and no Postgres.
 
-Either store works with either [notifier](/packages/idempotency-keys/guides/notifiers): a Postgres store with a Valkey notifier is fine.
+Either store works with either [notifier](/packages/idempotency-keys/guides/notifiers), so a Postgres store with a Valkey notifier is fine.
 
 ## Your own store
 
-`store` takes anything implementing `IdempotencyStore`: `claim`, `complete` and `release`, each atomic, as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) describes. Only the built-in stores are held to the test vectors, and only a store that writes what the specification says shares keys with the Go implementation.
+`store` takes anything implementing `IdempotencyStore`, which is `claim`, `complete` and `release`, each atomic, as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) describes. Only the built-in stores are held to the test vectors, and only a store that writes what the specification says shares keys with the Go implementation.

@@ -1,14 +1,16 @@
 # idempotency-keys-test-vectors
 
-Test vectors shared by every idempotency-keys implementation, so each is held to the same
-[specification](../SPEC.md), not to each other.
+Test vectors shared by every idempotency-keys implementation.
+
+Each implementation runs them in its own tests, so every one is checked against the
+[specification](../SPEC.md) itself rather than against another implementation.
 
 ```ts
 import testVectors from '@leyman/idempotency-keys-test-vectors/test-vectors.json' with { type: 'json' };
 ```
 
-The Go implementation is a released module, so it can't require an unpublished one: its tests read
-[`data/test-vectors.json`](./data/test-vectors.json) by relative path, as other languages can.
+The Go implementation is a released module, so it can't depend on this unpublished package. Its tests read
+[`data/test-vectors.json`](./data/test-vectors.json) by relative path instead, which works for other languages too.
 
 ## Format
 

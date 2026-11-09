@@ -1,14 +1,14 @@
 ---
-description: Wake a waiting duplicate as soon as the running request ends, on any instance, with Postgres LISTEN/NOTIFY or Valkey pub/sub. Only ever a doorbell over polling.
+description: Wake a waiting duplicate as soon as the running request ends, on any instance, with Postgres LISTEN/NOTIFY or Valkey pub/sub. Waiting requests still poll without one.
 ---
 
 # Notifiers
 
 A duplicate of a running request waits for it, up to `waitMs`. While it waits it claims the key again on a schedule: 50 ms after its first try, then waiting twice as long each time, up to a second between tries. So without a notifier, a duplicate answers up to a second after the first request ends.
 
-A notifier wakes it at once. After every request that completes or releases its key, the server publishes the key's identity on a channel; every server listening wakes its requests waiting on that identity, and they claim again from the store.
+A notifier wakes it at once. After every request that completes or releases its key, the server publishes the key's identity on a channel. Every server listening wakes its requests waiting on that identity, and they claim again from the store.
 
-A notifier is never the source of truth. A woken request reads the store, and a waiting request keeps polling whether or not a notifier is set, so a notifier that is down, or loses a message, only makes waiting slower. Either notifier works with either store.
+The store stays the source of truth. A woken request reads the store, and a waiting request keeps polling whether or not a notifier is set, so a notifier that is down, or loses a message, only makes waiting slower. Either notifier works with either store.
 
 ## Postgres
 
@@ -35,7 +35,7 @@ const keys = new IdempotencyKeys({
 });
 ```
 
-It announces with `SELECT pg_notify(channel, identity)` on `publisher`, and hears with `LISTEN` on `listener`. One listening connection serves every waiting request of the process. The listener must be a `pg` `Client`, not a pool.
+It announces with `SELECT pg_notify(channel, identity)` on `publisher`, and hears with `LISTEN` on `listener`. One listening connection serves every waiting request of the process. The listener must be a `pg` `Client` rather than a pool.
 
 `pg` doesn't reconnect a client that fails (Postgres restarted, or ended the connection). The notifier reports the failure to `onError`, rather than letting `pg` throw its `error` event and crash the process, and waiting requests then only poll. To get notifications back, connect a new client, call `listen` again, and `close()` the old notifier.
 
@@ -78,6 +78,6 @@ Both use the channel `idempotency_keys` unless given `channel`. Every server sha
 
 ## Without a notifier
 
-Leave `notifier` out, and waiting requests only poll. That is a fine choice when duplicates are rare, or when the server has no connection of its own to listen on: the [OpenAPI demo](/demos/openapi/) runs without one for that reason.
+Leave `notifier` out, and waiting requests only poll. That is a fine choice when duplicates are rare, or when the server has no connection of its own to listen on. The [OpenAPI demo](/demos/openapi/) runs without one for that reason.
 
-A failed announcement doesn't fail the request, whose key was already completed or released: it goes to `onError`, and other servers notice by polling.
+A failed announcement doesn't fail the request, whose key was already completed or released. It goes to `onError`, and other servers notice by polling.

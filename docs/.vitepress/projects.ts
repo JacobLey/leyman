@@ -107,7 +107,7 @@ export const packages: readonly Package[] = [
         slug: 'juniper',
         title: 'Juniper',
         category: 'Schemas and types',
-        pitch: 'Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.',
+        pitch: "A JSON Schema builder for TypeScript that infers each schema's type and catches schema mistakes at compile time, with JSON Schema 2020-12 and OpenAPI 3.0 output.",
         sources: ['apps/juniper'],
         related: ['juniper-validator', 'genever'],
         pages: [
@@ -153,7 +153,7 @@ export const packages: readonly Package[] = [
         slug: 'juniper-arbitrary',
         title: 'Juniper Arbitrary',
         category: 'Schemas and types',
-        pitch: 'fast-check arbitraries from Juniper schemas: typed values that always validate, for property-based tests.',
+        pitch: 'fast-check arbitraries from Juniper schemas, for property-based tests with typed values that always validate.',
         sources: ['apps/juniper-arbitrary'],
         related: ['juniper', 'juniper-validator'],
         pages: [
@@ -204,7 +204,7 @@ export const packages: readonly Package[] = [
         slug: 'haywire',
         title: 'Haywire',
         category: 'Dependency injection and scripts',
-        pitch: 'Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.',
+        pitch: 'Dependency injection for TypeScript that checks the wiring at compile time, without decorators or reflect-metadata.',
         sources: ['tools/haywire'],
         related: ['haywire-launcher'],
         pages: [

@@ -75,7 +75,7 @@ export const handleCreateNote = async (
 
 ## Reading the key
 
-`parseIdempotencyKey(values)` takes the header's values, one per header received, or already joined by `, `. It returns the key, or `null` when there is no header, and throws `IdempotencyKeyHeaderError` for a key that can't be read or a repeated header: answer that with a `400`.
+`parseIdempotencyKey(values)` takes the header's values, one per header received, or already joined by `, `. It returns the key, or `null` when there is no header, and throws `IdempotencyKeyHeaderError` for a key that can't be read or a repeated header, which you answer with a `400`.
 
 ## Hashing the request
 
@@ -89,7 +89,7 @@ export const handleCreateNote = async (
 | `named`   | The names of the headers that are part of the fingerprint, in any case. `[]` for none.                                                |
 | `body`    | The raw body, as bytes, or a string as UTF-8. Empty for a request without one.                                                        |
 
-To share keys with `handle()`, or with a Go server, the target must be hashed as a WHATWG URL serializes it, as `Request.url` holds it: `/a/../notes` is `/notes`, and `/café` is `/caf%C3%A9`. Build it from the raw target with `URL`, as `handle()` does:
+To share keys with `handle()`, or with a Go server, the target must be hashed as a WHATWG URL serializes it, the way `Request.url` holds it. That makes `/a/../notes` the same as `/notes`, and `/café` the same as `/caf%C3%A9`. Build it from the raw target with `URL`, as `handle()` does:
 
 ```ts
 declare const rawTarget: string;
@@ -98,9 +98,9 @@ const { pathname, search } = new URL(`http://host${rawTarget}`);
 const pathAndQuery = pathname + search;
 ```
 
-That is the origin and raw target joined as strings, not the target resolved as a relative URL, so `//notes` stays a path. An absolute-form target (`http://host/notes`) is parsed on its own instead. See the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#encoding) for the details.
+That joins the origin and raw target as strings instead of resolving the target as a relative URL, so `//notes` stays a path. An absolute-form target (`http://host/notes`) is parsed on its own instead. See the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#encoding) for the details.
 
-Use the raw body bytes, not a body parsed and serialized again, which may differ from the bytes the client sent.
+Use the raw body bytes. A body parsed and serialized again may differ from the bytes the client sent.
 
 ## Ending the attempt
 
@@ -111,4 +111,4 @@ With `outcome: 'run'`, the request holds the key. End it with one of:
 
 An attempt that never ends (its server crashed, or the handler threw) holds the key until its lease runs out, then the next request with the key runs.
 
-A replay's `response` is the stored `{ status, headers, body }`: `headers` as `[name, value]` pairs with repeated names kept, and `body` as bytes. Send it with `Idempotent-Replayed: true`. To answer `409` and `422` as `handle()` does, `problemResponse('conflict')` and `problemResponse('mismatch')` build its RFC 9457 problem documents.
+A replay's `response` is the stored `{ status, headers, body }`, with `headers` as `[name, value]` pairs (repeated names kept) and `body` as bytes. Send it with `Idempotent-Replayed: true`. To answer `409` and `422` as `handle()` does, `problemResponse('conflict')` and `problemResponse('mismatch')` build its RFC 9457 problem documents.

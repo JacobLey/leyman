@@ -6,22 +6,20 @@ description: The problems Haywire solves, its requirements, how its type checks 
 
 ## The Problem
 
-Dependency injection is a powerful pattern, but JavaScript DI libraries tend to let bugs escape to runtime.
+Most JavaScript DI libraries leave wiring mistakes to be found at runtime. These are the mistakes that motivated Haywire.
 
-Here are the failure modes that motivated Haywire:
+### Missing registrations are only found at runtime
 
-### Missing registrations only blow up at runtime
-
-You add a new dependency to `UserService`, forget to wire it, and everything compiles fine. Then:
+Say you add a new dependency to `UserService`, forget to wire it, and everything still compiles. Then you see this:
 
 ```
 Error: Cannot read properties of undefined (reading 'query')
     at UserService.getUserById (user-service.js:12)
 ```
 
-The container silently provided `undefined` to a parameter that was never supposed to be optional. If your DI library doesn't validate completeness at build time, your test suite or your users will discover this for you.
+The container passed `undefined` to a parameter that was never supposed to be optional, without any warning. If the DI library doesn't check that every dependency is bound at build time, the mistake is only found when the code runs, either in your test suite or by your users.
 
-### String and symbol keys don't scale
+### String and symbol keys
 
 Most DI frameworks identify dependencies by string tokens or symbols:
 
@@ -41,11 +39,11 @@ container.bind('Logger').to(FileLogger); // Silently overwrites
 container.get<Logger>('Logger'); // No type guarantee
 ```
 
-In a large codebase, you'll eventually have multiple things named `Logger`, `ApiClient`, or `Url`. Nothing stops you from injecting the wrong one.
+In a large codebase you will eventually have several things named `Logger`, `ApiClient` or `Url`, and nothing stops you from injecting the wrong one.
 
-### Decorators are a leaky abstraction
+### Decorators
 
-The most common JavaScript DI approach uses decorators:
+The most common approach in JavaScript is injection with decorators:
 
 ```ts
 declare const DATABASE_TOKEN: unique symbol;
@@ -62,46 +60,46 @@ class UserService {
 }
 ```
 
-Problems with this:
+This has a few problems:
 
 - Most libraries require `experimentalDecorators` and `reflect-metadata`, which is still a proposal.
-- Property injection types fields as always set, but they are skipped at construction, so TypeScript is wrong about them.
+- Property injection types the field as always set, but the constructor never sets it, so TypeScript is wrong about it.
 - Private fields can't be injected at all.
-- If your tsconfig changes, injection may silently stop working, with no build error.
+- If your tsconfig changes, injection may stop working without any build error.
 
-### Null and undefined leak into consumers
+### Null and undefined reaching consumers
 
-When a binding can return `null` or `undefined`, consumers shouldn't receive it unless they explicitly opt in. Most frameworks don't track this in types, so you're left writing defensive code everywhere, or hoping the provider never returns null.
+When a binding can return `null` or `undefined`, its consumers shouldn't receive that value unless they opt in to it. Most frameworks don't track this in types, so you either write defensive checks everywhere or hope the provider never returns null.
 
 ## Requirements
 
-There are several TypeScript DI libraries. None meets all of these requirements at once:
+Haywire was written to meet the requirements below. Each of the other TypeScript DI libraries misses at least one of them.
 
-- **Native JS support**: Decorators require extra tooling, and don't change the type of what they decorate, so they can't be fully type-safe.
-- **Constructor-only injection**: Property injection is type-unsafe, and can't target private fields.
-- **Circular dependency support**: Circular dependencies are an antipattern, but sometimes unavoidable. A library should let you opt into them explicitly, without deadlocking or recursing forever.
-- **Singleton, request and transient scopes**: A database client should be shared. A request context should be scoped to one invocation. Everything else should be created fresh.
-- **Optional asynchronous support**: Some resources need async initialization, like loading a secret from a remote store. Bindings shouldn't need to know whether their dependencies are sync or async.
-- **No global state**: Global registries and `reflect-metadata` make independent containers, such as one for production and one for tests, impossible, and cause conflicts between packages.
-- **Type-based identity**: A library should tell two `string` values, like a database URL and password, apart in types, not by naming convention.
-- **Immutable data structures**: Adding a binding should never mutate an existing module.
-- **Dynamic runtime values**: Not every dependency is known at startup. Runtime values, like an HTTP request, should be injectable without rebuilding the container on every request.
-- **Compile-time type safety**: Missing bindings, mismatched types and duplicate registrations should be impossible to express in TypeScript, not just caught at runtime.
+- A DI library should work in plain JavaScript. Decorators need extra tooling, and they don't change the type of what they decorate, so they can't be fully type-safe.
+- It should only inject through constructors. Property injection is type-unsafe, and it can't set private fields.
+- Circular dependencies should be supported. They are an antipattern, but sometimes they can't be avoided, so a library should let you opt into them explicitly rather than deadlocking or recursing forever.
+- There should be singleton, request and transient scopes. A database client should be shared, a request context should be scoped to one invocation, and everything else should be created fresh.
+- Async should be optional. Some resources need async initialization, like a secret loaded from a remote store, but a binding shouldn't need to know whether its dependencies are sync or async.
+- It shouldn't use global state. Global registries and `reflect-metadata` make it impossible to have independent containers (such as one for production and one for tests), and cause conflicts between packages.
+- Dependencies should be identified by type. Two `string` values, like a database URL and password, should be told apart by their types rather than by a naming convention.
+- Its data structures should be immutable, so adding a binding never changes an existing module.
+- Values that are only known at runtime should be injectable, like an HTTP request, without rebuilding the container for every request.
+- Wiring should be checked at compile time. Missing bindings, mismatched types and duplicate registrations should be impossible to write in TypeScript, rather than only caught at runtime.
 
-## How Haywire is different
+## Haywire's approach
 
-Haywire meets all of them. It encodes every dependency relationship in TypeScript's type system, so:
+Haywire encodes the relationships between dependencies in TypeScript's type system, without decorators or global state. Each of these is a type error:
 
-- Duplicate bindings are **a type error**.
-- Missing dependencies are **a type error**.
-- Injecting a nullable value into a non-nullable parameter is **a type error**.
-- Passing the wrong id to `container.get()` is **a type error**.
+- A duplicate binding.
+- A missing dependency.
+- A nullable value injected into a parameter that isn't nullable.
+- The wrong id passed to `container.get()`.
 
-When the code compiles, the container is guaranteed to work, barring problems outside it like bad credentials or network failures. The checks types can't do, like detecting circular dependencies, are done by `container.check()`, which is designed to be called in your test suite.
+So when the code compiles, the container has a binding for everything it needs, and it works apart from problems outside it like bad credentials or network failures. The checks that types can't do, like detecting circular dependencies, are done by `container.check()`, which is meant to be called in your test suite.
 
 ## How the checks work
 
-Some checks are plain TypeScript, like `nullable()` only accepting a boolean. Others, like rejecting a duplicate binding, depend on everything added so far. Haywire tracks that in generics, and validates each call against it.
+Some checks are plain TypeScript, like `nullable()` only accepting a boolean. Others, like rejecting a duplicate binding, depend on everything added so far, so Haywire tracks that in generics and validates each call against it.
 
 Where possible, the error says what is wrong. Adding a second binding for an id fails with:
 
@@ -134,10 +132,8 @@ Casting to `any` or using `// @ts-expect-error` gets around these checks, but th
 
 ## Comparisons
 
-- [InversifyJS](https://www.npmjs.com/package/inversify): Decorators (`@injectable`, `@inject`) plus `reflect-metadata`, with string, symbol or class identifiers. A missing binding is an error thrown when the container resolves it.
-- [TSyringe](https://www.npmjs.com/package/tsyringe): Microsoft's decorator-based container. Also needs `reflect-metadata`, keeps a global root container by default, and resolves tokens at runtime.
-- [TypeDI](https://www.npmjs.com/package/typedi): Decorator-based with a global container. Supports property injection, with the type-safety gaps described above.
-- [NestJS](https://nestjs.com/): Its injector is decorator-based and tied to the framework's module system. Unresolvable dependencies surface as "Nest can't resolve dependencies" at startup.
-- [Awilix](https://www.npmjs.com/package/awilix): No decorators, but dependencies are resolved by registration name at runtime, so a typo or missing registration is not a type error.
-
-Haywire is the only one of these where a container that compiles is guaranteed to have every binding it needs.
+- [InversifyJS](https://www.npmjs.com/package/inversify) uses decorators (`@injectable`, `@inject`) and `reflect-metadata`, with string, symbol or class identifiers. A missing binding is an error thrown when the container resolves it.
+- [TSyringe](https://www.npmjs.com/package/tsyringe) is Microsoft's decorator-based container. It also needs `reflect-metadata`, keeps a global root container by default, and resolves tokens at runtime.
+- [TypeDI](https://www.npmjs.com/package/typedi) is decorator-based with a global container. It supports property injection, with the type-safety gaps described above.
+- [NestJS](https://nestjs.com/)'s injector is decorator-based and tied to the framework's module system. A dependency it can't resolve is reported as "Nest can't resolve dependencies" at startup.
+- [Awilix](https://www.npmjs.com/package/awilix) has no decorators, but resolves dependencies by registration name at runtime, so a typo or a missing registration is not a type error.

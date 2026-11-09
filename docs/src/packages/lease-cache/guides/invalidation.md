@@ -69,8 +69,8 @@ const cache = new LeaseCache({
 });
 ```
 
-- **Only the lease holder loads.** It doesn't get the stale value: it returns what it loaded.
-- **A stale value is returned, never cached.** Once the new value is cached, the stale one is deleted, so a reader is never handed a value older than one cached since.
+- **Only the lease holder loads.** It doesn't get the stale value, and returns what it loaded.
+- **A stale value is only returned, and isn't cached.** Once the new value is cached, the stale one is deleted, so a reader is never handed a value older than one cached since.
 - **Only after an invalidation.** A value that expires (`ttlMs`) leaves no stale copy. For stale-while-revalidate on expiry, put a cache with grace periods in front, like BentoCache in the [read-through cache demo](/demos/read-through-cache/).
 
 Use it for reads that can live with data from just before the change. Leave it off (the default) for reads that must see the change once `invalidate` returns.
