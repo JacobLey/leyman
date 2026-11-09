@@ -417,7 +417,7 @@ export const packages: readonly Package[] = [
         slug: 'lease-cache',
         title: 'lease-cache',
         category: 'Data and caching',
-        pitch: 'Read-through caching on Valkey or Redis with leases, so each miss is loaded once across every instance, and a load that finishes after an invalidation never caches its outdated value.',
+        pitch: 'A read-through cache for Valkey or Redis that shares one load per key across all your servers, and handles invalidating a key while it loads.',
         sources: ['tools/lease-cache'],
         pages: [
             { text: 'Overview', link: '' },
@@ -437,7 +437,7 @@ export const packages: readonly Package[] = [
         slug: 'idempotency-keys',
         title: 'idempotency-keys',
         category: 'Data and caching',
-        pitch: 'Idempotency-Key handling for HTTP writes on Postgres or Valkey, so a retried request runs once across every instance, waits on a running duplicate, and gets the first response back, in TypeScript and Go.',
+        pitch: 'Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey, in TypeScript and Go.',
         sources: ['tools/idempotency-keys/ts'],
         related: ['lease-cache'],
         pages: [

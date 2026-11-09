@@ -2,20 +2,25 @@
 
 # idempotency-keys
 
-Idempotency-Key handling for HTTP writes on Postgres or Valkey: a retried request runs once across every instance, waits on a running duplicate, and replays the first response.
+Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.
 
 [![npm package](https://badge.fury.io/js/idempotency-keys.svg)](https://www.npmjs.com/package/idempotency-keys)
 [![License](https://img.shields.io/npm/l/idempotency-keys.svg)](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/LICENSE)
 
 </div>
 
-- **One run per key, across every instance**: a duplicate of a running request waits for its response (or gets a `409`), and a later one gets the stored response back, marked `Idempotent-Replayed: true`.
-- **A reused key on a different request is a `422`**, never a replay of another request's response: the method, path, query, body and the headers you name must match.
-- **A crashed request holds up no one for long**: its claim is a lease, and once it runs out a waiting request takes over. A response that comes after that isn't stored.
-- **Postgres or Valkey, with no client dependency**: pass your own `pg` pool or ioredis connection. Postgres is strict and durable; Valkey is lax (a failover can forget a key). Notifications through either, or none, only make waiting faster.
-- **One spec across languages**: hashes, rows and notifications follow the [idempotency-keys specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md), so servers in other languages that implement it share the same keys.
+When a client sends a `POST` and the connection drops before the response arrives, it has no way to know whether the server got the request. Retrying might create a second order, or send a second email. The fix that Stripe popularized, and that is now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), is the `Idempotency-Key` header: the client generates a unique key and sends it with every attempt of the same request, and the server remembers what it answered for that key.
 
-It doesn't fit a write that must never run twice whatever happens to the store: on Valkey, a failover that loses writes or a flush forgets keys. Use the Postgres store for payments.
+`idempotency-keys` is a library to handle these requests on the server, storing the keys in Postgres (or Valkey). Wrap a handler with `handle()`, and the first request with a given key runs normally and has its response saved. Retries with the same key get the saved response back instead of running the handler again. Since the keys aren't kept in memory, it works no matter which instance a retry lands on.
+
+It also covers the cases that are easy to get wrong:
+
+- A retry that arrives while the first request is still running waits for it to finish, rather than running alongside it.
+- A key reused on a different request (a different body, say) gets a `422`, not the other request's response.
+- If a server crashes mid-request, its hold on the key expires after a timeout and the next retry runs.
+- A Go server can share the same keys, since both implementations follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md).
+
+Use the Postgres store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
 
@@ -68,13 +73,17 @@ export const POST = async (request: Request): Promise<Response> =>
     keys.handle(request, { scope: await userId(request), operation: 'createNote' }, async req => createNote(req));
 ```
 
-A request without an `Idempotency-Key` header runs as usual (pass `required: true` to answer it with a `400` instead). The first request with a key runs, and its response is stored. A retry gets the same status, headers and body back. A retry while the first still runs waits up to `waitMs` for it.
+Requests without an `Idempotency-Key` header go straight to the handler. If you'd rather reject them, pass `required: true` and they get a `400`.
+
+The notifier is optional. Without it, a retry waiting on a running request checks the store every so often; with it, the retry is woken as soon as the first request finishes, even when that happened on another instance.
 
 ## Usage
 
-Each key has an identity: the `scope` (who is calling, such as a user or tenant id), the optional `operation` (any name you pick, such as an OpenAPI `operationId`), and the key. One caller's keys never touch another's. With an `operation`, the same key on another operation is another key; without one, reusing a key on another endpoint is a `422`.
+Keys are kept per caller. Pass the user or tenant id as `scope`, so that two users who happen to send the same key don't collide.
 
-`handle()` answers itself with an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (`application/problem+json`), with the status codes of the [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07):
+`operation` is optional. If you set it (an OpenAPI `operationId` works well), a client can reuse the same key on different endpoints and each is treated separately. If you leave it out, a key belongs to the caller as a whole, and reusing it on another endpoint gets a `422`.
+
+When `handle()` turns a request away itself, it responds with an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (`application/problem+json`), using the status codes from the IETF draft:
 
 | Status | When                                                                                                |
 | ------ | --------------------------------------------------------------------------------------------------- |
@@ -82,9 +91,9 @@ Each key has an identity: the `scope` (who is calling, such as a user or tenant 
 | `409`  | A request with the key is still running, and waiting `waitMs` for it ran out.                       |
 | `422`  | The key was used on a different request (another method, path, query, body or named header).        |
 
-Pass `problem` to answer differently.
+To send something else, pass your own `problem` function.
 
-A Postgres store never deletes expired rows on its own. Call `deleteExpired()` from a scheduled job, or leave them to be overwritten by the next request with the key.
+Keys expire after 24 hours by default (`ttlMs`). Postgres doesn't delete expired rows by itself. They do no harm, since the next request with the same key overwrites the row, but the table keeps growing, so call `deleteExpired()` from a scheduled job.
 
 ### Hono
 

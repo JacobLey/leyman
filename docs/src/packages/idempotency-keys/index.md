@@ -1,12 +1,12 @@
 ---
-description: Idempotency-Key handling for HTTP writes on Postgres or Valkey, so a retried request runs once across every instance, waits on a running duplicate, and gets the first response back, in TypeScript and Go.
+description: Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey, in TypeScript and Go.
 ---
 
 # idempotency-keys
 
 <ProjectHeader />
 
-`Idempotency-Key` handling for HTTP writes on Postgres or Valkey: a retried request runs once across every instance, a duplicate waits for the running one, and both get the first response back.
+Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey, in TypeScript and Go.
 
 ```ts
 import type { Pool } from 'pg';

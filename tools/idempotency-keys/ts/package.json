@@ -1,7 +1,7 @@
 {
   "name": "idempotency-keys",
   "version": "0.1.0",
-  "description": "Idempotency-Key handling for HTTP writes on Postgres or Valkey: a retried request runs once across every instance, waits on a running duplicate, and replays the first response.",
+  "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.",
   "engines": {
     "node": ">=22.12.0"
   },

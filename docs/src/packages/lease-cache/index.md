@@ -1,12 +1,12 @@
 ---
-description: Read-through caching on Valkey or Redis with leases, so each miss is loaded once across every instance, and a load that finishes after an invalidation never caches its outdated value.
+description: A read-through cache for Valkey or Redis that shares one load per key across all your servers, and handles invalidating a key while it loads.
 ---
 
 # lease-cache
 
 <ProjectHeader />
 
-Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value.
+A read-through cache for Valkey or Redis that shares one load per key across all your servers, and handles invalidating a key while it loads.
 
 ```ts
 type User = { readonly id: number; readonly name: string };
