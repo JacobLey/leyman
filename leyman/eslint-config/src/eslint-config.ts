@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- Rule options, such as limits, are numbers */
 
-import type { RuleModule } from '@typescript-eslint/utils/ts-eslint';
-import type { ESLint, Linter, Rule } from 'eslint';
+import type { ESLint, Linter } from 'eslint';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
@@ -9,6 +8,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import globals from 'globals';
 import { getInternalRegex } from './lib/internal-regex.js';
 import { nodeFloorRules } from './lib/node-floor.js';
+import { nonDeprecatedRules } from './lib/non-deprecated-rules.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import { packagePluginConfig } from './lib/package-plugins.js';
 import {
@@ -16,54 +16,14 @@ import {
     eslintConfig,
     importPlugin,
     jsDocPlugin,
-    jsxA11yPlugin,
     nodePlugin,
     prettierConfig,
-    reactHooksPlugin,
-    reactPlugin,
     regexpPlugin,
     sonarPlugin,
     unicornPlugin,
 } from './lib/plugins.js';
 
-// Rules without `meta.languages` support every language
-const isForJavaScript = (rule: {
-    meta?: { languages?: readonly string[] | undefined } | undefined;
-}): boolean => {
-    const languages = rule.meta?.languages;
-    return !languages || languages.includes('*') || languages.includes('js/js');
-};
-
-interface PluginRules {
-    rules?: Record<string, Rule.RuleModule | RuleModule<string, unknown[]>> | undefined;
-}
-/**
- * Turns on every rule of a plugin that isn't deprecated and applies to JavaScript.
- *
- * @param name - the plugin's prefix, e.g. `import-x`
- * @param plugin - its rules
- * @param skip - rules left unset, so off. For a rule only some versions of the plugin define, as ESLint rejects a
- * setting for a rule the installed version doesn't have.
- * @returns each rule, as `error`
- */
-export const nonDeprecatedRules = (
-    name: string,
-    plugin: PluginRules,
-    skip: readonly string[] = []
-): Linter.RulesRecord => {
-    const rules: Linter.RulesRecord = {};
-    for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
-        if (
-            typeof rule === 'object' &&
-            !skip.includes(ruleName) &&
-            (rule.meta?.deprecated ?? false) === false &&
-            isForJavaScript(rule)
-        ) {
-            rules[`${name}/${ruleName}`] = 'error';
-        }
-    }
-    return rules;
-};
+export { nonDeprecatedRules };
 
 const disableReplacedTypeRules = (): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
@@ -192,7 +152,7 @@ export const reactComponentNamingConvention = [
  * @param params.node - Whether the package's code only runs on Node.js, so may use its globals like `process` and `Buffer`
  * @returns Generated flat config for most rules and plugins. Can be extended as necessary via normal Flat Config extension.
  */
-export default function makeEslintConfigForPackage({
+export default async function makeEslintConfigForPackage({
     configUrl,
     node = false,
     packageJson,
@@ -219,7 +179,7 @@ export default function makeEslintConfigForPackage({
      * can't use one by accident. Tests always run on Node.js, and always have them.
      */
     node?: boolean;
-}): Linter.Config[] {
+}): Promise<Linter.Config[]> {
     assertIsPackageJson(packageJson);
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
@@ -231,6 +191,9 @@ export default function makeEslintConfigForPackage({
         packageJson.optionalDependencies,
         packageJson.peerDependencies,
     ].some(dependencies => dependencies !== undefined && 'react' in dependencies);
+    // Only a package using React pays for loading the React plugins
+    const reactModule = hasReact ? await import('./lib/react.js') : undefined;
+    const react = reactModule?.loadReact();
 
     return [
         {
@@ -260,13 +223,11 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint': typescriptPlugin as unknown as ESLint.Plugin,
                 'import-x': importPlugin,
                 jsdoc: jsDocPlugin,
-                'jsx-a11y': jsxA11yPlugin,
                 n: nodePlugin,
-                react: reactPlugin,
-                'react-hooks': reactHooksPlugin,
                 regexp: regexpPlugin,
                 sonarjs: sonarPlugin,
                 unicorn: unicornPlugin,
+                ...react?.plugins,
             },
             settings: {
                 'import-x/internal-regex': getInternalRegex(packageJson),
@@ -720,16 +681,6 @@ export default function makeEslintConfigForPackage({
                 // Duplicates @typescript-eslint/ban-ts-comment
                 'jsdoc/ts-ban-ts-comment': 'off',
 
-                // JSX a11y
-                ...nonDeprecatedRules('jsx-a11y', jsxA11yPlugin),
-                'jsx-a11y/anchor-is-valid': [
-                    'error',
-                    {
-                        components: ['Link'],
-                        aspects: ['invalidHref', 'preferButton'],
-                    },
-                ],
-
                 // Node
                 ...nonDeprecatedRules('n', nodePlugin),
                 'n/callback-return': ['error', ['callback', 'cb', 'next', 'done']],
@@ -746,95 +697,8 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
 
-                // React
-                ...nonDeprecatedRules('react', reactPlugin),
-                'react/boolean-prop-naming': ['error', { validateNested: true }],
-                // Needs a list of what to forbid
-                'react/forbid-dom-props': 'off',
-                // Needs a list of what to forbid
-                'react/forbid-elements': 'off',
-                'react/function-component-definition': [
-                    'error',
-                    {
-                        namedComponents: 'arrow-function',
-                        unnamedComponents: 'arrow-function',
-                    },
-                ],
-                'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
-                'react/jsx-key': ['error', { checkFragmentShorthand: true }],
-                // Text may be written directly in JSX
-                'react/jsx-no-literals': 'off',
-                'react/jsx-no-target-blank': [
-                    'error',
-                    { allowReferrer: false, enforceDynamicLinks: 'always' },
-                ],
-                'react/jsx-props-no-spreading': ['error', { exceptions: ['App', 'Component'] }],
-                'react/jsx-sort-props': [
-                    'error',
-                    {
-                        callbacksLast: true,
-                        ignoreCase: true,
-                        noSortAlphabetically: false,
-                        reservedFirst: true,
-                        shorthandFirst: true,
-                    },
-                ],
-                'react/no-multi-comp': ['error', { ignoreStateless: true }],
-                'react/no-unescaped-entities': [
-                    'error',
-                    {
-                        forbid: [
-                            {
-                                char: '<',
-                                alternatives: ['&lt;'],
-                            },
-                            {
-                                char: '>',
-                                alternatives: ['&gt;'],
-                            },
-                            {
-                                char: "'",
-                                alternatives: ['&apos;', '&lsquo;', '&rsquo;'],
-                            },
-                            {
-                                char: '‘',
-                                alternatives: ['&lsquo;'],
-                            },
-                            {
-                                char: '’',
-                                alternatives: ['&rsquo;'],
-                            },
-                            {
-                                char: '"',
-                                alternatives: ['&quot;', '&ldquo;', '&rdquo;'],
-                            },
-                            {
-                                char: '“',
-                                alternatives: ['&ldquo;'],
-                            },
-                            {
-                                char: '”',
-                                alternatives: ['&rdquo;'],
-                            },
-                            {
-                                char: '{',
-                                alternatives: ['&#123;'],
-                            },
-                            {
-                                char: '}',
-                                alternatives: ['&#125;'],
-                            },
-                        ],
-                    },
-                ],
-                'react/no-unsafe': ['error', { checkAliases: true }],
-                'react/no-will-update-set-state': ['error', 'disallow-in-func'],
-                // The automatic JSX runtime doesn't need `React` in scope
-                'react/react-in-jsx-scope': 'off',
-                'react/static-property-placement': ['error', 'static public field'],
-
-                // React Hooks
-                ...nonDeprecatedRules('react-hooks', reactHooksPlugin),
+                // JSX a11y, React and React Hooks, for a package that depends on React
+                ...react?.rules,
 
                 // Regexp
                 ...nonDeprecatedRules('regexp', regexpPlugin),
@@ -984,22 +848,21 @@ export default function makeEslintConfigForPackage({
                 ],
             },
         },
+        ...(react
+            ? [
+                  {
+                      // Disable JSX rules for non-JSX files
+                      files: ['**/*.{c,m,}ts'],
+                      rules: react.offOutsideJsx,
+                  },
+              ]
+            : []),
         {
-            // Disable JSX rules for non-JSX files
-            files: ['**/*.{c,m,}ts'],
-            rules: (() => {
-                const rules: Linter.Config['rules'] = {};
-
-                for (const ruleName of [
-                    ...Object.keys(jsxA11yPlugin.rules!).map(rule => `jsx-a11y/${rule}`),
-                    ...Object.keys(reactPlugin.rules!).map(rule => `react/${rule}`),
-                    ...Object.keys(reactHooksPlugin.rules!).map(rule => `react-hooks/${rule}`),
-                ]) {
-                    rules[ruleName] = 'off';
-                }
-
-                return rules;
-            })(),
+            // ESLint itself loads the config, and `configGenerator` returns a promise to await
+            files: ['eslint.config.{c,m,}js'],
+            rules: {
+                'n/no-top-level-await': 'off',
+            },
         },
         {
             // ESLint plugin code (by convention under an `eslint/` directory) names visitors after AST nodes, e.g. `Program`,

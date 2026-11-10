@@ -2,7 +2,7 @@ import configGenerator from '@leyman/eslint-config';
 import packageJson from './package.json' with { type: 'json' };
 
 export default [
-    ...configGenerator({ configUrl: import.meta.url, node: true, packageJson }),
+    ...(await configGenerator({ configUrl: import.meta.url, node: true, packageJson })),
     {
         languageOptions: {
             parserOptions: {

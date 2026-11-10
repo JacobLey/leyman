@@ -71,7 +71,9 @@ A disable comment needs a description (`// eslint-disable-next-line rule -- why`
 
 ### `configGenerator(params)`
 
-The default export. Returns the flat config (`Linter.Config[]`) for one package.
+The default export. Returns a promise of the flat config (`Linter.Config[]`) for one package, which ESLint takes as a config file's default export. A package that depends on React gets the React, React Hooks and JSX a11y plugins, loaded only then.
+
+Await it to extend the config: `...(await configGenerator({ ... }))`.
 
 | Parameter     | Type                       | Default | Description                                                                                                                                                                                                                                               |
 | ------------- | -------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -80,7 +82,7 @@ The default export. Returns the flat config (`Linter.Config[]`) for one package.
 | `node`        | `boolean`                  | `false` | Whether the package's code only runs on Node.js. By default only the globals Node.js shares with browsers (`fetch`, `URL`, `console`...) are defined, so code meant to run elsewhere can't use `process` or `Buffer` by accident. Tests always have them. |
 | `plugins`     | `readonly ESLint.Plugin[]` | `[]`    | ESLint plugins shipped by your own packages, each turned on with its flat `configs.recommended` rules outside `test/`. Each needs `meta.namespace`.                                                                                                       |
 
-**Throws** `Error` when `packageJson` isn't an object with a `name`, or `engines.node` doesn't name a floor; `TypeError` when a plugin has no `meta.namespace` or no flat `configs.recommended`.
+**Rejects** with `Error` when `packageJson` isn't an object with a `name`, or `engines.node` doesn't name a floor; a `TypeError` when a plugin has no `meta.namespace` or no flat `configs.recommended`.
 
 What it reads from `packageJson`:
 

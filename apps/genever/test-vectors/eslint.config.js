@@ -3,7 +3,7 @@ import juniper from 'juniper/eslint';
 import packageJson from './package.json' with { type: 'json' };
 
 export default [
-    ...configGenerator({ configUrl: import.meta.url, plugins: [juniper], packageJson }),
+    ...(await configGenerator({ configUrl: import.meta.url, plugins: [juniper], packageJson })),
     {
         files: ['src/error-schemas.ts', 'src/juniper-schemas.ts', 'src/openapi-schemas.ts'],
         rules: {

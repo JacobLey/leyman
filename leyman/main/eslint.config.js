@@ -5,7 +5,7 @@ import packageJson from './package.json' with { type: 'json' };
 const maxScriptsLinted = 16;
 
 export default [
-    ...configGenerator({ configUrl: import.meta.url, node: true, packageJson }),
+    ...(await configGenerator({ configUrl: import.meta.url, node: true, packageJson })),
     {
         languageOptions: {
             parserOptions: {
