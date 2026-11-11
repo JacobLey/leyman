@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T18:10:42.764738292Z",
+  "generatedAt": "2026-11-11T18:03:13.501194429Z",
   "commit": "9b54321d7725b9989259612fe8a094e1f41ec1f9",
   "suites": {
     "jsonSchema": [
@@ -139,7 +139,7 @@
             true,
             true
           ],
-          "generateMs": 41.123824
+          "generateMs": 42.739074
         },
         "openApi": {
           "typeErrors": [],
@@ -152,7 +152,7 @@
             true,
             true
           ],
-          "generateMs": 50.933019
+          "generateMs": 52.316083
         }
       }
     },
@@ -183,7 +183,7 @@
             true,
             true
           ],
-          "generateMs": 591.788801
+          "generateMs": 592.158584
         }
       }
     },
@@ -203,7 +203,7 @@
             true,
             false
           ],
-          "generateMs": 70.011214
+          "generateMs": 72.21116
         }
       }
     }
