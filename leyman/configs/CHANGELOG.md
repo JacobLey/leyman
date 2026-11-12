@@ -1,5 +1,11 @@
 # @leyman/configs
 
+## 0.3.0
+
+### Minor Changes
+
+- 97cf632: `tsconfig.test.json` sets `rootDir` to the test folder and `outDir` to the `dist-test/` folder beside it, so a subpath import of compiled tests (`"#test/*": "./dist-test/*"`) type-checks against the test sources. Tests still emit nothing.
+
 ## 0.2.1
 
 ### Patch Changes

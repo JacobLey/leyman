@@ -1,6 +1,6 @@
 {
   "name": "weighted-rendezvous-hash",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Weighted rendezvous hashing, where nodes can be added, removed or resized anywhere and each gets a share of keys in proportion to its size.",
   "engines": {
     "node": ">=22.12.0"

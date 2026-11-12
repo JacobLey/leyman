@@ -1,5 +1,11 @@
 # @leyman/eslint-config
 
+## 0.4.0
+
+### Minor Changes
+
+- ca72e92: import-x now resolves imports with its own resolver, and follows TypeScript sources: `./file.js` finds `./file.ts`, as TypeScript's `nodenext` resolution does. It no longer loads the optional peer `eslint-import-resolver-node`, so `import-x/no-cycle` no longer crashes where that isn't installed (`autoInstallPeers: false`). Rules that resolve imports, such as `import-x/no-cycle` and `import-x/no-relative-parent-imports`, now check TypeScript imports they used to skip, so they may report errors that were there all along.
+
 ## 0.3.0
 
 ### Minor Changes

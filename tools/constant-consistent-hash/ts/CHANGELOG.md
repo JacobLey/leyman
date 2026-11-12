@@ -1,5 +1,11 @@
 # constant-consistent-hash
 
+## 0.3.0
+
+### Minor Changes
+
+- 822e6e2: Export `SPEC_VERSION`, the version of the language-independent specification the package implements (`'1.0'`). The specification is now versioned as `major.minor`: implementations that share a major version share keys (idempotency-keys) or buckets (constant-consistent-hash).
+
 ## 0.2.3
 
 ### Patch Changes
