@@ -201,6 +201,19 @@ export const packages: readonly Package[] = [
         ],
     },
     {
+        slug: 'xenever',
+        title: 'xenever',
+        category: 'Schemas and types',
+        pitch: 'Parse XML into typed objects, validated against a schema written in TypeScript or generated from an XSD.',
+        sources: ['apps/xenever'],
+        related: ['genever', 'generated-signature'],
+        pages: [
+            { text: 'Overview', link: '' },
+            { text: 'Getting started', link: 'getting-started' },
+            { text: 'Comparison', link: 'comparison' },
+        ],
+    },
+    {
         slug: 'haywire',
         title: 'Haywire',
         category: 'Dependency injection and scripts',

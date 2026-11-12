@@ -67,6 +67,7 @@
     "unknown-error": "workspace:^",
     "vitepress": "catalog:",
     "vitest": "catalog:",
-    "vitest-chain": "workspace:^"
+    "vitest-chain": "workspace:^",
+    "xenever": "workspace:^"
   }
 }

@@ -8,6 +8,7 @@ import InfrastructureCards from './components/InfrastructureCards.vue';
 import PackageCards from './components/PackageCards.vue';
 import ProjectHeader from './components/ProjectHeader.vue';
 import ProjectRelated from './components/ProjectRelated.vue';
+import XeneverComparison from './components/XeneverComparison.vue';
 
 import '@shikijs/vitepress-twoslash/style.css';
 
@@ -22,5 +23,6 @@ export default {
         app.component('PackageCards', PackageCards);
         app.component('ProjectHeader', ProjectHeader);
         app.component('ProjectRelated', ProjectRelated);
+        app.component('XeneverComparison', XeneverComparison);
     },
 };
