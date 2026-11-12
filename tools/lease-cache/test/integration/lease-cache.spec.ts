@@ -15,8 +15,8 @@ import {
     LeaseCacheValueError,
 } from 'lease-cache';
 import { before, suite, test } from 'mocha-chain';
-import { clients } from '../helpers/clients.js';
-import { controlledLoader } from '../helpers/loader.js';
+import { clients } from '#test/helpers/clients.js';
+import { controlledLoader } from '#test/helpers/loader.js';
 
 suite('LeaseCache', () => {
     test('Accepts ioredis and iovalkey connections', () => {

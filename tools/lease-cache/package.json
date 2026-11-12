@@ -58,5 +58,8 @@
     "p-defer": "catalog:",
     "redis": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
   }
 }
