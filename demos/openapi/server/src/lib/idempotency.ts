@@ -2,7 +2,8 @@
 import type { ProblemKind } from 'idempotency-keys';
 import type { NotesAppConfig } from './app.js';
 import type { NotesDatabase } from './handlers.js';
-import { IdempotencyKeys, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresStore } from 'idempotency-keys/postgres';
 
 const problems = {
     // The spec never requires a key, so this is only reached by an app that changes it to

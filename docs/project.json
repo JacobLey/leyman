@@ -3,7 +3,12 @@
   "name": "@leyman/docs",
   "targets": {
     "biome": {},
-    "vitepress-build": {},
+    "vitepress-build": {
+      "inputs": [
+        "...",
+        "{workspaceRoot}/tools/idempotency-keys/ts/test/helpers/memory-store.ts"
+      ]
+    },
     "vitepress-dev": {
       "executor": "nx:run-commands",
       "continuous": true,

@@ -103,6 +103,14 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 
 `keys.Begin(ctx, BeginParams)` is the flow of [`begin()`](/packages/idempotency-keys/guides/other-frameworks). Parse the key with `ParseKey` (`""` without a header), hash the request with `ComputeFingerprint`, passing the target through `RequestTarget(rawTarget)`, and switch on the result's `Outcome` (`OutcomeRun`, `OutcomeReplay`, `OutcomeConflict`, `OutcomeMismatch`). End a run with `Attempt.Respond(ctx, StoredResponse)` or `Attempt.Release(ctx)`.
 
+`Respond` returns an error matching `ErrUnsendableResponse` for a response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`), before asking the policy or touching the store, so the attempt still holds the key to respond again or release. `Handle` sends such a response to its caller anyway and reports the error to `WithOnError`.
+
+## Writing a store
+
+`New` takes any `Store` (`Claim`, `Complete`, `Release`), so records can live somewhere other than Postgres or Valkey. A store written to the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) works with everything else: each operation is atomic for its identity, an expired record counts as absent, a takeover needs a matching fingerprint, `Complete` and `Release` check the token, and a failure is an error, never an answer. A store without a clock of its own may use the servers', with the lease covering the worst drift between them too. Its layout is its own, so a TypeScript server shares it only if it implements the same one.
+
+The module's [`example_test.go`](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/go/example_test.go) has an in-memory store written to the contract, which the tests run through every scenario of the test vectors, and which the package docs show as the `Store` example.
+
 ## Differences from TypeScript
 
 The two agree on every hash and every record. Where Go's HTTP types differ from `fetch`'s, the Go implementation makes up for it:

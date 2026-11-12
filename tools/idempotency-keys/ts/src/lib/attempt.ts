@@ -1,11 +1,12 @@
 import type { IdempotencyNotifier } from './listeners.js';
+import { IdempotencyKeysResponseError } from './errors.js';
 
 /**
  * A response as stored and replayed.
  */
 export interface StoredResponse {
     /**
-     * An integer from 100 to 599.
+     * An integer from 200 to 599.
      */
     readonly status: number;
     /**
@@ -50,7 +51,11 @@ export type ClaimResult =
     | { readonly state: 'running'; readonly fingerprint: string };
 
 /**
- * Where records live, as the spec's three atomic operations. Every time is the store's own clock.
+ * Where records live: the spec's three operations. A store written for this interface must keep the
+ * [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract):
+ * each operation is atomic for its identity, reads see every completed write, a record past its `ttlMs` counts as
+ * absent, every time is measured on one clock all servers agree on (the store's own, or else the servers'), and a
+ * failure is a rejection, never an answer.
  */
 export interface IdempotencyStore {
     /**
@@ -84,7 +89,7 @@ export type RespondPolicy = (response: StoredResponse) => 'complete' | 'release'
 /**
  * How `respond()` ended an attempt.
  */
-export type RespondResult = 'lost' | 'refused' | 'released' | 'stored';
+export type RespondResult = 'lost' | 'released' | 'stored';
 
 const minStatus = 200;
 const maxStatus = 599;
@@ -110,16 +115,23 @@ const unstoredHeaders: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Whether a replay could send a response, as `fetch`'s `Response` would build it.
+ * Checks that a replay could send a response, as `fetch`'s `Response` would build it.
  *
  * @param response - Response to store
- * @returns Whether the status is from 200 to 599, and a null-body status has no body
+ * @throws {IdempotencyKeysResponseError} When the status isn't an integer from 200 to 599, or a null-body status has
+ * a body
  */
-const isSendable = ({ status, body }: StoredResponse): boolean =>
-    Number.isSafeInteger(status) &&
-    status >= minStatus &&
-    status <= maxStatus &&
-    (body.byteLength === 0 || !nullBodyStatuses.has(status));
+const checkSendable = ({ status, body }: StoredResponse): void => {
+    if (!Number.isSafeInteger(status) || status < minStatus || status > maxStatus) {
+        throw new IdempotencyKeysResponseError(
+            status,
+            'a status must be an integer from 200 to 599'
+        );
+    }
+    if (body.byteLength > 0 && nullBodyStatuses.has(status)) {
+        throw new IdempotencyKeysResponseError(status, 'a 204, 205 or 304 must have an empty body');
+    }
+};
 
 /**
  * A request that holds its key, and runs. End it with `respond()` or `release()`. One that never ends (it crashed)
@@ -135,10 +147,11 @@ export interface IdempotencyAttempt {
      * headers a server recomputes for each response it sends (`content-length`, `transfer-encoding`, `connection`,
      * `keep-alive`) or any `idempotent-replayed`.
      *
-     * @returns `stored` or `released` by the policy; `lost` when the lease ran out and another request took over, so
-     * nothing changed; or `refused`, without touching the store, for a response a replay couldn't send (a status
-     * outside 200 to 599, or a body with a `204`, `205` or `304`): the attempt still holds the key, to respond again
-     * or release
+     * @returns `stored` or `released` by the policy, or `lost` when the lease ran out and another request took over,
+     * so nothing changed
+     * @rejects {IdempotencyKeysResponseError} For a response a replay couldn't send (a status that isn't an integer
+     * from 200 to 599, or a body with a `204`, `205` or `304`), before the policy is asked or the store touched: the
+     * attempt still holds the key, to respond again or release
      */
     readonly respond: (response: StoredResponse) => Promise<RespondResult>;
     /**
@@ -171,9 +184,7 @@ export class Attempt implements IdempotencyAttempt {
     }
 
     public async respond(response: StoredResponse): Promise<RespondResult> {
-        if (!isSendable(response)) {
-            return 'refused';
-        }
+        checkSendable(response);
         if (this.#context.respondPolicy(response) === 'release') {
             return (await this.release()) ? 'released' : 'lost';
         }

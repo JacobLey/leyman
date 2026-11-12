@@ -13,13 +13,9 @@ import { createServer } from 'node:http';
 import { setTimeout } from 'node:timers/promises';
 import { Redis } from 'ioredis';
 import { Client, Pool } from 'pg';
-import {
-    IdempotencyKeys,
-    PostgresNotifier,
-    PostgresStore,
-    ValkeyNotifier,
-    ValkeyStore,
-} from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
+import { ValkeyNotifier, ValkeyStore } from 'idempotency-keys/valkey';
 
 const operation = 'interop';
 const defaultStatus = 201;

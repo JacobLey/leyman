@@ -22,6 +22,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
   - [Valkey](#valkey)
   - [Without net/http](#without-nethttp)
   - [Which responses are stored](#which-responses-are-stored)
+  - [Writing a store](#writing-a-store)
 - [API](#api)
 - [Limits](#limits)
 - [Development](#development)
@@ -114,7 +115,7 @@ result, err := keys.Begin(ctx, idempotencykeys.BeginParams{Scope: scope, Operati
 switch result.Outcome {
 case idempotencykeys.OutcomeRun:
 	response := createNote()
-	result.Attempt.Respond(ctx, response) // stored, released by the policy, lost, or refused
+	result.Attempt.Respond(ctx, response) // stored, released by the policy, or lost
 	return response
 case idempotencykeys.OutcomeReplay:
 	return *result.Response
@@ -140,6 +141,16 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 }))
 ```
 
+A response a replay couldn't send, with a status outside 200 to 599 or a body on a `204`, `205` or `304`, can't be stored. `Respond` returns an error matching `ErrUnsendableResponse` for it, before asking the policy, and the attempt still holds the key, so you can respond again or release it. `Handle` sends such a response anyway, reports the error to `WithOnError`, and leaves the key to its lease.
+
+### Writing a store
+
+`New` takes any `Store`, so you can keep records somewhere other than Postgres or Valkey. A store only keeps records: the module does the hashing, waiting, policy and notifying. It has to meet the spec's [store contract](../SPEC.md#the-store-contract): each operation is atomic for its identity, an expired record counts as absent, a running record is only taken over by a request with the same fingerprint, `Complete` and `Release` only change a record that still holds their token, and a failure is an error rather than an answer.
+
+The built-in stores measure leases on their own clock. A store without a clock may use the servers' (`time.Now()`), but then a server whose clock runs ahead can take over a lease early, so the lease has to cover your slowest handler plus the worst drift between servers. A store's layout is its own, so only servers that implement it share its keys.
+
+[`example_test.go`](./example_test.go) has a small in-memory store written to the contract, which the tests run against every scenario in the test vectors, as they do the built-in stores. It only serves one process, so it is an example, not something to deploy.
+
 ## API
 
 The API follows the TypeScript package's, adapted to Go's conventions. The full reference is in the package docs (`go doc`).
@@ -162,7 +173,7 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 
 Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 
-Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, and `ErrStoredRecord` means the store holds a record that no implementation writes.
+Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, `ErrUnsendableResponse` is a response `Respond` can't store, and `ErrStoredRecord` means the store holds a record that no implementation writes.
 
 If a Postgres listening connection fails, or a Valkey subscription drops, the error is reported to `NotifierOptions.OnError`. Waiting requests then fall back to polling, so to get notifications back, listen again on a new connection.
 

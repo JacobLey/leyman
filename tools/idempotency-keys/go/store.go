@@ -49,10 +49,19 @@ type ClaimResult struct {
 	Fingerprint string
 }
 
-// Store is where records live, as the spec's three atomic operations. Every time is the store's own clock. The
-// postgres and valkey packages hold the spec's stores.
+// Store is where records live, as the spec's three operations. The postgres and valkey packages hold the spec's
+// stores, and a server may bring its own: implement Store to the spec's store contract
+// (https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract).
+//
+// In short: each operation is atomic for its identity, reads see every completed write, a record past its TTL counts
+// as absent, a takeover only happens with a matching fingerprint, Complete and Release only change a record that holds
+// their token, and a failure is an error, never an answer. Every lease and expiry is measured on one clock all servers
+// agree on: the built-in stores use their own. A store without a clock of its own may use the servers' (time.Now),
+// but then the worst drift between servers eats into the lease, so the lease must cover it as well as the slowest
+// handler. Its layout is its own, so servers in other languages share it only if they implement it too.
 type Store interface {
-	// Claim claims the record for a request, or says what holds it.
+	// Claim claims the record for a request, or says what holds it: claimed when there is no record, an expired one, or
+	// a running one with the same fingerprint whose lease ran out.
 	Claim(ctx context.Context, params ClaimParams) (ClaimResult, error)
 	// Complete stores the response if the record still holds the token, and says whether it did.
 	Complete(ctx context.Context, identity, token string, response StoredResponse) (bool, error)

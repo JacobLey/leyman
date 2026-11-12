@@ -23,7 +23,7 @@ yarn add idempotency-keys
 :::
 
 ::: tip
-idempotency-keys is ESM only, for Node.js 22.12 or later. It has no dependencies: bring your own Postgres or Valkey client. The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey store also imports `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
+idempotency-keys is ESM only, for Node.js 22.12 or later. It has no dependencies: bring your own Postgres or Valkey client. The built-in adapters are imported from `idempotency-keys/postgres` and `idempotency-keys/valkey`, and everything else from `idempotency-keys`. The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
 :::
 
 ## Create the table
@@ -32,7 +32,7 @@ The Postgres store keeps every key in one table. Create it once, in a migration,
 
 ```ts
 import pg from 'pg';
-import { createTableSql } from 'idempotency-keys';
+import { createTableSql } from 'idempotency-keys/postgres';
 
 declare const databaseUrl: string;
 // ---cut---
@@ -42,7 +42,7 @@ await pool.query(createTableSql());
 
 `createTableSql('my_keys')` names the table something else; pass the same name to the store. The statement is the one in the [specification](/packages/idempotency-keys/reference/specification#what-is-stored), so it can be copied into a migration tool's SQL file as it is.
 
-Using Valkey instead? Skip this step: see [Stores](/packages/idempotency-keys/guides/stores#valkey) for its connection.
+Using Valkey instead? Skip this step: see [Stores](/packages/idempotency-keys/guides/stores#valkey) for its connection. Another database? See [Writing a store](/packages/idempotency-keys/guides/writing-a-store).
 
 ## Handle a request
 
@@ -55,7 +55,8 @@ declare const pool: Pool;
 declare const userId: (request: Request) => Promise<string>;
 declare const createNote: (request: Request) => Promise<Response>;
 // ---cut---
-import { IdempotencyKeys, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresStore } from 'idempotency-keys/postgres';
 
 const keys = new IdempotencyKeys({ store: new PostgresStore({ client: pool }) });
 
@@ -120,7 +121,7 @@ The middleware assigns `c.res` rather than returning the response, because once 
 Postgres doesn't delete rows on its own. An expired row is overwritten by the next request with its key, so it does no harm, but the table grows. Call `deleteExpired()` from a scheduled job:
 
 ```ts
-import type { PostgresStore } from 'idempotency-keys';
+import type { PostgresStore } from 'idempotency-keys/postgres';
 
 declare const store: PostgresStore;
 // ---cut---
@@ -131,6 +132,7 @@ const deleted = await store.deleteExpired();
 ## Next steps
 
 - [Stores](/packages/idempotency-keys/guides/stores): Postgres or Valkey, and when not to use Valkey.
+- [Writing a store](/packages/idempotency-keys/guides/writing-a-store): keys in any other database.
 - [Notifiers](/packages/idempotency-keys/guides/notifiers): wake a waiting duplicate as soon as the first request ends.
 - [Which responses are stored](/packages/idempotency-keys/guides/responses): the default policy, releasing `5xx`, and crashed requests.
 - [Other frameworks](/packages/idempotency-keys/guides/other-frameworks): `begin()`, for servers without `fetch`'s `Request`.

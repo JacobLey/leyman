@@ -255,7 +255,7 @@ func response(status int, body string) idempotencykeys.StoredResponse {
 func TestAttempt(t *testing.T) {
 	t.Parallel()
 
-	for name, refused := range map[string]idempotencykeys.StoredResponse{
+	for name, unsendable := range map[string]idempotencykeys.StoredResponse{
 		"a status below 200": response(http.StatusSwitchingProtocols, ""),
 		"a status above 599": response(600, ""),
 		"a body with a 204":  response(http.StatusNoContent, "x"),
@@ -264,13 +264,22 @@ func TestAttempt(t *testing.T) {
 		"a status of 0":      response(0, ""),
 		"a negative status":  response(-1, ""),
 	} {
-		t.Run("refuses "+name, func(t *testing.T) {
+		t.Run("fails on "+name, func(t *testing.T) {
 			t.Parallel()
 
-			keys := newKeys(t, testEnv.valkeyStore(), idempotencykeys.WithWait(0))
+			// A store that fails every operation, so one the attempt reached would fail differently
+			store := failingStore{Store: testEnv.valkeyStore(), failClaim: false, failComplete: true, failRelease: true}
+			keys := newKeys(t, store, idempotencykeys.WithWait(0), idempotencykeys.WithRespondPolicy(
+				func(idempotencykeys.StoredResponse) idempotencykeys.Action {
+					t.Error("the policy was asked")
+
+					return idempotencykeys.ActionComplete
+				},
+			))
 			attempt := begin(t, keys, params()).Attempt
 
-			if result, err := attempt.Respond(t.Context(), refused); err != nil || result != idempotencykeys.RespondRefused {
+			if result, err := attempt.Respond(t.Context(), unsendable); !errors.Is(err, idempotencykeys.ErrUnsendableResponse) ||
+				result != "" {
 				t.Fatalf("got %s, %v", result, err)
 			}
 
@@ -429,5 +438,12 @@ func TestErrors(t *testing.T) {
 
 	if !errors.Is(optionErr, idempotencykeys.ErrOption) || errors.Is(optionErr, idempotencykeys.ErrKeyHeader) {
 		t.Error("an OptionError is only ErrOption")
+	}
+
+	keys := newKeys(t, testEnv.valkeyStore())
+	_, unsendableErr := begin(t, keys, params()).Attempt.Respond(t.Context(), response(http.StatusNoContent, "x"))
+
+	if unsendableErr == nil || unsendableErr.Error() != "idempotency-keys: unsendable response: status 204 with a 1-byte body" {
+		t.Errorf("got %v", unsendableErr)
 	}
 }

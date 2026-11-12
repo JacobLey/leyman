@@ -1,7 +1,8 @@
 import type { HandleOptions, IdempotencyKeysOptions, ProblemKind } from 'idempotency-keys';
 import pDefer from 'p-defer';
 import { expect } from '@leyman/expect';
-import { IdempotencyKeys, IdempotencyKeysBodyUsedError, ValkeyStore } from 'idempotency-keys';
+import { IdempotencyKeys, IdempotencyKeysBodyUsedError } from 'idempotency-keys';
+import { ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
 import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
 import { vectors } from '../helpers/vectors.js';

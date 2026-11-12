@@ -29,7 +29,8 @@ export const defaultRespondPolicy: RespondPolicy = ({ status }) =>
 
 export interface IdempotencyKeysOptions {
     /**
-     * Where records live: a `PostgresStore` or a `ValkeyStore`.
+     * Where records live: a `PostgresStore` (from `idempotency-keys/postgres`), a `ValkeyStore` (from
+     * `idempotency-keys/valkey`), or any store keeping the spec's store contract.
      */
     readonly store: IdempotencyStore;
     /**
@@ -67,8 +68,9 @@ export interface IdempotencyKeysOptions {
      *
      * - Announcing a completed or released record failed: the attempt still ended as it did, and other servers'
      *   waiting requests notice by polling.
-     * - In `handle()`, the store failed to complete or release a response: the caller still gets the response, and
-     *   the key is held until its lease runs out.
+     * - In `handle()`, the response couldn't be stored: a replay couldn't send it (`IdempotencyKeysResponseError`),
+     *   or the store failed to complete or release it. The caller still gets the response, and the key is held until
+     *   its lease runs out.
      */
     readonly onError?: (error: unknown, identity: string) => void;
 }
@@ -280,8 +282,8 @@ export class IdempotencyKeys {
      * `Idempotent-Replayed: true`. Each response is read whole, to store it, so a streamed one is buffered before it is sent.
      *
      * A request without a key runs as is, unless `required`. When `run` rejects, the attempt doesn't end:
-     * its lease runs out, and a later request with the key runs. When the store fails to complete or release the
-     * response, it is still returned, and the failure goes to `onError`.
+     * its lease runs out, and a later request with the key runs. When the response can't be stored (a replay couldn't
+     * send it, or the store fails to complete or release it), it is still returned, and the failure goes to `onError`.
      *
      * @param request - Request to handle, whose body is read from a clone
      * @param options - Scope and operation of the request

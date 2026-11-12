@@ -2,6 +2,7 @@ package idempotencykeys
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -16,9 +17,6 @@ const (
 	RespondReleased RespondResult = "released"
 	// RespondLost is an attempt whose lease ran out and was taken over, so nothing changed.
 	RespondLost RespondResult = "lost"
-	// RespondRefused is a response a replay couldn't send (a status outside 200 to 599, or a body with a 204, 205 or
-	// 304): the store isn't touched, and the attempt still holds the key, to respond again or release.
-	RespondRefused RespondResult = "refused"
 )
 
 const (
@@ -70,12 +68,15 @@ func (a *Attempt) Identity() string {
 // the headers a server recomputes for each response it sends (Content-Length, Transfer-Encoding, Connection,
 // Keep-Alive) or any Idempotent-Replayed.
 //
-// It returns [RespondStored] or [RespondReleased] by the policy, [RespondLost] when the lease ran out and another
-// request took over, or [RespondRefused] for a response a replay couldn't send. An error is the store's: the attempt
-// is left to its lease.
+// It returns [RespondStored] or [RespondReleased] by the policy, or [RespondLost] when the lease ran out and another
+// request took over.
+//
+// A response a replay couldn't send (a status outside 200 to 599, or a body with a 204, 205 or 304) is an error
+// matching [ErrUnsendableResponse], returned before the policy is asked and the store is touched: the attempt still
+// holds the key, to respond again or release. Any other error is the store's: the attempt is left to its lease.
 func (a *Attempt) Respond(ctx context.Context, response StoredResponse) (RespondResult, error) {
 	if !isSendable(response) {
-		return RespondRefused, nil
+		return "", fmt.Errorf("%w: status %d with a %d-byte body", ErrUnsendableResponse, response.Status, len(response.Body))
 	}
 
 	if a.keys.respondPolicy(response) == ActionRelease {

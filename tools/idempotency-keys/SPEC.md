@@ -4,8 +4,13 @@ This document describes what every implementation of idempotency-keys does, and 
 to agree on: the hashes, what they write to a store, and the notification that wakes a waiting request. Because both
 follow it, a TypeScript server and a Go server on the same store and notifier serve one set of keys as if they were one
 server. The [test vectors](./test-vectors/) pin every hash and every scenario below, and an implementation must pass
-all of them against every store. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a server in each language
-on every store and notifier, and drives them against each other.
+all of them against every store it ships. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a server in each
+language on every store and notifier, and drives them against each other.
+
+A server may also bring its own store, written to the [store contract](#the-store-contract). Two servers interoperate
+through a store only when both write the same layout: the [Postgres](#postgres) and [Valkey](#valkey-or-redis) layouts
+below are pinned byte for byte, so every implementation's built-in stores interoperate, while a custom store is shared
+across languages only if each language implements its layout.
 
 Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field][draft] (draft 07): `400` for a key that
 can't be read, `409` for a request whose key is in use, and `422` for a key reused on a different request.
@@ -86,6 +91,10 @@ token and lease) or **completed** (holding a response). A request goes through t
    - **complete**: its response is stored, and replayed to every later request with the key;
    - **release**: the record is deleted, and the next request with the key runs.
 
+   A response a replay couldn't send can't be completed (see [Stores](#stores)): ending an attempt with one is an
+   error, raised before the response policy is asked and before the store is touched, so the attempt still holds the
+   key, to end again with another response or release.
+
    Either only applies while the record still holds the request's token. One whose lease ran out and was taken over
    finds its token gone: its own caller still gets its response, but it isn't stored (the request that took over will
    store its own).
@@ -98,7 +107,10 @@ releases: its lease runs out, and a waiting or later request takes over. One tha
 or release it still sends that response to its caller, who then has no reason to retry, and reports the failure to the
 server; its lease runs out the same way.
 
-Times come from the store's clock, never a server's, so servers with drifting clocks agree on every lease.
+Every lease and expiry is measured on one clock that all servers agree on. The built-in stores use their own (Postgres
+`clock_timestamp()`, Valkey `TIME`), so servers with drifting clocks still agree on every lease. A store without a clock
+of its own may use the servers' clocks; then a server whose clock runs ahead can take over a lease early, so `leaseMs`
+must cover the slowest handler plus the worst drift between servers.
 
 ### Options
 
@@ -113,8 +125,8 @@ each implementation: it is the fallback for a lost notification, so it only affe
 
 ## Stores
 
-Each store implements three atomic operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for
-every claim and takeover.
+Each store implements three operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for every
+claim and takeover.
 
 - `claim(identity, fingerprint, token, leaseMs, ttlMs)` returns `claimed`, `running` with the record's fingerprint, or
   `completed` with its fingerprint and response, as in step 1. A takeover only happens with a matching fingerprint: a
@@ -122,12 +134,39 @@ every claim and takeover.
 - `complete(identity, token, response)` stores the response if the record holds `token`, and says whether it did.
 - `release(identity, token)` deletes the record if it holds `token`, and says whether it did.
 
+### The store contract
+
+What any store, built in or brought by a server, must guarantee. The implementation does everything else (hashing,
+waiting, the response policy, notifying), so a store only keeps records.
+
+- **Each operation is atomic for its identity.** Two operations on one identity, from any servers, behave as if one ran
+  entirely before the other: of two concurrent claims on a free key, exactly one gets `claimed`. A store gets this from a
+  transaction, a single conditional write (compare-and-set), or a script the store runs alone. Operations on different
+  identities don't interact.
+- **Reads see every completed write.** A claim that follows a `complete` or `release` (from any server) sees it. A store
+  with eventually consistent reads must use its strongly consistent ones.
+- **A record past its `ttlMs` counts as absent**, to every operation, from the moment it expires: a claim writes over
+  it, and `complete` and `release` find no token. Deleting it may happen later, or never. A lease or key has run out
+  once its end time is reached (the end is at or before now), so a takeover at that instant succeeds.
+- **Times are measured on one clock**, as in [Attempts](#attempts): the store's own, or the servers'.
+- **A failure is an error, never an answer.** A store that can't be reached or can't write raises it, and the request
+  fails rather than running unprotected. A store may refuse a response it can't hold (too large, say) the same way: the
+  attempt is left to its lease, like one that failed before it had a response.
+- **Its durability is stated.** A store that can lose a record (a cache that evicts, a failover that drops writes) lets
+  a request after the loss run again, and its documentation says so, as the Valkey store's does.
+
+A store keeps the identity, fingerprint, token and response exactly as given. How it lays them out is its own, unless
+servers in more than one language share it (see the introduction).
+
+### Responses
+
 A response is a status (an integer from 200 to 599), headers, and a body (bytes). A `204`, `205` or `304` has an
-empty body. An implementation refuses to complete with any other response, storing nothing (as `fetch` can't build
-it, a replay couldn't send it): the attempt is left to its lease, like one that failed before it had a response. Headers are stored as a JSON array of
-`[name, value]` pairs of strings, names in lower case, in the order the server's response lists them, repeated names
-kept. Each byte of a value is one character from `U+0000` to `U+00FF`, as `fetch`'s `Headers` gives it (so a byte
-`0xE9` is stored as `é`, encoded in the JSON as UTF-8), and a replay sends each character back as that byte. A replay sends them in that order, plus `Idempotent-Replayed: true`. The headers a server recomputes for every
+empty body. Any other response can't be completed, as `fetch` can't build it, so a replay couldn't send it: ending an
+attempt with one is an error, and the store is never asked to store it (see [Attempts](#attempts)). Headers are `[name, value]`
+pairs of strings, names in lower case, in the order the server's response lists them, repeated names kept. Each byte of
+a value is one character from `U+0000` to `U+00FF`, as `fetch`'s `Headers` gives it, and a replay sends each character
+back as that byte, in that order, plus `Idempotent-Replayed: true`. The built-in layouts store them as a JSON array of
+those pairs (so a byte `0xE9` is stored as `é`, encoded in the JSON as UTF-8). The headers a server recomputes for every
 response it sends (`content-length`, `transfer-encoding`, `connection`, `keep-alive`) and any `idempotent-replayed`
 are never stored.
 
@@ -177,14 +216,14 @@ SELECT fingerprint, status, headers, body FROM idempotency_keys
 WHERE identity = $1 AND expires_at > clock_timestamp()
 ```
 
-Completing and releasing check the token in the statement, and completing also that the key hasn't expired, as a
-Valkey key that expired is gone:
+Completing and releasing check the token in the statement, and that the key hasn't expired, as a Valkey key that
+expired is gone:
 
 ```sql
 UPDATE idempotency_keys SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
 WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
 
-DELETE FROM idempotency_keys WHERE identity = $1 AND token = $2
+DELETE FROM idempotency_keys WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
 ```
 
 A request whose lease ran out, but that nobody took over, still completes or releases: its token is still there.

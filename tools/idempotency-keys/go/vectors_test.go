@@ -257,6 +257,7 @@ func TestScenarioVectors(t *testing.T) {
 			name: "Postgres store",
 		},
 		{create: func(*testing.T) idempotencykeys.Store { return testEnv.valkeyStore() }, name: "Valkey store"},
+		{create: func(*testing.T) idempotencykeys.Store { return newMemoryStore() }, name: "example memory store"},
 	}
 	// Bounds the scenarios running at once, as each holds Postgres connections, which every test shares
 	running := make(chan struct{}, 8)
@@ -385,6 +386,14 @@ func endAttempt(t *testing.T, step step, attempts map[string]*idempotencykeys.At
 			Body:    []byte(step.Response.Body),
 			Status:  step.Response.Status,
 		})
+		if step.Expect == "error" {
+			if !errors.Is(err, idempotencykeys.ErrUnsendableResponse) {
+				t.Fatalf("respond %s: got %q, %v; want an unsendable response", step.Respond, result, err)
+			}
+
+			return
+		}
+
 		if err != nil || string(result) != step.Expect {
 			t.Fatalf("respond %s: got %q, %v; want %v", step.Respond, result, err, step.Expect)
 		}

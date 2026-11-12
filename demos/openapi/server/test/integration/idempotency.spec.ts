@@ -17,7 +17,8 @@ import {
 } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
-import { IdempotencyKeys, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresStore } from 'idempotency-keys/postgres';
 import { suite } from 'mocha-chain';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';

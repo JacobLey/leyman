@@ -2,7 +2,7 @@
 
 # idempotency-keys
 
-Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.
+Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres and Valkey built in.
 
 [![npm package](https://badge.fury.io/js/idempotency-keys.svg)](https://www.npmjs.com/package/idempotency-keys)
 [![License](https://img.shields.io/npm/l/idempotency-keys.svg)](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/LICENSE)
@@ -11,7 +11,7 @@ Server-side support for the Idempotency-Key header, so clients can safely retry 
 
 When a client sends a `POST` and the connection drops before the response arrives, it has no way to know whether the server got the request. Retrying might create a second order, or send a second email. The fix that Stripe popularized, and that is now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), is the `Idempotency-Key` header: the client generates a unique key and sends it with every attempt of the same request, and the server remembers what it answered for that key.
 
-`idempotency-keys` is a library to handle these requests on the server, storing the keys in Postgres (or Valkey). Wrap a handler with `handle()`, and the first request with a given key runs normally and has its response saved. Retries with the same key get the saved response back instead of running the handler again. Since the keys aren't kept in memory, it works no matter which instance a retry lands on.
+`idempotency-keys` is a library to handle these requests on the server, storing the keys in a store every instance shares: Postgres or Valkey, or one you write. Wrap a handler with `handle()`, and the first request with a given key runs normally and has its response saved. Retries with the same key get the saved response back instead of running the handler again. Since the keys aren't kept in memory, it works no matter which instance a retry lands on.
 
 It also covers the cases that are easy to get wrong:
 
@@ -20,7 +20,7 @@ It also covers the cases that are easy to get wrong:
 - If a server crashes mid-request, its hold on the key expires after a timeout and the next retry runs.
 - A Go server can share the same keys, since both implementations follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md).
 
-Use the Postgres store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again.
+Use the Postgres store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again. Any other database can hold the keys through a store of your own, written to a short [contract](#writing-a-store).
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
 
@@ -32,6 +32,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
   - [Hono](#hono)
   - [Without fetch](#without-fetch)
   - [Which responses are stored](#which-responses-are-stored)
+  - [Writing a store](#writing-a-store)
 - [API](#api)
   - [IdempotencyKeys](#idempotencykeys)
   - [PostgresStore](#postgresstore)
@@ -48,13 +49,14 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i idempotency-keys
 ```
 
-ESM only. It has no dependencies: bring your own Postgres or Valkey client. The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey store also imports `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
+ESM only. It has no dependencies: bring your own Postgres or Valkey client. The protocol, `handle()` and the store interfaces come from `idempotency-keys`; the built-in adapters from `idempotency-keys/postgres` (`PostgresStore`, `PostgresNotifier`, `createTableSql`) and `idempotency-keys/valkey` (`ValkeyStore`, `ValkeyNotifier`). The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
 
 ## Example
 
 ```ts
 import pg from 'pg';
-import { createTableSql, IdempotencyKeys, PostgresNotifier, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { createTableSql, PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 // Once, in a migration
@@ -139,7 +141,7 @@ const result = await keys.begin({ scope, operation: 'createNote', key, fingerpri
 switch (result.outcome) {
     case 'run': {
         const response = await createNote();
-        await result.attempt.respond(response); // stored, released by the policy, lost, or refused
+        await result.attempt.respond(response); // stored, released by the policy, or lost
         return response;
     }
     case 'replay':
@@ -164,23 +166,38 @@ const keys = new IdempotencyKeys({
 });
 ```
 
+A response a replay couldn't send (a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`) can't be stored at all: `respond()` rejects with `IdempotencyKeysResponseError` before asking the policy or touching the store, and the attempt still holds the key, to respond again or release. `handle()` never gets one from `fetch`'s `Response`, which can't be built that way.
+
+### Writing a store
+
+`store` takes anything implementing `IdempotencyStore`: `claim`, `complete` and `release`, as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) defines them. The library does the hashing, waiting, policy and notifying, so a store only keeps records, and its [contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) is short:
+
+- Each operation is atomic for its identity: of two concurrent claims on a free key, exactly one gets `claimed`.
+- Reads see every completed write, from any server.
+- A record past its `ttlMs` counts as absent to every operation, whether or not it was deleted yet.
+- Every time is measured on one clock: the store's own, or else the servers' (then `leaseMs` must also cover the drift between them).
+- A failure rejects, never answers, so a request never runs unprotected.
+- A store that can lose records says so.
+
+The [test helpers](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/test/helpers/memory-store.ts) hold a short in-memory store that keeps every point, and runs the same test vectors as the built-in stores; the [docs](https://jacobley.github.io/leyman/packages/idempotency-keys/guides/writing-a-store) walk through it. Only a store with the built-in layouts shares keys with a Go server.
+
 ## API
 
 ### `IdempotencyKeys`
 
 #### `new IdempotencyKeys(options)`
 
-| Option               | Type                                    | Default                | Description                                                                                                                                                                                                                                                           |
-| -------------------- | --------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store`              | `IdempotencyStore`                      | —                      | Required. A `PostgresStore` or `ValkeyStore`.                                                                                                                                                                                                                         |
-| `notifier`           | `IdempotencyNotifier`                   | none                   | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll.                                                                                                                                                            |
-| `ttlMs`              | `number`                                | `86_400_000` (24 h)    | How long a key lasts from when it was claimed.                                                                                                                                                                                                                        |
-| `leaseMs`            | `number`                                | `60_000`               | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`.                                                                                                                         |
-| `waitMs`             | `number`                                | `10_000`               | How long a duplicate waits on a running request before a `409`. `0` answers at once.                                                                                                                                                                                  |
-| `respondPolicy`      | `(response) => 'complete' \| 'release'` | `defaultRespondPolicy` | Which responses are stored (`complete`) and which free the key (`release`). The default releases only a `429`.                                                                                                                                                        |
-| `fingerprintHeaders` | `readonly string[]`                     | `[]`                   | Headers that must match on a reused key in `handle()`, in any case.                                                                                                                                                                                                   |
-| `problem`            | `(kind, request) => Response`           | `problemResponse`      | `handle()`'s answer to `'missing-key'`, `'invalid-key'`, `'conflict'` or `'mismatch'`.                                                                                                                                                                                |
-| `onError`            | `(error, identity) => void`             | ignored                | Called with a failure that doesn't fail the request: announcing an ended request failed (other servers notice by polling), or in `handle()` the store failed to store or release a response (the caller still gets it, and the key is held until its lease runs out). |
+| Option               | Type                                    | Default                | Description                                                                                                                                                                                                                                                                                                      |
+| -------------------- | --------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `store`              | `IdempotencyStore`                      | —                      | Required. A `PostgresStore`, a `ValkeyStore`, or [your own](#writing-a-store).                                                                                                                                                                                                                                   |
+| `notifier`           | `IdempotencyNotifier`                   | none                   | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll.                                                                                                                                                                                                       |
+| `ttlMs`              | `number`                                | `86_400_000` (24 h)    | How long a key lasts from when it was claimed.                                                                                                                                                                                                                                                                   |
+| `leaseMs`            | `number`                                | `60_000`               | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`.                                                                                                                                                                    |
+| `waitMs`             | `number`                                | `10_000`               | How long a duplicate waits on a running request before a `409`. `0` answers at once.                                                                                                                                                                                                                             |
+| `respondPolicy`      | `(response) => 'complete' \| 'release'` | `defaultRespondPolicy` | Which responses are stored (`complete`) and which free the key (`release`). The default releases only a `429`.                                                                                                                                                                                                   |
+| `fingerprintHeaders` | `readonly string[]`                     | `[]`                   | Headers that must match on a reused key in `handle()`, in any case.                                                                                                                                                                                                                                              |
+| `problem`            | `(kind, request) => Response`           | `problemResponse`      | `handle()`'s answer to `'missing-key'`, `'invalid-key'`, `'conflict'` or `'mismatch'`.                                                                                                                                                                                                                           |
+| `onError`            | `(error, identity) => void`             | ignored                | Called with a failure that doesn't fail the request: announcing an ended request failed (other servers notice by polling), or in `handle()` the response couldn't be stored or released, by the store or as one a replay couldn't send (the caller still gets it, and the key is held until its lease runs out). |
 
 Durations are whole milliseconds. **Throws** `IdempotencyKeysOptionError` for a duration below 1 (`waitMs` below 0) or not whole, or a `leaseMs` not below `ttlMs`.
 
@@ -196,7 +213,7 @@ Reads the request's `Idempotency-Key`, runs `run(request)` at most once per key,
 | `options.required`  | `boolean`                                 | Whether a request without a key is a `400`. `false` by default. |
 | `run`               | `(request: Request) => Promise<Response>` | Runs the request.                                               |
 
-**Returns** `Promise<Response>`: `run`'s response, a replay (with `Idempotent-Replayed: true`), or a problem. **Rejects** when the store fails before `run`, so a request never runs unprotected, or with `run`'s error (the key stays held until its lease runs out). Once `run` has a response, `handle()` returns it even if the store then fails to store or release it, and reports that failure to `onError`.
+**Returns** `Promise<Response>`: `run`'s response, a replay (with `Idempotent-Replayed: true`), or a problem. **Rejects** when the store fails before `run`, so a request never runs unprotected, or with `run`'s error (the key stays held until its lease runs out). Once `run` has a response, `handle()` returns it even if it then can't be stored or released, and reports that failure to `onError`.
 
 The request's body must be unread: `handle()` **rejects** with `IdempotencyKeysBodyUsedError` otherwise, since it couldn't fingerprint it. It reads the whole body, so put a body-size limit before it. It reads each response whole to store it, so a streamed response is buffered before it is sent.
 
@@ -215,7 +232,7 @@ Claims a key. A completed request's response is replayed, and a running one is w
 
 **Returns** `Promise<BeginResult>`, one of:
 
-- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'`, `'released'` (by the policy), `'lost'` (its lease ran out and another request took over, so nothing changed), or `'refused'` (the response can't be sent: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`; the store isn't touched and the attempt still holds the key, so respond again or release it), or with `attempt.release()`, which resolves to whether it released.
+- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'` or `'released'` (by the policy), or `'lost'` (its lease ran out and another request took over, so nothing changed), and rejects with `IdempotencyKeysResponseError` for a response a replay couldn't send (a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`; the store isn't touched and the attempt still holds the key, so respond again or release it); or with `attempt.release()`, which resolves to whether it released.
 - `{ outcome: 'replay', response }`: the stored `{ status, headers, body }`, `headers` as `[name, value]` pairs with repeated names kept, and `body` as bytes.
 
 A stored response keeps its headers except `Connection`, `Content-Length`, `Keep-Alive`, `Transfer-Encoding` and `Idempotent-Replayed`, which describe one transfer rather than the response; a replay adds `Idempotent-Replayed: true` once.
@@ -223,6 +240,8 @@ A stored response keeps its headers except `Connection`, `Content-Length`, `Keep
 - `{ outcome: 'mismatch' }`: the key was used on a different request.
 
 ### `PostgresStore`
+
+From `idempotency-keys/postgres`, like `createTableSql` and `PostgresNotifier`.
 
 #### `new PostgresStore({ client, table? })`
 
@@ -245,6 +264,8 @@ The `CREATE TABLE` statement of the spec, for a migration. **Returns** `string`.
 
 ### `ValkeyStore`
 
+From `idempotency-keys/valkey`, like `ValkeyNotifier`.
+
 #### `new ValkeyStore({ connection, prefix? })`
 
 | Option       | Type               | Default              | Description                                                         |
@@ -256,7 +277,7 @@ The `CREATE TABLE` statement of the spec, for a migration. **Returns** `string`.
 
 ```ts
 import { Redis } from 'ioredis'; // or Cluster, or iovalkey
-import { ValkeyStore } from 'idempotency-keys';
+import { ValkeyStore } from 'idempotency-keys/valkey';
 
 const valkey = new Redis('redis://valkey:6379');
 const store = new ValkeyStore({
@@ -301,6 +322,7 @@ Every error extends `IdempotencyKeysError`.
 | `IdempotencyKeysHeaderValueError` | A named header's value isn't Latin-1. Has `header` and `value`.                                                                                                       |
 | `IdempotencyKeysBodyUsedError`    | `handle()` got a request whose body was already read.                                                                                                                 |
 | `IdempotencyKeysReplyError`       | A `ValkeyStore` connection replied with text where bytes were expected (ioredis's own `eval`).                                                                        |
+| `IdempotencyKeysResponseError`    | `attempt.respond()` got a response a replay couldn't send: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`. Has `status`.    |
 
 ## Limits
 

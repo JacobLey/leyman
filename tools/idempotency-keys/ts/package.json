@@ -1,7 +1,7 @@
 {
   "name": "idempotency-keys",
   "version": "0.1.2",
-  "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.",
+  "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres and Valkey built in.",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -36,7 +36,9 @@
     "!dist/tsconfig.tsbuildinfo"
   ],
   "exports": {
-    ".": "./dist/idempotency-keys.js"
+    ".": "./dist/idempotency-keys.js",
+    "./postgres": "./dist/postgres.js",
+    "./valkey": "./dist/valkey.js"
   },
   "imports": {
     "#internal/*": "./dist/*"

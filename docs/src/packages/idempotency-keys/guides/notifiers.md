@@ -14,7 +14,8 @@ The store stays the source of truth. A woken request reads the store, and a wait
 
 ```ts
 import pg from 'pg';
-import { IdempotencyKeys, PostgresNotifier, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
 
 declare const databaseUrl: string;
 declare const logger: { error: (error: unknown) => void };
@@ -53,7 +54,8 @@ declare module 'events' {
 // @filename: index.ts
 import { Redis } from 'ioredis';
 import type { IdempotencyStore } from 'idempotency-keys';
-import { IdempotencyKeys, ValkeyNotifier } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { ValkeyNotifier } from 'idempotency-keys/valkey';
 
 declare const store: IdempotencyStore;
 // ---cut---

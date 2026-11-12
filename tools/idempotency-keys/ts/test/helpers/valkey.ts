@@ -1,4 +1,4 @@
-import type { ValkeyConnection } from 'idempotency-keys';
+import type { ValkeyConnection } from 'idempotency-keys/valkey';
 import { randomUUID } from 'node:crypto';
 import { Redis } from 'ioredis';
 

@@ -30,7 +30,7 @@ export type Step =
     | {
           readonly respond: string;
           readonly response: VectorResponse;
-          readonly expect: 'lost' | 'refused' | 'released' | 'stored';
+          readonly expect: 'error' | 'lost' | 'released' | 'stored';
       }
     | { readonly await: string; readonly expect: Expectation; readonly response?: VectorResponse }
     | { readonly release: string; readonly expect: boolean }

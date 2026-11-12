@@ -373,6 +373,24 @@ func TestHandleReturnsTheResponseWhenTheStoreFailsToStoreItAndReportsWhy(t *test
 	}
 }
 
+func TestHandleSendsAResponseItCantStoreAndReportsWhy(t *testing.T) {
+	t.Parallel()
+
+	var reported []error
+
+	keys := newKeys(t, testEnv.valkeyStore(), idempotencykeys.WithOnError(func(err error, _ string) { reported = append(reported, err) }))
+	next := http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusResetContent)
+		_, _ = writer.Write([]byte("x"))
+	})
+
+	recorder := serve(keys, newRequest(t, "/notes", "k1", ""), handleOptions(), next)
+	if recorder.Code != http.StatusResetContent || len(reported) != 1 ||
+		!errors.Is(reported[0], idempotencykeys.ErrUnsendableResponse) {
+		t.Fatalf("got %d, reported %v", recorder.Code, reported)
+	}
+}
+
 func TestHandleAnswersA500WhenTheStoreFailsBeforeRunning(t *testing.T) {
 	t.Parallel()
 

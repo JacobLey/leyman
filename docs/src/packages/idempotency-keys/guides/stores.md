@@ -1,10 +1,12 @@
 ---
-description: Choosing between the Postgres store (strict and durable) and the Valkey store (lax), connecting each, and when not to use Valkey.
+description: The two stores idempotency-keys ships, Postgres (strict and durable) and Valkey (lax), how to connect each, when not to use Valkey, and bringing your own.
 ---
 
 # Stores
 
-A store holds one record per key: running (claimed by one request, holding its lease) or completed (holding its response). Every time comes from the store's own clock rather than a server's, so servers whose clocks drift still agree on every lease.
+A store holds one record per key: running (claimed by one request, holding its lease) or completed (holding its response). Every server handling the same keys uses the same store, which is what lets a retry land on any instance.
+
+idempotency-keys ships two: `PostgresStore`, from `idempotency-keys/postgres`, and `ValkeyStore`, from `idempotency-keys/valkey`. Both time every lease on the database's own clock rather than a server's, so servers whose clocks drift still agree on every lease. For anything else, [write your own](#your-own-store).
 
 |                           | `PostgresStore`                                            | `ValkeyStore`                                             |
 | ------------------------- | ---------------------------------------------------------- | --------------------------------------------------------- |
@@ -20,7 +22,8 @@ Postgres is the strict store, and the one to use unless the writes are cheap to 
 
 ```ts
 import pg from 'pg';
-import { IdempotencyKeys, PostgresStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresStore } from 'idempotency-keys/postgres';
 
 declare const databaseUrl: string;
 // ---cut---
@@ -44,7 +47,8 @@ Its connection needs one method, `eval(script, numKeys, ...args)`, which must re
 
 ```ts
 import { Redis } from 'ioredis'; // or Cluster, or iovalkey
-import { IdempotencyKeys, ValkeyStore } from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { ValkeyStore } from 'idempotency-keys/valkey';
 
 const valkey = new Redis('redis://valkey:6379');
 const keys = new IdempotencyKeys({
@@ -67,4 +71,6 @@ Either store works with either [notifier](/packages/idempotency-keys/guides/noti
 
 ## Your own store
 
-`store` takes anything implementing `IdempotencyStore`, which is `claim`, `complete` and `release`, each atomic, as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) describes. Only the built-in stores are held to the test vectors, and only a store that writes what the specification says shares keys with the Go implementation.
+`store` takes anything implementing `IdempotencyStore`: `claim`, `complete` and `release`. The library does the hashing, the waiting, the policy and the notifying, so a store only keeps records, and the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) states what it must guarantee in a few points. [Writing a store](/packages/idempotency-keys/guides/writing-a-store) goes through them with an in-memory example.
+
+A store of your own shares keys with servers in other languages only if each of them implements the same layout. The Postgres and Valkey layouts are pinned by the specification, so those two stores share keys with a [Go](/packages/idempotency-keys/guides/go) server out of the box.

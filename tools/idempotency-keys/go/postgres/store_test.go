@@ -247,6 +247,10 @@ func TestStoreForgetsAnExpiredKeyAndDeletesIt(t *testing.T) {
 		t.Fatalf("completed an expired key: %v, %v", done, err)
 	}
 
+	if released, err := store.Release(t.Context(), identity, "t1"); err != nil || released {
+		t.Fatalf("released an expired key: %v, %v", released, err)
+	}
+
 	if deleted, err := store.DeleteExpired(t.Context()); err != nil || deleted != 1 {
 		t.Fatalf("got %d, %v", deleted, err)
 	}

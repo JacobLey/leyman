@@ -4,7 +4,7 @@ description: The idempotency-keys specification in brief, what every implementat
 
 # Specification
 
-Every implementation of idempotency-keys follows one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md), which covers the hashes, what goes in the store, and the notification that wakes a waiting request. Because of it, servers in different languages on the same store and notifier serve one set of keys, as if they were one server. This page summarizes it for readers, and the specification itself is the reference for writing an implementation.
+Every implementation of idempotency-keys follows one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md), which covers the hashes, what goes in the store, what any store must guarantee, and the notification that wakes a waiting request. Because of it, servers in different languages on the same store and notifier serve one set of keys, as if they were one server. This page summarizes it for readers, and the specification itself is the reference for writing an implementation.
 
 ## On the wire
 
@@ -48,7 +48,13 @@ CREATE TABLE idempotency_keys (
 
 In Valkey, it is a hash at `<prefix>:<identity>`, with fields `fingerprint`, `token` and `lease` while running, and `status`, `headers` and `body` once completed, written by Lua scripts every implementation sends byte for byte.
 
-A response's headers are stored as a JSON array of `[name, value]` pairs, names in lower case, without the headers a server recomputes for every response (`content-length`, `transfer-encoding`, `connection`, `keep-alive`). Every time comes from the store's clock.
+A response's headers are `[name, value]` pairs, names in lower case, without the headers a server recomputes for every response (`content-length`, `transfer-encoding`, `connection`, `keep-alive`). Both layouts store them as a JSON array. A response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`) is never stored: ending an attempt with one is an error, and the attempt still holds the key.
+
+Every lease and expiry is measured on one clock all servers agree on. Postgres uses `clock_timestamp()` and Valkey `TIME`, so servers whose clocks drift still agree. A store without a clock of its own may use the servers' clocks, and then `leaseMs` has to cover the slowest handler plus the worst drift between servers.
+
+## Any store
+
+A server can bring its own store, as long as it keeps the [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract): each operation is atomic for its identity, reads see every completed write, a record past its `ttlMs` counts as absent, times come from one clock, a failure is an error rather than an answer, and a store that can lose records says so. [Writing a store](/packages/idempotency-keys/guides/writing-a-store) walks through one. Servers in different languages share keys through such a store only if each implements its layout.
 
 ## Notifications
 
@@ -56,7 +62,7 @@ After every successful complete or release, a server publishes the identity on o
 
 ## Interop
 
-The [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) pin every hash and every scenario, and each implementation passes them against every store. The [interop e2e](https://github.com/JacobLey/leyman/tree/main/e2e/idempotency-keys-interop) checks the two together, end to end. It runs a TypeScript server (on `handle()`) and a Go server (on `Keys.Middleware`) as child processes on one store and notifier, and sends every request across from one to the other, in both directions.
+The [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) pin every hash and every scenario, and each implementation passes them against every store it ships. The [interop e2e](https://github.com/JacobLey/leyman/tree/main/e2e/idempotency-keys-interop) checks the two together, end to end. It runs a TypeScript server (on `handle()`) and a Go server (on `Keys.Middleware`) as child processes on one store and notifier, and sends every request across from one to the other, in both directions.
 
 | Store    | Notifiers              |
 | -------- | ---------------------- |

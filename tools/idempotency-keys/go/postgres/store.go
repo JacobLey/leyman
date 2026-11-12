@@ -119,7 +119,7 @@ RETURNING token`,
 WHERE identity = $1 AND expires_at > clock_timestamp()`,
 		completeSQL: `UPDATE ` + table + ` SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
 WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`,
-		releaseSQL: `DELETE FROM ` + table + ` WHERE identity = $1 AND token = $2`,
+		releaseSQL: `DELETE FROM ` + table + ` WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`,
 		expiredSQL: `DELETE FROM ` + table + ` WHERE expires_at <= clock_timestamp()`,
 	}, nil
 }

@@ -69,3 +69,17 @@ export class IdempotencyKeysReplyError extends IdempotencyKeysError {
         this.name = 'IdempotencyKeysReplyError';
     }
 }
+
+/**
+ * An attempt was ended with a response a replay couldn't send, as `fetch`'s `Response` wouldn't build it: a status
+ * that isn't an integer from 200 to 599, or a body with a `204`, `205` or `304`. Thrown before the respond policy is
+ * asked and before the store is touched, so the attempt still holds the key, to respond again or release.
+ */
+export class IdempotencyKeysResponseError extends IdempotencyKeysError {
+    public readonly status: number;
+    public constructor(status: number, reason: string) {
+        super(`A response with status ${status} can't be replayed: ${reason}`);
+        this.name = 'IdempotencyKeysResponseError';
+        this.status = status;
+    }
+}

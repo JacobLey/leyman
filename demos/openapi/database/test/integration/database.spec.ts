@@ -7,7 +7,7 @@ import { getTableConfig } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { notes } from '@leyman/demo-openapi-database';
 import { expect } from '@leyman/expect';
-import { createTableSql, PostgresStore } from 'idempotency-keys';
+import { createTableSql, PostgresStore } from 'idempotency-keys/postgres';
 import { before, suite } from 'mocha-chain';
 import { PgDolly } from 'pg-dolly';
 

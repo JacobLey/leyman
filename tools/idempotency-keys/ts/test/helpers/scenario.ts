@@ -7,7 +7,7 @@ import type {
 import type { Scenario, VectorResponse } from './vectors.js';
 import { setTimeout } from 'node:timers/promises';
 import { expect } from '@leyman/expect';
-import { computeFingerprint } from 'idempotency-keys';
+import { computeFingerprint, IdempotencyKeysResponseError } from 'idempotency-keys';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -84,9 +84,10 @@ export const runScenario = async (scenario: Scenario, keys: IdempotencyKeys): Pr
         } else if ('await' in step) {
             check(await started.get(step.await)!, step.expect, step.response);
         } else if ('respond' in step) {
-            expect(await attempts.get(step.respond)!.respond(toStored(step.response))).to.equal(
-                step.expect
-            );
+            const responded = attempts.get(step.respond)!.respond(toStored(step.response));
+            await (step.expect === 'error'
+                ? expect(responded).to.be.rejectedWith(IdempotencyKeysResponseError)
+                : expect(responded).to.eventually.equal(step.expect));
         } else {
             expect(await attempts.get(step.release)!.release()).to.equal(step.expect);
         }

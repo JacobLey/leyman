@@ -106,7 +106,7 @@ Use the raw body bytes. A body parsed and serialized again may differ from the b
 
 With `outcome: 'run'`, the request holds the key. End it with one of:
 
-- `attempt.respond({ status, headers, body })`, which applies the respond policy and resolves to `'stored'`, `'released'`, `'lost'` (its lease ran out and another request took over, so nothing changed) or `'refused'` (a response a replay couldn't send; the store isn't touched and the attempt still holds the key, so respond again or release it).
+- `attempt.respond({ status, headers, body })`, which applies the respond policy and resolves to `'stored'`, `'released'` or `'lost'` (its lease ran out and another request took over, so nothing changed). It rejects with `IdempotencyKeysResponseError` for a response a replay couldn't send (a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`), without touching the store, so the attempt still holds the key: respond again or release it.
 - `attempt.release()`, which frees the key whatever the response, and resolves to whether it did.
 
 An attempt that never ends (its server crashed, or the handler threw) holds the key until its lease runs out, then the next request with the key runs.

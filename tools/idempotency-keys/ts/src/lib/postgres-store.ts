@@ -84,7 +84,7 @@ RETURNING token`;
         this.#readSql = `SELECT fingerprint, status, headers, body FROM ${name} WHERE identity = $1 AND expires_at > clock_timestamp()`;
         this.#completeSql = `UPDATE ${name} SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
 WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
-        this.#releaseSql = `DELETE FROM ${name} WHERE identity = $1 AND token = $2`;
+        this.#releaseSql = `DELETE FROM ${name} WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
         this.#expiredSql = `DELETE FROM ${name} WHERE expires_at <= clock_timestamp()`;
     }
 

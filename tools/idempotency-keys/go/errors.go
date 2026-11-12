@@ -13,6 +13,9 @@ var (
 	// ErrStoredRecord is a record a store can't read: a reply or row that isn't what the spec stores, which only a
 	// store written to by something else holds.
 	ErrStoredRecord = errors.New("idempotency-keys: unreadable stored record")
+	// ErrUnsendableResponse is a response [Attempt.Respond] can't store, as a replay couldn't send it: a status outside
+	// 200 to 599, or a body with a 204, 205 or 304. See the spec's "Responses" section.
+	ErrUnsendableResponse = errors.New("idempotency-keys: unsendable response")
 )
 
 // KeyHeaderError is an Idempotency-Key header that can't be read: more than one header, a malformed Structured Field

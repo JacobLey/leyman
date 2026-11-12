@@ -1,13 +1,9 @@
-import type { PostgresQueryable } from 'idempotency-keys';
+import type { PostgresQueryable } from 'idempotency-keys/postgres';
 import { readFile } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
 import { expect } from '@leyman/expect';
-import {
-    computeIdentity,
-    createTableSql,
-    IdempotencyKeysOptionError,
-    PostgresStore,
-} from 'idempotency-keys';
+import { computeIdentity, IdempotencyKeysOptionError } from 'idempotency-keys';
+import { createTableSql, PostgresStore } from 'idempotency-keys/postgres';
 import { suite, test } from 'mocha-chain';
 import { withDatabase } from '../helpers/database.js';
 
@@ -172,6 +168,12 @@ suite('PostgresStore', () => {
         await claim(store, identity, '1'.repeat(32), { leaseMs: 1, ttlMs: 2 });
         await setTimeout(10);
         expect(await store.complete(identity, '1'.repeat(32), response)).to.equal(false);
+    });
+
+    withStore.test('Releases nothing once the key expired', async ({ store, identity }) => {
+        await claim(store, identity, '1'.repeat(32), { leaseMs: 1, ttlMs: 2 });
+        await setTimeout(10);
+        expect(await store.release(identity, '1'.repeat(32))).to.equal(false);
     });
 
     withStore.test('Completes and releases only with the token', async ({ store, identity }) => {

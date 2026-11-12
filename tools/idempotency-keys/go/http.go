@@ -129,8 +129,9 @@ func (k *Keys) Middleware(options func(r *http.Request) HandleOptions) func(next
 // in byte order, each name's values in order.
 //
 // A request without a key runs as is, unless Required. When next panics, the attempt doesn't end: its lease runs out,
-// and a later request with the key runs. When the store fails to complete or release the response, it is still
-// sent, and the failure goes to the [WithOnError] hook.
+// and a later request with the key runs. When the response can't be stored ([ErrUnsendableResponse]) or the store
+// fails to complete or release it, it is still sent, the failure goes to the [WithOnError] hook, and the attempt is
+// left to its lease.
 func (k *Keys) Handle(writer http.ResponseWriter, request *http.Request, options HandleOptions, next http.Handler) {
 	values := request.Header.Values("Idempotency-Key")
 	if len(values) == 0 {

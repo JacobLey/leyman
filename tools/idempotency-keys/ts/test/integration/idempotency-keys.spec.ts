@@ -1,7 +1,12 @@
 import type { IdempotencyNotifier } from 'idempotency-keys';
 import { setTimeout } from 'node:timers/promises';
 import { expect } from '@leyman/expect';
-import { computeFingerprint, IdempotencyKeys, ValkeyStore } from 'idempotency-keys';
+import {
+    computeFingerprint,
+    IdempotencyKeys,
+    IdempotencyKeysResponseError,
+} from 'idempotency-keys';
+import { ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
 import { attemptOf } from '../helpers/scenario.js';
 import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
@@ -83,11 +88,13 @@ suite('IdempotencyKeys', () => {
 
     for (const status of [1.5, 600]) {
         withStore.test(
-            `Refuses a status of ${status}, keeping the key`,
+            `Rejects a status of ${status}, keeping the key`,
             async ({ store, fingerprint }) => {
                 const keys = new IdempotencyKeys({ store, waitMs: 0 });
                 const first = attemptOf(await keys.begin({ ...request, fingerprint }));
-                expect(await first.respond({ ...response, status })).to.equal('refused');
+                await expect(first.respond({ ...response, status })).to.be.rejectedWith(
+                    IdempotencyKeysResponseError
+                );
                 expect(await keys.begin({ ...request, fingerprint })).to.have.property(
                     'outcome',
                     'conflict'

@@ -1,15 +1,12 @@
 import type { Client, Pool } from 'pg';
 import type { IdempotencyNotifier, IdempotencyStore } from 'idempotency-keys';
 import type { ValkeyContext } from '../helpers/valkey.js';
-import {
-    IdempotencyKeys,
-    PostgresNotifier,
-    PostgresStore,
-    ValkeyNotifier,
-    ValkeyStore,
-} from 'idempotency-keys';
+import { IdempotencyKeys } from 'idempotency-keys';
+import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
+import { ValkeyNotifier, ValkeyStore } from 'idempotency-keys/valkey';
 import { suite } from 'mocha-chain';
 import { withDatabase } from '../helpers/database.js';
+import { MemoryStore } from '../helpers/memory-store.js';
 import { runScenario } from '../helpers/scenario.js';
 import { closeValkey, valkeyContext } from '../helpers/valkey.js';
 import { vectors } from '../helpers/vectors.js';
@@ -22,6 +19,7 @@ interface Setup {
 }
 
 const stores: readonly (readonly [string, (context: Context) => IdempotencyStore])[] = [
+    ['Memory (the example store)', () => new MemoryStore()],
     ['Postgres', ({ pool }) => new PostgresStore({ client: pool })],
     [
         'Valkey',

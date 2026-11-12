@@ -1,6 +1,6 @@
 import type { Context } from 'mocha';
 import { Client, Pool } from 'pg';
-import { createTableSql } from 'idempotency-keys';
+import { createTableSql } from 'idempotency-keys/postgres';
 import { before } from 'mocha-chain';
 import { PgDolly } from 'pg-dolly';
 

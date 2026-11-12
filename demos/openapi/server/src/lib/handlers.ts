@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the spec documents them */
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Note } from '@leyman/demo-openapi-spec/notes.openapi.yaml';
-import type { PostgresQueryable } from 'idempotency-keys';
+import type { PostgresQueryable } from 'idempotency-keys/postgres';
 import type { NotesHandlers } from './types.js';
 import { and, desc, eq, ilike } from 'drizzle-orm';
 import { notes } from '@leyman/demo-openapi-database';
