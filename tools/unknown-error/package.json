@@ -42,7 +42,8 @@
   "imports": {
     "#safe": "./dist/lib/safe.js",
     "#to-error": "./dist/lib/to-error.js",
-    "#walk": "./dist/lib/walk.js"
+    "#walk": "./dist/lib/walk.js",
+    "#test/*": "./dist-test/*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

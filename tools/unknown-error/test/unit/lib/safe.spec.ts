@@ -2,7 +2,12 @@ import { runInNewContext } from 'node:vm';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
 import { hasProperty, isError, isObject, safeGet, safeKeys, safeStringify } from '#safe';
-import { hasNativeIsError, hostileProxy, removeIsError, restoreIsError } from '../helpers.js';
+import {
+    hasNativeIsError,
+    hostileProxy,
+    removeIsError,
+    restoreIsError,
+} from '#test/unit/helpers.js';
 
 class CustomError extends Error {
     public override name = 'CustomError';
