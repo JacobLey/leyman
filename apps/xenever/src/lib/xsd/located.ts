@@ -453,6 +453,41 @@ export const checkDerivationSet = (
 };
 
 /**
+ * A way of deriving a type from another.
+ */
+export type Derivation = 'extension' | 'list' | 'restriction' | 'union';
+
+/**
+ * Whether a global type forbids being derived from in a way: its `final`, or else its file's `finalDefault`,
+ * lists the way or is `#all`. A simple type is only ever final for restriction, list and union, which is all
+ * its `final` means in XSD 1.0 ([XSD 1.0 Part 1 §3.14.2](https://www.w3.org/TR/xmlschema-1/#Simple_Type_Definition_details)),
+ * and a complex type for extension and restriction
+ * ([§3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type)).
+ *
+ * @param component - the type's `xs:simpleType` or `xs:complexType` element
+ * @param derivation - the way
+ * @returns whether it forbids it
+ */
+export const isFinal = (component: Located, derivation: Derivation): boolean => {
+    const canBeFinal =
+        component.node.localName === 'simpleType'
+            ? derivation !== 'extension'
+            : derivation === 'extension' || derivation === 'restriction';
+    const attribute =
+        component.node.attributes.find(
+            candidate => candidate.namespace === null && candidate.localName === 'final'
+        ) ??
+        component.doc.root.attributes.find(
+            candidate => candidate.namespace === null && candidate.localName === 'finalDefault'
+        );
+    if (!canBeFinal || attribute === undefined) {
+        return false;
+    }
+    const value = collapsed(attribute);
+    return value === '#all' || value.split(' ').includes(derivation);
+};
+
+/**
  * Reads a non-negative integer attribute.
  *
  * @param at - its element

@@ -2,7 +2,7 @@ import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
 import type { BigIntegerKind, IntKind, SimpleType } from '#internal/lib/schema/ir.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { XmlAttributeNode } from '#internal/lib/xml/nodes.js';
-import type { Construct, Located } from './located.js';
+import type { Construct, Derivation, Located } from './located.js';
 import { builtins, InvalidValueError, whitespaceOrder } from '#internal/lib/simple/builtins.js';
 import {
     checkDerivationSet,
@@ -27,9 +27,14 @@ export interface SimpleContext {
     /**
      * The simple type a QName names.
      *
-     * @throws {XeneverInvalidSchemaError} when it names no type, or a complex one
+     * @throws {XeneverInvalidSchemaError} when it names no type, a complex one, or one final for the derivation
      */
-    readonly simpleByQName: (at: Located, attribute: XmlAttributeNode, text?: string) => SimpleType;
+    readonly simpleByQName: (
+        at: Located,
+        attribute: XmlAttributeNode,
+        derivation: Derivation,
+        text?: string
+    ) => SimpleType;
     /**
      * The anonymous simple type an `xs:simpleType` element defines.
      */
@@ -510,7 +515,7 @@ export class SimpleTypeBuilder {
             // Its restrictions are the primitive types, which only XML Schema itself defines.
             invalid(at, 'Only a built-in type may restrict `xs:anySimpleType`', baseAttribute);
         }
-        return this.#context.simpleByQName(at, baseAttribute!);
+        return this.#context.simpleByQName(at, baseAttribute!, 'restriction');
     }
 
     /**
@@ -531,7 +536,7 @@ export class SimpleTypeBuilder {
         }
         const item = inline
             ? this.#context.anonymousSimple(inline)
-            : this.#context.simpleByQName(at, itemType!);
+            : this.#context.simpleByQName(at, itemType!, 'list');
         // The item type may itself be a list, which the compiled type reports.
         return this.#context.record({ kind: 'list', item } as SimpleType, at);
     }
@@ -550,7 +555,7 @@ export class SimpleTypeBuilder {
         const memberTypes = construct.attributes.get('memberTypes');
         const named = memberTypes ? collapsed(memberTypes).split(' ').filter(Boolean) : [];
         const members = [
-            ...named.map(text => this.#context.simpleByQName(at, memberTypes!, text)),
+            ...named.map(text => this.#context.simpleByQName(at, memberTypes!, 'union', text)),
             ...construct.children.map(child => this.#context.anonymousSimple(child)),
         ];
         if (members.length === 0) {

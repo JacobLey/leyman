@@ -82,6 +82,24 @@ suite('loadXsd elements and attributes', () => {
             expect(elements.map(({ name }) => name)).to.deep.equal(['a']);
         });
 
+        test('Derives from types that are final only for other derivations', async () => {
+            const { types } = await loadSchema(
+                `<xs:simpleType name="S" final="list union"><xs:restriction base="xs:string"/></xs:simpleType>
+                <xs:simpleType name="R"><xs:restriction base="S"/></xs:simpleType>
+                <xs:complexType name="Text"><xs:simpleContent><xs:extension base="S"/></xs:simpleContent></xs:complexType>
+                <xs:complexType name="Open" final=""/>
+                <xs:complexType name="Wider"><xs:complexContent><xs:extension base="Open"/></xs:complexContent></xs:complexType>`,
+                'finalDefault="#all"'
+            );
+            expect(types.map(({ name }) => name)).to.deep.equal([
+                'S',
+                'R',
+                'Text',
+                'Open',
+                'Wider',
+            ]);
+        });
+
         test('Ignores attributes in other namespaces', async () => {
             const { elements } = await loadSchema(
                 '<xs:element name="a" type="xs:string" ext:note="x" xmlns:ext="urn:ext"/>'

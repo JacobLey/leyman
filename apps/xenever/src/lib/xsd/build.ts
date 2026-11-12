@@ -12,7 +12,14 @@ import type {
 } from '#internal/lib/schema/ir.js';
 import type { StandardSchemaV1 } from '#internal/lib/standard-schema.js';
 import type { XmlAttributeNode, XmlElementNode } from '#internal/lib/xml/nodes.js';
-import type { Construct, Grammar, Located, ReadOccurs, SchemaDocument } from './located.js';
+import type {
+    Construct,
+    Derivation,
+    Grammar,
+    Located,
+    ReadOccurs,
+    SchemaDocument,
+} from './located.js';
 import type { Wildcard } from './wildcards.js';
 import {
     reasonOf,
@@ -38,6 +45,7 @@ import {
     checkDerivationSet,
     clark,
     invalid,
+    isFinal,
     isTrue,
     locationIn,
     many,
@@ -496,7 +504,8 @@ export class SchemaBuilder {
         this.#tables = tables;
         this.#options = options;
         this.#simple = new SimpleTypeBuilder({
-            simpleByQName: (at, attribute, text) => this.#simpleByQName(at, attribute, text),
+            simpleByQName: (at, attribute, derivation, text) =>
+                this.#simpleByQName(at, attribute, text, derivation),
             anonymousSimple: at => this.#simpleType(at, false),
             compile: (type, at) => this.#checked(type, at, () => compileSimple(type, '/')),
             record: (value, at) => this.#record(value, at),
@@ -700,14 +709,16 @@ export class SchemaBuilder {
      * @param attribute - the attribute naming it
      * @param isComplete - whether a complex type must be filled in already, as a base type must
      * @param text - the QName, when the attribute holds a list of them
+     * @param derivation - how the type is derived from, if it is
      * @returns the type
-     * @throws {XeneverInvalidSchemaError} when it names no type
+     * @throws {XeneverInvalidSchemaError} when it names no type, or one final for the derivation
      */
     #typeByQName(
         at: Located,
         attribute: XmlAttributeNode,
         isComplete: boolean,
-        text?: string
+        text?: string,
+        derivation?: Derivation
     ): Type {
         const { namespace, localName } = resolveQName(at, attribute, text);
         if (namespace === xsdNamespace) {
@@ -716,6 +727,13 @@ export class SchemaBuilder {
         const name = clark(namespace, localName);
         const component =
             this.#tables.types.get(name) ?? invalid(at, `Type ${name} is not defined`, attribute);
+        if (derivation !== undefined && isFinal(component, derivation)) {
+            invalid(
+                at,
+                `Type ${name} is final for ${derivation}, so it can not be derived from here`,
+                attribute
+            );
+        }
         if (component.node.localName === 'simpleType') {
             return this.#simpleType(component, true);
         }
@@ -735,11 +753,18 @@ export class SchemaBuilder {
      * @param at - the construct naming it
      * @param attribute - the attribute naming it
      * @param text - the QName, when the attribute holds a list of them
+     * @param derivation - how the type is derived from, if it is
      * @returns the type
-     * @throws {XeneverInvalidSchemaError} when it names no type, or a complex type
+     * @throws {XeneverInvalidSchemaError} when it names no type, a complex type, or one final for the
+     * derivation
      */
-    #simpleByQName(at: Located, attribute: XmlAttributeNode, text?: string): SimpleType {
-        const type = this.#typeByQName(at, attribute, false, text);
+    #simpleByQName(
+        at: Located,
+        attribute: XmlAttributeNode,
+        text?: string,
+        derivation?: Derivation
+    ): SimpleType {
+        const type = this.#typeByQName(at, attribute, false, text, derivation);
         if (type.kind === 'complex') {
             invalid(
                 at,
@@ -1484,7 +1509,16 @@ export class SchemaBuilder {
         construct: Construct
     ): { readonly base: Type; readonly attribute: XmlAttributeNode } {
         const attribute = required(at, construct, 'base');
-        return { base: this.#typeByQName(at, attribute, true), attribute };
+        return {
+            base: this.#typeByQName(
+                at,
+                attribute,
+                true,
+                undefined,
+                at.node.localName as Derivation
+            ),
+            attribute,
+        };
     }
 
     /**
