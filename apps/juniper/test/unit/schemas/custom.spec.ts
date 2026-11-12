@@ -1,5 +1,5 @@
 import type { SchemaType } from 'juniper';
-import type { AvailableProperties } from '../../types.js';
+import type { AvailableProperties } from '#test/types.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { customSchema } from 'juniper';

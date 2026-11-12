@@ -1,7 +1,7 @@
-import type { ConditionalResult, SchemaGenerics, SchemaParams } from '../lib/schema.js';
-import type { Intersect, Schema, SchemaType } from '../lib/types.js';
+import type { ConditionalResult, SchemaGenerics, SchemaParams } from '#internal/lib/schema.js';
+import type { Intersect, Schema, SchemaType } from '#internal/lib/types.js';
 import type { NullSchema } from './null.js';
-import { AbstractSchema } from '../lib/schema.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
 
 type AnyMergeSchema = MergeSchema<any>;
 

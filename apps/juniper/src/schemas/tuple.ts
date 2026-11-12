@@ -1,4 +1,4 @@
-import type { AbstractSchema, ConditionalResult, SchemaGenerics } from '../lib/schema.js';
+import type { AbstractSchema, ConditionalResult, SchemaGenerics } from '#internal/lib/schema.js';
 import type {
     ConditionalNullable,
     IsNever,
@@ -6,7 +6,7 @@ import type {
     Schema,
     SchemaType,
     ToBaseType,
-} from '../lib/types.js';
+} from '#internal/lib/types.js';
 import type { ArrayParams, ArrayType, RequiredPrefixItems } from './array.js';
 import type { NullSchema } from './null.js';
 import { ArraySchema, ArraySchemaOverride, prefixItemsSym } from './array.js';

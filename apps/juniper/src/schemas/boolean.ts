@@ -1,6 +1,6 @@
-import type { SchemaGenerics, SchemaParams } from '../lib/schema.js';
-import type { Nullable } from '../lib/types.js';
-import { AbstractSchema } from '../lib/schema.js';
+import type { SchemaGenerics, SchemaParams } from '#internal/lib/schema.js';
+import type { Nullable } from '#internal/lib/types.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
 
 type AnyBooleanSchema = BooleanSchema<boolean>;
 

@@ -1,5 +1,5 @@
 import type { SchemaType } from 'juniper';
-import type { AvailableProperties } from '../../types.js';
+import type { AvailableProperties } from '#test/types.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import {
@@ -13,7 +13,7 @@ import {
     stringSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 suite('define', () => {
     test('Tells an array from an empty object when comparing to the definition', () => {

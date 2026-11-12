@@ -3,7 +3,7 @@ import type {
     SchemaGenerics,
     SchemaParams,
     SerializationParams,
-} from '../lib/schema.js';
+} from '#internal/lib/schema.js';
 import type {
     AbstractStrip,
     ConditionalNullable,
@@ -17,11 +17,11 @@ import type {
     Nullable,
     Schema,
     SchemaType,
-} from '../lib/types.js';
+} from '#internal/lib/types.js';
 import type { NullSchema } from './null.js';
-import { maxInt } from '../lib/constants.js';
-import { AbstractSchema } from '../lib/schema.js';
-import { mergeAllOf } from '../lib/utils.js';
+import { maxInt } from '#internal/lib/constants.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
+import { mergeAllOf } from '#internal/lib/utils.js';
 import { MergeSchema } from './merge.js';
 import { NeverSchema } from './never.js';
 

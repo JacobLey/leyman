@@ -3,7 +3,7 @@ import type {
     SchemaGenerics,
     SchemaParams,
     SerializationParams,
-} from '../lib/schema.js';
+} from '#internal/lib/schema.js';
 import type {
     AbstractClean,
     ConditionalNullable,
@@ -11,10 +11,10 @@ import type {
     NotNullParameter,
     Nullable,
     SchemaType,
-} from '../lib/types.js';
+} from '#internal/lib/types.js';
 import type { NullSchema } from './null.js';
-import { AbstractSchema } from '../lib/schema.js';
-import { mergeAllOf } from '../lib/utils.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
+import { mergeAllOf } from '#internal/lib/utils.js';
 
 interface LimitWithExclusive {
     value: number;

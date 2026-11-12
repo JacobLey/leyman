@@ -1,7 +1,12 @@
-import type { SchemaGenerics } from '../lib/schema.js';
-import type { JsonSchema, OpenApi30JsonSchema, SchemaType, ToJsonParams } from '../lib/types.js';
-import { AbstractSchema } from '../lib/schema.js';
-import { copyJson } from '../lib/utils.js';
+import type { SchemaGenerics } from '#internal/lib/schema.js';
+import type {
+    JsonSchema,
+    OpenApi30JsonSchema,
+    SchemaType,
+    ToJsonParams,
+} from '#internal/lib/types.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
+import { copyJson } from '#internal/lib/utils.js';
 
 /**
  * "Schema" for importing your own custom JSON Schema document.

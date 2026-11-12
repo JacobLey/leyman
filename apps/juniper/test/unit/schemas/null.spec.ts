@@ -3,7 +3,7 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { nullSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 suite('NullSchema', () => {
     suite('toJSON', () => {

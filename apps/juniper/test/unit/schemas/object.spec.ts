@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion -- Asserting `PatternProperties` is what types the pattern, even though a plain string is accepted */
 import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
-import type { Flatten } from '../../types.js';
+import type { Flatten } from '#test/types.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { enumSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 suite('ObjectSchema', () => {
     suite('keywords', () => {

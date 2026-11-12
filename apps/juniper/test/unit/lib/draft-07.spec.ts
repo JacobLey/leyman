@@ -11,7 +11,7 @@ import {
     tupleSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 const toDraft07 = (schema: Schema<unknown>): unknown =>
     schema['~standard'].jsonSchema.input({ target: 'draft-07' });

@@ -3,7 +3,7 @@ import type {
     SchemaGenerics,
     SchemaParams,
     SerializationParams,
-} from '../lib/schema.js';
+} from '#internal/lib/schema.js';
 import type {
     ConditionalNullable,
     IsAny,
@@ -14,10 +14,10 @@ import type {
     Schema,
     SchemaType,
     ToBaseType,
-} from '../lib/types.js';
+} from '#internal/lib/types.js';
 import type { NullSchema } from './null.js';
-import { maxInt } from '../lib/constants.js';
-import { AbstractSchema } from '../lib/schema.js';
+import { maxInt } from '#internal/lib/constants.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
 import { NeverSchema } from './never.js';
 
 const containsSym = Symbol('contains');

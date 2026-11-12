@@ -1,6 +1,6 @@
-import type { SchemaGenerics, SchemaParams, SchemaRef } from '../lib/schema.js';
-import type { Nullable, Schema } from '../lib/types.js';
-import { AbstractSchema, refSym } from '../lib/schema.js';
+import type { SchemaGenerics, SchemaParams, SchemaRef } from '#internal/lib/schema.js';
+import type { Nullable, Schema } from '#internal/lib/types.js';
+import { AbstractSchema, refSym } from '#internal/lib/schema.js';
 
 interface RecursiveGenerics<T, N extends boolean> extends SchemaGenerics<Nullable<T, N>> {
     params: SchemaParams<Nullable<T, N>>;

@@ -16,7 +16,7 @@ import {
     tupleSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 // Schema itself is an abstract class, so use NumberSchema
 suite('schema', () => {

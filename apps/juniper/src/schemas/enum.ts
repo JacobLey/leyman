@@ -1,6 +1,6 @@
-import type { SchemaGenerics, SchemaParams, SerializationParams } from '../lib/schema.js';
-import type { JsonSchema, SchemaType } from '../lib/types.js';
-import { AbstractSchema } from '../lib/schema.js';
+import type { SchemaGenerics, SchemaParams, SerializationParams } from '#internal/lib/schema.js';
+import type { JsonSchema, SchemaType } from '#internal/lib/types.js';
+import { AbstractSchema } from '#internal/lib/schema.js';
 
 interface EnumParams<T> extends SchemaParams<T> {
     enum?: readonly T[];

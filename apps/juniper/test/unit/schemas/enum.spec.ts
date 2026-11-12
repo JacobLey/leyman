@@ -3,7 +3,7 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { enumSchema } from 'juniper';
 import { before, suite, test } from 'mocha-chain';
-import { compile } from '../../ajv.js';
+import { compile } from '#test/ajv.js';
 
 suite('EnumSchema', () => {
     suite('toJSON', () => {
