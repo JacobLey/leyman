@@ -1,0 +1,5 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="urn:main"
+    targetNamespace="urn:other">
+  <xs:import namespace="urn:main" schemaLocation="../main.xsd"/>
+  <xs:element name="note" type="m:Id"/>
+</xs:schema>

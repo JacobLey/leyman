@@ -42,13 +42,49 @@ const withLocation = (message: string, location: XmlErrorLocation): string =>
     `${message} (at ${location.path}, line ${location.line}, column ${location.column})`;
 
 /**
- * Error message, with where in the schema it applies.
+ * Where in an XSD file a construct is.
+ */
+export interface XsdLocation {
+    /**
+     * Path of the file, resolved as the importer read it.
+     */
+    readonly filePath: string;
+    /**
+     * Line number, 1-based (see `XmlLocation.line`).
+     */
+    readonly line: number;
+    /**
+     * Column, 1-based (see `XmlLocation.column`).
+     */
+    readonly column: number;
+}
+
+/**
+ * Where in a schema an error is: the path to the construct, and for an XSD, where in which file it is.
+ */
+export type SchemaErrorLocation =
+    | { readonly path: string }
+    | (XsdLocation & { readonly path: string });
+
+/**
+ * End of an error message saying where in the schema it applies.
+ *
+ * @param location - where the problem is
+ * @returns ` (at <path>)`, with the file, line and column for an XSD
+ */
+const schemaSuffix = (location: SchemaErrorLocation): string =>
+    'filePath' in location
+        ? ` (at ${location.path} in ${location.filePath}, line ${location.line}, column ${location.column})`
+        : ` (at ${location.path})`;
+
+/**
+ * Error message, with the file it is about.
  *
  * @param message - description of the problem
- * @param path - path to the construct
+ * @param filePath - the file it is about
  * @returns message ending with the path
  */
-const withPath = (message: string, path: string): string => `${message} (at ${path})`;
+const withPath = (message: string, filePath: string): string => `${message} (at ${filePath})`;
 
 /**
  * Base class of every error xenever throws.
@@ -117,44 +153,73 @@ export class XeneverValidationError extends XeneverDocumentError {
 }
 
 /**
- * The schema is not valid: a schema value xenever can't use, or an XSD that breaks the XML Schema rules.
+ * Base class of the errors about a schema, which say where in it the problem is: the path to the construct, as
+ * a JSON Pointer into a schema value (`/type/content/particles/0`) or, for an XSD, as the path to its element
+ * in the file (`/xs:schema/xs:complexType[2]/xs:sequence`, see `XmlErrorLocation.path`) along with the file,
+ * line and column.
  */
-export class XeneverInvalidSchemaError extends XeneverError {
+export abstract class XeneverSchemaError extends XeneverError {
     /**
-     * Path to the invalid construct in the schema.
+     * Path to the construct.
      */
     public readonly path: string;
+    /**
+     * For an XSD, the file the construct is in.
+     */
+    // Declared, not defined, so a schema value's error has no such properties at all.
+    declare public readonly filePath?: string;
+    /**
+     * For an XSD, the line the construct starts on.
+     */
+    declare public readonly line?: number;
+    /**
+     * For an XSD, the column the construct starts at.
+     */
+    declare public readonly column?: number;
 
     /**
      * @param message - description of the problem
-     * @param options - error details
-     * @param options.path - path to the invalid construct in the schema
+     * @param options - error options, and where the problem is
      */
-    public constructor(message: string, options: ErrorOptions & { path: string }) {
-        super(withPath(message, options.path), options);
-        this.name = 'XeneverInvalidSchemaError';
+    public constructor(message: string, options: ErrorOptions & SchemaErrorLocation) {
+        super(`${message}${schemaSuffix(options)}`, options);
+        this.name = 'XeneverSchemaError';
         this.path = options.path;
+        if (!('filePath' in options)) {
+            return;
+        }
+
+        this.filePath = options.filePath;
+        this.line = options.line;
+        this.column = options.column;
     }
 }
 
 /**
- * The XSD is valid, but uses a construct xenever doesn't support, e.g. a substitution group.
+ * The schema is not valid: a schema value xenever can't use, or an XSD that breaks the XML Schema rules.
  */
-export class XeneverUnsupportedError extends XeneverError {
-    /**
-     * Path to the unsupported construct in the schema.
-     */
-    public readonly path: string;
-
+export class XeneverInvalidSchemaError extends XeneverSchemaError {
     /**
      * @param message - description of the problem
-     * @param options - error details
-     * @param options.path - path to the unsupported construct in the schema
+     * @param options - error options, and where the problem is
      */
-    public constructor(message: string, options: ErrorOptions & { path: string }) {
-        super(withPath(message, options.path), options);
+    public constructor(message: string, options: ErrorOptions & SchemaErrorLocation) {
+        super(message, options);
+        this.name = 'XeneverInvalidSchemaError';
+    }
+}
+
+/**
+ * The schema is valid, but uses a construct xenever doesn't support, e.g. a substitution group in an XSD.
+ */
+export class XeneverUnsupportedError extends XeneverSchemaError {
+    /**
+     * @param message - description of the problem
+     * @param options - error options, and where the problem is
+     */
+    public constructor(message: string, options: ErrorOptions & SchemaErrorLocation) {
+        super(message, options);
         this.name = 'XeneverUnsupportedError';
-        this.path = options.path;
     }
 }
 
@@ -178,3 +243,15 @@ export class XeneverLoadError extends XeneverError {
         this.filePath = options.filePath;
     }
 }
+
+/**
+ * An error's message without the location its constructor appended, to rethrow it with another location.
+ *
+ * @param error - error about a document or schema
+ * @returns its message as given to the constructor
+ */
+export const reasonOf = (error: XeneverDocumentError | XeneverSchemaError): string => {
+    const suffix =
+        error instanceof XeneverSchemaError ? schemaSuffix(error) : withLocation('', error);
+    return error.message.slice(0, -suffix.length);
+};

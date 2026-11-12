@@ -1,0 +1,400 @@
+import { expect } from '@leyman/expect';
+import { suite, test } from 'mocha-chain';
+import { parse } from 'xenever';
+import { loadSchema } from './helpers.js';
+
+const tns = 'targetNamespace="urn:t" xmlns:t="urn:t"';
+
+suite('loadXsd elements and attributes', () => {
+    suite('Global elements', () => {
+        test('Takes the target namespace, a named simple type, nillable and a default', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="price" type="t:Price" nillable="true" default="1.5"/>
+                <xs:simpleType name="Price"><xs:restriction base="xs:decimal"/></xs:simpleType>`,
+                tns
+            );
+            expect(elements).to.have.length(1);
+            expect(elements[0]).to.deep.include({
+                kind: 'element',
+                name: 'price',
+                namespace: 'urn:t',
+                type: { kind: 'decimal' },
+                nillable: true,
+                default: '1.5',
+            });
+            expect(parse('<price xmlns="urn:t">2.25</price>', elements[0]!)).to.equal('2.25');
+            expect(parse('<price xmlns="urn:t"></price>', elements[0]!)).to.equal('1.5');
+        });
+
+        test('Takes a fixed value, and no namespace without a target namespace', async () => {
+            const { elements } = await loadSchema(
+                '<xs:element name="version" type="xs:string" fixed="4.0.0"/>'
+            );
+            expect(elements[0]).to.deep.equal({
+                ...elements[0],
+                kind: 'element',
+                name: 'version',
+                type: { kind: 'string' },
+                fixed: '4.0.0',
+            });
+            expect(elements[0]).not.to.have.property('namespace');
+        });
+
+        test('Implements Standard Schema', async () => {
+            const { elements } = await loadSchema('<xs:element name="n" type="xs:int"/>');
+            const result = await elements[0]!['~standard'].validate('<n>4</n>');
+            expect(result).to.deep.equal({ value: 4 });
+        });
+
+        test('Is of xs:anyType without a type', async () => {
+            const { elements } = await loadSchema('<xs:element name="anything"/>');
+            expect(elements[0]!.type).to.deep.equal({
+                kind: 'complex',
+                mixed: true,
+                attributes: [{ kind: 'anyAttribute' }],
+                content: {
+                    kind: 'sequence',
+                    particles: [{ kind: 'any', minOccurs: 0, maxOccurs: 'unbounded' }],
+                },
+            });
+            const value = parse('<anything a="1">text<b/></anything>', elements[0]!) as {
+                readonly attributes: Readonly<Record<string, unknown>>;
+            };
+            expect(value.attributes).to.have.property('#any');
+        });
+
+        test('Uses one xs:anyType object per load', async () => {
+            const { elements } = await loadSchema(
+                '<xs:element name="a"/><xs:element name="b" type="xs:anyType"/>'
+            );
+            expect(elements[0]!.type).to.equal(elements[1]!.type);
+            const other = await loadSchema('<xs:element name="a"/>');
+            expect(other.elements[0]!.type).not.to.equal(elements[0]!.type);
+        });
+
+        test('Accepts block and final, and annotations anywhere', async () => {
+            const { elements } = await loadSchema(
+                `<xs:annotation><xs:documentation>Doc <b>bold</b></xs:documentation><xs:appinfo source="x"/></xs:annotation>
+                <xs:element name="a" type="xs:string" block="#all" final="extension restriction" abstract="false">
+                    <xs:annotation><xs:documentation/></xs:annotation>
+                </xs:element>`
+            );
+            expect(elements.map(({ name }) => name)).to.deep.equal(['a']);
+        });
+
+        test('Ignores attributes in other namespaces', async () => {
+            const { elements } = await loadSchema(
+                '<xs:element name="a" type="xs:string" ext:note="x" xmlns:ext="urn:ext"/>'
+            );
+            expect(elements[0]!.type).to.deep.equal({ kind: 'string' });
+        });
+
+        test('Holds an anonymous simple type', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="size">
+                    <xs:simpleType><xs:restriction base="xs:string"><xs:enumeration value="S"/><xs:enumeration value="M"/></xs:restriction></xs:simpleType>
+                </xs:element>`
+            );
+            expect(elements[0]!.type).to.deep.equal({
+                kind: 'string',
+                facets: { enumeration: ['S', 'M'] },
+            });
+        });
+    });
+
+    suite('Local elements', () => {
+        test('Are unqualified by default, qualified by elementFormDefault or form', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="root"><xs:complexType><xs:sequence>
+                    <xs:element name="a" type="xs:string"/>
+                    <xs:element name="b" type="xs:string" form="qualified"/>
+                </xs:sequence></xs:complexType></xs:element>
+                <xs:element name="other"><xs:complexType><xs:sequence>
+                    <xs:element name="c" type="xs:string" form="unqualified" nillable="1" fixed="c"/>
+                </xs:sequence></xs:complexType></xs:element>`,
+                tns
+            );
+            expect(
+                parse('<t:root xmlns:t="urn:t"><a>1</a><t:b>2</t:b></t:root>', elements[0]!)
+            ).to.deep.equal({ attributes: {}, children: { a: '1', b: '2' } });
+            const qualified = await loadSchema(
+                `<xs:element name="root"><xs:complexType><xs:sequence>
+                    <xs:element name="a" type="xs:string"/>
+                    <xs:element name="b" type="xs:string" form="unqualified"/>
+                </xs:sequence></xs:complexType></xs:element>`,
+                `${tns} elementFormDefault="qualified"`
+            );
+            expect(
+                parse(
+                    '<root xmlns="urn:t"><a>1</a><b xmlns="">2</b></root>',
+                    qualified.elements[0]!
+                )
+            ).to.deep.equal({ attributes: {}, children: { a: '1', b: '2' } });
+            expect(elements[1]!.type).to.deep.equal({
+                kind: 'complex',
+                content: {
+                    kind: 'sequence',
+                    particles: [
+                        {
+                            kind: 'element',
+                            name: 'c',
+                            type: { kind: 'string' },
+                            nillable: true,
+                            fixed: 'c',
+                        },
+                    ],
+                },
+            });
+        });
+
+        test('Refer to global elements, copied with their own occurrences', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="item" type="xs:int"/>
+                <xs:element name="list"><xs:complexType><xs:sequence>
+                    <xs:element ref="t:item"/>
+                    <xs:element ref="t:item" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence></xs:complexType></xs:element>`,
+                tns
+            );
+            const [item, list] = elements;
+            const particles = (
+                list!.type as { readonly content: { readonly particles: readonly unknown[] } }
+            ).content.particles;
+            expect(particles[0]).to.equal(item);
+            expect(particles[1]).to.deep.include({
+                name: 'item',
+                namespace: 'urn:t',
+                minOccurs: 0,
+                maxOccurs: 'unbounded',
+            });
+            expect(item).not.to.have.property('minOccurs');
+        });
+
+        test('Drop particles that can never occur', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="e"><xs:complexType><xs:sequence>
+                    <xs:element name="a" type="xs:string" maxOccurs="0" minOccurs="0"/>
+                    <xs:element name="b" type="xs:string" minOccurs="+2" maxOccurs=" 3 "/>
+                    <xs:any maxOccurs="0" minOccurs="0"/>
+                    <xs:sequence maxOccurs="0" minOccurs="0"><xs:element name="c"/></xs:sequence>
+                    <xs:group ref="g" maxOccurs="0" minOccurs="0"/>
+                    <xs:element ref="d" maxOccurs="0" minOccurs="0"/>
+                </xs:sequence></xs:complexType></xs:element>
+                <xs:group name="g"><xs:sequence><xs:element name="d"/></xs:sequence></xs:group>
+                <xs:element name="d"/>`
+            );
+            expect(elements[0]!.type).to.deep.equal({
+                kind: 'complex',
+                content: {
+                    kind: 'sequence',
+                    particles: [
+                        {
+                            kind: 'element',
+                            name: 'b',
+                            type: { kind: 'string' },
+                            minOccurs: 2,
+                            maxOccurs: 3,
+                        },
+                    ],
+                },
+            });
+        });
+    });
+
+    suite('Attributes', () => {
+        test('Local attributes: use, default, fixed, form and attributeFormDefault', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="e"><xs:complexType>
+                    <xs:attribute name="a" type="xs:int" use="required"/>
+                    <xs:attribute name="b" default="x"/>
+                    <xs:attribute name="c" type="xs:string" fixed="y" form="qualified"/>
+                    <xs:attribute name="d" use="optional" form="unqualified">
+                        <xs:simpleType><xs:list itemType="xs:int"/></xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="gone" type="xs:string" use="prohibited"/>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            expect(elements[0]!.type).to.deep.equal({
+                kind: 'complex',
+                attributes: [
+                    { kind: 'attribute', name: 'a', type: { kind: 'int' }, use: 'required' },
+                    { kind: 'attribute', name: 'b', type: { kind: 'string' }, default: 'x' },
+                    {
+                        kind: 'attribute',
+                        name: 'c',
+                        type: { kind: 'string' },
+                        namespace: 'urn:t',
+                        fixed: 'y',
+                    },
+                    {
+                        kind: 'attribute',
+                        name: 'd',
+                        type: { kind: 'list', item: { kind: 'int' } },
+                    },
+                ],
+            });
+            const qualified = await loadSchema(
+                '<xs:element name="e"><xs:complexType><xs:attribute name="a"/></xs:complexType></xs:element>',
+                `${tns} attributeFormDefault="qualified"`
+            );
+            expect(qualified.elements[0]!.type).to.deep.equal({
+                kind: 'complex',
+                attributes: [
+                    { kind: 'attribute', name: 'a', type: { kind: 'string' }, namespace: 'urn:t' },
+                ],
+            });
+        });
+
+        test('Global attributes are qualified, and references may add a use or value', async () => {
+            const { elements } = await loadSchema(
+                `<xs:attribute name="lang" type="xs:language"/>
+                <xs:attribute name="v" type="xs:string" fixed="1"/>
+                <xs:element name="e"><xs:complexType>
+                    <xs:attribute ref="t:lang" use="required"/>
+                    <xs:attribute ref="t:v" fixed="1"/>
+                </xs:complexType></xs:element>
+                <xs:element name="f"><xs:complexType>
+                    <xs:attribute ref="t:lang" default="en"/>
+                    <xs:attribute ref="t:v"/>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            const [e, f] = elements.map(
+                element => (element.type as { readonly attributes: readonly unknown[] }).attributes
+            );
+            expect(e).to.deep.equal([
+                {
+                    kind: 'attribute',
+                    name: 'lang',
+                    type: { kind: 'language' },
+                    namespace: 'urn:t',
+                    use: 'required',
+                },
+                {
+                    kind: 'attribute',
+                    name: 'v',
+                    type: { kind: 'string' },
+                    namespace: 'urn:t',
+                    fixed: '1',
+                },
+            ]);
+            expect(f).to.deep.equal([
+                {
+                    kind: 'attribute',
+                    name: 'lang',
+                    type: { kind: 'language' },
+                    namespace: 'urn:t',
+                    default: 'en',
+                },
+                {
+                    kind: 'attribute',
+                    name: 'v',
+                    type: { kind: 'string' },
+                    namespace: 'urn:t',
+                    fixed: '1',
+                },
+            ]);
+        });
+
+        test('Attribute groups are inlined, with their prohibitions and wildcards', async () => {
+            const { elements } = await loadSchema(
+                `<xs:attributeGroup name="common">
+                    <xs:attribute name="id" type="xs:ID"/>
+                    <xs:attributeGroup ref="t:more"/>
+                    <xs:anyAttribute namespace="##other"/>
+                </xs:attributeGroup>
+                <xs:attributeGroup name="more">
+                    <xs:attribute name="class" type="xs:NMTOKENS"/>
+                    <xs:attribute name="no" use="prohibited"/>
+                </xs:attributeGroup>
+                <xs:element name="e"><xs:complexType>
+                    <xs:attributeGroup ref="t:common"/>
+                    <xs:anyAttribute namespace="urn:a urn:b ##local"/>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            expect(elements[0]!.type).to.deep.equal({
+                kind: 'complex',
+                attributes: [
+                    { kind: 'attribute', name: 'id', type: { kind: 'ID' } },
+                    {
+                        kind: 'attribute',
+                        name: 'class',
+                        type: { kind: 'list', item: { kind: 'NMTOKEN' }, facets: { minLength: 1 } },
+                    },
+                    { kind: 'anyAttribute', namespace: ['urn:a', 'urn:b'] },
+                ],
+            });
+        });
+
+        test('Attribute wildcards: any, other, target namespace and local', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="a"><xs:complexType><xs:anyAttribute processContents="lax"/></xs:complexType></xs:element>
+                <xs:element name="b"><xs:complexType><xs:anyAttribute namespace="##other" processContents="skip"/></xs:complexType></xs:element>
+                <xs:element name="c"><xs:complexType><xs:anyAttribute namespace="##targetNamespace ##local" processContents="strict"/></xs:complexType></xs:element>`,
+                tns
+            );
+            expect(
+                elements.map(
+                    element =>
+                        (element.type as { readonly attributes: readonly unknown[] }).attributes
+                )
+            ).to.deep.equal([
+                [{ kind: 'anyAttribute' }],
+                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
+                [{ kind: 'anyAttribute', namespace: ['urn:t', null] }],
+            ]);
+        });
+
+        test('Attribute wildcards intersect in a type, and unite in an extension', async () => {
+            const { types } = await loadSchema(
+                `<xs:attributeGroup name="any"><xs:anyAttribute/></xs:attributeGroup>
+                <xs:attributeGroup name="a"><xs:anyAttribute namespace="urn:a"/></xs:attributeGroup>
+                <xs:attributeGroup name="other"><xs:anyAttribute namespace="##other"/></xs:attributeGroup>
+                <xs:complexType name="AnyThenA"><xs:attributeGroup ref="t:any"/><xs:anyAttribute namespace="urn:a"/></xs:complexType>
+                <xs:complexType name="AThenAny"><xs:attributeGroup ref="t:a"/><xs:anyAttribute/></xs:complexType>
+                <xs:complexType name="Other"><xs:attributeGroup ref="t:other"/><xs:anyAttribute namespace="##other"/></xs:complexType>
+                <xs:complexType name="OtherAgain"><xs:complexContent><xs:extension base="t:Other">
+                    <xs:anyAttribute namespace="##other"/>
+                </xs:extension></xs:complexContent></xs:complexType>
+                <xs:complexType name="OtherOrLocal"><xs:complexContent><xs:extension base="t:Other">
+                    <xs:anyAttribute namespace="##targetNamespace ##local"/>
+                </xs:extension></xs:complexContent></xs:complexType>
+                <xs:complexType name="AOrOther"><xs:complexContent><xs:extension base="t:AThenAny">
+                    <xs:anyAttribute namespace="##other"/>
+                </xs:extension></xs:complexContent></xs:complexType>`,
+                tns
+            );
+            expect(
+                types.map(
+                    ({ type }) => (type as { readonly attributes: readonly unknown[] }).attributes
+                )
+            ).to.deep.equal([
+                [{ kind: 'anyAttribute', namespace: ['urn:a'] }],
+                [{ kind: 'anyAttribute', namespace: ['urn:a'] }],
+                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
+                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
+                [{ kind: 'anyAttribute' }],
+                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
+            ]);
+        });
+
+        test('The XML namespace is built in', async () => {
+            const { elements } = await loadSchema(
+                `<xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="https://www.w3.org/2001/xml.xsd"/>
+                <xs:element name="e"><xs:complexType>
+                    <xs:attribute ref="xml:id"/>
+                    <xs:attributeGroup ref="xml:specialAttrs"/>
+                </xs:complexType></xs:element>`
+            );
+            const value = parse(
+                '<e xml:id="a" xml:lang="en" xml:space="preserve" xml:base="https://x/"/>',
+                elements[0]!
+            );
+            expect(value).to.deep.equal({
+                attributes: { id: 'a', lang: 'en', space: 'preserve', base: 'https://x/' },
+            });
+        });
+    });
+});

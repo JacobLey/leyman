@@ -37,7 +37,8 @@
     "!dist/tsconfig.tsbuildinfo"
   ],
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./xsd": "./dist/xsd.js"
   },
   "dependencies": {
     "@rgrove/parse-xml": "catalog:"

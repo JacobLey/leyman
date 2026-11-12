@@ -1,0 +1,6 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:main">
+  <xs:include schemaLocation="main.xsd"/>
+  <xs:simpleType name="Id">
+    <xs:restriction base="xs:token"/>
+  </xs:simpleType>
+</xs:schema>

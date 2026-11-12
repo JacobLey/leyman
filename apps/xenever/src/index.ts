@@ -1,9 +1,15 @@
-export type { XmlErrorLocation, XmlLocation } from './lib/errors.js';
+export type {
+    SchemaErrorLocation,
+    XmlErrorLocation,
+    XmlLocation,
+    XsdLocation,
+} from './lib/errors.js';
 export {
     XeneverDocumentError,
     XeneverError,
     XeneverInvalidSchemaError,
     XeneverLoadError,
+    XeneverSchemaError,
     XeneverUnsupportedError,
     XeneverValidationError,
     XeneverXmlError,

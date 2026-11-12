@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A slice of the Maven POM schema (https://maven.apache.org/xsd/maven-4.0.0.xsd), in its style. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns="http://maven.apache.org/POM/4.0.0" targetNamespace="http://maven.apache.org/POM/4.0.0">
+  <xs:element name="project" type="Model">
+    <xs:annotation>
+      <xs:documentation source="version">3.0.0+</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:complexType name="Model">
+    <xs:all>
+      <xs:element minOccurs="0" name="modelVersion" type="xs:string"/>
+      <xs:element minOccurs="0" name="parent" type="Parent"/>
+      <xs:element minOccurs="0" name="groupId" type="xs:string"/>
+      <xs:element minOccurs="0" name="artifactId" type="xs:string"/>
+      <xs:element minOccurs="0" name="version" type="xs:string"/>
+      <xs:element minOccurs="0" name="packaging" type="xs:string" default="jar"/>
+      <xs:element minOccurs="0" name="modules">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="module" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="properties">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="dependencies">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:all>
+    <xs:attribute name="child.project.url.inherit.append.path" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="Parent">
+    <xs:all>
+      <xs:element minOccurs="0" name="groupId" type="xs:string"/>
+      <xs:element minOccurs="0" name="artifactId" type="xs:string"/>
+      <xs:element minOccurs="0" name="version" type="xs:string"/>
+      <xs:element minOccurs="0" name="relativePath" type="xs:string" default="../pom.xml"/>
+    </xs:all>
+  </xs:complexType>
+  <xs:complexType name="Dependency">
+    <xs:all>
+      <xs:element minOccurs="0" name="groupId" type="xs:string"/>
+      <xs:element minOccurs="0" name="artifactId" type="xs:string"/>
+      <xs:element minOccurs="0" name="version" type="xs:string"/>
+      <xs:element minOccurs="0" name="type" type="xs:string" default="jar"/>
+      <xs:element minOccurs="0" name="scope" type="xs:string"/>
+      <xs:element minOccurs="0" name="optional" type="xs:string"/>
+    </xs:all>
+  </xs:complexType>
+</xs:schema>

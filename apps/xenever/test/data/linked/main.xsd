@@ -1,0 +1,13 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="urn:main" xmlns:o="urn:other"
+    targetNamespace="urn:main" elementFormDefault="qualified">
+  <xs:include schemaLocation="common.xsd"/>
+  <xs:import namespace="urn:other" schemaLocation="other/other.xsd"/>
+  <xs:element name="order">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="id" type="m:Id"/>
+        <xs:element ref="o:note" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

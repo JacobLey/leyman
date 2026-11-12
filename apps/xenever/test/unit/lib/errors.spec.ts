@@ -5,6 +5,7 @@ import {
     XeneverError,
     XeneverInvalidSchemaError,
     XeneverLoadError,
+    XeneverSchemaError,
     XeneverUnsupportedError,
     XeneverValidationError,
     XeneverXmlError,
@@ -54,6 +55,26 @@ suite('errors', () => {
                 name: 'XeneverInvalidSchemaError',
                 path: '/children/price',
                 message: 'Bad facet (at /children/price)',
+            });
+        });
+
+        test('Has no file location without one', () => {
+            const error = new XeneverInvalidSchemaError('Bad facet', { path: '/children/price' });
+            expect(error).to.be.instanceOf(XeneverSchemaError);
+            expect(error).not.to.have.any.keys('filePath', 'line', 'column');
+        });
+
+        test('Ends its message with the file, line and column of an XSD', () => {
+            const xsdLocation = {
+                filePath: '/schemas/order.xsd',
+                line: 4,
+                column: 9,
+                path: '/xs:schema',
+            };
+            const error = new XeneverInvalidSchemaError('Bad facet', xsdLocation);
+            expect(error).to.include({
+                ...xsdLocation,
+                message: 'Bad facet (at /xs:schema in /schemas/order.xsd, line 4, column 9)',
             });
         });
     });
