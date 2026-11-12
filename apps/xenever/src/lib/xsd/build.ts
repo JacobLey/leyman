@@ -607,6 +607,15 @@ export class SchemaBuilder {
                 this.#checked(type, origin, () => compileSimple(type, '/'));
             }
         }
+        for (const attribute of this.#globalAttributes.values()) {
+            // An attribute no type uses is still checked, on a root of its own.
+            const root = {
+                kind: 'element',
+                name: 'root',
+                type: { kind: 'complex', attributes: [attribute] },
+            };
+            this.#checked(root, this.#origins.get(attribute)!, () => compileElement(root, '/'));
+        }
         return { elements, types };
     }
 

@@ -1076,4 +1076,16 @@ suite('loadXsd errors', () => {
             { filePath: mainPath }
         );
     });
+
+    test('Checks global attributes no type uses', async () => {
+        await expectSchemaError(
+            loadSchema(
+                '<xs:simpleType name="Id"><xs:restriction base="xs:ID"/></xs:simpleType><xs:attribute name="a" type="t:Id" default="i"/>',
+                tns
+            ),
+            XeneverInvalidSchemaError,
+            /^An `ID` can not have a `default`/v,
+            { filePath: mainPath, path: '/xs:schema/xs:attribute' }
+        );
+    });
 });
