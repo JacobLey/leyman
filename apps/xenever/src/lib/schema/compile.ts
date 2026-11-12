@@ -1,0 +1,559 @@
+import type { XeneverInvalidSchemaError, XeneverUnsupportedError } from '#internal/lib/errors.js';
+import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
+import type { AllPart, ModelSymbol, Pattern } from './content.js';
+import { compileSimple } from '#internal/lib/simple/compile-simple.js';
+import { ncNamePattern } from '#internal/lib/simple/names.js';
+import {
+    checkArray,
+    checkInteger,
+    checkObject,
+    checkString,
+    childPath,
+    invalidSchema,
+} from './check.js';
+import { ContentModel } from './content.js';
+
+/**
+ * Identifies a name by namespace name and local name: prefixes are cosmetic.
+ *
+ * @param namespace - namespace name, `null` for none
+ * @param localName - name without its prefix
+ * @returns a key that is equal for equal names
+ */
+export const expandedName = (namespace: string | null, localName: string): string =>
+    JSON.stringify([namespace, localName]);
+
+/**
+ * How errors name an element or attribute.
+ *
+ * @param namespace - namespace name, `null` for none
+ * @param localName - name without its prefix
+ * @returns e.g. `` `item` `` or `` `item` in `urn:example` ``
+ */
+export const describeName = (namespace: string | null, localName: string): string =>
+    namespace === null ? `\`${localName}\`` : `\`${localName}\` in \`${namespace}\``;
+
+/**
+ * An attribute declaration, ready to read attributes.
+ */
+export interface CompiledAttribute {
+    readonly name: string;
+    readonly namespace: string | null;
+    readonly key: string;
+    readonly type: CompiledSimple;
+    readonly required: boolean;
+}
+
+/**
+ * A complex type's child elements: the model they must match, the declaration of each element by expanded
+ * name, and each key of `children` in declaration order with whether its value is an array.
+ */
+export interface CompiledContent {
+    readonly model: ContentModel;
+    readonly elements: ReadonlyMap<string, CompiledElement>;
+    readonly keys: readonly { readonly key: string; readonly array: boolean }[];
+}
+
+/**
+ * A complex type, ready to read elements.
+ */
+export interface CompiledComplex {
+    readonly kind: 'complex';
+    /**
+     * Attribute declarations by expanded name, in declaration order.
+     */
+    readonly attributes: ReadonlyMap<string, CompiledAttribute>;
+    readonly content: CompiledContent | null;
+    readonly text: CompiledSimple | null;
+}
+
+/**
+ * The type of an element.
+ */
+export type CompiledType =
+    | CompiledComplex
+    | { readonly kind: 'simple'; readonly simple: CompiledSimple };
+
+/**
+ * An element declaration, ready to read elements. Its type is set once compiled, after the declaration is
+ * cached, so a recursive reference finds it.
+ */
+export interface CompiledElement {
+    readonly name: string;
+    readonly namespace: string | null;
+    readonly key: string;
+    readonly type: CompiledType;
+}
+
+/**
+ * Element properties a declaration may have.
+ */
+const elementProperties = ['kind', 'name', 'type', 'namespace', 'minOccurs', 'maxOccurs', 'key'];
+
+/**
+ * Checks a local name.
+ *
+ * @param value - the `name` property
+ * @param path - path to the declaration
+ * @returns it, checked
+ * @throws {XeneverInvalidSchemaError} when it isn't an NCName
+ */
+const checkName = (value: unknown, path: string): string => {
+    if (typeof value !== 'string' || !ncNamePattern.test(value)) {
+        invalidSchema(`Name ${JSON.stringify(value)} is not an NCName`, childPath(path, 'name'));
+    }
+    return value as string;
+};
+
+/**
+ * Checks a namespace name.
+ *
+ * @param value - the `namespace` property
+ * @param path - path to the declaration
+ * @returns the namespace name, `null` when absent
+ * @throws {XeneverInvalidSchemaError} when it is empty: no namespace is written by leaving it out
+ */
+const checkNamespace = (value: unknown, path: string): string | null => {
+    const namespacePath = childPath(path, 'namespace');
+    const namespace = checkString(value, namespacePath);
+    if (namespace === '') {
+        invalidSchema(
+            'A namespace name must not be empty; leave it out for no namespace',
+            namespacePath
+        );
+    }
+    return namespace ?? null;
+};
+
+/**
+ * Checks a declaration's key.
+ *
+ * @param value - the `key` property
+ * @param fallback - the local name, the key when none is given
+ * @param path - path to the declaration
+ * @returns the key to use
+ * @throws {XeneverInvalidSchemaError} when it is empty or starts with `#`
+ */
+const checkKey = (value: unknown, fallback: string, path: string): string => {
+    const keyPath = childPath(path, 'key');
+    const key = checkString(value, keyPath);
+    if (key !== undefined && (key === '' || key.startsWith('#'))) {
+        invalidSchema(
+            'A key must not be empty or start with `#`, which marks synthetic keys',
+            keyPath
+        );
+    }
+    return key ?? fallback;
+};
+
+/**
+ * Checks a particle's occurrences.
+ *
+ * @param record - the particle
+ * @param path - path to it
+ * @returns its bounds, `max` infinite when unbounded
+ * @throws {XeneverInvalidSchemaError} when they aren't valid bounds
+ */
+const checkOccurs = (
+    record: Readonly<Record<string, unknown>>,
+    path: string
+): { readonly min: number; readonly max: number } => {
+    const min = checkInteger(record.minOccurs, childPath(path, 'minOccurs')) ?? 1;
+    const maxPath = childPath(path, 'maxOccurs');
+    const max =
+        record.maxOccurs === 'unbounded'
+            ? Number.POSITIVE_INFINITY
+            : (checkInteger(record.maxOccurs, maxPath, 1) ?? 1);
+    if (max < min) {
+        invalidSchema('`maxOccurs` is less than `minOccurs`', maxPath);
+    }
+    return { min, max };
+};
+
+/**
+ * Compiled element declarations and complex types, by schema value.
+ */
+const compiledElements = new WeakMap<object, CompiledElement>();
+const compiledComplexTypes = new WeakMap<object, CompiledComplex>();
+
+/**
+ * Checks and compiles an element declaration, once per declaration object. The first problem found throws a
+ * {@link XeneverInvalidSchemaError} or {@link XeneverUnsupportedError} with its path in the declaration.
+ *
+ * @param declaration - schema value of the declaration
+ * @param path - path to it
+ * @returns its compiled form
+ * @throws {XeneverInvalidSchemaError} when the declaration, or anything in it, is invalid
+ * @throws {XeneverUnsupportedError} when it uses something xenever doesn't support
+ */
+export const compileElement = (declaration: unknown, path: string): CompiledElement => {
+    const record = checkObject(declaration, elementProperties, path);
+    const cached = compiledElements.get(record);
+    if (cached) {
+        return cached;
+    }
+    if (record.kind !== 'element') {
+        invalidSchema(`Expected an element declaration, not ${JSON.stringify(record.kind)}`, path);
+    }
+    const name = checkName(record.name, path);
+    checkOccurs(record, path);
+    const compiled: { -readonly [K in keyof CompiledElement]: CompiledElement[K] } = {
+        name,
+        namespace: checkNamespace(record.namespace, path),
+        key: checkKey(record.key, name, path),
+        // Set below, once the declaration is cached for recursive references to find.
+        type: undefined as unknown as CompiledType,
+    };
+    compiledElements.set(record, compiled);
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
+    compiled.type = compileType(record.type, childPath(path, 'type'));
+    return compiled;
+};
+
+/**
+ * Checks and compiles the type of an element.
+ *
+ * @param type - schema value of the type
+ * @param path - path to it
+ * @returns its compiled form
+ */
+const compileType = (type: unknown, path: string): CompiledType =>
+    (type as { readonly kind?: unknown } | null)?.kind === 'complex'
+        ? // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
+          compileComplex(type as object, path)
+        : { kind: 'simple', simple: compileSimple(type, path) };
+
+/**
+ * Checks and compiles an attribute declaration.
+ *
+ * @param declaration - schema value of the declaration
+ * @param path - path to it
+ * @returns its compiled form
+ */
+const compileAttribute = (declaration: unknown, path: string): CompiledAttribute => {
+    const record = checkObject(
+        declaration,
+        ['kind', 'name', 'type', 'namespace', 'use', 'key'],
+        path
+    );
+    if (record.kind !== 'attribute') {
+        invalidSchema(
+            `Expected an attribute declaration, not ${JSON.stringify(record.kind)}`,
+            path
+        );
+    }
+    const name = checkName(record.name, path);
+    if (record.use !== undefined && !['optional', 'required'].includes(record.use as string)) {
+        invalidSchema('`use` must be `optional` or `required`', childPath(path, 'use'));
+    }
+    return {
+        name,
+        namespace: checkNamespace(record.namespace, path),
+        key: checkKey(record.key, name, path),
+        type: compileSimple(record.type, childPath(path, 'type')),
+        required: record.use === 'required',
+    };
+};
+
+/**
+ * Checks and compiles a complex type.
+ *
+ * @param type - schema value of the type
+ * @param path - path to it
+ * @returns its compiled form
+ */
+const compileComplex = (type: object, path: string): CompiledComplex => {
+    const cached = compiledComplexTypes.get(type);
+    if (cached) {
+        return cached;
+    }
+    const record = checkObject(type, ['kind', 'attributes', 'content', 'text'], path);
+
+    const attributesPath = childPath(path, 'attributes');
+    const attributes = new Map<string, CompiledAttribute>();
+    const attributeKeys = new Set<string>();
+    if (record.attributes !== undefined) {
+        for (const [index, declaration] of checkArray(
+            record.attributes,
+            attributesPath
+        ).entries()) {
+            const declarationPath = childPath(attributesPath, index);
+            const attribute = compileAttribute(declaration, declarationPath);
+            const name = expandedName(attribute.namespace, attribute.name);
+            if (attributes.has(name)) {
+                invalidSchema(
+                    `Attribute ${describeName(attribute.namespace, attribute.name)} is declared twice`,
+                    declarationPath
+                );
+            }
+            if (attributeKeys.has(attribute.key)) {
+                invalidSchema(`Attribute key \`${attribute.key}\` is used twice`, declarationPath);
+            }
+            attributes.set(name, attribute);
+            attributeKeys.add(attribute.key);
+        }
+    }
+
+    if (record.content !== undefined && record.text !== undefined) {
+        invalidSchema('A complex type has either `content` or `text`, not both', path);
+    }
+    const compiled: CompiledComplex = {
+        attributes,
+        kind: 'complex',
+        content:
+            record.content === undefined
+                ? null
+                : // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Content holds elements, which hold types
+                  compileContent(record.content, childPath(path, 'content')),
+        text:
+            record.text === undefined ? null : compileSimple(record.text, childPath(path, 'text')),
+    };
+    compiledComplexTypes.set(type, compiled);
+    return compiled;
+};
+
+/**
+ * Properties of a particle rather than its declaration.
+ */
+const occursProperties: ReadonlySet<string> = new Set(['minOccurs', 'maxOccurs']);
+
+/**
+ * Whether two schema values are the same data: functions (lazy getters) by identity, `minOccurs` and
+ * `maxOccurs` of the outermost value ignored, as they belong to the particle rather than the declaration.
+ *
+ * @param a - one value
+ * @param b - another
+ * @param isOutermost - whether these are the declarations themselves
+ * @returns whether they are equal
+ */
+const isSameDeclaration = (a: unknown, b: unknown, isOutermost = false): boolean => {
+    if (a === b) {
+        return true;
+    }
+    if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) {
+        return false;
+    }
+    const keys = (value: object): string[] =>
+        Object.keys(value)
+            .filter(key => !(isOutermost && occursProperties.has(key)))
+            .toSorted((keyA, keyB) => keyA.localeCompare(keyB));
+    const keysA = keys(a);
+    const keysB = keys(b);
+    return (
+        keysA.length === keysB.length &&
+        keysA.every(
+            (key, index) =>
+                key === keysB[index] &&
+                isSameDeclaration(
+                    (a as Readonly<Record<string, unknown>>)[key],
+                    (b as Readonly<Record<string, unknown>>)[key]
+                )
+        )
+    );
+};
+
+/**
+ * Kinds of model groups.
+ */
+const modelGroupKinds: ReadonlySet<unknown> = new Set(['sequence', 'choice', 'all']);
+
+/**
+ * Count of a key in a content model: at most once (1), or more than once (2).
+ */
+type Count = 1 | 2;
+
+/**
+ * Builds a content model's pattern, and what parsing its children needs.
+ */
+class ContentCompiler {
+    readonly #elements = new Map<
+        string,
+        { readonly compiled: CompiledElement; readonly raw: unknown }
+    >();
+    readonly #keys = new Map<string, string>();
+
+    /**
+     * Compiles a content model.
+     *
+     * @param group - its model group
+     * @param path - path to it
+     * @returns the compiled content
+     */
+    public compile(group: unknown, path: string): CompiledContent {
+        const record = checkObject(group, ['kind', 'particles', 'minOccurs', 'maxOccurs'], path);
+        if (!modelGroupKinds.has(record.kind)) {
+            invalidSchema(`Expected a model group, not ${JSON.stringify(record.kind)}`, path);
+        }
+        const { pattern, counts } = this.#particle(record, path);
+        const elements = new Map<string, CompiledElement>();
+        for (const [name, { compiled }] of this.#elements) {
+            elements.set(name, compiled);
+        }
+        return {
+            elements,
+            model: new ContentModel(pattern),
+            keys: [...counts].map(([key, count]) => ({ key, array: count === 2 })),
+        };
+    }
+
+    /**
+     * Compiles a particle: its pattern, and the count of each key in it (see `Counts` in `infer.ts`, which
+     * computes the same for the type).
+     *
+     * @param particle - schema value of the particle
+     * @param path - path to it
+     * @returns its pattern and counts, keys in declaration order
+     */
+    #particle(
+        particle: unknown,
+        path: string
+    ): { readonly pattern: Pattern; readonly counts: ReadonlyMap<string, Count> } {
+        const kind = (particle as { readonly kind?: unknown } | null)?.kind;
+        if (modelGroupKinds.has(kind)) {
+            return this.#group(particle, kind as 'all' | 'choice' | 'sequence', path);
+        }
+        let declaration: unknown = particle;
+        let declarationPath = path;
+        let occurs;
+        if (kind === 'lazy') {
+            const record = checkObject(particle, ['kind', 'get', 'minOccurs', 'maxOccurs'], path);
+            if (typeof record.get !== 'function') {
+                invalidSchema('Expected `get` to be a function', childPath(path, 'get'));
+            }
+            occurs = checkOccurs(record, path);
+            declaration = (record.get as () => unknown)();
+            declarationPath = `${childPath(path, 'get')}()`;
+        } else {
+            occurs = checkOccurs(checkObject(particle, elementProperties, path), path);
+        }
+        const compiled = this.#element(declaration, declarationPath);
+        const symbolName = expandedName(compiled.namespace, compiled.name);
+        const symbol: ModelSymbol = {
+            id: symbolName,
+            label: describeName(compiled.namespace, compiled.name),
+            matches: name => name === symbolName,
+        };
+        return {
+            pattern: { kind: 'repeat', item: { kind: 'symbol', symbol }, ...occurs },
+            counts: new Map([[compiled.key, occurs.max > 1 ? 2 : 1]]),
+        };
+    }
+
+    /**
+     * Compiles an element declaration in this model: Element Declarations Consistent
+     * ([XSD 1.1 Part 1 §3.8.6.3](https://www.w3.org/TR/xmlschema11-1/#cos-element-consistent)) needs every
+     * element of one name to have the same declaration, so children of a name are read one way and share a
+     * key, and two names never share a key.
+     *
+     * @param declaration - schema value of the declaration
+     * @param path - path to it
+     * @returns its compiled form
+     */
+    #element(declaration: unknown, path: string): CompiledElement {
+        const compiled = compileElement(declaration, path);
+        const name = expandedName(compiled.namespace, compiled.name);
+        const existing = this.#elements.get(name);
+        if (existing) {
+            if (!isSameDeclaration(existing.raw, declaration, true)) {
+                invalidSchema(
+                    `Element ${describeName(compiled.namespace, compiled.name)} is declared twice in one content model, differently`,
+                    path
+                );
+            }
+            return existing.compiled;
+        }
+        const keyOwner = this.#keys.get(compiled.key);
+        if (keyOwner !== undefined) {
+            invalidSchema(
+                `Key \`${compiled.key}\` is used by two elements in one content model; set \`key\` on one`,
+                path
+            );
+        }
+        this.#elements.set(name, { compiled, raw: declaration });
+        this.#keys.set(compiled.key, name);
+        return compiled;
+    }
+
+    /**
+     * Compiles a model group.
+     *
+     * @param group - schema value of the group
+     * @param kind - its kind
+     * @param path - path to it
+     * @returns its pattern and counts
+     */
+    #group(
+        group: unknown,
+        kind: 'all' | 'choice' | 'sequence',
+        path: string
+    ): { readonly pattern: Pattern; readonly counts: ReadonlyMap<string, Count> } {
+        const record = checkObject(group, ['kind', 'particles', 'minOccurs', 'maxOccurs'], path);
+        const occurs = checkOccurs(record, path);
+        const particlesPath = childPath(path, 'particles');
+        const particles = checkArray(record.particles, particlesPath);
+        if (kind === 'all' && occurs.max > 1) {
+            invalidSchema('An `all` group occurs at most once', childPath(path, 'maxOccurs'));
+        }
+        const compiled = particles.map((particle, index) => {
+            const particlePath = childPath(particlesPath, index);
+            const particleKind = (particle as { readonly kind?: unknown } | null)?.kind;
+            if (kind === 'all' && !['element', 'lazy'].includes(particleKind as string)) {
+                invalidSchema('An `all` group holds only elements', particlePath);
+            }
+            return this.#particle(particle, particlePath);
+        });
+
+        const counts = new Map<string, Count>();
+        for (const particle of compiled) {
+            for (const [key, count] of particle.counts) {
+                const existing = counts.get(key);
+                if (existing === undefined) {
+                    counts.set(key, count);
+                } else {
+                    // In a choice one branch occurs, so the largest count; otherwise every particle may.
+                    counts.set(key, kind === 'choice' ? (Math.max(existing, count) as Count) : 2);
+                }
+            }
+        }
+        if (occurs.max > 1) {
+            for (const key of counts.keys()) {
+                counts.set(key, 2);
+            }
+        }
+
+        if (kind === 'all') {
+            const parts = compiled.map(({ pattern }): AllPart => {
+                // Each particle of an `all` group compiled to a repeated symbol.
+                const repeat = pattern as Extract<Pattern, { readonly kind: 'repeat' }>;
+                const { min, max } = repeat;
+                return {
+                    min,
+                    max,
+                    symbol: (repeat.item as Extract<Pattern, { readonly kind: 'symbol' }>).symbol,
+                };
+            });
+            return { counts, pattern: { parts, kind: 'all', optional: occurs.min === 0 } };
+        }
+        const items = compiled.map(({ pattern }) => pattern);
+        return {
+            pattern: {
+                kind: 'repeat',
+                item: kind === 'choice' ? { kind: 'choice', items } : { kind: 'sequence', items },
+                ...occurs,
+            },
+            counts,
+        };
+    }
+}
+
+/**
+ * Checks and compiles a content model.
+ *
+ * @param group - its model group
+ * @param path - path to it
+ * @returns the compiled content
+ */
+const compileContent = (group: unknown, path: string): CompiledContent => {
+    const compiler = new ContentCompiler();
+    return compiler.compile(group, path);
+};
