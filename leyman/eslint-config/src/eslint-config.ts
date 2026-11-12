@@ -5,6 +5,7 @@ import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
+import { createNodeResolver } from 'eslint-plugin-import-x';
 import globals from 'globals';
 import { getInternalRegex } from './lib/internal-regex.js';
 import { nodeFloorRules } from './lib/node-floor.js';
@@ -24,6 +25,25 @@ import {
 } from './lib/plugins.js';
 
 export { nonDeprecatedRules };
+
+// The files import-x parses to follow imports (`import-x/no-cycle`...): every source file, not only its default `.js`
+const importExtensions = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'];
+
+/**
+ * Resolves imports for import-x (`import-x/no-cycle`, `import-x/no-relative-parent-imports`...) with import-x's own
+ * resolver. Without one set, import-x loads the optional peer `eslint-import-resolver-node`, and crashes when it isn't
+ * installed. TypeScript sources import `./file.js` for `./file.ts`, so each JavaScript extension also tries its
+ * TypeScript counterpart, as TypeScript's `nodenext` resolution does.
+ */
+const importResolver = createNodeResolver({
+    extensions: [...importExtensions, '.json', '.node'],
+    extensionAlias: {
+        '.cjs': ['.cts', '.cjs'],
+        '.js': ['.ts', '.tsx', '.js', '.jsx'],
+        '.jsx': ['.tsx', '.jsx'],
+        '.mjs': ['.mts', '.mjs'],
+    },
+});
 
 const disableReplacedTypeRules = (): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
@@ -231,6 +251,8 @@ export default async function makeEslintConfigForPackage({
             },
             settings: {
                 'import-x/internal-regex': getInternalRegex(packageJson),
+                'import-x/extensions': importExtensions,
+                'import-x/resolver-next': [importResolver],
                 react: {
                     // The installed React, resolved from each linted file. A package without React has no
                     // JSX for the version to matter to, and `999.999.999` is eslint-plugin-react's own

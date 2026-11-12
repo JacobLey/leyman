@@ -1,7 +1,13 @@
+import type { Linter } from 'eslint';
 import type { Suite } from 'mocha';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import Path from 'node:path';
 import { expect } from 'chai';
+import { ESLint } from 'eslint';
 import { before, suite, test } from 'mocha';
 import configGenerator, { nonDeprecatedRules } from '#internal/eslint-config.js';
+import { importPlugin } from '#internal/lib/plugins.js';
 
 const globalsOf = async (options: { node?: boolean }) => {
     const config = await configGenerator({
@@ -105,5 +111,44 @@ suite('nonDeprecatedRules', () => {
                 ['skipped', 'not-defined']
             )
         ).to.deep.equal({ 'plugin/kept': 'error' });
+    });
+});
+
+suite('configGenerator import resolution', () => {
+    test('Resolves TypeScript sources imported by their JavaScript name', async () => {
+        const directory = await mkdtemp(Path.join(tmpdir(), 'eslint-config-'));
+        await Promise.all([
+            writeFile(
+                Path.join(directory, 'a.ts'),
+                "import { b } from './b.js';\nexport const a = b;\n"
+            ),
+            writeFile(
+                Path.join(directory, 'b.ts'),
+                "import { a } from './a.js';\nexport const b = () => a;\n"
+            ),
+        ]);
+        const config = await configOf({});
+        // The generated config's own parser and settings, with only the rule that needs resolving
+        const { parser } = config.find(block => block.languageOptions?.parser !== undefined)
+            ?.languageOptions as { parser: Linter.Parser };
+        const eslint = new ESLint({
+            cwd: directory,
+            overrideConfigFile: true,
+            overrideConfig: {
+                files: ['**/*.ts'],
+                languageOptions: { parser },
+                plugins: { 'import-x': importPlugin },
+                settings: Object.assign({}, ...config.map(block => block.settings)) as Record<
+                    string,
+                    unknown
+                >,
+                rules: { 'import-x/no-cycle': 'error' },
+            },
+        });
+        const results = await eslint.lintFiles(['a.ts']);
+        await rm(directory, { recursive: true });
+        expect(
+            results.flatMap(result => result.messages.map(message => message.ruleId))
+        ).to.deep.equal(['import-x/no-cycle']);
     });
 });
