@@ -77,6 +77,13 @@ Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's 
   ```
 
   Reuse an existing `#alias` when the package already defines one for that file.
+- **Test helpers and fixtures by subpath, not `../`**: `import-x/no-relative-parent-imports` rejects `../helpers.js`, so map the compiled tests and import from there (`import { api } from '#test/data/api.js'`):
+
+  ```json
+  "imports": { "#internal/*": "./dist/*", "#test/*": "./dist-test/*" }
+  ```
+
+  `tsconfig.test.json` sets `rootDir` and `outDir` so TypeScript reads `#test/...` from `test/`. `src/` likewise imports its own files outside the current folder as `#internal/...`.
 - **Never import `../../src/...`**: it would load a second copy of the module (breaking `instanceof` and singletons) and skip the published types.
 
 ## Libraries

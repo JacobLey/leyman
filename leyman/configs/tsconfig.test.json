@@ -6,6 +6,8 @@
     "declarationMap": false,
     "emitDeclarationOnly": false,
     "incremental": false,
-    "noEmit": true
+    "noEmit": true,
+    "outDir": "${configDir}/../dist-test",
+    "rootDir": "${configDir}"
   }
 }
