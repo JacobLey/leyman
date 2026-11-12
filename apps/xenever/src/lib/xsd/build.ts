@@ -413,7 +413,8 @@ const restrictAttributes = (at: Located, inherited: Inherited, uses: AttributeUs
         const name = attributeName(attribute);
         const redeclared = own.get(name);
         own.delete(name);
-        if (attribute.use === 'required' && redeclared?.use !== 'required') {
+        const isKept = redeclared ? redeclared.use === 'required' : !uses.prohibited.has(name);
+        if (!isKept && attribute.use === 'required') {
             invalid(at, `Attribute ${name} is required by the base type`);
         }
         if (redeclared) {

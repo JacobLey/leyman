@@ -771,8 +771,14 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^A restriction of a type without mixed content can not be mixed/v,
     ],
     [
-        'a restriction dropping a required attribute',
-        derive('restriction', ''),
+        'a restriction prohibiting a required attribute',
+        derive('restriction', '<xs:attribute name="must" use="prohibited"/>'),
+        XeneverInvalidSchemaError,
+        /^Attribute must is required by the base type/v,
+    ],
+    [
+        'a restriction making a required attribute optional',
+        derive('restriction', '<xs:attribute name="must" type="xs:string"/>'),
         XeneverInvalidSchemaError,
         /^Attribute must is required by the base type/v,
     ],

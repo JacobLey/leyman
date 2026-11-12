@@ -263,7 +263,7 @@ suite('loadXsd types', () => {
             expect(bareExtended).to.deep.equal(bare);
         });
 
-        test('A restriction replaces the content, and restricts the attributes', async () => {
+        test('A restriction replaces the content, and restricts or inherits the attributes', async () => {
             const { types } = await loadSchema(
                 `<xs:complexType name="Base" mixed="true">
                     <xs:sequence><xs:element name="a" minOccurs="0"/></xs:sequence>
@@ -283,7 +283,6 @@ suite('loadXsd types', () => {
                     <xs:attribute name="added" type="xs:int" form="qualified"/>
                 </xs:restriction></xs:complexContent></xs:complexType>
                 <xs:complexType name="MixedRestricted"><xs:complexContent mixed="true"><xs:restriction base="t:Base">
-                    <xs:attribute name="must" type="xs:string" use="required"/>
                     <xs:anyAttribute namespace="##other"/>
                 </xs:restriction></xs:complexContent></xs:complexType>`,
                 tns
