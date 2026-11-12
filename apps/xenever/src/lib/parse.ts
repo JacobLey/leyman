@@ -219,15 +219,17 @@ const readAttributes = (
     for (const declaration of type.attributes.values()) {
         if (values.has(declaration.key)) {
             attributes[declaration.key] = values.get(declaration.key);
+        } else if (declaration.required) {
+            // Even with a `fixed` value, which only fills in an optional attribute
+            // ([XSD 1.0 Part 1 §3.4.4](https://www.w3.org/TR/xmlschema-1/#cvc-complex-type), clause 4).
+            throw new XeneverValidationError(
+                `Element ${written(node)} is missing attribute ${describeName(declaration.namespace, declaration.name)}`,
+                at(node)
+            );
         } else if (declaration.absent !== null) {
             attributes[declaration.key] = declaration.type.parse(
                 declaration.absent,
                 node.inScopeNamespaces
-            );
-        } else if (declaration.required) {
-            throw new XeneverValidationError(
-                `Element ${written(node)} is missing attribute ${describeName(declaration.namespace, declaration.name)}`,
-                at(node)
             );
         }
     }

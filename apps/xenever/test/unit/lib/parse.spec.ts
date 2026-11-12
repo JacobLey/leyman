@@ -513,6 +513,19 @@ suite('parse', () => {
             );
         });
 
+        test('Rejects a missing required attribute that has a fixed value', () => {
+            const fixed = x.element(
+                'n',
+                x.complex({
+                    attributes: [x.attribute('a', x.int(), { use: 'required', fixed: '1' })],
+                })
+            );
+            expectInvalid(() => parse('<n/>', fixed), /Element `n` is missing attribute `a`/v, {
+                path: '/n',
+            });
+            expect(parse('<n a="1"/>', fixed)).to.deep.equal({ attributes: { a: 1 } });
+        });
+
         test('Rejects an invalid attribute value', () => {
             expectInvalid(
                 () =>
