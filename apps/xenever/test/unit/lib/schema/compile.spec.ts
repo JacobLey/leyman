@@ -402,13 +402,84 @@ suite('Schema checks', () => {
             );
         });
 
+        test('Rejects an unknown processContents', () => {
+            expectInvalidSchema(
+                withContent({
+                    kind: 'sequence',
+                    particles: [{ kind: 'any', processContents: 'none' }],
+                }),
+                /`processContents` must be `skip`, `lax` or `strict`/v,
+                '/type/content/particles/0/processContents'
+            );
+        });
+
+        test('Rejects declarations that are not a getter of an array', () => {
+            expectInvalidSchema(
+                root({ attributes: [{ kind: 'anyAttribute', declarations: [] }] }),
+                /Expected `declarations` to be a function/v,
+                '/type/attributes/0/declarations'
+            );
+            expectInvalidSchema(
+                withContent({
+                    kind: 'sequence',
+                    particles: [{ kind: 'any', declarations: () => 'a' }],
+                }),
+                /Expected an array/v,
+                '/type/content/particles/0/declarations()'
+            );
+        });
+
+        test('Checks each declaration', () => {
+            expectInvalidSchema(
+                withContent({
+                    kind: 'sequence',
+                    particles: [
+                        { kind: 'any', declarations: () => [{ kind: 'element', name: '1a' }] },
+                    ],
+                }),
+                /is not an NCName/v,
+                '/type/content/particles/0/declarations()/0/name'
+            );
+        });
+
+        test('Rejects two declarations of one name', () => {
+            expectInvalidSchema(
+                withContent(
+                    x.sequence([
+                        x.any({
+                            declarations: () => [
+                                x.element('a', x.int()),
+                                x.element('a', x.string()),
+                            ],
+                        }),
+                    ])
+                ),
+                /Element `a` is declared twice/v,
+                '/type/content/particles/0/declarations()/1'
+            );
+            expectInvalidSchema(
+                root({
+                    attributes: [
+                        x.anyAttribute({
+                            declarations: () => [
+                                x.attribute('a', x.int(), { namespace: 'urn:a' }),
+                                x.attribute('a', x.int(), { namespace: 'urn:a' }),
+                            ],
+                        }),
+                    ],
+                }),
+                /Attribute `a` in `urn:a` is declared twice/v,
+                '/type/attributes/0/declarations()/1'
+            );
+        });
+
         test('Rejects an unknown property', () => {
             expectInvalidSchema(
                 withContent({
                     kind: 'sequence',
-                    particles: [{ kind: 'any', processContents: 'lax' }],
+                    particles: [{ kind: 'any', process: 'lax' }],
                 }),
-                /Unknown property `processContents`/v,
+                /Unknown property `process`/v,
                 '/type/content/particles/0'
             );
             expectInvalidSchema(

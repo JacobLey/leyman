@@ -164,7 +164,7 @@ export const PurchaseOrderType = x.complex({
         x.attribute('status', Status, { default: 'open' }),
         x.attribute('version', x.token(), { fixed: '1.0' }),
         x.attribute('tags', Tags),
-        x.anyAttribute({ notNamespace: ['urn:example:order', null] }),
+        x.anyAttribute({ notNamespace: ['urn:example:order', null], processContents: 'skip' }),
     ],
     content: x.sequence([
         x.element('shipTo', Address, { namespace: 'urn:example:order' }),
@@ -180,7 +180,12 @@ export const PurchaseOrderType = x.complex({
         ]),
         x.element('items', Items, { namespace: 'urn:example:order' }),
         x.element('note', Note, { namespace: 'urn:example:order', minOccurs: 0, maxOccurs: 2 }),
-        x.any({ notNamespace: ['urn:example:order', null], minOccurs: 0, maxOccurs: 'unbounded' }),
+        x.any({
+            notNamespace: ['urn:example:order', null],
+            processContents: 'skip',
+            minOccurs: 0,
+            maxOccurs: 'unbounded',
+        }),
     ]),
 });
 

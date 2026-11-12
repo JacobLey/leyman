@@ -91,9 +91,25 @@ The type of an element decides the shape of its value, whatever the document hol
 - Children are keyed by local name, in declaration order. `maxOccurs` above 1 is an array, even for one occurrence, and `minOccurs="0"` is an optional key, absent when the element is. A `choice` is a union of objects.
 - With `ordered: true` on the complex type, and always for `mixed`, children are a list of `{ name, value }` in document order, with `{ name: '#text', value }` for text in mixed content.
 - `xs:decimal` is a canonical string (`9.50` reads as `'9.5'`). Big integer types are a `number`, and a value past `Number.MAX_SAFE_INTEGER` is an error, unless the type is `x.integer({ bigint: true })`. `float` and `double` read `INF`, `-INF` and `NaN`. Dates, times and durations stay strings.
-- `xsi:nil="true"` on a `nillable` element is `null`. `x.any()` content is kept as untyped `XmlNode` trees under `'#any'`.
+- `xsi:nil="true"` on a `nillable` element is `null`. Elements an `x.any()` wildcard matches are kept as untyped `XmlNode` trees under `'#any'`, and attributes an `x.anyAttribute()` matches as `XmlAttribute`s under `attributes['#any']`.
 
 Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored.
+
+A wildcard validates what it matches as its `processContents` says, as XSD does, while the value keeps its untyped shape. The default is `'strict'`: each element needs one of the wildcard's `declarations`, the global declarations it may match by name, and is validated against it. `'lax'` validates only the elements that have a declaration, and `'skip'` validates nothing:
+
+```ts
+const note = x.element('note', x.string());
+const extensible = x.element(
+    'doc',
+    x.complex({
+        content: x.sequence([
+            x.any({ processContents: 'lax', declarations: () => [note], maxOccurs: 'unbounded' }),
+        ]),
+    })
+);
+```
+
+`declarations` is a function, so it can name elements declared further down.
 
 Each element built with `x.element` also implements [Standard Schema](https://standardschema.dev/) (`StandardSchemaV1<string, T>`), so a library that takes one can validate an XML string with it.
 
@@ -135,7 +151,7 @@ The options:
 - `bigint`: makes `xs:integer`, `xs:long` and the other big integer types `bigint`.
 - `ordered`: lists the complex types, or elements with an anonymous type, whose children keep their order. Names use Clark notation, `{namespace}local`.
 
-The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include substitution groups, abstract declarations, `xs:redefine`, identity constraints, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Wildcard content is always kept unvalidated, as `processContents="skip"` does.
+The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include substitution groups, abstract declarations, `xs:redefine`, identity constraints, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax.
 
 ## Generating TypeScript
 
@@ -200,7 +216,7 @@ Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at th
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Range and enumeration facets on date, time and duration types.
 
-Some checks are missing, and documents that fail them are read anyway: wildcard content is never validated, as if every wildcard were `processContents="skip"`, and `xs:ID` values aren't checked for uniqueness.
+Some checks are missing, and documents that fail them are read anyway: `xs:ID` values aren't checked for uniqueness.
 
 ## Compared to alternatives
 

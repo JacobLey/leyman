@@ -1,7 +1,8 @@
+import type { x } from 'xenever';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { parse } from 'xenever';
-import { loadSchema } from './helpers.js';
+import { parse, XeneverValidationError } from 'xenever';
+import { loadSchema, withoutDeclarations } from './helpers.js';
 
 const tns = 'targetNamespace="urn:t" xmlns:t="urn:t"';
 
@@ -48,13 +49,20 @@ suite('loadXsd elements and attributes', () => {
 
         test('Is of xs:anyType without a type', async () => {
             const { elements } = await loadSchema('<xs:element name="anything"/>');
-            expect(elements[0]!.type).to.deep.equal({
+            expect(withoutDeclarations(elements[0]!.type)).to.deep.equal({
                 kind: 'complex',
                 mixed: true,
-                attributes: [{ kind: 'anyAttribute' }],
+                attributes: [{ kind: 'anyAttribute', processContents: 'lax' }],
                 content: {
                     kind: 'sequence',
-                    particles: [{ kind: 'any', minOccurs: 0, maxOccurs: 'unbounded' }],
+                    particles: [
+                        {
+                            kind: 'any',
+                            processContents: 'lax',
+                            minOccurs: 0,
+                            maxOccurs: 'unbounded',
+                        },
+                    ],
                 },
             });
             const value = parse('<anything a="1">text<b/></anything>', elements[0]!) as {
@@ -360,7 +368,7 @@ suite('loadXsd elements and attributes', () => {
                 </xs:complexType></xs:element>`,
                 tns
             );
-            expect(elements[0]!.type).to.deep.equal({
+            expect(withoutDeclarations(elements[0]!.type)).to.deep.equal({
                 kind: 'complex',
                 attributes: [
                     { kind: 'attribute', name: 'id', type: { kind: 'ID' } },
@@ -369,7 +377,11 @@ suite('loadXsd elements and attributes', () => {
                         name: 'class',
                         type: { kind: 'list', item: { kind: 'NMTOKEN' }, facets: { minLength: 1 } },
                     },
-                    { kind: 'anyAttribute', namespace: ['urn:a', 'urn:b'] },
+                    {
+                        kind: 'anyAttribute',
+                        namespace: ['urn:a', 'urn:b'],
+                        processContents: 'strict',
+                    },
                 ],
             });
         });
@@ -382,14 +394,15 @@ suite('loadXsd elements and attributes', () => {
                 tns
             );
             expect(
-                elements.map(
-                    element =>
+                elements.map(element =>
+                    withoutDeclarations(
                         (element.type as { readonly attributes: readonly unknown[] }).attributes
+                    )
                 )
             ).to.deep.equal([
-                [{ kind: 'anyAttribute' }],
-                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
-                [{ kind: 'anyAttribute', namespace: ['urn:t', null] }],
+                [{ kind: 'anyAttribute', processContents: 'lax' }],
+                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null], processContents: 'skip' }],
+                [{ kind: 'anyAttribute', namespace: ['urn:t', null], processContents: 'strict' }],
             ]);
         });
 
@@ -413,17 +426,117 @@ suite('loadXsd elements and attributes', () => {
                 tns
             );
             expect(
-                types.map(
-                    ({ type }) => (type as { readonly attributes: readonly unknown[] }).attributes
+                types.map(({ type }) =>
+                    withoutDeclarations(
+                        (type as { readonly attributes: readonly unknown[] }).attributes
+                    )
                 )
             ).to.deep.equal([
-                [{ kind: 'anyAttribute', namespace: ['urn:a'] }],
-                [{ kind: 'anyAttribute', namespace: ['urn:a'] }],
-                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
-                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
-                [{ kind: 'anyAttribute' }],
-                [{ kind: 'anyAttribute', notNamespace: ['urn:t', null] }],
+                [{ kind: 'anyAttribute', namespace: ['urn:a'], processContents: 'strict' }],
+                [{ kind: 'anyAttribute', namespace: ['urn:a'], processContents: 'strict' }],
+                [
+                    {
+                        kind: 'anyAttribute',
+                        notNamespace: ['urn:t', null],
+                        processContents: 'strict',
+                    },
+                ],
+                [
+                    {
+                        kind: 'anyAttribute',
+                        notNamespace: ['urn:t', null],
+                        processContents: 'strict',
+                    },
+                ],
+                [{ kind: 'anyAttribute', processContents: 'strict' }],
+                [
+                    {
+                        kind: 'anyAttribute',
+                        notNamespace: ['urn:t', null],
+                        processContents: 'strict',
+                    },
+                ],
             ]);
+        });
+
+        test('Wildcards validate against the global declarations their namespaces allow', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="note" type="xs:int"/>
+                <xs:attribute name="flag" type="xs:boolean"/>
+                <xs:element name="open"><xs:complexType>
+                    <xs:sequence><xs:any namespace="##targetNamespace" processContents="lax" maxOccurs="unbounded"/></xs:sequence>
+                    <xs:anyAttribute namespace="##targetNamespace"/>
+                </xs:complexType></xs:element>
+                <xs:element name="closed"><xs:complexType>
+                    <xs:sequence><xs:any namespace="##other"/></xs:sequence>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            const [note, open, closed] = elements;
+            const openType = open!.type as x.ComplexType;
+            const any = openType.content!.particles[0] as x.Any;
+            expect(any.declarations!()).to.deep.equal([note, open, closed]);
+            const anyAttribute = openType.attributes![0] as x.AnyAttribute;
+            expect(anyAttribute.declarations!().map(({ name }) => name)).to.deep.equal(['flag']);
+            const otherAny = (closed!.type as x.ComplexType).content!.particles[0] as x.Any;
+            expect(otherAny).to.include({ processContents: 'strict' });
+            expect(otherAny.declarations!()).to.deep.equal([]);
+            expect(() => parse('<t:open xmlns:t="urn:t" t:flag="maybe"/>', open!)).to.throw(
+                XeneverValidationError,
+                /not a valid boolean/v
+            );
+            expect(() =>
+                parse('<t:open xmlns:t="urn:t"><t:note>x</t:note></t:open>', open!)
+            ).to.throw(XeneverValidationError, /not a valid int/v);
+            expect(() =>
+                parse('<t:closed xmlns:t="urn:t"><o:x xmlns:o="urn:o"/></t:closed>', closed!)
+            ).to.throw(XeneverValidationError, /strict wildcard/v);
+        });
+
+        test("An attribute wildcard takes its own processContents, else the first attribute group's, and an extension's", async () => {
+            const { types } = await loadSchema(
+                `<xs:attributeGroup name="lax"><xs:anyAttribute processContents="lax"/></xs:attributeGroup>
+                <xs:attributeGroup name="skip"><xs:anyAttribute processContents="skip"/></xs:attributeGroup>
+                <xs:complexType name="Own"><xs:attributeGroup ref="t:lax"/><xs:anyAttribute processContents="skip"/></xs:complexType>
+                <xs:complexType name="First"><xs:attributeGroup ref="t:skip"/><xs:attributeGroup ref="t:lax"/></xs:complexType>
+                <xs:complexType name="Extended"><xs:complexContent><xs:extension base="t:First">
+                    <xs:anyAttribute processContents="lax"/>
+                </xs:extension></xs:complexContent></xs:complexType>`,
+                tns
+            );
+            expect(
+                types.map(
+                    ({ type }) =>
+                        ((type as x.ComplexType).attributes![0] as x.AnyAttribute).processContents
+                )
+            ).to.deep.equal(['skip', 'skip', 'lax']);
+        });
+
+        test('Attribute wildcards count the built-in XML attributes only when the namespace is imported', async () => {
+            const [imported, notImported] = await Promise.all([
+                loadSchema(
+                    `<xs:import namespace="http://www.w3.org/XML/1998/namespace"/>
+                    <xs:element name="e"><xs:complexType><xs:anyAttribute namespace="##other"/></xs:complexType></xs:element>`
+                ),
+                loadSchema(
+                    '<xs:element name="e"><xs:complexType><xs:anyAttribute namespace="##other"/></xs:complexType></xs:element>'
+                ),
+            ]);
+            expect(parse('<e xml:lang="en"/>', imported.elements[0]!)).to.deep.equal({
+                attributes: {
+                    '#any': [
+                        {
+                            namespace: 'http://www.w3.org/XML/1998/namespace',
+                            localName: 'lang',
+                            value: 'en',
+                        },
+                    ],
+                },
+            });
+            expect(() => parse('<e xml:lang="en"/>', notImported.elements[0]!)).to.throw(
+                XeneverValidationError,
+                /strict attribute wildcard/v
+            );
         });
 
         test('The XML namespace is built in', async () => {

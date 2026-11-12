@@ -3,6 +3,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:o="urn:order"
     targetNamespace="urn:order" elementFormDefault="qualified">
     <xs:element name="order" type="o:Order"/>
+    <xs:element name="code" type="xs:int"/>
+    <xs:attribute name="gift" type="xs:boolean"/>
     <xs:complexType name="Order">
         <xs:sequence>
             <xs:element name="id" type="o:Id"/>
@@ -19,6 +21,14 @@
                     <xs:sequence>
                         <xs:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
                     </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="meta" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:any namespace="##targetNamespace" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                    <xs:anyAttribute namespace="##targetNamespace"/>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>

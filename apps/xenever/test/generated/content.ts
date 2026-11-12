@@ -72,7 +72,11 @@ export const Shapes = x.complex({
             x.sequence([x.element('right', x.string()), x.element('both', x.string())]),
         ]),
         x.choice([x.element('up', x.boolean()), x.element('both', x.string())], { minOccurs: 0 }),
-        x.any({ notNamespace: ['urn:example:content', null] }),
+        x.any({
+            notNamespace: ['urn:example:content', null],
+            processContents: 'lax',
+            declarations: () => [],
+        }),
     ]),
 });
 
@@ -110,7 +114,11 @@ export interface Mixed {
 export const Mixed = x.complex({
     content: x.sequence([
         x.element('b', x.string(), { minOccurs: 0 }),
-        x.any({ notNamespace: ['urn:example:content', null], minOccurs: 0 }),
+        x.any({
+            notNamespace: ['urn:example:content', null],
+            processContents: 'skip',
+            minOccurs: 0,
+        }),
     ]),
     mixed: true,
 });
@@ -171,8 +179,33 @@ export const anything: x.ElementSchema<'anything', Anything> = x.element(
     'anything',
     x.complex({
         mixed: true,
-        attributes: [x.anyAttribute()],
-        content: x.sequence([x.any({ minOccurs: 0, maxOccurs: 'unbounded' })]),
+        attributes: [
+            x.anyAttribute({
+                processContents: 'lax',
+                declarations: () => [
+                    x.attribute('lang', x.union([x.language(), x.string({ enumeration: [''] })]), {
+                        namespace: 'http://www.w3.org/XML/1998/namespace',
+                    }),
+                    x.attribute('space', x.ncName({ enumeration: ['default', 'preserve'] }), {
+                        namespace: 'http://www.w3.org/XML/1998/namespace',
+                    }),
+                    x.attribute('base', x.anyUri(), {
+                        namespace: 'http://www.w3.org/XML/1998/namespace',
+                    }),
+                    x.attribute('id', x.id(), {
+                        namespace: 'http://www.w3.org/XML/1998/namespace',
+                    }),
+                ],
+            }),
+        ],
+        content: x.sequence([
+            x.any({
+                processContents: 'lax',
+                declarations: () => [anything, content],
+                minOccurs: 0,
+                maxOccurs: 'unbounded',
+            }),
+        ]),
     }),
     { namespace: 'urn:example:content' }
 );

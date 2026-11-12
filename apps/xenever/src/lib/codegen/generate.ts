@@ -1,4 +1,5 @@
 import type {
+    Any,
     AnyAttribute,
     AtomicKind,
     AtomicType,
@@ -388,6 +389,32 @@ const atomicValue = (type: AtomicType): string => {
 };
 
 /**
+ * The options object of a wildcard builder, in the order the IR has them, its `declarations` getter as an arrow
+ * function returning them. The loader always writes `processContents`, so there is one.
+ *
+ * @param wildcard - an `xs:any` or `xs:anyAttribute` in the IR
+ * @param declarations - the getter of the global declarations it validates against, if any
+ * @param code - prints one of its declarations, building it or naming its const
+ * @returns the object literal, `{ ... }`
+ */
+const wildcardOptions = <Declaration>(
+    wildcard: Any | AnyAttribute,
+    declarations: (() => readonly Declaration[]) | undefined,
+    code: (declaration: Declaration) => string
+): string => {
+    const fields = Object.entries(wildcard)
+        .filter(([key]) => key !== 'kind')
+        .map(([key, value]) =>
+            key === 'declarations'
+                ? `declarations: () => [${declarations!()
+                      .map(declaration => code(declaration))
+                      .join(', ')}]`
+                : `${property(key)}: ${literal(value)}`
+        );
+    return `{ ${fields.join(', ')} }`;
+};
+
+/**
  * Code building a built-in type.
  *
  * @param type - a built-in type with its facets
@@ -596,7 +623,11 @@ class Printer {
      */
     #attributeCode(attribute: AnyAttribute | Attribute): string {
         if (attribute.kind === 'anyAttribute') {
-            return call('anyAttribute', [optionsOf(attribute, ['kind'])]);
+            return call('anyAttribute', [
+                wildcardOptions(attribute, attribute.declarations, declaration =>
+                    this.#attributeCode(declaration)
+                ),
+            ]);
         }
         return call('attribute', [
             JSON.stringify(attribute.name),
@@ -623,7 +654,14 @@ class Printer {
             return call('lazy', [getter, optionsOf(particle, ['kind', 'get'])]);
         }
         if (particle.kind === 'any') {
-            return call('any', [optionsOf(particle, ['kind'])]);
+            return call('any', [
+                wildcardOptions(
+                    particle,
+                    particle.declarations,
+                    // The loader's wildcards validate against global elements, each a const.
+                    declaration => this.#elementNames.get(declaration)!.value
+                ),
+            ]);
         }
         const particles = particle.particles.map(child => this.#particleCode(child));
         return call(particle.kind, [

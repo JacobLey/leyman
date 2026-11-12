@@ -1,6 +1,7 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { AllPart, ModelSymbol, Pattern } from './content.js';
+import type { ProcessContents } from './ir.js';
 import { XeneverUnsupportedError } from '#internal/lib/errors.js';
 import { InvalidValueError } from '#internal/lib/simple/builtins.js';
 import { compileSimple } from '#internal/lib/simple/compile-simple.js';
@@ -63,8 +64,10 @@ export interface CompiledAttribute {
 
 /**
  * A wildcard, ready to match names.
+ *
+ * @template Declaration - a compiled declaration it validates against
  */
-export interface CompiledWildcard {
+export interface CompiledWildcard<Declaration> {
     /**
      * Whether the wildcard allows a name in this namespace.
      */
@@ -73,6 +76,11 @@ export interface CompiledWildcard {
      * How errors name what it allows, e.g. `any element`.
      */
     readonly label: string;
+    readonly processContents: ProcessContents;
+    /**
+     * Its declarations by expanded name.
+     */
+    readonly declarations: ReadonlyMap<string, Declaration>;
 }
 
 /**
@@ -82,6 +90,10 @@ export interface CompiledWildcard {
 export interface CompiledContent {
     readonly model: ContentModel;
     readonly elements: ReadonlyMap<string, CompiledElement>;
+    /**
+     * Each wildcard of the model, by the id of its symbol.
+     */
+    readonly wildcards: ReadonlyMap<string, CompiledWildcard<CompiledElement>>;
     readonly keys: readonly { readonly key: string; readonly array: boolean }[];
 }
 
@@ -94,7 +106,7 @@ export interface CompiledComplex {
      * Attribute declarations by expanded name, in declaration order.
      */
     readonly attributes: ReadonlyMap<string, CompiledAttribute>;
-    readonly anyAttribute: CompiledWildcard | null;
+    readonly anyAttribute: CompiledWildcard<CompiledAttribute> | null;
     readonly content: CompiledContent | null;
     readonly text: CompiledSimple | null;
     readonly mixed: boolean;
@@ -416,19 +428,81 @@ const listNamespaces = (namespaces: readonly (string | null)[]): string =>
         .join(' or ');
 
 /**
- * Checks and compiles a wildcard's namespace constraint.
+ * What the getter of each lazy reference or wildcard returned.
+ */
+const getterResults = new WeakMap<object, unknown>();
+
+/**
+ * What the getter of a lazy reference or wildcard returns, called once: a cycle ends when compiling reaches a
+ * declaration it is already compiling, so a getter that builds a new declaration on each call
+ * (`() => x.element(...)`) must still give the same one each time.
+ *
+ * @param owner - the reference or wildcard
+ * @param get - its getter
+ * @returns what the getter returned the first time
+ */
+const getterResult = (owner: object, get: () => unknown): unknown => {
+    if (!getterResults.has(owner)) {
+        getterResults.set(owner, get());
+    }
+    return getterResults.get(owner);
+};
+
+/**
+ * What `processContents` may be.
+ */
+const processContentsValues: ReadonlySet<unknown> = new Set(['skip', 'lax', 'strict']);
+
+/**
+ * Checks and compiles a wildcard: its namespace constraint, `processContents` and declarations.
  *
  * @param record - the wildcard's schema value, already checked to be an object
  * @param noun - `element` or `attribute`, for its error label
  * @param path - path to it
+ * @param compile - checks and compiles one of its declarations
  * @returns the compiled wildcard
- * @throws {XeneverInvalidSchemaError} when the constraint is invalid
+ * @throws {XeneverInvalidSchemaError} when the wildcard is invalid, or two of its declarations have one name
  */
-const compileWildcard = (
+const compileWildcard = <
+    Declaration extends { readonly name: string; readonly namespace: string | null },
+>(
     record: Readonly<Record<string, unknown>>,
     noun: 'attribute' | 'element',
-    path: string
-): CompiledWildcard => {
+    path: string,
+    compile: (declaration: unknown, path: string) => Declaration
+): CompiledWildcard<Declaration> => {
+    const processContentsPath = childPath(path, 'processContents');
+    if (
+        record.processContents !== undefined &&
+        !processContentsValues.has(record.processContents)
+    ) {
+        invalidSchema('`processContents` must be `skip`, `lax` or `strict`', processContentsPath);
+    }
+    const processContents = (record.processContents ?? 'strict') as ProcessContents;
+    const declarations = new Map<string, Declaration>();
+    if (record.declarations !== undefined) {
+        const getterPath = childPath(path, 'declarations');
+        if (typeof record.declarations !== 'function') {
+            invalidSchema('Expected `declarations` to be a function', getterPath);
+        }
+        const listPath = `${getterPath}()`;
+        const list = checkArray(
+            getterResult(record, record.declarations as () => unknown),
+            listPath
+        );
+        for (const [index, declaration] of list.entries()) {
+            const declarationPath = childPath(listPath, index);
+            const compiled = compile(declaration, declarationPath);
+            const name = expandedName(compiled.namespace, compiled.name);
+            if (declarations.has(name)) {
+                invalidSchema(
+                    `${noun === 'element' ? 'Element' : 'Attribute'} ${describeName(compiled.namespace, compiled.name)} is declared twice`,
+                    declarationPath
+                );
+            }
+            declarations.set(name, compiled);
+        }
+    }
     const list = (property: 'namespace' | 'notNamespace'): readonly (string | null)[] | null => {
         if (record[property] === undefined) {
             return null;
@@ -458,17 +532,21 @@ const compileWildcard = (
             );
         }
         return {
+            processContents,
+            declarations,
             allows: namespace => allowed.includes(namespace),
             label: `an ${noun} in ${listNamespaces(allowed)}`,
         };
     }
     if (disallowed !== null && disallowed.length > 0) {
         return {
+            processContents,
+            declarations,
             allows: namespace => !disallowed.includes(namespace),
             label: `an ${noun} not in ${listNamespaces(disallowed)}`,
         };
     }
-    return { allows: () => true, label: `any ${noun}` };
+    return { processContents, declarations, allows: () => true, label: `any ${noun}` };
 };
 
 /**
@@ -492,7 +570,7 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     const attributesPath = childPath(path, 'attributes');
     const attributes = new Map<string, CompiledAttribute>();
     const attributeKeys = new Set<string>();
-    let anyAttribute: CompiledWildcard | null = null;
+    let anyAttribute: CompiledWildcard<CompiledAttribute> | null = null;
     if (record.attributes !== undefined) {
         const declarations = checkArray(record.attributes, attributesPath);
         for (const [index, declaration] of declarations.entries()) {
@@ -507,11 +585,12 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
                 anyAttribute = compileWildcard(
                     checkObject(
                         declaration,
-                        ['kind', 'namespace', 'notNamespace'],
+                        ['kind', 'namespace', 'notNamespace', 'processContents', 'declarations'],
                         declarationPath
                     ),
                     'attribute',
-                    declarationPath
+                    declarationPath,
+                    compileAttribute
                 );
                 continue;
             }
@@ -569,27 +648,6 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     };
     compiledComplexTypes.set(type, compiled);
     return compiled;
-};
-
-/**
- * The declaration each lazy reference's getter returned.
- */
-const lazyDeclarations = new WeakMap<object, unknown>();
-
-/**
- * The declaration of a lazy reference, its getter called once: a cycle ends when compiling reaches a declaration
- * it is already compiling, so a getter that builds a new declaration on each call (`() => x.element(...)`) must
- * still give the same one each time.
- *
- * @param lazy - the reference
- * @param get - its getter
- * @returns what the getter returned the first time
- */
-const lazyDeclaration = (lazy: object, get: () => unknown): unknown => {
-    if (!lazyDeclarations.has(lazy)) {
-        lazyDeclarations.set(lazy, get());
-    }
-    return lazyDeclarations.get(lazy);
 };
 
 /**
@@ -656,7 +714,7 @@ class ContentCompiler {
         { readonly compiled: CompiledElement; readonly raw: unknown }
     >();
     readonly #keys = new Map<string, string>();
-    #wildcards = 0;
+    readonly #wildcards = new Map<string, CompiledWildcard<CompiledElement>>();
 
     /**
      * Compiles a content model.
@@ -677,6 +735,7 @@ class ContentCompiler {
         }
         return {
             elements,
+            wildcards: this.#wildcards,
             model: new ContentModel(pattern),
             keys: [...counts].map(([key, count]) => ({ key, array: count === 2 })),
         };
@@ -701,14 +760,23 @@ class ContentCompiler {
         if (kind === 'any') {
             const record = checkObject(
                 particle,
-                ['kind', 'namespace', 'notNamespace', 'minOccurs', 'maxOccurs'],
+                [
+                    'kind',
+                    'namespace',
+                    'notNamespace',
+                    'processContents',
+                    'declarations',
+                    'minOccurs',
+                    'maxOccurs',
+                ],
                 path
             );
             const occurs = checkOccurs(record, path);
-            const wildcard = compileWildcard(record, 'element', path);
-            this.#wildcards++;
+            const wildcard = compileWildcard(record, 'element', path, compileElement);
+            const id = `#any${this.#wildcards.size + 1}`;
+            this.#wildcards.set(id, wildcard);
             const symbol: ModelSymbol = {
-                id: `#any${this.#wildcards}`,
+                id,
                 isWildcard: true,
                 label: wildcard.label,
                 matches: child => wildcard.allows(child.namespace),
@@ -728,7 +796,7 @@ class ContentCompiler {
                 invalidSchema('Expected `get` to be a function', childPath(path, 'get'));
             }
             occurs = checkOccurs(record, path);
-            declaration = lazyDeclaration(record, record.get as () => unknown);
+            declaration = getterResult(record, record.get as () => unknown);
             declarationPath = `${childPath(path, 'get')}()`;
         } else {
             occurs = checkOccurs(checkObject(particle, elementProperties, path), path);

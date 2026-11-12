@@ -80,3 +80,24 @@ export const expectSchemaError = async (
     expect(error).to.include(location);
     return error;
 };
+
+/**
+ * Copies a value of the IR without the `declarations` getters of its wildcards, which a deep equality
+ * would compare by identity.
+ *
+ * @param value - a value of the IR
+ * @returns the copy
+ */
+export const withoutDeclarations = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+        return value.map(item => withoutDeclarations(item));
+    }
+    if (typeof value !== 'object' || value === null) {
+        return value;
+    }
+    return Object.fromEntries(
+        Object.entries(value)
+            .filter(([key]) => key !== 'declarations')
+            .map(([key, item]) => [key, withoutDeclarations(item)])
+    );
+};

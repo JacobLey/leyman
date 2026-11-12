@@ -626,9 +626,17 @@ export const lazy = <const E extends Element, const O extends Occurs = NoPropert
 export type AnyOptions = Omit<Any, 'kind'>;
 
 /**
- * An element wildcard: elements it allows are kept, unvalidated, as `x.XmlNode`s under the `#any` key.
+ * An element wildcard: elements it allows are kept as `x.XmlNode`s under the `#any` key. As in XSD, it is
+ * `processContents: 'strict'` by default, so each element needs one of its `declarations` (global element
+ * declarations, matched by name) and is validated against it; `lax` validates only those with a declaration,
+ * and `skip` none.
  *
- * @param options - namespace constraint and occurrences
+ * @example
+ * ```ts
+ * x.any({ processContents: 'lax', declarations: () => [note], minOccurs: 0, maxOccurs: 'unbounded' })
+ * ```
+ *
+ * @param options - namespace constraint, `processContents`, `declarations` and occurrences
  * @returns the wildcard
  */
 export const any = <const O extends AnyOptions = NoProperties>(
@@ -642,10 +650,12 @@ export const any = <const O extends AnyOptions = NoProperties>(
 export type AnyAttributeOptions = Omit<AnyAttribute, 'kind'>;
 
 /**
- * An attribute wildcard, among a complex type's `attributes`: attributes it allows are kept, unvalidated, as
- * `x.XmlAttribute`s in `attributes['#any']`.
+ * An attribute wildcard, among a complex type's `attributes`: attributes it allows are kept as
+ * `x.XmlAttribute`s in `attributes['#any']`. As in XSD, it is `processContents: 'strict'` by default, so each
+ * attribute needs one of its `declarations` (global attribute declarations, matched by name) and is validated
+ * against it; `lax` validates only those with a declaration, and `skip` none.
  *
- * @param options - namespace constraint
+ * @param options - namespace constraint, `processContents` and `declarations`
  * @returns the wildcard
  */
 export const anyAttribute = <const O extends AnyAttributeOptions = NoProperties>(

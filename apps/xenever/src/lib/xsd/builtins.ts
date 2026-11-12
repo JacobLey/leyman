@@ -1,4 +1,4 @@
-import type { Attribute, ComplexType, SimpleType } from '#internal/lib/schema/ir.js';
+import type { Attribute, ComplexType, Element, SimpleType } from '#internal/lib/schema/ir.js';
 import { builtins } from '#internal/lib/simple/builtins.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 
@@ -43,19 +43,31 @@ export const xsd11Types: ReadonlySet<string> = new Set([
 
 /**
  * Builds `xs:anyType`, the type of an element declared without one: any attributes, and mixed content of any
- * elements, kept as nodes ([XSD 1.1 Part 1 §3.4.7](https://www.w3.org/TR/xmlschema11-1/#builtin-ctd)). XSD
- * validates them laxly, against global declarations when there are any; xenever keeps every wildcard match
- * unvalidated, as `processContents="skip"` does.
+ * elements, kept as nodes and validated laxly, against the global declarations of their names when there are
+ * any ([XSD 1.1 Part 1 §3.4.7](https://www.w3.org/TR/xmlschema11-1/#builtin-ctd)).
  *
+ * @param elements - the global element declarations of the schema set
+ * @param attributes - its global attribute declarations
  * @returns the type, a new object each call, so no two schema sets share one
  */
-export const createAnyType = (): ComplexType => ({
+export const createAnyType = (
+    elements: () => readonly Element[],
+    attributes: () => readonly Attribute[]
+): ComplexType => ({
     kind: 'complex',
     mixed: true,
-    attributes: [{ kind: 'anyAttribute' }],
+    attributes: [{ kind: 'anyAttribute', processContents: 'lax', declarations: attributes }],
     content: {
         kind: 'sequence',
-        particles: [{ kind: 'any', minOccurs: 0, maxOccurs: 'unbounded' }],
+        particles: [
+            {
+                kind: 'any',
+                processContents: 'lax',
+                declarations: elements,
+                minOccurs: 0,
+                maxOccurs: 'unbounded',
+            },
+        ],
     },
 });
 

@@ -24,6 +24,32 @@ const loadFixture = async (name: string): Promise<XsdSchemaSet> => {
 };
 
 /**
+ * Copies a value of the IR with each wildcard's `declarations` getter replaced by the names of what it returns,
+ * which a deep equality can compare.
+ *
+ * @param value - a value of the IR
+ * @returns the copy
+ */
+const resolved = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+        return value.map(item => resolved(item));
+    }
+    if (typeof value !== 'object' || value === null) {
+        return value;
+    }
+    return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+            key,
+            key === 'declarations'
+                ? (item as () => readonly x.Attribute[] | readonly x.Element[])().map(
+                      declaration => [declaration.namespace, declaration.name]
+                  )
+                : resolved(item),
+        ])
+    );
+};
+
+/**
  * Asserts a document parses the same with a generated element const as with the loaded declaration.
  *
  * @param fixture - name of the fixture
@@ -70,9 +96,15 @@ suite('Generated consts', () => {
         const [orderSet, contentSet, namesSet, pomSet] = await Promise.all(
             ['order', 'content', 'names', 'pom'].map(async name => loadFixture(name))
         );
-        expect([content.anything, content.content]).to.deep.equal(contentSet!.elements);
-        expect([order.purchaseOrder, order.comment]).to.deep.equal(orderSet!.elements);
-        expect([names.catalog, names.class_2, names.x_2]).to.deep.equal(namesSet!.elements);
-        expect([pom.project]).to.deep.equal(pomSet!.elements);
+        expect(resolved([content.anything, content.content])).to.deep.equal(
+            resolved(contentSet!.elements)
+        );
+        expect(resolved([order.purchaseOrder, order.comment])).to.deep.equal(
+            resolved(orderSet!.elements)
+        );
+        expect(resolved([names.catalog, names.class_2, names.x_2])).to.deep.equal(
+            resolved(namesSet!.elements)
+        );
+        expect(resolved([pom.project])).to.deep.equal(resolved(pomSet!.elements));
     });
 });

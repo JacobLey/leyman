@@ -125,7 +125,7 @@ suite('Content', () => {
             x.complex({
                 content: x.sequence([
                     x.element('a', x.int()),
-                    x.any({ minOccurs: 0, maxOccurs: 'unbounded' }),
+                    x.any({ processContents: 'skip', minOccurs: 0, maxOccurs: 'unbounded' }),
                 ]),
             })
         );
@@ -195,7 +195,9 @@ suite('Content', () => {
         test('Is an array even for one occurrence, and absent when unmatched', () => {
             const one = x.element(
                 'r',
-                x.complex({ content: x.sequence([x.any({ minOccurs: 0 })]) })
+                x.complex({
+                    content: x.sequence([x.any({ processContents: 'skip', minOccurs: 0 })]),
+                })
             );
             expect(parse('<r><z/></r>', one).children['#any']).to.have.length(1);
             expect(parse('<r/>', one).children).to.deep.equal({});
@@ -205,9 +207,12 @@ suite('Content', () => {
             const either = x.element(
                 'r',
                 x.complex({
-                    content: x.choice([x.element('a', x.int()), x.any()], {
-                        maxOccurs: 'unbounded',
-                    }),
+                    content: x.choice(
+                        [x.element('a', x.int()), x.any({ processContents: 'skip' })],
+                        {
+                            maxOccurs: 'unbounded',
+                        }
+                    ),
                 })
             );
             expect(parse('<r><a>1</a><b/></r>', either).children).to.deep.equal({
@@ -228,7 +233,12 @@ suite('Content', () => {
         test('Lets a wildcard match a declared name where the declaration can not', () => {
             const before = x.element(
                 'r',
-                x.complex({ content: x.sequence([x.any(), x.element('a', x.int())]) })
+                x.complex({
+                    content: x.sequence([
+                        x.any({ processContents: 'skip' }),
+                        x.element('a', x.int()),
+                    ]),
+                })
             );
             expect(parse('<r><a>not an int</a><a>1</a></r>', before).children).to.deep.equal({
                 '#any': [
@@ -250,7 +260,12 @@ suite('Content', () => {
                 'r',
                 x.complex({
                     content: x.sequence([
-                        x.any({ namespace: ['urn:a', null], minOccurs: 0, maxOccurs: 'unbounded' }),
+                        x.any({
+                            processContents: 'skip',
+                            namespace: ['urn:a', null],
+                            minOccurs: 0,
+                            maxOccurs: 'unbounded',
+                        }),
                     ]),
                 })
             );
@@ -268,7 +283,9 @@ suite('Content', () => {
             const other = x.element(
                 'r',
                 x.complex({
-                    content: x.sequence([x.any({ notNamespace: [null], minOccurs: 0 })]),
+                    content: x.sequence([
+                        x.any({ processContents: 'skip', notNamespace: [null], minOccurs: 0 }),
+                    ]),
                 })
             );
             expect(parse('<r><x xmlns="urn:a"/></r>', other).children['#any']).to.have.length(1);
@@ -282,13 +299,18 @@ suite('Content', () => {
         test('Allows any namespace for an empty notNamespace', () => {
             const anyOther = x.element(
                 'r',
-                x.complex({ content: x.sequence([x.any({ notNamespace: [] })]) })
+                x.complex({
+                    content: x.sequence([x.any({ processContents: 'skip', notNamespace: [] })]),
+                })
             );
             expect(parse('<r><x/></r>', anyOther).children['#any']).to.have.length(1);
         });
 
         test('Names a missing wildcard element', () => {
-            const required = x.element('r', x.complex({ content: x.sequence([x.any()]) }));
+            const required = x.element(
+                'r',
+                x.complex({ content: x.sequence([x.any({ processContents: 'skip' })]) })
+            );
             expectInvalid(() => parse('<r/>', required), /`r` is missing any element/v, {
                 path: '/r',
             });
@@ -297,7 +319,9 @@ suite('Content', () => {
         test('Is allowed in an all group', () => {
             const all = x.element(
                 'r',
-                x.complex({ content: x.all([x.any(), x.element('a', x.int())]) })
+                x.complex({
+                    content: x.all([x.any({ processContents: 'skip' }), x.element('a', x.int())]),
+                })
             );
             expect(parse('<r><a>1</a><b/></r>', all).children['#any']).to.have.length(1);
         });
@@ -307,7 +331,10 @@ suite('Content', () => {
                 'r',
                 x.complex({
                     ordered: true,
-                    content: x.sequence([x.any(), x.element('a', x.int())]),
+                    content: x.sequence([
+                        x.any({ processContents: 'skip' }),
+                        x.element('a', x.int()),
+                    ]),
                 })
             );
             expect(parse('<r><b/><a>1</a></r>', ordered).children).to.deep.equal([
@@ -331,7 +358,10 @@ suite('Content', () => {
         const open = x.element(
             'r',
             x.complex({
-                attributes: [x.attribute('id', x.int()), x.anyAttribute({ notNamespace: [null] })],
+                attributes: [
+                    x.attribute('id', x.int()),
+                    x.anyAttribute({ processContents: 'skip', notNamespace: [null] }),
+                ],
             })
         );
 
@@ -360,13 +390,142 @@ suite('Content', () => {
         });
 
         test('Never matches xsi attributes', () => {
-            const anything = x.element('r', x.complex({ attributes: [x.anyAttribute()] }));
+            const anything = x.element(
+                'r',
+                x.complex({ attributes: [x.anyAttribute({ processContents: 'skip' })] })
+            );
             expect(() => parse(`<r ${xsi} xsi:type="t"/>`, anything)).to.throw(
                 XeneverUnsupportedError
             );
             expect(
                 parse(`<r ${xsi} xsi:schemaLocation="a b"/>`, anything).attributes
             ).to.deep.equal({});
+        });
+    });
+
+    suite('Wildcard processContents', () => {
+        const note = x.element('note', x.int());
+        const flag = x.attribute('flag', x.boolean(), { namespace: 'urn:f', fixed: 'true' });
+        const wrap = <const P extends x.Particle>(wildcard: P) =>
+            x.element('r', x.complex({ content: x.sequence([wildcard]) }));
+        const withAttributes = <const A extends x.AnyAttribute>(wildcard: A) =>
+            x.element('r', x.complex({ attributes: [wildcard] }));
+
+        test('Is strict by default, so an element needs a declaration', () => {
+            expectInvalid(
+                () => parse('<r><other/></r>', wrap(x.any())),
+                /`other` is not declared, which the strict wildcard matching it needs/v,
+                { path: '/r/other' }
+            );
+        });
+
+        test('Validates a strict match against its declaration, keeping it as a node', () => {
+            const strict = wrap(x.any({ declarations: () => [note] }));
+            expect(parse('<r><note> 1 </note></r>', strict).children['#any']).to.deep.equal([
+                {
+                    kind: 'element',
+                    namespace: null,
+                    localName: 'note',
+                    attributes: [],
+                    children: [{ kind: 'text', text: ' 1 ' }],
+                    inScopeNamespaces: { xml: 'http://www.w3.org/XML/1998/namespace' },
+                },
+            ]);
+            expectInvalid(() => parse('<r><note>x</note></r>', strict), /not a valid int/v, {
+                path: '/r/note',
+            });
+        });
+
+        test('Validates a lax match only when declared', () => {
+            const lax = wrap(
+                x.any({ processContents: 'lax', declarations: () => [note], maxOccurs: 2 })
+            );
+            expect(
+                parse('<r><note>1</note><other>x</other></r>', lax).children['#any']
+            ).to.have.length(2);
+            expectInvalid(() => parse('<r><note>x</note></r>', lax), /not a valid int/v, {
+                path: '/r/note',
+            });
+        });
+
+        test('Validates nothing when skipped', () => {
+            const skip = wrap(x.any({ processContents: 'skip', declarations: () => [note] }));
+            expect(parse('<r><note>x</note></r>', skip).children['#any']).to.have.length(1);
+        });
+
+        test('Rejects xsi:type on an element validated without a declaration', () => {
+            for (const processContents of ['lax', 'strict'] as const) {
+                expect(() =>
+                    parse(`<r ${xsi}><other xsi:type="t"/></r>`, wrap(x.any({ processContents })))
+                ).to.throw(XeneverUnsupportedError, /`xsi:type` is not supported/v);
+            }
+        });
+
+        test('Takes the strongest of the wildcards that may match, and any of their declarations', () => {
+            const either = wrap(
+                x.choice([
+                    x.any({ processContents: 'lax' }),
+                    x.any({ processContents: 'skip' }),
+                    x.any({ processContents: 'strict', declarations: () => [note] }),
+                ])
+            );
+            expectInvalid(() => parse('<r><note>x</note></r>', either), /not a valid int/v, {
+                path: '/r/note',
+            });
+            expectInvalid(() => parse('<r><other/></r>', either), /strict wildcard/v, {
+                path: '/r/other',
+            });
+        });
+
+        test('Is strict by default for attributes, so an attribute needs a declaration', () => {
+            expectInvalid(
+                () => parse('<r xmlns:f="urn:f" f:other="1"/>', withAttributes(x.anyAttribute())),
+                /`f:other` is not declared, which the strict attribute wildcard of `r` needs/v,
+                { path: '/r/@f:other' }
+            );
+        });
+
+        test('Validates a strict attribute match against its declaration, keeping it as written', () => {
+            const strict = withAttributes(x.anyAttribute({ declarations: () => [flag] }));
+            expect(parse('<r xmlns:f="urn:f" f:flag="1"/>', strict).attributes).to.deep.equal({
+                '#any': [{ namespace: 'urn:f', localName: 'flag', value: '1' }],
+            });
+            expectInvalid(
+                () => parse('<r xmlns:f="urn:f" f:flag="yes"/>', strict),
+                /not a valid boolean/v,
+                {
+                    path: '/r/@f:flag',
+                }
+            );
+            expectInvalid(
+                () => parse('<r xmlns:f="urn:f" f:flag="0"/>', strict),
+                /must be "true"/v,
+                {
+                    path: '/r/@f:flag',
+                }
+            );
+        });
+
+        test('Validates a lax attribute match only when declared, and nothing when skipped', () => {
+            const lax = withAttributes(
+                x.anyAttribute({ processContents: 'lax', declarations: () => [flag] })
+            );
+            expect(parse('<r xmlns:f="urn:f" other="x"/>', lax).attributes['#any']).to.have.length(
+                1
+            );
+            expectInvalid(
+                () => parse('<r xmlns:f="urn:f" f:flag="yes"/>', lax),
+                /not a valid boolean/v,
+                {
+                    path: '/r/@f:flag',
+                }
+            );
+            const skip = withAttributes(
+                x.anyAttribute({ processContents: 'skip', declarations: () => [flag] })
+            );
+            expect(
+                parse('<r xmlns:f="urn:f" f:flag="yes"/>', skip).attributes['#any']
+            ).to.have.length(1);
         });
     });
 

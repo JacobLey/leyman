@@ -8,4 +8,5 @@
     <o:note>Leave it <o:em>at</o:em> the <o:em>door</o:em>.</o:note>
     <o:tags>7 gift 42</o:tags>
     <o:extension><x:anything xmlns:x="urn:other" a="1"><x:deep/></x:anything></o:extension>
+    <o:meta o:gift="true"><o:code> 7 </o:code><o:undeclared>any <o:text/></o:undeclared></o:meta>
 </o:order>

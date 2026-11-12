@@ -7,6 +7,7 @@ import type {
     Lazy,
     ModelGroup,
     Particle,
+    ProcessContents,
     SimpleType,
     Type,
 } from '#internal/lib/schema/ir.js';
@@ -138,7 +139,7 @@ export interface BuildOptions {
 interface AttributeUses {
     readonly attributes: readonly Attribute[];
     readonly prohibited: ReadonlySet<string>;
-    readonly wildcard: Wildcard | null;
+    readonly wildcard: ReadWildcard | null;
 }
 
 /**
@@ -146,7 +147,15 @@ interface AttributeUses {
  */
 interface Inherited {
     readonly attributes: readonly Attribute[];
-    readonly wildcard: Wildcard | null;
+    readonly wildcard: ReadWildcard | null;
+}
+
+/**
+ * A wildcard as read from the XSD: its namespace constraint and `processContents`.
+ */
+interface ReadWildcard {
+    readonly constraint: Wildcard;
+    readonly processContents: ProcessContents;
 }
 
 /**
@@ -314,15 +323,13 @@ const checkAttributeName = (at: Located, nameAttribute: XmlAttributeNode): strin
 };
 
 /**
- * Reads a wildcard's namespace constraint. Its `processContents` is checked, and otherwise ignored: xenever
- * keeps what a wildcard matches as nodes, unvalidated.
+ * Reads a wildcard's namespace constraint.
  *
  * @param at - the `xs:any` or `xs:anyAttribute` element
  * @param construct - it, read
- * @returns the constraint
+ * @returns the namespaces it allows
  */
-const readWildcard = (at: Located, construct: Construct): Wildcard => {
-    readKeyword(at, construct.attributes.get('processContents'), ['skip', 'lax', 'strict']);
+const readNamespaceConstraint = (at: Located, construct: Construct): Wildcard => {
     const attribute = construct.attributes.get('namespace');
     const value = attribute ? attribute.value.trim() : '##any';
     const { targetNamespace } = at.doc;
@@ -350,6 +357,20 @@ const readWildcard = (at: Located, construct: Construct): Wildcard => {
 };
 
 /**
+ * Reads a wildcard: its namespace constraint and `processContents`, `strict` when absent.
+ *
+ * @param at - the `xs:any` or `xs:anyAttribute` element
+ * @param construct - it, read
+ * @returns its namespace constraint and `processContents`
+ */
+const readWildcard = (at: Located, construct: Construct): ReadWildcard => ({
+    constraint: readNamespaceConstraint(at, construct),
+    processContents:
+        readKeyword(at, construct.attributes.get('processContents'), ['skip', 'lax', 'strict']) ??
+        'strict',
+});
+
+/**
  * Checks the occurrences of an `xs:all`, which occurs at most once
  * ([XSD 1.1 Part 1 §3.8.6.2](https://www.w3.org/TR/xmlschema11-1/#cos-all-limited)).
  *
@@ -373,13 +394,21 @@ const inheritedFrom = (base: ComplexType): Inherited => {
     const wildcard = attributes.find(attribute => attribute.kind === 'anyAttribute');
     return {
         attributes: attributes.filter(attribute => attribute.kind === 'attribute'),
-        wildcard: wildcard ? fromIr(wildcard) : null,
+        wildcard: wildcard
+            ? {
+                  constraint: fromIr(wildcard),
+                  // Every wildcard the loader builds has one.
+                  processContents: wildcard.processContents!,
+              }
+            : null,
     };
 };
 
 /**
  * Adds a type's own attributes to those of its base type, as an extension does: a name already declared
- * by the base is an error, and the wildcards are united.
+ * by the base is an error, and the wildcards are united, with the extension's `processContents`
+ * ([XSD 1.0 Part 1 §3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type), {attribute wildcard} clause
+ * 2.2.2.1.2).
  *
  * @param at - the extension
  * @param inherited - the base type's attributes
@@ -401,7 +430,10 @@ const extendAttributes = (at: Located, inherited: Inherited, uses: AttributeUses
         attributes: [...inherited.attributes, ...uses.attributes],
         wildcard:
             wildcard && uses.wildcard
-                ? unite(wildcard, uses.wildcard)
+                ? {
+                      constraint: unite(wildcard.constraint, uses.wildcard.constraint),
+                      processContents: uses.wildcard.processContents,
+                  }
                 : (wildcard ?? uses.wildcard),
     };
 };
@@ -491,7 +523,10 @@ const restrictAttributes = (
         }
     }
     for (const [name, attribute] of own) {
-        if (!inherited.wildcard || !isAllowed(inherited.wildcard, attribute.namespace ?? null)) {
+        if (
+            !inherited.wildcard ||
+            !isAllowed(inherited.wildcard.constraint, attribute.namespace ?? null)
+        ) {
             invalid(
                 at,
                 `Attribute ${name} is neither declared nor allowed by a wildcard in the base type`
@@ -529,6 +564,15 @@ export class SchemaBuilder {
      */
     readonly #globalOf = new WeakMap<Element, Element>();
     readonly #globalAttributes = new Map<XmlElementNode, Attribute>();
+    /**
+     * Global element declarations, in document order, once built: what wildcards validate against.
+     */
+    readonly #elements: XsdElement[] = [];
+    /**
+     * Global attribute declarations, in document order, once every component is built.
+     */
+    #attributes: readonly Attribute[] | null = null;
+    #docs: readonly SchemaDocument[] = [];
     readonly #simpleTypes = new Map<XmlElementNode, SimpleType>();
     readonly #complexTypes = new Map<XmlElementNode, Mutable<ComplexType>>();
     readonly #groups = new Map<XmlElementNode, ModelGroup>();
@@ -575,8 +619,9 @@ export class SchemaBuilder {
      * @throws {TypeError} when the `ordered` option names a type without child elements
      */
     public build(docs: readonly SchemaDocument[]): XsdSchemaSet {
-        const elements: XsdElement[] = [];
+        const elements = this.#elements;
         const types: XsdNamedType[] = [];
+        this.#docs = docs;
         for (const doc of docs) {
             for (const at of doc.components) {
                 this.#component(at, elements, types);
@@ -671,6 +716,45 @@ export class SchemaBuilder {
     }
 
     /**
+     * The `declarations` of a wildcard: the global element declarations it allows, read once building is done.
+     *
+     * @param constraint - its namespace constraint
+     * @returns the getter
+     */
+    #elementDeclarations(constraint: Wildcard): () => readonly Element[] {
+        return () =>
+            this.#elements.filter(element => isAllowed(constraint, element.namespace ?? null));
+    }
+
+    /**
+     * The `declarations` of an attribute wildcard: the global attribute declarations it allows, read once
+     * building is done. The XML namespace's built-in attributes count when a schema imports that namespace
+     * without a file of its own.
+     *
+     * @param constraint - its namespace constraint
+     * @returns the getter
+     */
+    #attributeDeclarations(constraint: Wildcard): () => readonly Attribute[] {
+        return () => {
+            if (!this.#attributes) {
+                const declared = this.#tables.attributes
+                    .values()
+                    .map(at => this.#globalAttribute(at))
+                    .toArray();
+                const isXmlImported =
+                    this.#docs.some(doc => doc.references.has(xmlNamespace)) &&
+                    declared.every(attribute => attribute.namespace !== xmlNamespace);
+                this.#attributes = isXmlImported
+                    ? [...declared, ...this.#xmlAttributes.values()]
+                    : declared;
+            }
+            return this.#attributes.filter(attribute =>
+                isAllowed(constraint, attribute.namespace ?? null)
+            );
+        };
+    }
+
+    /**
      * Records which construct a value of the IR comes from.
      *
      * @param value - a value of the IR
@@ -741,7 +825,8 @@ export class SchemaBuilder {
         }
         const item = listKinds.get(localName);
         if (localName === 'anyType') {
-            type = createAnyType();
+            const any: Wildcard = { mode: 'any' };
+            type = createAnyType(this.#elementDeclarations(any), this.#attributeDeclarations(any));
         } else if (localName === 'anySimpleType') {
             // Any text, as written; only attributes and elements may use it, not restrictions.
             type = { kind: 'string' };
@@ -1208,7 +1293,10 @@ export class SchemaBuilder {
     /**
      * Reads the attribute declarations of a type, derivation or attribute group, attribute groups inlined.
      * Its wildcard is the intersection of its own and those of its attribute groups
-     * ([XSD 1.1 Part 1 §3.6.2.2](https://www.w3.org/TR/xmlschema11-1/#declare-attributeGroup-wildcard)).
+     * ([XSD 1.1 Part 1 §3.6.2.2](https://www.w3.org/TR/xmlschema11-1/#declare-attributeGroup-wildcard)), with
+     * the `processContents` of its own, else of the first attribute group's
+     * ([XSD 1.0 Part 1 §3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type), {attribute wildcard} clause
+     * 2.2).
      *
      * @param children - its `xs:attribute`, `xs:attributeGroup` and `xs:anyAttribute` elements
      * @returns the declarations, prohibited names and wildcard
@@ -1218,7 +1306,8 @@ export class SchemaBuilder {
         const attributes: Attribute[] = [];
         const names = new Set<string>();
         const prohibited = new Set<string>();
-        const wildcards: Wildcard[] = [];
+        const wildcards: ReadWildcard[] = [];
+        let own: ReadWildcard | null = null;
         const add = (attribute: Attribute, at: Located): void => {
             const name = attributeName(attribute);
             if (names.has(name)) {
@@ -1247,13 +1336,18 @@ export class SchemaBuilder {
                     wildcards.push(uses.wildcard);
                 }
             } else {
-                wildcards.push(readWildcard(child, readConstruct(child, grammars.anyAttribute)));
+                own = readWildcard(child, readConstruct(child, grammars.anyAttribute));
+                wildcards.push(own);
             }
         }
+        const constraint = intersectAll(wildcards.map(wildcard => wildcard.constraint));
         return {
             attributes,
             prohibited,
-            wildcard: intersectAll(wildcards),
+            wildcard: constraint && {
+                constraint,
+                processContents: (own ?? wildcards[0]!).processContents,
+            },
         };
     }
 
@@ -1313,11 +1407,22 @@ export class SchemaBuilder {
      * @returns the IR wildcard
      * @throws {XeneverUnsupportedError} when it allows no namespace at all
      */
-    #anyAttribute(wildcard: Wildcard, at: Located): AnyAttribute {
+    #anyAttribute(wildcard: ReadWildcard, at: Located): AnyAttribute {
         const constraint =
-            toIr(wildcard) ??
+            toIr(wildcard.constraint) ??
             unsupported(at, 'A wildcard that allows no namespace is not supported');
-        return this.#record<AnyAttribute>({ kind: 'anyAttribute', ...constraint }, at);
+        const { processContents } = wildcard;
+        return this.#record<AnyAttribute>(
+            {
+                kind: 'anyAttribute',
+                ...constraint,
+                processContents,
+                ...(processContents !== 'skip' && {
+                    declarations: this.#attributeDeclarations(wildcard.constraint),
+                }),
+            },
+            at
+        );
     }
 
     /**
@@ -1329,12 +1434,25 @@ export class SchemaBuilder {
     #anyParticle(at: Located): Any | null {
         const construct = readConstruct(at, grammars.any);
         const occurs = readOccurs(at, construct);
+        const wildcard = readWildcard(at, construct);
         const constraint =
-            toIr(readWildcard(at, construct)) ??
+            toIr(wildcard.constraint) ??
             unsupported(at, 'A wildcard that allows no namespace is not supported');
+        const { processContents } = wildcard;
         return occurs === null
             ? null
-            : this.#record<Any>({ kind: 'any', ...constraint, ...occurs }, at);
+            : this.#record<Any>(
+                  {
+                      kind: 'any',
+                      ...constraint,
+                      processContents,
+                      ...(processContents !== 'skip' && {
+                          declarations: this.#elementDeclarations(wildcard.constraint),
+                      }),
+                      ...occurs,
+                  },
+                  at
+              );
     }
 
     /**

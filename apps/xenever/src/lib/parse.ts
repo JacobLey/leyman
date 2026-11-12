@@ -1,13 +1,18 @@
 import type { XeneverInvalidSchemaError, XeneverXmlError, XmlErrorLocation } from './errors.js';
-import type { CompiledComplex, CompiledElement } from './schema/compile.js';
+import type {
+    CompiledAttribute,
+    CompiledComplex,
+    CompiledElement,
+    CompiledWildcard,
+} from './schema/compile.js';
 import type { Infer, XmlAttribute, XmlNode } from './schema/infer.js';
-import type { Element } from './schema/ir.js';
+import type { Element, ProcessContents } from './schema/ir.js';
 import type { CompiledSimple } from './simple/compile-simple.js';
 import type { StandardSchemaV1 } from './standard-schema.js';
 import type { XmlAttributeNode, XmlElementNode } from './xml/nodes.js';
 import { XeneverDocumentError, XeneverUnsupportedError, XeneverValidationError } from './errors.js';
 import { anyKey, compileElement, describeName, expandedName } from './schema/compile.js';
-import { expectedLabels } from './schema/content.js';
+import { expectedLabels, matchingWildcards } from './schema/content.js';
 import { InvalidValueError } from './simple/builtins.js';
 import { compileSimple, isSameValue } from './simple/compile-simple.js';
 import { readXml } from './xml/read-xml.js';
@@ -170,6 +175,63 @@ const toXmlNode = (node: XmlElementNode): XmlNode => ({
 });
 
 /**
+ * Reads an attribute's value as its declaration says.
+ *
+ * @param attribute - attribute of the XML tree
+ * @param declaration - what declares it
+ * @param node - its element
+ * @returns its value
+ * @throws {XeneverValidationError} when it isn't valid, or isn't the fixed value
+ */
+const readAttribute = (
+    attribute: XmlAttributeNode,
+    declaration: CompiledAttribute,
+    node: XmlElementNode
+): unknown => {
+    const value = readValue(
+        () => declaration.type.parse(attribute.value, node.inScopeNamespaces),
+        at(attribute)
+    );
+    if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
+        throw new XeneverValidationError(
+            `Attribute ${written(attribute)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
+            at(attribute)
+        );
+    }
+    return value;
+};
+
+/**
+ * Validates an attribute an attribute wildcard allowed, as its `processContents` says
+ * ([XSD 1.0 Part 1 §3.10.4](https://www.w3.org/TR/xmlschema-1/#cvc-wildcard)).
+ *
+ * @param attribute - attribute of the XML tree
+ * @param wildcard - the attribute wildcard that allowed it
+ * @param node - its element
+ * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
+ */
+const checkWildcardAttribute = (
+    attribute: XmlAttributeNode,
+    wildcard: CompiledWildcard<CompiledAttribute>,
+    node: XmlElementNode
+): void => {
+    if (wildcard.processContents === 'skip') {
+        return;
+    }
+    const declaration = wildcard.declarations.get(
+        expandedName(attribute.namespace, attribute.localName)
+    );
+    if (declaration) {
+        readAttribute(attribute, declaration, node);
+    } else if (wildcard.processContents === 'strict') {
+        throw new XeneverValidationError(
+            `Attribute ${written(attribute)} is not declared, which the strict attribute wildcard of ${written(node)} needs`,
+            at(attribute)
+        );
+    }
+};
+
+/**
  * Reads an element's attributes.
  *
  * @param node - node of the XML tree
@@ -192,18 +254,9 @@ const readAttributes = (
             expandedName(attribute.namespace, attribute.localName)
         );
         if (declaration) {
-            const value = readValue(
-                () => declaration.type.parse(attribute.value, node.inScopeNamespaces),
-                at(attribute)
-            );
-            if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
-                throw new XeneverValidationError(
-                    `Attribute ${written(attribute)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
-                    at(attribute)
-                );
-            }
-            values.set(declaration.key, value);
+            values.set(declaration.key, readAttribute(attribute, declaration, node));
         } else if (type?.anyAttribute?.allows(attribute.namespace) === true) {
+            checkWildcardAttribute(attribute, type.anyAttribute, node);
             wildcardMatches.push(toXmlAttribute(attribute));
         } else {
             throw new XeneverValidationError(
@@ -240,6 +293,75 @@ const readAttributes = (
 };
 
 /**
+ * Rejects `xsi:type`, before anything else about the element is read: the type it selects decides what is
+ * valid, so any other error would be about the wrong type.
+ *
+ * @param node - node of the XML tree
+ * @throws {XeneverUnsupportedError} on `xsi:type`
+ */
+const rejectXsiType = (node: XmlElementNode): void => {
+    const xsiType = node.attributes.find(
+        attribute => attribute.namespace === xsiNamespace && attribute.localName === 'type'
+    );
+    if (xsiType) {
+        // Polymorphism, which xsi:type selects, is for a later version.
+        throw new XeneverUnsupportedError(
+            `\`xsi:type\` is not supported (line ${xsiType.location.line}, column ${xsiType.location.column})`,
+            { path: xsiType.path }
+        );
+    }
+};
+
+/**
+ * How strong each `processContents` is, to pick the strongest of several wildcards.
+ */
+const processStrength: Readonly<Record<ProcessContents, number>> = { skip: 0, lax: 1, strict: 2 };
+
+/**
+ * Validates an element a wildcard matched, as its `processContents` says
+ * ([XSD 1.0 Part 1 §3.10.4](https://www.w3.org/TR/xmlschema-1/#cvc-wildcard)). When several wildcards may have
+ * matched it (a model breaking Unique Particle Attribution), the strongest `processContents` applies, and the
+ * first declaration of its name.
+ *
+ * @param child - node of the XML tree
+ * @param wildcards - the wildcards that may have matched it, in model order
+ * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
+ * @throws {XeneverUnsupportedError} on `xsi:type` where the element is validated
+ */
+const checkWildcardElement = (
+    child: XmlElementNode,
+    wildcards: readonly CompiledWildcard<CompiledElement>[]
+): void => {
+    let processContents: ProcessContents = 'skip';
+    for (const wildcard of wildcards) {
+        if (processStrength[wildcard.processContents] > processStrength[processContents]) {
+            ({ processContents } = wildcard);
+        }
+    }
+    if (processContents === 'skip') {
+        return;
+    }
+    const name = expandedName(child.namespace, child.localName);
+    const declaration = wildcards
+        .values()
+        .map(wildcard => wildcard.declarations.get(name))
+        .find(found => found !== undefined);
+    if (declaration) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
+        readElement(child, declaration);
+        return;
+    }
+    // Without a declaration, `xsi:type` would give the type to validate against.
+    rejectXsiType(child);
+    if (processContents === 'strict') {
+        throw new XeneverValidationError(
+            `Element ${written(child)} is not declared, which the strict wildcard matching it needs`,
+            at(child)
+        );
+    }
+};
+
+/**
  * Reads the child elements of an element with content, and its text when mixed.
  *
  * @param node - node of the XML tree
@@ -248,7 +370,7 @@ const readAttributes = (
  * @throws {XeneverValidationError} when the children don't match the content model
  */
 const readChildren = (node: XmlElementNode, type: CompiledComplex): unknown => {
-    const { model, elements, keys } = type.content!;
+    const { model, elements, keys, wildcards } = type.content!;
     const values = new Map<string, unknown[]>();
     const entries: { readonly name: string; readonly value: unknown }[] = [];
     const add = (key: string, value: unknown): void => {
@@ -291,8 +413,15 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): unknown => {
                 at(child)
             );
         }
+        const before = term;
         ({ term } = next);
         if (next.isWildcard) {
+            checkWildcardElement(
+                child,
+                matchingWildcards(before, { name, namespace }).map(
+                    symbol => wildcards.get(symbol.id)!
+                )
+            );
             add(anyKey, toXmlNode(child));
         } else {
             const declaration = elements.get(name)!;
@@ -389,26 +518,6 @@ const readText = (
         );
     }
     return value;
-};
-
-/**
- * Rejects `xsi:type`, before anything else about the element is read: the type it selects decides what is
- * valid, so any other error would be about the wrong type.
- *
- * @param node - node of the XML tree
- * @throws {XeneverUnsupportedError} on `xsi:type`
- */
-const rejectXsiType = (node: XmlElementNode): void => {
-    const xsiType = node.attributes.find(
-        attribute => attribute.namespace === xsiNamespace && attribute.localName === 'type'
-    );
-    if (xsiType) {
-        // Polymorphism, which xsi:type selects, is for a later version.
-        throw new XeneverUnsupportedError(
-            `\`xsi:type\` is not supported (line ${xsiType.location.line}, column ${xsiType.location.column})`,
-            { path: xsiType.path }
-        );
-    }
 };
 
 /**

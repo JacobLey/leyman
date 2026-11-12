@@ -27,10 +27,6 @@ const options = {
  * test, so the list stays true.
  */
 const xeneverGaps = [
-    // `processContents` is always treated as skip
-    'XSD: lax wildcards: rejects invalid declared content in the wildcard',
-    'XSD: strict wildcards: rejects invalid declared content in the wildcard',
-    'XSD: strict wildcards: rejects undeclared content in the wildcard',
     // Range facets on date and time types are unsupported
     'XSD: date range facets: accepts a value inside the facet',
     'XSD: date range facets: rejects a value outside the facet',

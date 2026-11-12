@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<o:order xmlns:o="urn:order" xmlns="urn:order"><id>AB-1234</id><placed>2026-11-12T10:00:00Z</placed><pickup>x</pickup><item sku="a">1</item><meta o:undeclared="1"/></o:order>

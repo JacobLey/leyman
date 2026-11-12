@@ -2,7 +2,7 @@ import type { x } from 'xenever';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { parse } from 'xenever';
-import { loadSchema } from './helpers.js';
+import { loadSchema, withoutDeclarations } from './helpers.js';
 
 const tns = 'targetNamespace="urn:t" xmlns:t="urn:t"';
 
@@ -172,7 +172,7 @@ suite('loadXsd types', () => {
                 minOccurs: 0,
                 particles: [
                     { kind: 'element', name: 'c', type: { kind: 'int' } },
-                    { kind: 'any', namespace: ['urn:x'] },
+                    { kind: 'any', namespace: ['urn:x'], processContents: 'skip' },
                 ],
             });
             expect(contentOf(u!)).to.include({ kind: 'all' });
@@ -225,10 +225,10 @@ suite('loadXsd types', () => {
                 kind: 'sequence',
                 particles: [{ kind: 'element', name: 'b', type: { kind: 'int' } }],
             });
-            expect(derived!.attributes).to.deep.equal([
+            expect(withoutDeclarations(derived!.attributes)).to.deep.equal([
                 { kind: 'attribute', name: 'x', type: { kind: 'int' } },
                 { kind: 'attribute', name: 'y', type: { kind: 'int' } },
-                { kind: 'anyAttribute', namespace: ['urn:a', 'urn:b'] },
+                { kind: 'anyAttribute', namespace: ['urn:a', 'urn:b'], processContents: 'strict' },
             ]);
             expect(
                 parse('<t:e xmlns:t="urn:t" x="1" y="2"><a>1</a><b>2</b></t:e>', elements[0]!)
@@ -255,7 +255,10 @@ suite('loadXsd types', () => {
                 types.map(({ type }) => type as x.ComplexType);
             expect(same!.content).to.equal(mixed!.content);
             expect(same).to.include({ mixed: true });
-            expect(same!.attributes!.at(-1)).to.deep.equal({ kind: 'anyAttribute' });
+            expect(withoutDeclarations(same!.attributes!.at(-1))).to.deep.equal({
+                kind: 'anyAttribute',
+                processContents: 'strict',
+            });
             expect(filled).to.include({ mixed: true });
             expect(filled!.attributes).to.deep.equal(empty!.attributes);
             expect(stillEmpty).to.deep.equal(empty);
@@ -307,9 +310,10 @@ suite('loadXsd types', () => {
                 mixed: true,
                 content: { kind: 'sequence', particles: [] },
             });
-            expect(mixedRestricted!.attributes!.at(-1)).to.deep.equal({
+            expect(withoutDeclarations(mixedRestricted!.attributes!.at(-1))).to.deep.equal({
                 kind: 'anyAttribute',
                 notNamespace: ['urn:t', null],
+                processContents: 'strict',
             });
         });
     });

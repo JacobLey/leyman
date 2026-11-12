@@ -97,18 +97,18 @@ export interface Term {
 }
 
 /**
- * Labels of what may come next in a model, for errors.
+ * The symbols that may come next in a model.
  *
  * @param term - a model
- * @returns labels of the symbols that may come next, in model order, without repeats
+ * @returns the symbols that may match the next child, in model order, without repeats
  */
-export const expectedLabels = (term: Term): readonly string[] => {
-    const labels = new Set<string>();
+const nextSymbols = (term: Term): ReadonlySet<ModelSymbol> => {
+    const symbols = new Set<ModelSymbol>();
     const visit = (current: Term): void => {
         const { node } = current;
         switch (node.t) {
             case 'symbol': {
-                labels.add(node.symbol.label);
+                symbols.add(node.symbol);
                 break;
             }
             case 'seq': {
@@ -133,7 +133,7 @@ export const expectedLabels = (term: Term): readonly string[] => {
             case 'all': {
                 for (const [index, part] of node.parts.entries()) {
                     if (node.counts[index]! < part.max) {
-                        labels.add(part.symbol.label);
+                        symbols.add(part.symbol);
                     }
                 }
                 break;
@@ -147,8 +147,36 @@ export const expectedLabels = (term: Term): readonly string[] => {
         }
     };
     visit(term);
-    return [...labels];
+    return symbols;
 };
+
+/**
+ * Labels of what may come next in a model, for errors.
+ *
+ * @param term - a model
+ * @returns labels of the symbols that may come next, in model order, without repeats
+ */
+export const expectedLabels = (term: Term): readonly string[] => [
+    ...new Set(
+        nextSymbols(term)
+            .values()
+            .map(symbol => symbol.label)
+    ),
+];
+
+/**
+ * The wildcards that may match a child next: for a child {@link ContentModel.derive} matched by a wildcard,
+ * those it may have matched. Unique Particle Attribution makes that one wildcard, but xenever doesn't check it.
+ *
+ * @param term - model before the child
+ * @param child - its name
+ * @returns the wildcard symbols, in model order
+ */
+export const matchingWildcards = (term: Term, child: ModelChild): readonly ModelSymbol[] =>
+    nextSymbols(term)
+        .values()
+        .filter(symbol => symbol.isWildcard && symbol.matches(child))
+        .toArray();
 
 /**
  * A content model, ready to match children: interns its terms and caches their derivatives.

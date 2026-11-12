@@ -2,8 +2,8 @@ import type { XmlAttribute, XmlNode } from './infer.js';
 
 /**
  * The schema IR: plain, JSON-serializable data tagged by `kind`, which the `x` builders return and `parse`
- * reads. A hand-written `as const` literal of the same shape works too. The one function is `x.lazy`'s getter,
- * for recursion.
+ * reads. A hand-written `as const` literal of the same shape works too. The only functions are getters read when
+ * the schema is first used: `x.lazy`'s, for recursion, and a wildcard's `declarations`.
  */
 
 /**
@@ -353,22 +353,49 @@ export interface NamespaceConstraint {
 }
 
 /**
+ * How a wildcard validates what it matches
+ * ([XSD 1.1 Part 1 §3.10.1](https://www.w3.org/TR/xmlschema11-1/#Wildcard_details)): `strict` needs a global
+ * declaration of the name among the wildcard's `declarations` and validates against it, `lax` validates
+ * against one when there is one, and `skip` validates nothing.
+ */
+export type ProcessContents = 'lax' | 'skip' | 'strict';
+
+/**
  * An attribute wildcard, in a complex type's `attributes`: undeclared attributes it allows are kept in
- * `attributes['#any']` as {@link XmlAttribute}s, in document order. Their values are never validated, as
- * with `processContents="skip"`; declared attributes always take precedence.
+ * `attributes['#any']` as {@link XmlAttribute}s, in document order, whatever `processContents` validated;
+ * declared attributes always take precedence.
  */
 export interface AnyAttribute extends NamespaceConstraint {
     readonly kind: 'anyAttribute';
+    /**
+     * `strict` (the default, as in XSD), `lax` or `skip`.
+     */
+    readonly processContents?: ProcessContents;
+    /**
+     * The global attribute declarations an allowed attribute is validated against, by name, unless
+     * `processContents` is `skip`. A getter, read when the schema is first used, as `x.lazy`'s is.
+     */
+    readonly declarations?: () => readonly Attribute[];
 }
 
 /**
  * An element wildcard, in a content model: elements it allows are kept as {@link XmlNode}s under the `#any`
- * key, never validated, as with `processContents="skip"`. A child that a declared element in the content
- * model can match at that point is read as that element, as XSD 1.1 prefers element declarations over
- * wildcards ([XSD 1.1 Part 1 §3.8.6.4](https://www.w3.org/TR/xmlschema11-1/#cos-nonambig)).
+ * key, whatever `processContents` validated, so the value's shape never depends on it. A child that a
+ * declared element in the content model can match at that point is read as that element, as XSD 1.1 prefers
+ * element declarations over wildcards ([XSD 1.1 Part 1 §3.8.6.4](https://www.w3.org/TR/xmlschema11-1/#cos-nonambig)).
  */
 export interface Any extends NamespaceConstraint, Occurs {
     readonly kind: 'any';
+    /**
+     * `strict` (the default, as in XSD), `lax` or `skip`.
+     */
+    readonly processContents?: ProcessContents;
+    /**
+     * The global element declarations an allowed element is validated against, by name, unless
+     * `processContents` is `skip`. A getter, read when the schema is first used, as `x.lazy`'s is, so it may
+     * name declarations defined later.
+     */
+    readonly declarations?: () => readonly Element[];
 }
 
 /**

@@ -133,7 +133,11 @@ export const Model = x.complex({
         ),
         x.element(
             'properties',
-            x.complex({ content: x.sequence([x.any({ minOccurs: 0, maxOccurs: 'unbounded' })]) }),
+            x.complex({
+                content: x.sequence([
+                    x.any({ processContents: 'skip', minOccurs: 0, maxOccurs: 'unbounded' }),
+                ]),
+            }),
             { namespace: 'http://maven.apache.org/POM/4.0.0', minOccurs: 0 }
         ),
         x.element(
