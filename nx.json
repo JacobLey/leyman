@@ -896,6 +896,24 @@
         "check:_"
       ]
     },
+    "fetch-suites": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node test/fetch-suites.ts",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/test/fetch-suites.ts",
+        "{projectRoot}/test/suites.json"
+      ],
+      "outputs": [
+        "{projectRoot}/.suites"
+      ],
+      "dependsOn": [
+        "test:_"
+      ]
+    },
     "install:_": {
       "executor": "nx:noop",
       "dependsOn": [
@@ -1064,7 +1082,8 @@
       "dependsOn": [
         "test:_",
         "tsc-test",
-        "playwright-install"
+        "playwright-install",
+        "fetch-suites"
       ],
       "configurations": {
         "__lifecycle": {}

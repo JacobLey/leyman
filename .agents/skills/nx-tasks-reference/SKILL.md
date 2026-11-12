@@ -315,6 +315,14 @@ Downloads the Chromium, Firefox and WebKit builds for the project's Playwright v
 
 ---
 
+### `fetch-suites`
+
+Downloads the external test suites pinned in the project's `test/suites.json` (a URL and the tarball's sha256 each) into its gitignored `.suites/`, with its `test/fetch-suites.ts` (run by Node.js directly). Runs in `test:compile`, before the test suites. Cached, with only the tarballs as outputs: a fresh checkout, or a Dagger run, restores them from the Nx cache instead of the network, and the script skips any tarball already holding the pinned hash. A download is checked against its hash before it is kept. Tests extract a tarball into a temporary directory of their own, so the suite's files never enter the workspace or a cache input.
+
+**Add when:** The package's tests run a large third-party suite that has no npm package, e.g. `e2e/xenever-oracle` (the W3C XSD and XML suites).
+
+---
+
 ### `mocha-unit-test`
 
 Clears its coverage directory, then runs Mocha unit tests from `./dist-test/unit/**/*.spec.*js` under C8 coverage instrumentation.

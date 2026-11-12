@@ -1,0 +1,39 @@
+{
+  "name": "@leyman/e2e-xenever-oracle",
+  "version": "0.0.1",
+  "description": "Checks xenever against libxml2 (xmllint) and the W3C XML Schema and XML conformance test suites.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/xenever-oracle#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@rgrove/parse-xml": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:",
+    "xenever": "workspace:^",
+    "xmllint-wasm": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
+  }
+}

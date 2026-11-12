@@ -313,6 +313,9 @@ catalogs:
     wrangler:
       specifier: ^4.156.0
       version: 4.156.0
+    xmllint-wasm:
+      specifier: ^5.3.0
+      version: 5.3.0
     yaml:
       specifier: ^2.9.1
       version: 2.9.1
@@ -2982,6 +2985,60 @@ importers:
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
+
+  e2e/xenever-oracle:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@rgrove/parse-xml':
+        specifier: 'catalog:'
+        version: 5.1.0
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      xenever:
+        specifier: workspace:^
+        version: file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      xmllint-wasm:
+        specifier: 'catalog:'
+        version: 5.3.0(@types/node@26.6.6)
 
   infra/nx-cache/worker:
     devDependencies:
@@ -11682,6 +11739,17 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  xenever@file:apps/xenever:
+    resolution: {directory: apps/xenever, type: directory}
+    engines: {node: '>=24'}
+    hasBin: true
+
+  xmllint-wasm@5.3.0:
+    resolution: {integrity: sha512-sEgRXdf2t13eYCFCURmCE6h2hwleEOIS9VL/jOh9JJJnez2YXIooi2Ghm05/JZEPXyPawN8sMASPVZlmh8Sd6A==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -20536,6 +20604,25 @@ snapshots:
   ws@8.21.0: {}
 
   ws@8.22.0: {}
+
+  xenever@file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10):
+    dependencies:
+      '@rgrove/parse-xml': 5.1.0
+      ci-info: 4.4.0
+      entry-script: file:tools/entry-script
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
+      generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2))
+      parse-cwd: file:tools/parse-cwd
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - eslint
+      - prettier
+
+  xmllint-wasm@5.3.0(@types/node@26.6.6):
+    dependencies:
+      '@types/node': 26.6.6
 
   xtend@4.0.2: {}
 

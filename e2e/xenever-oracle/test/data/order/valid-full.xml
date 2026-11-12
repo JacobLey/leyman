@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<o:order xmlns:o="urn:order" currency="EUR" version="2">
+    <o:id>ZZ-0001</o:id>
+    <o:placed>2026-11-12T10:00:00+01:00</o:placed>
+    <o:address><o:city>Oslo</o:city><o:street>Main 1</o:street><o:zip>01234</o:zip></o:address>
+    <o:item sku="pen" price="1.50">1</o:item>
+    <o:item sku="ink" price="0.01">99</o:item>
+    <o:note>Leave it <o:em>at</o:em> the <o:em>door</o:em>.</o:note>
+    <o:tags>7 gift 42</o:tags>
+    <o:extension><x:anything xmlns:x="urn:other" a="1"><x:deep/></x:anything></o:extension>
+</o:order>

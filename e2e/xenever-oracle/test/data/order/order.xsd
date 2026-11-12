@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Every construct of xenever's v1 subset, in one schema, for the instances beside it. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:o="urn:order"
+    targetNamespace="urn:order" elementFormDefault="qualified">
+    <xs:element name="order" type="o:Order"/>
+    <xs:complexType name="Order">
+        <xs:sequence>
+            <xs:element name="id" type="o:Id"/>
+            <xs:element name="placed" type="xs:dateTime"/>
+            <xs:choice>
+                <xs:element name="pickup" type="xs:token"/>
+                <xs:element name="address" type="o:Address"/>
+            </xs:choice>
+            <xs:element name="item" type="o:Item" maxOccurs="unbounded"/>
+            <xs:element name="note" type="o:Note" minOccurs="0" nillable="true"/>
+            <xs:element name="tags" type="o:Tags" minOccurs="0"/>
+            <xs:element name="extension" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="currency" type="o:Currency" default="USD"/>
+        <xs:attribute name="version" type="xs:int" fixed="2"/>
+    </xs:complexType>
+    <xs:simpleType name="Id">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]{2}-\d{4}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Currency">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="USD"/>
+            <xs:enumeration value="EUR"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Address">
+        <xs:all>
+            <xs:element name="street" type="xs:string"/>
+            <xs:element name="city" type="xs:string"/>
+            <xs:element name="zip" type="o:Zip" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+    <xs:simpleType name="Zip">
+        <xs:restriction base="xs:string">
+            <xs:length value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Item">
+        <xs:simpleContent>
+            <xs:extension base="o:Quantity">
+                <xs:attribute name="sku" type="xs:NCName" use="required"/>
+                <xs:attribute name="price" type="o:Price"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="Quantity">
+        <xs:restriction base="xs:positiveInteger">
+            <xs:maxInclusive value="99"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Price">
+        <xs:restriction base="xs:decimal">
+            <xs:fractionDigits value="2"/>
+            <xs:minExclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Note" mixed="true">
+        <xs:sequence>
+            <xs:element name="em" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="Tags">
+        <xs:list>
+            <xs:simpleType>
+                <xs:union memberTypes="xs:int">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:NCName">
+                            <xs:maxLength value="8"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:list>
+    </xs:simpleType>
+</xs:schema>

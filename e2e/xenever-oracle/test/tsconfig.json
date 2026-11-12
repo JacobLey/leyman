@@ -1,0 +1,3 @@
+{
+  "extends": "@leyman/configs/tsconfig.test.json"
+}
