@@ -10,6 +10,7 @@ import type {
     SimpleType,
     Type,
 } from '#internal/lib/schema/ir.js';
+import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { StandardSchemaV1 } from '#internal/lib/standard-schema.js';
 import type { XmlAttributeNode, XmlElementNode } from '#internal/lib/xml/nodes.js';
 import type {
@@ -30,7 +31,8 @@ import {
 import { element as buildElement, lazy } from '#internal/lib/schema/builders.js';
 import { ShapeConflictError } from '#internal/lib/schema/check.js';
 import { compileElement } from '#internal/lib/schema/compile.js';
-import { compileSimple } from '#internal/lib/simple/compile-simple.js';
+import { InvalidValueError } from '#internal/lib/simple/builtins.js';
+import { compileSimple, isSameValue } from '#internal/lib/simple/compile-simple.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 import {
     atomicKinds,
@@ -405,6 +407,47 @@ const extendAttributes = (at: Located, inherited: Inherited, uses: AttributeUses
 };
 
 /**
+ * No namespaces: a value written in the schema can't name a `QName`'s.
+ */
+const noNamespaces: ReadonlyMap<string, string> = new Map();
+
+/**
+ * Whether a restriction keeps a fixed value: the same value of the base's type, however it is written
+ * ([XSD 1.0 Part 1 §3.4.6](https://www.w3.org/TR/xmlschema-1/#derivation-ok-restriction), clause 2.1.3).
+ *
+ * @param at - the restriction
+ * @param type - the type of the base's attribute
+ * @param fixed - the base's fixed value
+ * @param redeclared - the restriction's fixed value, if any
+ * @returns whether it is the same value
+ * @throws {XeneverUnsupportedError} when the type may be a `QName`, which a value written in the schema can't
+ * resolve
+ */
+const isSameFixed = (
+    at: Located,
+    type: CompiledSimple,
+    fixed: string,
+    redeclared: string | undefined
+): boolean => {
+    if (redeclared === undefined) {
+        return false;
+    }
+    if (type.hasQName) {
+        unsupported(at, '`fixed` of a type that may be a QName is not supported');
+    }
+    try {
+        return isSameValue(type.parse(fixed, noNamespaces), type.parse(redeclared, noNamespaces));
+    } catch (error) {
+        // Unreachable: reading a value throws only invalid values.
+        /* c8 ignore next 3 */
+        if (!(error instanceof InvalidValueError)) {
+            throw error;
+        }
+        return false;
+    }
+};
+
+/**
  * Restricts the attributes of a base type ([XSD 1.1 Part 1 §3.4.6.3](https://www.w3.org/TR/xmlschema11-1/#derivation-ok-restriction),
  * clauses 2 to 4): the base's are inherited unless redeclared or prohibited, a required one stays
  * required, a fixed one keeps its value, a new one needs the base's wildcard to allow it, and the
@@ -413,9 +456,15 @@ const extendAttributes = (at: Located, inherited: Inherited, uses: AttributeUses
  * @param at - the restriction
  * @param inherited - the base type's attributes
  * @param uses - the restriction's own
+ * @param compile - compiles a simple type, to compare fixed values as values
  * @returns the attributes of the derived type
  */
-const restrictAttributes = (at: Located, inherited: Inherited, uses: AttributeUses): Inherited => {
+const restrictAttributes = (
+    at: Located,
+    inherited: Inherited,
+    uses: AttributeUses,
+    compile: (type: SimpleType) => CompiledSimple
+): Inherited => {
     const own = new Map(uses.attributes.map(attribute => [attributeName(attribute), attribute]));
     const attributes: Attribute[] = [];
     for (const attribute of inherited.attributes) {
@@ -427,7 +476,10 @@ const restrictAttributes = (at: Located, inherited: Inherited, uses: AttributeUs
             invalid(at, `Attribute ${name} is required by the base type`);
         }
         if (redeclared) {
-            if (attribute.fixed !== undefined && redeclared.fixed !== attribute.fixed) {
+            if (
+                attribute.fixed !== undefined &&
+                !isSameFixed(at, compile(attribute.type), attribute.fixed, redeclared.fixed)
+            ) {
                 invalid(
                     at,
                     `Attribute ${name} is fixed to ${JSON.stringify(attribute.fixed)} by the base type`
@@ -1558,7 +1610,9 @@ export class SchemaBuilder {
             return this.#fields(
                 particle,
                 isMixed,
-                restrictAttributes(derivation, inherited, uses),
+                restrictAttributes(derivation, inherited, uses, type =>
+                    this.#checked(type, derivation, () => compileSimple(type, '/'))
+                ),
                 derivation
             );
         }
@@ -1643,7 +1697,9 @@ export class SchemaBuilder {
             ...this.#fields(
                 null,
                 false,
-                restrictAttributes(derivation, inheritedFrom(base), uses),
+                restrictAttributes(derivation, inheritedFrom(base), uses, type =>
+                    this.#checked(type, derivation, () => compileSimple(type, '/'))
+                ),
                 derivation
             ),
             text:

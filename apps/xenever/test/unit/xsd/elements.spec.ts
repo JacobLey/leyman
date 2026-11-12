@@ -100,6 +100,34 @@ suite('loadXsd elements and attributes', () => {
             ]);
         });
 
+        test('Keeps a fixed attribute in a restriction that writes the same value differently', async () => {
+            const { types } = await loadSchema(
+                `<xs:simpleType name="Ints"><xs:list itemType="xs:int"/></xs:simpleType>
+                <xs:complexType name="Base">
+                    <xs:attribute name="list" type="Ints" fixed="1   2 3"/>
+                    <xs:attribute name="int" type="xs:int" fixed=" -1"/>
+                </xs:complexType>
+                <xs:complexType name="Derived"><xs:complexContent><xs:restriction base="Base">
+                    <xs:attribute name="list" type="Ints" fixed="1 2  3"/>
+                    <xs:attribute name="int" type="xs:int" fixed="-01"/>
+                </xs:restriction></xs:complexContent></xs:complexType>
+                <xs:complexType name="Text"><xs:simpleContent><xs:extension base="xs:string">
+                    <xs:attribute name="on" type="xs:boolean" fixed="1"/>
+                </xs:extension></xs:simpleContent></xs:complexType>
+                <xs:complexType name="Short"><xs:simpleContent><xs:restriction base="Text">
+                    <xs:maxLength value="3"/>
+                    <xs:attribute name="on" type="xs:boolean" fixed="true"/>
+                </xs:restriction></xs:simpleContent></xs:complexType>`
+            );
+            expect(types.map(({ name }) => name)).to.deep.equal([
+                'Ints',
+                'Base',
+                'Derived',
+                'Text',
+                'Short',
+            ]);
+        });
+
         test('Ignores attributes in other namespaces', async () => {
             const { elements } = await loadSchema(
                 '<xs:element name="a" type="xs:string" ext:note="x" xmlns:ext="urn:ext"/>'

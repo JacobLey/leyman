@@ -41,6 +41,19 @@ export interface CompiledSimple {
 }
 
 /**
+ * Whether two values read from text are the same, for a `fixed` value: equal, or both `NaN` (identical in
+ * XSD 1.1, [Part 2 §2.2.2](https://www.w3.org/TR/xmlschema11-2/#identity)), and lists item by item.
+ *
+ * @param a - one value
+ * @param b - another
+ * @returns whether they are the same
+ */
+export const isSameValue = (a: unknown, b: unknown): boolean =>
+    Array.isArray(a) && Array.isArray(b)
+        ? a.length === b.length && a.every((item, index) => isSameValue(item, b[index]))
+        : a === b || (Number.isNaN(a) && Number.isNaN(b));
+
+/**
  * Families of built-in types, which take the same facets.
  */
 type Family =

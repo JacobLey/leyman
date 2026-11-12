@@ -866,6 +866,30 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^Attribute same is fixed to "v" by the base type/v,
     ],
     [
+        'a restriction dropping the fixed value of an attribute',
+        derive('restriction', `${required}<xs:attribute name="same"/>`),
+        XeneverInvalidSchemaError,
+        /^Attribute same is fixed to "v" by the base type/v,
+    ],
+    [
+        'a restriction fixing an attribute to a value not of its type',
+        derive('restriction', `${required}<xs:attribute name="same" fixed=" v "/>`).replace(
+            'name="same" type="xs:string"',
+            'name="same" type="xs:int"'
+        ),
+        XeneverInvalidSchemaError,
+        /^Attribute same is fixed to "v" by the base type/v,
+    ],
+    [
+        'a restriction of a fixed QName attribute',
+        derive(
+            'restriction',
+            `${required}<xs:attribute name="same" type="xs:QName" fixed="v"/>`
+        ).replace('name="same" type="xs:string"', 'name="same" type="xs:QName"'),
+        XeneverUnsupportedError,
+        /^`fixed` of a type that may be a QName is not supported/v,
+    ],
+    [
         'a restriction adding an attribute without a wildcard',
         derive('restriction', `${required}<xs:attribute name="new"/>`),
         XeneverInvalidSchemaError,
