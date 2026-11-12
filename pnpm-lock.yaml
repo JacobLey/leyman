@@ -2883,6 +2883,9 @@ importers:
       weighted-rendezvous-hash:
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/weighted-rendezvous-hash
+      xenever:
+        specifier: workspace:^
+        version: file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
 
   e2e/unknown-error-browser:
     devDependencies:
@@ -20782,6 +20785,21 @@ snapshots:
       generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2))
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10)
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - eslint
+      - prettier
+
+  xenever@file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
+    dependencies:
+      '@rgrove/parse-xml': 5.1.0
+      ci-info: 4.4.0
+      entry-script: file:tools/entry-script
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
+      generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
+      parse-cwd: file:tools/parse-cwd
+      populate-files: file:apps/populate-files/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'

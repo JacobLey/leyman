@@ -65,6 +65,7 @@
     "unknown-error": "workspace:^",
     "vitest": "catalog:",
     "vitest-chain": "workspace:^",
-    "weighted-rendezvous-hash": "workspace:^"
+    "weighted-rendezvous-hash": "workspace:^",
+    "xenever": "workspace:^"
   }
 }
