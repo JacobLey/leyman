@@ -185,6 +185,7 @@ suite('Facets', () => {
             expect(Number.isNaN(read(x.double({ enumeration: [Number.NaN] }), 'NaN'))).to.equal(
                 true
             );
+            expect(read(x.double({ enumeration: [-0] }), '-0')).to.equal(-0);
             expect(read(x.double({ enumeration: [Number.POSITIVE_INFINITY] }), 'INF')).to.equal(
                 Number.POSITIVE_INFINITY
             );

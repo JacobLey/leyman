@@ -386,7 +386,11 @@ const numberLexical = (value: number): string => {
     if (value === Number.POSITIVE_INFINITY) {
         return 'INF';
     }
-    return value === Number.NEGATIVE_INFINITY ? '-INF' : String(value);
+    if (value === Number.NEGATIVE_INFINITY) {
+        return '-INF';
+    }
+    // `String(-0)` is `'0'`, which reads back as positive zero, a different float value.
+    return Object.is(value, -0) ? '-0' : String(value);
 };
 
 /**
