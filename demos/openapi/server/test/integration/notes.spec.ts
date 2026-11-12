@@ -23,9 +23,9 @@ import { bind, createContainer } from 'haywire';
 import { customSchema } from 'juniper';
 import { makeArbitrary } from 'juniper-arbitrary';
 import { suite } from 'mocha-chain';
-import { withDatabase } from '../helpers/database.js';
-import { listen } from '../helpers/serve.js';
-import { expectStatus } from '../helpers/status.js';
+import { withDatabase } from '#test/helpers/database.js';
+import { listen } from '#test/helpers/serve.js';
+import { expectStatus } from '#test/helpers/status.js';
 
 const token = 'secret-token';
 // Another user's

@@ -24,7 +24,8 @@
     ".": "./dist/server.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "dependencies": {
     "@hono/node-server": "catalog:",

@@ -23,8 +23,8 @@ import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
 import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
-import { withDatabase } from '../helpers/database.js';
-import { listen } from '../helpers/serve.js';
+import { withDatabase } from '#test/helpers/database.js';
+import { listen } from '#test/helpers/serve.js';
 
 const textEncoder = new TextEncoder();
 
