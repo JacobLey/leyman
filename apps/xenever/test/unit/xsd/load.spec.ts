@@ -326,6 +326,13 @@ suite('loadXsd files', () => {
             expect(elements).to.have.length(1);
         });
 
+        test('Take ids only from XSD elements, not from documentation', async () => {
+            const { elements } = await loadSchema(
+                '<xs:annotation><xs:documentation><xs:element id="s"/></xs:documentation></xs:annotation><xs:element name="a" id="s"/>'
+            );
+            expect(elements).to.have.length(1);
+        });
+
         test('Put includes and imports first', async () => {
             await expectSchemaError(
                 loadSchema('<xs:element name="a"/><xs:import namespace="urn:x"/>'),

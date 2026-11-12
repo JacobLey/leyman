@@ -92,6 +92,18 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^`t:b` is not allowed in `xs:element`/v,
     ],
     [
+        'an id that is not an NCName',
+        '<xs:element name="a" id="1a"/>',
+        XeneverInvalidSchemaError,
+        /^The id "1a" is not an NCName/v,
+    ],
+    [
+        'an id used twice, on elements not otherwise read',
+        '<xs:element name="a" id="i"><xs:annotation id="i"/></xs:element>',
+        XeneverInvalidSchemaError,
+        /^The id "i" is used twice in the file/v,
+    ],
+    [
         'an unsupported element',
         '<xs:element name="a"><xs:key name="k"/></xs:element>',
         XeneverUnsupportedError,

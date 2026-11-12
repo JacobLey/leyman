@@ -12,6 +12,7 @@ import {
     XeneverLoadError,
     XeneverXmlError,
 } from '#internal/lib/errors.js';
+import { ncNamePattern } from '#internal/lib/simple/names.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 import { readXml } from '#internal/lib/xml/read-xml.js';
 import { SchemaBuilder } from './build.js';
@@ -115,6 +116,46 @@ const describeNamespace = (namespace: string | null): string =>
     namespace === null ? 'no namespace' : `\`${namespace}\``;
 
 /**
+ * Checks the `id` attributes of a file's XSD elements: each is an `xs:ID` in the schema for schemas, so an
+ * NCName unique in the file ([XSD 1.1 Part 2 §3.4.8](https://www.w3.org/TR/xmlschema11-2/#ID)), whether or
+ * not the element is otherwise read. The content of `xs:appinfo` and `xs:documentation` is not schema markup.
+ *
+ * @param doc - the file
+ * @throws {XeneverInvalidSchemaError} for an `id` that is not an NCName, or is repeated
+ */
+const checkIds = (doc: SchemaDocument): void => {
+    const ids = new Set<string>();
+    const visit = (node: XmlElementNode): void => {
+        if (node.namespace !== xsdNamespace) {
+            return;
+        }
+        const attribute = node.attributes.find(
+            candidate => candidate.namespace === null && candidate.localName === 'id'
+        );
+        if (attribute) {
+            const id = collapsed(attribute);
+            const at = { doc, node };
+            if (!ncNamePattern.test(id)) {
+                invalid(at, `The id "${id}" is not an NCName`, attribute);
+            }
+            if (ids.has(id)) {
+                invalid(at, `The id "${id}" is used twice in the file`, attribute);
+            }
+            ids.add(id);
+        }
+        if (node.localName === 'appinfo' || node.localName === 'documentation') {
+            return;
+        }
+        for (const child of node.children) {
+            if (child.kind === 'element') {
+                visit(child);
+            }
+        }
+    };
+    visit(doc.root);
+};
+
+/**
  * Parses a file as an XSD: its `xs:schema` element and attributes.
  *
  * @param filePath - absolute path
@@ -208,6 +249,7 @@ const readDocument = (
         child => child.node.localName === 'include' || child.node.localName === 'import'
     );
     components.push(...construct.children.slice(directives.length));
+    checkIds(doc);
     return { doc, directives };
 };
 
