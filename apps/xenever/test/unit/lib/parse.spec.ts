@@ -726,6 +726,18 @@ suite('parse', () => {
                 .that.includes({ path: '/n/@xsi:type' });
         });
 
+        test('Rejects xsi:type before anything it would make valid', () => {
+            for (const document of [
+                `<n other="1" ${xsi} xsi:type="x">1</n>`,
+                `<n ${xsi} xsi:nil="true" xsi:type="x"/>`,
+                `<n ${xsi} xsi:type="x">not an int</n>`,
+            ]) {
+                expect(() => parse(document, x.element('n', x.int())))
+                    .to.throw(XeneverUnsupportedError, /`xsi:type` is not supported/v)
+                    .that.includes({ path: '/n/@xsi:type' });
+            }
+        });
+
         test('Rejects other xsi attributes as undeclared', () => {
             expectInvalid(
                 () => parse(`<n ${xsi} xsi:other="x">1</n>`, x.element('n', x.int())),

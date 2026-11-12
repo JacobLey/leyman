@@ -189,7 +189,6 @@ const toXmlNode = (node: XmlElementNode): XmlNode => ({
  * @param type - its complex type, or `null` for a simple type, which has no attributes
  * @returns the value of `attributes`, keys in declaration order, then `#any`
  * @throws {XeneverValidationError} when an attribute isn't allowed or valid, or a required one is missing
- * @throws {XeneverUnsupportedError} on `xsi:type`
  */
 const readAttributes = (
     node: XmlElementNode,
@@ -198,18 +197,9 @@ const readAttributes = (
     const values = new Map<string, unknown>();
     const wildcardMatches: XmlAttribute[] = [];
     for (const attribute of node.attributes) {
-        if (attribute.namespace === xsiNamespace) {
-            if (attribute.localName === 'type') {
-                // Polymorphism, which xsi:type selects, is for a later version.
-                throw new XeneverUnsupportedError(
-                    `\`xsi:type\` is not supported (line ${attribute.location.line}, column ${attribute.location.column})`,
-                    { path: attribute.path }
-                );
-            }
-            // Hints for finding a schema, which `parse` is already given, and `nil`, which `readElement` read.
-            if (xsiAttributes.has(attribute.localName)) {
-                continue;
-            }
+        // Hints for finding a schema, which `parse` is already given, and `nil`, which `readElement` read.
+        if (attribute.namespace === xsiNamespace && xsiAttributes.has(attribute.localName)) {
+            continue;
         }
         const declaration = type?.attributes.get(
             expandedName(attribute.namespace, attribute.localName)
@@ -413,14 +403,36 @@ const readText = (
 };
 
 /**
+ * Rejects `xsi:type`, before anything else about the element is read: the type it selects decides what is
+ * valid, so any other error would be about the wrong type.
+ *
+ * @param node - node of the XML tree
+ * @throws {XeneverUnsupportedError} on `xsi:type`
+ */
+const rejectXsiType = (node: XmlElementNode): void => {
+    const xsiType = node.attributes.find(
+        attribute => attribute.namespace === xsiNamespace && attribute.localName === 'type'
+    );
+    if (xsiType) {
+        // Polymorphism, which xsi:type selects, is for a later version.
+        throw new XeneverUnsupportedError(
+            `\`xsi:type\` is not supported (line ${xsiType.location.line}, column ${xsiType.location.column})`,
+            { path: xsiType.path }
+        );
+    }
+};
+
+/**
  * Reads an element as its declaration says.
  *
  * @param node - node of the XML tree
  * @param declaration - what declares it
  * @returns its value
  * @throws {XeneverValidationError} when it doesn't match the declaration
+ * @throws {XeneverUnsupportedError} on `xsi:type`
  */
 const readElement = (node: XmlElementNode, declaration: CompiledElement): unknown => {
+    rejectXsiType(node);
     const { type } = declaration;
     const complex = type.kind === 'complex' ? type : null;
     if (isNil(node, declaration)) {
