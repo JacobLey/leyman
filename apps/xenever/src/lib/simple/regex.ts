@@ -396,7 +396,10 @@ class Translator {
             this.#index--;
             this.#fail('has an unescaped `[` in a character class');
         }
-        if (char === '-' && !isFirst && this.#peek() !== ']') {
+        // A `-` may end the group before a subtraction, as in `[a-z--[b-z]]` (`a` to `z`, and `-`, but not `b`
+        // to `z`).
+        const isLast = this.#peek() === ']' || (this.#peek() === '-' && this.#peek(1) === '[');
+        if (char === '-' && !isFirst && !isLast) {
             this.#index--;
             this.#fail('has a `-` that is neither a range nor at either end of a character class');
         }

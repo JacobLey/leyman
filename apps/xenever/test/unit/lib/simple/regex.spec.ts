@@ -93,6 +93,7 @@ suite('compilePattern', () => {
         expectMatches('[a-z-[aeiou]]', ['b'], ['a']);
         expectMatches('[^a-z-[0-9]]', ['A'], ['a', '1']);
         expectMatches('[a-z-[b-y-[c]]]', ['a', 'c', 'z'], ['b']);
+        expectMatches('[a-z--[b-z]]', ['a', '-'], ['b', 'z']);
     });
 
     test('Caches compiled patterns', () => {
@@ -118,6 +119,7 @@ suite('compilePattern', () => {
         expectInvalid('[a', /ends early/v);
         expectInvalid('[a[b]', /unescaped `\[` in a character class/v);
         expectInvalid('[a-c-e]', /`-` that is neither a range nor at either end/v);
+        expectInvalid('[a--b]', /`-` that is neither a range nor at either end/v);
         expectInvalid(String.raw`[a-\d]`, /range ending in a multi-character escape/v);
         expectInvalid('[z-a]', /range whose end is before its start/v);
         expectInvalid('\\', /ends early/v);
