@@ -190,6 +190,20 @@ export const PurchaseOrderType = x.complex({
 });
 
 /**
+ * The type `{urn:example:order}FewTags`.
+ */
+export type FewTags = string[];
+export const FewTags = x.list(x.ncName(), { maxLength: 3 });
+
+/**
+ * The type `{urn:example:order}ShortZip`.
+ */
+export type ShortZip = number | string;
+export const ShortZip = x.union([x.int(), x.string({ pattern: '\\d{5}-\\d{4}' })], {
+    pattern: '\\d{5}',
+});
+
+/**
  * The element `{urn:example:order}purchaseOrder`.
  */
 export type PurchaseOrder = PurchaseOrderType;

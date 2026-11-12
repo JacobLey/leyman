@@ -578,12 +578,15 @@ class Printer {
         if (type.kind === 'list') {
             return call('list', [
                 this.#typeCode(type.item, true),
-                optionsOf(type, ['kind', 'item']),
+                type.facets ? literal(type.facets) : null,
             ]);
         }
         if (type.kind === 'union') {
             const members = type.members.map(member => this.#typeCode(member, true));
-            return call('union', [`[${members.join(', ')}]`, optionsOf(type, ['kind', 'members'])]);
+            return call('union', [
+                `[${members.join(', ')}]`,
+                type.facets ? literal(type.facets) : null,
+            ]);
         }
         return atomicCode(type);
     }

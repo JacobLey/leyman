@@ -110,6 +110,19 @@
     </xs:union>
   </xs:simpleType>
 
+  <!-- Facets of a list and a union, which their builders take as their last argument. -->
+  <xs:simpleType name="FewTags">
+    <xs:restriction base="po:Tags">
+      <xs:maxLength value="3"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ShortZip">
+    <xs:restriction base="po:Zip">
+      <xs:pattern value="\d{5}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="USState">
     <xs:restriction base="xs:string">
       <xs:enumeration value="AK"/>
