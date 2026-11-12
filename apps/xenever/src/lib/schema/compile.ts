@@ -564,6 +564,27 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
 };
 
 /**
+ * The declaration each lazy reference's getter returned.
+ */
+const lazyDeclarations = new WeakMap<object, unknown>();
+
+/**
+ * The declaration of a lazy reference, its getter called once: a cycle ends when compiling reaches a declaration
+ * it is already compiling, so a getter that builds a new declaration on each call (`() => x.element(...)`) must
+ * still give the same one each time.
+ *
+ * @param lazy - the reference
+ * @param get - its getter
+ * @returns what the getter returned the first time
+ */
+const lazyDeclaration = (lazy: object, get: () => unknown): unknown => {
+    if (!lazyDeclarations.has(lazy)) {
+        lazyDeclarations.set(lazy, get());
+    }
+    return lazyDeclarations.get(lazy);
+};
+
+/**
  * Properties of a particle rather than its declaration.
  */
 const occursProperties: ReadonlySet<string> = new Set(['minOccurs', 'maxOccurs']);
@@ -699,7 +720,7 @@ class ContentCompiler {
                 invalidSchema('Expected `get` to be a function', childPath(path, 'get'));
             }
             occurs = checkOccurs(record, path);
-            declaration = (record.get as () => unknown)();
+            declaration = lazyDeclaration(record, record.get as () => unknown);
             declarationPath = `${childPath(path, 'get')}()`;
         } else {
             occurs = checkOccurs(checkObject(particle, elementProperties, path), path);

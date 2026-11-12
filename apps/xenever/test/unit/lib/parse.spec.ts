@@ -317,6 +317,25 @@ suite('parse', () => {
             });
         });
 
+        test('Reads recursion through a getter that builds a new declaration each call', () => {
+            interface Node {
+                attributes: x.NoProperties;
+                children: { node?: Node[] };
+            }
+            const node = x.complex({
+                content: x.sequence([
+                    x.lazy((): x.ElementOf<'node', Node> => x.element('node', node), {
+                        minOccurs: 0,
+                        maxOccurs: 'unbounded',
+                    }),
+                ]),
+            });
+            expect(parse('<node><node/></node>', x.element('node', node))).to.deep.equal({
+                attributes: {},
+                children: { node: [{ attributes: {}, children: {} }] },
+            });
+        });
+
         test('Accepts an as const literal', () => {
             const literal = {
                 kind: 'element',
