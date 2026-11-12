@@ -80,6 +80,7 @@
     "typescript": "catalog:"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   }
 }

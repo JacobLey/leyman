@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Linter } from 'eslint';
 import { suite, test } from 'mocha';
 import { packagePluginConfig } from '#internal/lib/package-plugins.js';
-import { fakePlugin } from '../../data/eslint/fake-plugin.js';
+import { fakePlugin } from '#test/data/eslint/fake-plugin.js';
 
 const lint = (config: Linter.Config): (string | null)[] => {
     const linter = new Linter();
