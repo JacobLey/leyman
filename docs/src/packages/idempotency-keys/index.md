@@ -38,7 +38,7 @@ export const POST = async (request: Request): Promise<Response> =>
 - A request's claim on its key is a lease, so if its server crashes, a waiting request takes over once the lease runs out. See [Which responses are stored](/packages/idempotency-keys/guides/responses).
 - You pass your own `pg` pool or ioredis connection, so the package has no client dependency. Postgres keeps keys durably, while Valkey can forget one after a failover. Any other database works through a store you write to a short contract. See [Stores](/packages/idempotency-keys/guides/stores).
 - Notifications through Postgres `LISTEN` or Valkey pub/sub wake a waiting request as soon as the running one ends, on any instance. Waiting requests poll the store either way, so a notifier only makes waiting faster. See [Notifiers](/packages/idempotency-keys/guides/notifiers).
-- The TypeScript and Go implementations follow one [specification](/packages/idempotency-keys/reference/specification), so servers in either language can share a store and its keys. See [Go](/packages/idempotency-keys/guides/go).
+- The TypeScript and Go implementations follow one [specification](/packages/idempotency-keys/reference/specification), so servers in either language can share a store and its keys. Both implement version 1.0 of the specification. See [Go](/packages/idempotency-keys/guides/go).
 
 Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07) (draft 07). For payments, or any write that must not run twice whatever happens to the store, use the Postgres store rather than Valkey.
 
