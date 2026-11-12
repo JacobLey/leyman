@@ -104,6 +104,26 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^The id "i" is used twice in the file/v,
     ],
     [
+        'elements of one name and type but different defaults in one content model',
+        withParticles(
+            '<xs:element name="a" type="xs:int" default="1"/><xs:element name="a" type="xs:int" default="2"/>'
+        ),
+        XeneverUnsupportedError,
+        /^Element `a` is declared twice in one content model with the same type but otherwise differently, so its values can't share a key, and the XSD importer has no way to give them separate keys/v,
+    ],
+    [
+        'elements of one local name in two namespaces in one content model',
+        `<xs:element name="a" type="xs:int"/>${withParticles('<xs:element ref="t:a"/><xs:element name="a" type="xs:int"/>')}`,
+        XeneverUnsupportedError,
+        /^Key `a` is used by two elements in one content model/v,
+    ],
+    [
+        'attributes of one local name in two namespaces',
+        `<xs:attribute name="a" type="xs:int"/>${withAttributes('<xs:attribute ref="t:a"/><xs:attribute name="a" type="xs:int"/>')}`,
+        XeneverUnsupportedError,
+        /^Attribute key `a` is used twice/v,
+    ],
+    [
         'an unsupported element',
         '<xs:element name="a"><xs:key name="k"/></xs:element>',
         XeneverUnsupportedError,

@@ -22,6 +22,26 @@ export const invalidSchema = (message: string, path: string): never => {
 };
 
 /**
+ * A schema value that breaks a rule of xenever's value shape rather than of XML Schema: two names that would
+ * share a key, or two same-named elements of one content model whose values would be read differently. It is
+ * an invalid schema value when written by hand, where `key` resolves it; the XSD importer, which sets no keys,
+ * reports it as unsupported.
+ */
+// eslint-disable-next-line unicorn/custom-error-definition -- Users of a hand-written schema value see it as its base class, so it keeps that `name`
+export class ShapeConflictError extends XeneverInvalidSchemaError {}
+
+/**
+ * Throws that the schema value breaks a rule of xenever's value shape (see {@link ShapeConflictError}).
+ *
+ * @param message - what is wrong
+ * @param path - path to the construct
+ * @throws {ShapeConflictError} always
+ */
+export const shapeConflict = (message: string, path: string): never => {
+    throw new ShapeConflictError(message, { path });
+};
+
+/**
  * Checks that a schema construct is an object with only known properties: a misspelled option would
  * otherwise be ignored without a word.
  *

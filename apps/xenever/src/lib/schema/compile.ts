@@ -13,6 +13,7 @@ import {
     childPath,
     invalidSchema,
     isFlagged,
+    shapeConflict,
 } from './check.js';
 import { ContentModel } from './content.js';
 
@@ -516,7 +517,7 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
                 );
             }
             if (attributeKeys.has(attribute.key)) {
-                invalidSchema(`Attribute key \`${attribute.key}\` is used twice`, declarationPath);
+                shapeConflict(`Attribute key \`${attribute.key}\` is used twice`, declarationPath);
             }
             attributes.set(name, attribute);
             attributeKeys.add(attribute.key);
@@ -755,8 +756,22 @@ class ContentCompiler {
         const existing = this.#elements.get(name);
         if (existing) {
             if (!isSameDeclaration(existing.raw, declaration, true)) {
+                const described = describeName(compiled.namespace, compiled.name);
+                // Same type, so consistent for XML Schema, but read into one key with different
+                // `default`, `fixed`, `nillable`...
+                if (
+                    isSameDeclaration(
+                        (existing.raw as { readonly type?: unknown }).type,
+                        (declaration as { readonly type?: unknown }).type
+                    )
+                ) {
+                    shapeConflict(
+                        `Element ${described} is declared twice in one content model with the same type but otherwise differently, so its values can't share a key`,
+                        path
+                    );
+                }
                 invalidSchema(
-                    `Element ${describeName(compiled.namespace, compiled.name)} is declared twice in one content model, differently`,
+                    `Element ${described} is declared twice in one content model, with different types`,
                     path
                 );
             }
@@ -764,7 +779,7 @@ class ContentCompiler {
         }
         const keyOwner = this.#keys.get(compiled.key);
         if (keyOwner !== undefined) {
-            invalidSchema(
+            shapeConflict(
                 `Key \`${compiled.key}\` is used by two elements in one content model; set \`key\` on one`,
                 path
             );

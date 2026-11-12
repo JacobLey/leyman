@@ -285,10 +285,23 @@ suite('Schema checks', () => {
             );
         });
 
-        test('Rejects an element declared twice differently', () => {
+        test('Rejects an element declared twice with different types', () => {
             expectInvalidSchema(
                 withContent(x.sequence([x.element('b', x.int()), x.element('b', x.token())])),
-                /Element `b` is declared twice in one content model, differently/v,
+                /Element `b` is declared twice in one content model, with different types/v,
+                '/type/content/particles/1'
+            );
+        });
+
+        test('Rejects an element declared twice with one type but different value constraints', () => {
+            expectInvalidSchema(
+                withContent(
+                    x.sequence([
+                        x.element('b', x.int(), { default: '1' }),
+                        x.element('b', x.int(), { default: '2' }),
+                    ])
+                ),
+                /Element `b` is declared twice in one content model with the same type but otherwise differently/v,
                 '/type/content/particles/1'
             );
         });

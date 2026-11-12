@@ -21,6 +21,7 @@ import {
     XeneverUnsupportedError,
 } from '#internal/lib/errors.js';
 import { element as buildElement, lazy } from '#internal/lib/schema/builders.js';
+import { ShapeConflictError } from '#internal/lib/schema/check.js';
 import { compileElement } from '#internal/lib/schema/compile.js';
 import { compileSimple } from '#internal/lib/simple/compile-simple.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
@@ -643,6 +644,12 @@ export class SchemaBuilder {
                 at = this.#origins.get(value as object) ?? at;
             }
             const options = { ...locationIn(at.doc, at.node), cause: error };
+            if (error instanceof ShapeConflictError) {
+                throw new XeneverUnsupportedError(
+                    `${reasonOf(error)}, and the XSD importer has no way to give them separate keys`,
+                    options
+                );
+            }
             throw error instanceof XeneverUnsupportedError
                 ? new XeneverUnsupportedError(reasonOf(error), options)
                 : new XeneverInvalidSchemaError(reasonOf(error), options);
