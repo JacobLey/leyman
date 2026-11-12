@@ -1,10 +1,11 @@
 import type { Client, Pool } from 'pg';
 import type { IdempotencyNotifier, IdempotencyStore } from 'idempotency-keys';
 import type { ValkeyContext } from '#test/helpers/valkey.js';
-import { IdempotencyKeys } from 'idempotency-keys';
+import { expect } from '@leyman/expect';
+import { IdempotencyKeys, SPEC_VERSION } from 'idempotency-keys';
 import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
 import { ValkeyNotifier, ValkeyStore } from 'idempotency-keys/valkey';
-import { suite } from 'mocha-chain';
+import { suite, test } from 'mocha-chain';
 import { withDatabase } from '#test/helpers/database.js';
 import { MemoryStore } from '#test/helpers/memory-store.js';
 import { runScenario } from '#test/helpers/scenario.js';
@@ -47,6 +48,10 @@ const notifiers: readonly (readonly [string, (context: Context) => Promise<Setup
     ];
 
 suite('Test vectors', () => {
+    test('Implements their spec version', () => {
+        expect(SPEC_VERSION).to.equal(vectors.specVersion);
+    });
+
     for (const [storeName, createStore] of stores) {
         suite(`${storeName} store`, () => {
             const withContext = withDatabase().beforeEach(valkeyContext);

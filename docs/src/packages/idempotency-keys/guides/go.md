@@ -4,7 +4,7 @@ description: The Go implementation of idempotency-keys, with net/http middleware
 
 # Go
 
-idempotency-keys has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) as the TypeScript package. It hashes, stores and announces keys as the [specification](/packages/idempotency-keys/reference/specification) says, so a Go server and a TypeScript server on one store and notifier serve one set of keys, and either one replays, waits on, takes over or rejects the other's requests. It needs Go 1.25 or later.
+idempotency-keys has a Go implementation, held to the same [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) as the TypeScript package. It hashes, stores and announces keys as version 1.0 of the [specification](/packages/idempotency-keys/reference/specification) says, so a Go server and a TypeScript server on one store and notifier serve one set of keys, and either one replays, waits on, takes over or rejects the other's requests. It needs Go 1.25 or later.
 
 ```sh
 go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest

@@ -16,6 +16,7 @@ The Go implementation is a released module, so it can't depend on this unpublish
 
 Strings are UTF-8, and bodies are strings, except that fingerprint header values are hashed one byte per character (`U+0000` to `U+00FF`), as `fetch` gives them.
 
+- `specVersion`: the version of the [specification](../SPEC.md) the vectors follow.
 - `defaults`: the default options.
 - `keys`: the `Idempotency-Key` header values a request has (`header`, one entry per header), and the `key` read from
   them, `null` for no key, or `error: true` for a `400`.

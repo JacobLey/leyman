@@ -1,6 +1,8 @@
 use std::error::Error;
 
-use constant_consistent_hash_rust::{BucketsOutOfBounds, MAX_BUCKETS, bucket, hash_key};
+use constant_consistent_hash_rust::{
+    BucketsOutOfBounds, MAX_BUCKETS, SPEC_VERSION, bucket, hash_key,
+};
 use serde_json::Value;
 
 fn keys() -> Vec<String> {
@@ -36,6 +38,7 @@ fn number(value: &Value) -> u64 {
 #[test]
 fn matches_test_vectors() {
     let vectors: Value = serde_json::from_str(testvectors::JSON).expect("valid JSON");
+    assert_eq!(vectors["specVersion"].as_str(), Some(SPEC_VERSION));
     let ranges = vectors["ranges"].as_array().expect("array");
     let vectors = vectors["vectors"].as_array().expect("array");
     assert_ne!(vectors.len(), 0);

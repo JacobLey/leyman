@@ -28,3 +28,4 @@ export type {
 export { defaultRespondPolicy, IdempotencyKeys } from './lib/idempotency-keys.js';
 export { parseIdempotencyKey } from './lib/key.js';
 export type { IdempotencyNotifier } from './lib/listeners.js';
+export { SPEC_VERSION } from './lib/spec-version.js';

@@ -206,6 +206,10 @@ The fingerprint hash. **Returns** `Promise<string>`, 64 hex characters.
 
 **Throws** `IdempotencyKeysHeaderValueError` for a named header whose value has a character above `U+00FF`.
 
+### `SPEC_VERSION`
+
+The version of the [specification](/packages/idempotency-keys/reference/specification) this package implements, as `'major.minor'` (`'1.0'`). Servers whose implementations share a major version share keys.
+
 ## Errors
 
 Every error extends `IdempotencyKeysError`.

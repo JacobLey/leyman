@@ -17,6 +17,13 @@ import (
 	"unicode/utf8"
 )
 
+// SpecVersion is the version of the idempotency-keys spec this module implements:
+// https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md
+//
+// It is major.minor: servers whose implementations share a major version share keys, records and notifications, and a
+// minor version only adds what older ones can ignore. It is independent of the module's version.
+const SpecVersion = "1.0"
+
 // Action is how the respond policy ends an attempt.
 type Action string
 

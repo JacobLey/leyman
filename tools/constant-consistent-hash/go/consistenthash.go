@@ -11,6 +11,13 @@ import (
 	"math/bits"
 )
 
+// SpecVersion is the version of the constant-consistent-hash spec this package implements:
+// https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md
+//
+// It is major.minor: implementations that share a major version return the same hashes and buckets, and a minor
+// version only adds what older ones can ignore. It is independent of the module's version.
+const SpecVersion = "1.0"
+
 // MaxBuckets is the largest number of buckets, as the key's hash provides 48 bits for selecting blocks.
 const MaxBuckets = 1 << 48
 

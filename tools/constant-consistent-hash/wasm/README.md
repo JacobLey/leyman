@@ -9,7 +9,7 @@ consistentHash('00000000-0000-4000-8000-000000000000', 7); // 2
 hashKey('00000000-0000-4000-8000-000000000000'); // [865118427, 3574204183]
 ```
 
-Both have the same signatures, results and errors as `constant-consistent-hash`, which checks Rust from the outside: every [test vector](../test-vectors/), lone surrogates, and the bounds of `range` and `seed`.
+It implements version 1.0 of the [specification](../ts/SPEC.md), exported as `SPEC_VERSION`. Both functions have the same signatures, results and errors as `constant-consistent-hash`, which checks Rust from the outside: every [test vector](../test-vectors/), lone surrogates, and the bounds of `range` and `seed`.
 
 It is not published, and only exists to test the toolchain. **Use `constant-consistent-hash` instead**: a key crossing into WASM has to be copied, so this is slower, and the `.wasm` adds about 20 KB (9 KB gzipped). Measured on Node.js 24 on one arm64 machine, with a 36 character key:
 

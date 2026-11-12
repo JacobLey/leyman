@@ -1,11 +1,12 @@
 import type { Context } from 'mocha';
 import type { ConsistentHashOptions } from 'constant-consistent-hash';
+import { readFile } from 'node:fs/promises';
 import { expectTypeOf } from 'expect-type';
 import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with {
     type: 'json',
 };
 import { expect } from '@leyman/expect';
-import { consistentHash, hashKey } from 'constant-consistent-hash';
+import { consistentHash, hashKey, SPEC_VERSION } from 'constant-consistent-hash';
 import { suite, test } from 'mocha-chain';
 
 const keys = Array.from(
@@ -40,6 +41,16 @@ suite('consistentHash', () => {
     });
 
     suite('Matches test vectors', () => {
+        test('Implements their spec version', () => {
+            expect(SPEC_VERSION).to.equal(testVectors.specVersion);
+        });
+
+        test('Are of the version in SPEC.md', async () => {
+            const spec = await readFile(new URL('../../SPEC.md', import.meta.url), 'utf8');
+            const version = /^Version (?<version>\d+\.\d+)$/mv.exec(spec)?.groups?.version;
+            expect(version).to.equal(testVectors.specVersion);
+        });
+
         // Shared with every implementation, see SPEC.md
         for (const { description, key, seed, hash, buckets } of testVectors.vectors) {
             test(description, () => {

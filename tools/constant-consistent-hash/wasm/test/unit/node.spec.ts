@@ -2,12 +2,12 @@ import { bucket } from '@leyman/constant-consistent-hash-rust';
 import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with {
     type: 'json',
 };
-import { consistentHash, hashKey } from '@leyman/constant-consistent-hash-wasm';
+import { consistentHash, hashKey, SPEC_VERSION } from '@leyman/constant-consistent-hash-wasm';
 import { expect } from '@leyman/expect';
 import * as typescript from 'constant-consistent-hash';
 import { suite, test } from 'mocha-chain';
 
-const { ranges, vectors } = testVectors;
+const { ranges, specVersion, vectors } = testVectors;
 
 suite('Through WASM', () => {
     test('Returns every test vector', () => {
@@ -19,6 +19,10 @@ suite('Through WASM', () => {
                 description
             ).to.deep.equal(buckets);
         }
+    });
+
+    test('Implements the spec version of the test vectors', () => {
+        expect(SPEC_VERSION).to.equal(specVersion);
     });
 
     test('Defaults seed to 0', () => {

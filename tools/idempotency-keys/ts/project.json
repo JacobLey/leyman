@@ -8,10 +8,16 @@
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},
-    "mocha-unit-test": {},
+    "mocha-unit-test": {
+      "inputs": [
+        "...",
+        "{workspaceRoot}/tools/idempotency-keys/SPEC.md"
+      ]
+    },
     "mocha-integration-test": {
       "inputs": [
         "...",
+        "{workspaceRoot}/tools/idempotency-keys/SPEC.md",
         "postgres",
         "valkey"
       ]

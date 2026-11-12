@@ -1,5 +1,7 @@
 # constant-consistent-hash specification
 
+Version 1.0
+
 Back to the [README](https://www.npmjs.com/package/constant-consistent-hash).
 
 This describes `consistentHash(key, range, { seed })` precisely enough for any language to return the same buckets as the JavaScript implementation. For why the algorithm works, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/WHY-CONSTANT-CONSISTENT-HASH.md).
@@ -122,3 +124,11 @@ In the first f64 step, the left side is rounded twice, after each multiplication
 This package, the [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go) and the [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust) are all tested against them.
 
 A complete implementation should also pass the package's property tests: for many keys, growing `range` by one never moves a key anywhere but the new bucket `range`.
+
+## Changelog
+
+The version is `major.minor`. A major version changes a hash or a bucket, so implementations on different majors don't place keys alike. A minor version adds something an older implementation can ignore. A wording fix changes neither. The spec's version is independent of the packages' versions, and each implementation exports the version it implements.
+
+### 1.0
+
+First versioned spec.

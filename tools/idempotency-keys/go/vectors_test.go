@@ -57,6 +57,7 @@ type scenario struct {
 
 type testVectors struct {
 	ValkeyScripts map[string]string `json:"valkeyScripts"`
+	SpecVersion   string            `json:"specVersion"`
 	Keys          []struct {
 		Key         *string  `json:"key"`
 		Description string   `json:"description"`
@@ -122,6 +123,14 @@ func latin1(t *testing.T, value string) string {
 	}
 
 	return string(bytes)
+}
+
+func TestSpecVersion(t *testing.T) {
+	t.Parallel()
+
+	if want := loadVectors(t).SpecVersion; idempotencykeys.SpecVersion != want {
+		t.Errorf("SpecVersion = %q, want %q", idempotencykeys.SpecVersion, want)
+	}
 }
 
 func TestKeyVectors(t *testing.T) {

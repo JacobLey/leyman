@@ -4,6 +4,15 @@ import { bitLength, blockOffset, highestBlock, Salt, uniform } from './lib/rando
 
 export type { KeyHash } from './lib/hash-key.js';
 
+/**
+ * Version of the constant-consistent-hash spec this package implements:
+ * https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md
+ *
+ * `major.minor`: implementations that share a major version return the same hashes and buckets, and a minor version
+ * only adds what older ones can ignore. Independent of the package's version.
+ */
+export const SPEC_VERSION = '1.0';
+
 // The key's hash provides 48 bits for selecting blocks, one per power of 2
 const BLOCK_BITS = 48;
 const SEED_BITS = 32;

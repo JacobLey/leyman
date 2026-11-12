@@ -6,6 +6,8 @@ description: The idempotency-keys specification in brief, what every implementat
 
 Every implementation of idempotency-keys follows one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md), which covers the hashes, what goes in the store, what any store must guarantee, and the notification that wakes a waiting request. Because of it, servers in different languages on the same store and notifier serve one set of keys, as if they were one server. This page summarizes it for readers, and the specification itself is the reference for writing an implementation.
 
+The specification is at version 1.0. Its version is `major.minor`, independent of the packages' versions: a major version changes something on the wire, in a store or in a hash, so servers on different majors can't share keys, and a minor version adds something older implementations can ignore. Each implementation exports the version it implements (`SPEC_VERSION` in TypeScript, `SpecVersion` in Go).
+
 ## On the wire
 
 | Status | When                                                                                                                 |

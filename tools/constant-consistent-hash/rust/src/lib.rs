@@ -9,6 +9,13 @@ use std::fmt;
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 
+/// The version of the constant-consistent-hash spec this crate implements:
+/// <https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md>
+///
+/// It is `major.minor`: implementations that share a major version return the same hashes and buckets, and a minor
+/// version only adds what older ones can ignore. It is independent of the crate's version.
+pub const SPEC_VERSION: &str = "1.0";
+
 /// The largest number of buckets: the key's hash provides 48 bits for selecting blocks.
 pub const MAX_BUCKETS: u64 = 1 << 48;
 

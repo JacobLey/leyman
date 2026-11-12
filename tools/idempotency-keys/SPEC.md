@@ -1,5 +1,7 @@
 # idempotency-keys specification
 
+Version 1.0
+
 This document describes what every implementation of idempotency-keys does, and everything two implementations have
 to agree on: the hashes, what they write to a store, and the notification that wakes a waiting request. Because both
 follow it, a TypeScript server and a Go server on the same store and notifier serve one set of keys as if they were one
@@ -271,3 +273,15 @@ named `idempotency_keys` unless configured (in Postgres a quoted identifier, so 
   when its transaction commits, after the write it announces.
 
 Any notifier works with any store.
+
+## Changelog
+
+The version is `major.minor`. A major version changes something on the wire, in a store or in a hash, so servers on
+different majors can't share keys. A minor version adds something an older implementation can ignore. A wording fix
+changes neither. The spec's version is independent of the packages' versions, and each implementation exports the
+version it implements.
+
+### 1.0
+
+First versioned spec. The 0.1 releases of both packages followed an earlier, unversioned spec, which had no store
+contract and stored nothing (instead of raising an error) for a response a replay couldn't send.

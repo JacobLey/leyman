@@ -7,6 +7,15 @@ const MAX_RANGE = 2 ** BLOCK_BITS;
 const MAX_SEED = 2 ** SEED_BITS - 1;
 
 /**
+ * Version of the constant-consistent-hash spec this package implements, through the Rust implementation:
+ * https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md
+ *
+ * `major.minor`: implementations that share a major version return the same hashes and buckets, and a minor version
+ * only adds what older ones can ignore. Independent of the package's version.
+ */
+export const SPEC_VERSION = '1.0';
+
+/**
  * Options for {@link consistentHash}.
  */
 export interface ConsistentHashOptions {

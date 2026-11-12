@@ -2,7 +2,7 @@
 
 Go implementation of [constant-consistent-hash](../ts/), tested against the shared test vectors.
 
-It is written from the [specification](../ts/SPEC.md), not translated from the TypeScript source, so the two agreeing on every [test vector](../test-vectors/) checks that the specification is complete and unambiguous. Go also has different integer semantics (shifting a `uint32` by 32 gives 0, where JavaScript does not shift at all), which catches mistakes that a second JavaScript implementation would repeat.
+It is written from the [specification](../ts/SPEC.md), not translated from the TypeScript source, so the two agreeing on every [test vector](../test-vectors/) checks that the specification is complete and unambiguous. It implements version 1.0 of the specification, exported as `SpecVersion`. Go also has different integer semantics (shifting a `uint32` by 32 gives 0, where JavaScript does not shift at all), which catches mistakes that a second JavaScript implementation would repeat.
 
 ```go
 import consistenthash "github.com/JacobLey/leyman/tools/constant-consistent-hash/go"

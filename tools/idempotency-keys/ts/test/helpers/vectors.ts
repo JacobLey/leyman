@@ -49,6 +49,7 @@ export interface Scenario {
 }
 
 export interface Vectors {
+    readonly specVersion: string;
     readonly defaults: {
         readonly ttlMs: number;
         readonly leaseMs: number;

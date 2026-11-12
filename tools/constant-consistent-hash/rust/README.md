@@ -2,7 +2,7 @@
 
 Rust implementation of [constant-consistent-hash](../ts/), compiled to WASM for TypeScript, and tested against the shared test vectors.
 
-Like the [Go implementation](../go/), it is written from the [specification](../ts/SPEC.md), not translated from the TypeScript source, so agreeing on every [test vector](../test-vectors/) checks the specification. It also exists to keep the path from Rust source to a TypeScript call working: the toolchain, the Nx targets, the WASM build and CI.
+Like the [Go implementation](../go/), it is written from the [specification](../ts/SPEC.md), not translated from the TypeScript source, so agreeing on every [test vector](../test-vectors/) checks the specification. It implements version 1.0 of the specification, exported as `SPEC_VERSION`. It also exists to keep the path from Rust source to a TypeScript call working: the toolchain, the Nx targets, the WASM build and CI.
 
 ```rust
 use constant_consistent_hash_rust::bucket;

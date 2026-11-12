@@ -11,8 +11,9 @@ import (
 )
 
 type testVectors struct {
-	Ranges  []uint64 `json:"ranges"`
-	Vectors []struct {
+	SpecVersion string   `json:"specVersion"`
+	Ranges      []uint64 `json:"ranges"`
+	Vectors     []struct {
 		Description string    `json:"description"`
 		Key         string    `json:"key"`
 		Seed        uint32    `json:"seed"`
@@ -76,6 +77,10 @@ func TestMatchesTestVectors(t *testing.T) {
 
 	if len(vectors.Vectors) == 0 {
 		t.Fatal("no test vectors")
+	}
+
+	if consistenthash.SpecVersion != vectors.SpecVersion {
+		t.Errorf("SpecVersion = %q, want %q", consistenthash.SpecVersion, vectors.SpecVersion)
 	}
 
 	for _, vector := range vectors.Vectors {

@@ -18,7 +18,7 @@ It also covers the cases that are easy to get wrong:
 - A retry that arrives while the first request is still running waits for it to finish, rather than running alongside it.
 - A key reused on a different request (a different body, say) gets a `422`, not the other request's response.
 - If a server crashes mid-request, its hold on the key expires after a timeout and the next retry runs.
-- A Go server can share the same keys, since both implementations follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md).
+- A Go server can share the same keys, since both implementations follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md). This package implements version 1.0 of it, exported as `SPEC_VERSION`.
 
 Use the Postgres store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again. Any other database can hold the keys through a store of your own, written to a short [contract](#writing-a-store).
 
