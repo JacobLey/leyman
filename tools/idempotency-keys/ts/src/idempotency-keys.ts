@@ -4,7 +4,6 @@ export {
     IdempotencyKeysError,
     IdempotencyKeysHeaderValueError,
     IdempotencyKeysOptionError,
-    IdempotencyKeysReplyError,
     IdempotencyKeysResponseError,
 } from './lib/errors.js';
 export type { FingerprintInput, IdentityInput } from './lib/hashes.js';

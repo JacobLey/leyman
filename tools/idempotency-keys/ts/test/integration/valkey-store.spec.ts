@@ -1,8 +1,7 @@
 import type { ValkeyConnection } from 'idempotency-keys/valkey';
 import { randomBytes } from 'node:crypto';
 import { expect } from '@leyman/expect';
-import { IdempotencyKeysReplyError } from 'idempotency-keys';
-import { ValkeyStore } from 'idempotency-keys/valkey';
+import { IdempotencyKeysReplyError, ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { claimScript, completeScript, releaseScript } from '#internal/lib/scripts.js';
 import { closeValkey, valkeyContext } from '../helpers/valkey.js';

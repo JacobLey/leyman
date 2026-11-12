@@ -1,7 +1,11 @@
 import type { HandleOptions, IdempotencyKeysOptions, ProblemKind } from 'idempotency-keys';
 import pDefer from 'p-defer';
 import { expect } from '@leyman/expect';
-import { IdempotencyKeys, IdempotencyKeysBodyUsedError } from 'idempotency-keys';
+import {
+    IdempotencyKeys,
+    IdempotencyKeysBodyUsedError,
+    IdempotencyKeysResponseError,
+} from 'idempotency-keys';
 import { ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
 import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
@@ -284,6 +288,23 @@ suite('handle', () => {
             const response = await keys.handle(createNote(), options, handler().run);
             expect(response.status).to.equal(201);
             expect(errors).to.deep.equal([failure]);
+        }
+    );
+
+    withKeys.test(
+        'Returns a network error as one, and reports that it could not be stored',
+        async ({ store }) => {
+            const errors: unknown[] = [];
+            const keys = new IdempotencyKeys({
+                store,
+                onError: error => {
+                    errors.push(error);
+                },
+            });
+            const response = await keys.handle(createNote(), options, async () => Response.error());
+            expect(response.type).to.equal('error');
+            expect(errors).to.have.length(1);
+            expect(errors[0]).to.be.instanceOf(IdempotencyKeysResponseError);
         }
     );
 });

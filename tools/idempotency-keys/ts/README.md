@@ -321,7 +321,7 @@ Every error extends `IdempotencyKeysError`.
 | `IdempotencyKeyHeaderError`       | `parseIdempotencyKey()` can't read the header. Has `values`.                                                                                                          |
 | `IdempotencyKeysHeaderValueError` | A named header's value isn't Latin-1. Has `header` and `value`.                                                                                                       |
 | `IdempotencyKeysBodyUsedError`    | `handle()` got a request whose body was already read.                                                                                                                 |
-| `IdempotencyKeysReplyError`       | A `ValkeyStore` connection replied with text where bytes were expected (ioredis's own `eval`).                                                                        |
+| `IdempotencyKeysReplyError`       | From `idempotency-keys/valkey`: a `ValkeyStore` connection replied with text (ioredis's own `eval`).                                                                  |
 | `IdempotencyKeysResponseError`    | `attempt.respond()` got a response a replay couldn't send: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`. Has `status`.    |
 
 ## Limits

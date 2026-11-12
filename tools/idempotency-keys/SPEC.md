@@ -110,7 +110,8 @@ server; its lease runs out the same way.
 Every lease and expiry is measured on one clock that all servers agree on. The built-in stores use their own (Postgres
 `clock_timestamp()`, Valkey `TIME`), so servers with drifting clocks still agree on every lease. A store without a clock
 of its own may use the servers' clocks; then a server whose clock runs ahead can take over a lease early, so `leaseMs`
-must cover the slowest handler plus the worst drift between servers.
+must cover the slowest handler plus the worst drift between servers, and a key may expire early by as much as that
+drift.
 
 ### Options
 

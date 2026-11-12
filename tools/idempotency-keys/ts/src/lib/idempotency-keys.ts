@@ -334,6 +334,10 @@ export class IdempotencyKeys {
             // The request ran, so its caller gets the response, which a retry couldn't give
             this.#onError(error, result.attempt.identity);
         }
+        // A network error (`Response.error()`, status 0) can't be built with `new Response()`: it is sent as one
+        if (response.type === 'error') {
+            return Response.error();
+        }
         return new Response(responseBody(body), {
             status: response.status,
             statusText: response.statusText,

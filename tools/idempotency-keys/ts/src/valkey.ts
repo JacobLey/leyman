@@ -6,3 +6,4 @@ export type {
 export { ValkeyNotifier } from './lib/valkey-notifier.js';
 export type { ValkeyConnection, ValkeyStoreOptions } from './lib/valkey-store.js';
 export { ValkeyStore } from './lib/valkey-store.js';
+export { IdempotencyKeysReplyError } from './lib/errors.js';

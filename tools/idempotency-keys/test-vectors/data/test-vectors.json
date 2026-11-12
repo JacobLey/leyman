@@ -1710,7 +1710,7 @@
       ]
     },
     {
-      "description": "a response a replay could not send is refused, and the attempt still holds the key",
+      "description": "a response a replay could not send is an error, and the attempt still holds the key",
       "options": {
         "waitMs": 0
       },
