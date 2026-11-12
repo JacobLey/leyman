@@ -24,7 +24,8 @@
     ".": "./dist/vite-config.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "dependencies": {
     "vite": "catalog:"

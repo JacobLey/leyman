@@ -1,6 +1,6 @@
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { setPage, withDom } from '../helpers/dom.js';
+import { setPage, withDom } from '#test/helpers/dom.js';
 
 const greeting = (): string | null | undefined =>
     globalThis.document.querySelector('#greeting')?.textContent;
