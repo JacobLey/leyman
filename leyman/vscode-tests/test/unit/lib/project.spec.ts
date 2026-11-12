@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { compiledSpec, findProject, specLabel } from '#project';
-import { withWorkspace } from '../../helpers/workspace.js';
+import { withWorkspace } from '#test/helpers/workspace.js';
 
 suite('project', () => {
     const fixed = { name: 'a', root: '/a', runner: 'mocha' } as const;

@@ -3,8 +3,8 @@ import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { activate } from '@leyman/vscode-tests';
 import { suite, test } from 'mocha-chain';
-import { FakeToken, fakeVscode } from '../helpers/fake-vscode.js';
-import { withWorkspace } from '../helpers/workspace.js';
+import { FakeToken, fakeVscode } from '#test/helpers/fake-vscode.js';
+import { withWorkspace } from '#test/helpers/workspace.js';
 
 const VITEST_COMPILED = `import { describe, expect, it } from 'vitest';
 

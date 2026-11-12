@@ -21,7 +21,8 @@
   "imports": {
     "#parse-spec": "./dist/lib/parse-spec.js",
     "#project": "./dist/lib/project.js",
-    "#runner": "./dist/lib/runner.js"
+    "#runner": "./dist/lib/runner.js",
+    "#test/*": "./dist-test/*"
   },
   "files": [
     "dist",
