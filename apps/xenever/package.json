@@ -1,0 +1,58 @@
+{
+  "name": "xenever",
+  "version": "0.0.1",
+  "description": "Parse XML into typed objects, validated against a schema written in TypeScript or generated from an XSD.",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/xenever"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/xenever#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "xml",
+    "xsd",
+    "xml-schema",
+    "parser",
+    "typescript",
+    "types",
+    "codegen",
+    "validation",
+    "standard-schema"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:node-22",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
