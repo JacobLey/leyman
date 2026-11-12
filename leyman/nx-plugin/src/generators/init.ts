@@ -1,13 +1,13 @@
 import type { GeneratorCallback, PluginConfiguration, Tree } from '@nx/devkit';
-import type { TargetName } from '../lib/options.js';
+import type { TargetName } from '#internal/lib/options.js';
 import { lstat, mkdir, symlink } from 'node:fs/promises';
 import Path from 'node:path';
 import { installPackagesTask, readJson, readNxJson, runTasksInSerial, writeJson } from '@nx/devkit';
 import { parseDocument, stringify } from 'yaml';
-import { resolveOptions } from '../lib/options.js';
-import { name as pluginName } from '../lib/plugin.js';
-import { assertOptions } from '../lib/schema.js';
-import { readWorkspaceVersions, resolveVersion } from '../lib/versions.js';
+import { resolveOptions } from '#internal/lib/options.js';
+import { name as pluginName } from '#internal/lib/plugin.js';
+import { assertOptions } from '#internal/lib/schema.js';
+import { readWorkspaceVersions, resolveVersion } from '#internal/lib/versions.js';
 
 /**
  * What the `init` generator sets up.

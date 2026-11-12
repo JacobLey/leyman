@@ -1,5 +1,5 @@
 import type { GeneratorCallback, Tree } from '@nx/devkit';
-import type { NxPluginOptions } from '../lib/options.js';
+import type { NxPluginOptions } from '#internal/lib/options.js';
 import Path from 'node:path';
 import {
     getProjects,
@@ -10,11 +10,11 @@ import {
     readNxJson,
     writeJson,
 } from '@nx/devkit';
-import { inferencePaths, inferTargets } from '../lib/infer.js';
-import { resolveOptions } from '../lib/options.js';
-import { name as pluginName } from '../lib/plugin.js';
-import { assertOptions, defaultFloor } from '../lib/schema.js';
-import { readWorkspaceVersions, resolveVersion } from '../lib/versions.js';
+import { inferencePaths, inferTargets } from '#internal/lib/infer.js';
+import { resolveOptions } from '#internal/lib/options.js';
+import { name as pluginName } from '#internal/lib/plugin.js';
+import { assertOptions, defaultFloor } from '#internal/lib/schema.js';
+import { readWorkspaceVersions, resolveVersion } from '#internal/lib/versions.js';
 
 /**
  * What the `package` generator adds, and where.

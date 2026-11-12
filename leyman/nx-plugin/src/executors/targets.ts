@@ -1,7 +1,7 @@
 import type { ExecutorContext } from '@nx/devkit';
 import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
-import { syncTargets } from '../lib/sync.js';
+import { syncTargets } from '#internal/lib/sync.js';
 
 /**
  * Where the plugin options are, and whether to only check them.
