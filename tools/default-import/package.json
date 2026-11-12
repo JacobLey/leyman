@@ -52,5 +52,8 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
   }
 }

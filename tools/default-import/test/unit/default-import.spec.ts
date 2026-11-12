@@ -3,19 +3,19 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as DefaultImport from 'default-import';
 import { suite, test } from 'mocha-chain';
-import cjs from '../data/cjs.cjs';
-import esm from '../data/esm.js';
-import namedCjs from '../data/named-cjs.cjs';
-import * as noDefault from '../data/no-default.js';
-import rootCjs from '../data/root-cjs.cjs';
+import cjs from '#test/data/cjs.cjs';
+import esm from '#test/data/esm.js';
+import namedCjs from '#test/data/named-cjs.cjs';
+import * as noDefault from '#test/data/no-default.js';
+import rootCjs from '#test/data/root-cjs.cjs';
 
 const [dynamicCjs, dynamicEsm, dynamicNamedCjs, dynamicNoDefault, dynamicRootCjs] =
     await Promise.all([
-        import('../data/cjs.cjs'),
-        import('../data/esm.js'),
-        import('../data/named-cjs.cjs'),
-        import('../data/no-default.js'),
-        import('../data/root-cjs.cjs'),
+        import('#test/data/cjs.cjs'),
+        import('#test/data/esm.js'),
+        import('#test/data/named-cjs.cjs'),
+        import('#test/data/no-default.js'),
+        import('#test/data/root-cjs.cjs'),
     ]);
 
 suite('defaultImport', () => {
