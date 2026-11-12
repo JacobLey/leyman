@@ -1,5 +1,5 @@
 import type { Rule } from 'eslint';
-import { verify } from '../../lib/signature.js';
+import { verify } from '#internal/lib/signature.js';
 
 /**
  * Report generated files that were edited outside of their manual sections.
