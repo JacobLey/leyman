@@ -37,7 +37,8 @@
     "./typed-event": "./dist/typed-event.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

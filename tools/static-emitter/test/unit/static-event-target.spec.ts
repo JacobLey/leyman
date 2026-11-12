@@ -3,8 +3,8 @@ import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { StaticEventTarget } from 'static-emitter/static-event-target';
 import { TypedCustomEvent } from 'static-emitter/typed-custom-event';
-import { ExtendTarget, NativeEvent } from '../data/extend-event-target.js';
-import { ServerEvent } from '../data/server-event.js';
+import { ExtendTarget, NativeEvent } from '#test/data/extend-event-target.js';
+import { ServerEvent } from '#test/data/server-event.js';
 
 suite('StaticEventTarget', () => {
     test('Extends EventTarget', () => {

@@ -1,4 +1,4 @@
-import type { TypedCustomEvent } from '../typed-custom-event.js';
+import type { TypedCustomEvent } from '#internal/typed-custom-event.js';
 
 /**
  * Map of event name to either an `Event` (dispatched as-is) or a detail value

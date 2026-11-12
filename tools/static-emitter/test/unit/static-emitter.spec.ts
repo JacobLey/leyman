@@ -2,8 +2,8 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { StaticEmitter, StaticEventTarget, TypedCustomEvent } from 'static-emitter';
-import { CustomEmitter } from '../data/custom-emitter.js';
-import { ServerEvent } from '../data/server-event.js';
+import { CustomEmitter } from '#test/data/custom-emitter.js';
+import { ServerEvent } from '#test/data/server-event.js';
 
 suite('StaticEmitter', () => {
     test('Extends StaticEventTarget', () => {
