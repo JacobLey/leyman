@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the notes API's spec documents them */
 import type { Command, NotesCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
-import { NotesCliError } from '../lib/errors.js';
-import { connect, refused } from '../lib/notes.js';
-import { SessionStore } from '../lib/session.js';
-import { printable } from '../lib/text.js';
+import { NotesCliError } from '#internal/lib/errors.js';
+import { connect, refused } from '#internal/lib/notes.js';
+import { SessionStore } from '#internal/lib/session.js';
+import { printable } from '#internal/lib/text.js';
 import { commandId } from './lib/types.js';
 
 interface GetCommandExtendedInput extends NotesCommandInput {

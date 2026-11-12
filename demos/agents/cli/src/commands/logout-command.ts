@@ -1,7 +1,7 @@
 import type { Command, NotesCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
-import { revoke } from '../lib/oauth.js';
-import { SessionStore } from '../lib/session.js';
+import { revoke } from '#internal/lib/oauth.js';
+import { SessionStore } from '#internal/lib/session.js';
 import { commandId } from './lib/types.js';
 
 /**

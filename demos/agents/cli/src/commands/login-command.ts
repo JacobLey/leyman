@@ -1,9 +1,9 @@
 import type { Command, NotesCommandInput } from './lib/types.js';
 import { spawn } from 'node:child_process';
 import { bind } from 'haywire';
-import { browser, defaultApi } from '../lib/environment.js';
-import { login, loginWithDevice } from '../lib/oauth.js';
-import { SessionStore } from '../lib/session.js';
+import { browser, defaultApi } from '#internal/lib/environment.js';
+import { login, loginWithDevice } from '#internal/lib/oauth.js';
+import { SessionStore } from '#internal/lib/session.js';
 import { commandId } from './lib/types.js';
 
 interface LoginCommandExtendedInput extends NotesCommandInput {

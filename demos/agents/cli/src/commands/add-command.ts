@@ -2,8 +2,8 @@
 import type { Command, NotesCommandInput } from './lib/types.js';
 import { text } from 'node:stream/consumers';
 import { bind } from 'haywire';
-import { connect, refused } from '../lib/notes.js';
-import { SessionStore } from '../lib/session.js';
+import { connect, refused } from '#internal/lib/notes.js';
+import { SessionStore } from '#internal/lib/session.js';
 import { commandId } from './lib/types.js';
 
 interface AddCommandExtendedInput extends NotesCommandInput {

@@ -5,10 +5,10 @@ import Path from 'node:path';
 import { notes as notesTable } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { notes, testBrowser } from '../helpers/cli.js';
-import { deviceError, deviceTokens, listenDevice } from '../helpers/device.js';
-import { listenLeast } from '../helpers/least.js';
-import { withStack } from '../helpers/stack.js';
+import { notes, testBrowser } from '#test/helpers/cli.js';
+import { deviceError, deviceTokens, listenDevice } from '#test/helpers/device.js';
+import { listenLeast } from '#test/helpers/least.js';
+import { withStack } from '#test/helpers/stack.js';
 
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 
