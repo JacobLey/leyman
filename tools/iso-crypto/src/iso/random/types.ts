@@ -1,4 +1,4 @@
-import type { Uint8ArrayBuffer } from '../lib/types.js';
+import type { Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 
 /**
  * Generate a random array of bytes with provided length.

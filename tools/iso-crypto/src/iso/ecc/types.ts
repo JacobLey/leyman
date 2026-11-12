@@ -1,4 +1,4 @@
-import type { Curve, Encryption, InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Curve, Encryption, InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 
 /**
  * Generate a random ECC private key on the given curve.

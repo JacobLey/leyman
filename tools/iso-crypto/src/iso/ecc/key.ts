@@ -1,6 +1,6 @@
-import type { Curve, Encryption, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Curve, Encryption, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import { deriveKey } from '#derive';
-import { defaultHash } from '../lib/types.js';
+import { defaultHash } from '#internal/iso/lib/types.js';
 
 /**
  * Turn an ECDH shared secret into the key for symmetric encryption.

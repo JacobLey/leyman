@@ -1,12 +1,12 @@
-import type { Encryption } from '../lib/types.js';
+import type { Encryption } from '#internal/iso/lib/types.js';
 import type * as Encrypt from './types.js';
 import { decode } from '#encode';
 import { hash } from '#hash';
+import { decodeAdditionalData } from '#internal/iso/lib/additional-data.js';
+import { fitKey } from '#internal/iso/lib/fit-key.js';
+import { encryptionMeta } from '#internal/iso/lib/size-meta.js';
+import { defaultEncryption, defaultHash } from '#internal/iso/lib/types.js';
 import { randomBytes } from '#random';
-import { decodeAdditionalData } from '../lib/additional-data.js';
-import { fitKey } from '../lib/fit-key.js';
-import { encryptionMeta } from '../lib/size-meta.js';
-import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const { crypto } = globalThis;
 

@@ -1,7 +1,7 @@
-import type { HashAlgorithm, Uint8ArrayBuffer } from '../lib/types.js';
+import type { HashAlgorithm, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import type * as HashMethods from './types.js';
 import { decode } from '#encode';
-import { Algorithms, defaultHash } from '../lib/types.js';
+import { Algorithms, defaultHash } from '#internal/iso/lib/types.js';
 
 const { crypto } = globalThis;
 

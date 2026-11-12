@@ -1,12 +1,12 @@
-import type { Point } from '../lib/math.js';
-import type { Curve, InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Point } from '#internal/iso/lib/math.js';
+import type { Curve, InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import type * as Ecc from './types.js';
 import { decode, encode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
-import { padBytes } from '../lib/bytes-length.js';
-import { curves, derivePublicKey } from '../lib/math.js';
-import { eccMeta } from '../lib/size-meta.js';
-import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
+import { padBytes } from '#internal/iso/lib/bytes-length.js';
+import { curves, derivePublicKey } from '#internal/iso/lib/math.js';
+import { eccMeta } from '#internal/iso/lib/size-meta.js';
+import { Algorithms, defaultCurve, defaultEncryption } from '#internal/iso/lib/types.js';
 import { decompressEccPublicKey } from './compression.js';
 import { eccKey } from './key.js';
 

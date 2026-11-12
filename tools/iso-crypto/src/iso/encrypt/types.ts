@@ -1,4 +1,4 @@
-import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 
 /**
  * Encrypt the incoming content using the specified encryption and hashing algorithms.

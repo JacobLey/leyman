@@ -1,12 +1,12 @@
 import type { ECDH } from 'node:crypto';
-import type { Curve, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Curve, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import type * as Ecc from './types.js';
 import { createECDH } from 'node:crypto';
 import { decode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
-import { padBytes } from '../lib/bytes-length.js';
-import { eccMeta } from '../lib/size-meta.js';
-import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
+import { padBytes } from '#internal/iso/lib/bytes-length.js';
+import { eccMeta } from '#internal/iso/lib/size-meta.js';
+import { Algorithms, defaultCurve, defaultEncryption } from '#internal/iso/lib/types.js';
 import { eccKey } from './key.js';
 
 const getECDH = (curve: Curve): ECDH =>

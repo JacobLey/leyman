@@ -1,4 +1,4 @@
-import type { Hash, InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Hash, InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 
 /**
  * Hash provided text with the given algorithm.

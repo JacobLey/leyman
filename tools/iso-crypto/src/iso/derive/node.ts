@@ -1,9 +1,9 @@
-import type { HashAlgorithm } from '../lib/types.js';
+import type { HashAlgorithm } from '#internal/iso/lib/types.js';
 import type * as Derive from './types.js';
 import { hkdf, pbkdf2 } from 'node:crypto';
 import { promisify } from 'node:util';
 import { decode } from '#encode';
-import { defaultHash } from '../lib/types.js';
+import { defaultHash } from '#internal/iso/lib/types.js';
 import { BITS_PER_BYTE, defaultIterations, defaultSize } from './defaults.js';
 
 const hkdfAsync = promisify(hkdf);

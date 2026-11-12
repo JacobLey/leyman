@@ -1,4 +1,4 @@
-import type { HashAlgorithm, InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { HashAlgorithm, InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 
 /**
  * Options shared by every key derivation algorithm.

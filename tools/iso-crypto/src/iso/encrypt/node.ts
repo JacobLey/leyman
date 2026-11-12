@@ -1,14 +1,14 @@
 import type { CipherGCM, DecipherGCM } from 'node:crypto';
-import type { Encryption, Uint8ArrayBuffer } from '../lib/types.js';
+import type { Encryption, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import type * as Encrypt from './types.js';
 import { createCipheriv, createDecipheriv } from 'node:crypto';
 import { decode } from '#encode';
 import { hash } from '#hash';
+import { decodeAdditionalData } from '#internal/iso/lib/additional-data.js';
+import { fitKey } from '#internal/iso/lib/fit-key.js';
+import { encryptionMeta, GCM_TAG_BYTES } from '#internal/iso/lib/size-meta.js';
+import { defaultEncryption, defaultHash } from '#internal/iso/lib/types.js';
 import { randomBytes } from '#random';
-import { decodeAdditionalData } from '../lib/additional-data.js';
-import { fitKey } from '../lib/fit-key.js';
-import { encryptionMeta, GCM_TAG_BYTES } from '../lib/size-meta.js';
-import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const encryptionToCipher = (encryption: Encryption): string =>
     `${encryption.cipher}-${encryption.size}-${encryption.mode}`;

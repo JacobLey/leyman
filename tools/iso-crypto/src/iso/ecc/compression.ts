@@ -1,9 +1,9 @@
-import type { InputText, Uint8ArrayBuffer } from '../lib/types.js';
+import type { InputText, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import { decode, encode } from '#encode';
-import { padBytes } from '../lib/bytes-length.js';
-import { curves, deriveYCoordinate } from '../lib/math.js';
-import { eccMeta } from '../lib/size-meta.js';
-import { defaultCurve } from '../lib/types.js';
+import { padBytes } from '#internal/iso/lib/bytes-length.js';
+import { curves, deriveYCoordinate } from '#internal/iso/lib/math.js';
+import { eccMeta } from '#internal/iso/lib/size-meta.js';
+import { defaultCurve } from '#internal/iso/lib/types.js';
 
 const HEX_SIZE = 16;
 const DECOMPRESSED_KEY_PREFIX = 4;
