@@ -319,6 +319,22 @@ suite('Facets', () => {
             );
         });
 
+        test('Rejects a bound out of order with the bounds of an integer type', () => {
+            expectInvalidSchema(
+                x.positiveInteger({ maxExclusive: 1 }),
+                /`minInclusive` 1 \(of `positiveInteger`\) must be less than `maxExclusive` 1/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.unsignedByte({ minExclusive: 255 }),
+                /`minExclusive` 255 must be less than `maxInclusive` 255 \(of `unsignedByte`\)/v,
+                '/type/facets'
+            );
+            expect(
+                parse('<a>1</a>', x.element('a', x.positiveInteger({ maxInclusive: 1 })))
+            ).to.equal(1);
+        });
+
         test('Rejects a NaN bound, which is not ordered', () => {
             expectInvalidSchema(
                 x.double({ minInclusive: Number.NaN, maxInclusive: 1 }),

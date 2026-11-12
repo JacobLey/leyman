@@ -146,7 +146,9 @@ const largestNegative = -1n;
  * Inclusive bounds of each integer type ([XSD 1.1 Part 2 §3.4](https://www.w3.org/TR/xmlschema11-2/#built-in-derived)),
  * `null` for none.
  */
-const integerBounds: Readonly<Record<string, readonly [min: bigint | null, max: bigint | null]>> = {
+export const integerBounds: Readonly<
+    Record<string, readonly [min: bigint | null, max: bigint | null]>
+> = {
     integer: [null, null],
     long: signed(bits64),
     int: signed(bits32),

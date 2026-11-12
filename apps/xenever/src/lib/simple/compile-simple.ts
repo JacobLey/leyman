@@ -11,8 +11,14 @@ import {
     invalidSchema,
     isFlagged,
 } from '#internal/lib/schema/check.js';
-import { builtins, InvalidValueError, processWhitespace, whitespaceOrder } from './builtins.js';
-import { compareDecimals, totalDigits } from './decimal.js';
+import {
+    builtins,
+    integerBounds,
+    InvalidValueError,
+    processWhitespace,
+    whitespaceOrder,
+} from './builtins.js';
+import { compareDecimals, readDecimal, totalDigits } from './decimal.js';
 import { compilePattern } from './regex.js';
 
 /**
@@ -504,6 +510,21 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
             limit: read.decimal ?? (read.value as number),
             written: read.lexical,
         });
+    }
+    // An integer type's own bounds are its base's `minInclusive` and `maxInclusive`, which a bound of the
+    // other side must still be in order with: `maxExclusive="1"` leaves `xs:positiveInteger` no values.
+    const [builtinMin, builtinMax] = integerBounds[kind] ?? [null, null];
+    for (const [facet, bound, side] of [
+        ['minInclusive', builtinMin, ['minInclusive', 'minExclusive']],
+        ['maxInclusive', builtinMax, ['maxInclusive', 'maxExclusive']],
+    ] as const) {
+        if (bound !== null && side.every(name => facets[name] === undefined)) {
+            ranges.push({
+                facet,
+                limit: readDecimal(String(bound))!,
+                written: `${bound} (of \`${kind}\`)`,
+            });
+        }
     }
     if (facets.minInclusive !== undefined && facets.minExclusive !== undefined) {
         invalidSchema("`minInclusive` can't be combined with `minExclusive`", facetsPath);
