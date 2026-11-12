@@ -6,11 +6,18 @@
 //   node audit-fork-manifest.mjs [--with go,rust,...] [--keep]
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import {
+    appendFileSync,
+    mkdtempSync,
+    readFileSync,
+    realpathSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { apply, drift, inspect } from './fork-manifest.mjs';
+import { apply, drift, inspect, resync } from './fork-manifest.mjs';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../../..');
 
@@ -78,6 +85,26 @@ try {
         ...sinceApply.changed.map(({ file }) => `Drift right after apply: ${file} changed`),
         ...sinceApply.added.map(file => `Drift right after apply: ${file} is new`),
     ];
+    // A file at a manifest path that the fork wrote itself stays its own through a resync
+    const upstreamPath = path.join(to, 'leyman-upstream.json');
+    const recorded = readFileSync(upstreamPath, 'utf8');
+    const record = JSON.parse(recorded);
+    const ownFile = 'AGENTS.md';
+    writeFileSync(
+        upstreamPath,
+        JSON.stringify({ ...record, files: record.files.filter(file => file !== ownFile) })
+    );
+    resync(to);
+    const resynced = JSON.parse(readFileSync(upstreamPath, 'utf8')).files;
+    if (resynced.includes(ownFile)) {
+        problems.push(`Resync recorded the fork's own ${ownFile} as taken`);
+    }
+    if (resynced.length !== files.length - 1) {
+        problems.push(
+            `Resync recorded ${resynced.length} files, not the ${files.length - 1} taken`
+        );
+    }
+    writeFileSync(upstreamPath, recorded);
     if (problems.length > 0) {
         throw new Error(problems.join('\n'));
     }

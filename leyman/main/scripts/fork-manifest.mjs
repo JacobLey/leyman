@@ -658,7 +658,8 @@ const writeUpstream = (to, { commit, conditions, extraPackages, files }) => {
         repository: upstreamRepository,
         with: conditions,
         packages: extraPackages,
-        files: files.toSorted((a, b) => a.localeCompare(b)),
+        // Code-unit order, as Git lists paths: `localeCompare` follows the machine's locale
+        files: files.toSorted((a, b) => Number(a > b) - Number(a < b)),
         commit,
     });
 };
@@ -732,6 +733,21 @@ const currentFiles = ({ with: conditions, packages }) => {
 };
 
 /**
+ * Files added to this checkout between two commits. Of what a fork takes, these are the files new to it, as opposed to
+ * one it was given and dropped (a patch for a plugin it doesn't use) or never took (one it wrote itself).
+ *
+ * @param from - the fork's recorded commit
+ * @param to - this checkout's commit
+ * @returns the added paths
+ */
+const createdSince = (from, to) =>
+    new Set(
+        git('diff', '--name-only', '--no-renames', '--diff-filter=A', '-z', from, to)
+            .split('\0')
+            .filter(file => file !== '')
+    );
+
+/**
  * What changed upstream, in the files a fork took, since the commit it took them at.
  *
  * @param fork - the fork's root
@@ -751,12 +767,7 @@ export const drift = fork => {
     const head = headCommit();
     const current = currentFiles(upstream);
     const taken = new Set(upstream.files);
-    // New since the fork's commit, so not a file it was given and dropped (a patch for a plugin it doesn't use)
-    const created = new Set(
-        git('diff', '--name-only', '--no-renames', '--diff-filter=A', '-z', upstream.commit, head)
-            .split('\0')
-            .filter(file => file !== '')
-    );
+    const created = createdSince(upstream.commit, head);
     const changed = upstream.files
         .map(file => ({
             file,
@@ -775,8 +786,10 @@ export const drift = fork => {
 };
 
 /**
- * Records that a fork has caught up with the checkout: its commit, and the files it now has of what the manifest gives
- * it.
+ * Records that a fork has caught up with the checkout: its commit, and the files it took. Those are the recorded files
+ * the manifest still gives it, plus the files `drift` listed as new that it now has, all only while the fork still has
+ * them. Any other file at a manifest path is the fork's own (its `AGENTS.md`, say), so it stays out of the record, or
+ * every later `drift` would report this repository's edits to it.
  *
  * @param fork - the fork's root
  * @returns the commits it moved between
@@ -785,11 +798,15 @@ export const resync = fork => {
     const upstream = readUpstream(fork);
     const current = currentFiles(upstream);
     const commit = headCommit();
+    const taken = new Set(upstream.files);
+    const created = createdSince(upstream.commit, commit);
     writeUpstream(fork, {
         commit,
         conditions: upstream.with,
         extraPackages: upstream.packages,
-        files: current.filter(file => existsSync(path.join(fork, file))),
+        files: current.filter(
+            file => (taken.has(file) || created.has(file)) && existsSync(path.join(fork, file))
+        ),
     });
     return { from: shortCommit(upstream.commit), to: shortCommit(commit) };
 };

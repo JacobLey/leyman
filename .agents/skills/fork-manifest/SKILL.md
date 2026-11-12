@@ -40,7 +40,7 @@ To try a fork by hand, `node leyman/main/scripts/fork-manifest.mjs apply --to <d
 `apply` writes `leyman-upstream.json` into the fork: this repository's URL, the commit it copied from, the `with` conditions and extra packages, and each file it copied. From an up-to-date checkout here (with full history, so it has that commit):
 
 - `node leyman/main/scripts/fork-manifest.mjs drift --fork <dir>` lists, for each recorded file, the commits since then that touched it (marking files removed or moved here), and the files added since then under what the fork takes, with the `git diff` command that shows a change.
-- `node leyman/main/scripts/fork-manifest.mjs resync --fork <dir>` moves the record to this checkout's commit, keeping the files of what the fork takes that the fork still has.
+- `node leyman/main/scripts/fork-manifest.mjs resync --fork <dir>` moves the record to this checkout's commit. It keeps the recorded files the manifest still gives and the fork still has, and adds the new files `drift` listed that the fork now has. A file the fork wrote itself at a manifest path (its own `AGENTS.md`) stays out of the record.
 
 `drift` never compares the fork's files with these: a fork keeps its own values (the Node version, images, names), so only what changed here is news, and its owner decides what fits. Commit here before running `apply`, as the record names `HEAD` and uncommitted changes aren't part of it.
 
