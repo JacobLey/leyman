@@ -1,4 +1,10 @@
-/**
- * A placeholder export, for the first test to import until the package has an API.
- */
-export const packageName = 'xenever';
+export type { XmlErrorLocation, XmlLocation } from './lib/errors.js';
+export {
+    XeneverDocumentError,
+    XeneverError,
+    XeneverInvalidSchemaError,
+    XeneverLoadError,
+    XeneverUnsupportedError,
+    XeneverValidationError,
+    XeneverXmlError,
+} from './lib/errors.js';

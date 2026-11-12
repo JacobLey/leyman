@@ -39,6 +39,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "dependencies": {
+    "@rgrove/parse-xml": "catalog:"
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/configs": "workspace:^",
@@ -54,5 +57,8 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }
