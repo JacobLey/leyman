@@ -5,7 +5,7 @@ import { expect } from '@leyman/expect';
 import { computeIdentity, IdempotencyKeysOptionError } from 'idempotency-keys';
 import { createTableSql, PostgresStore } from 'idempotency-keys/postgres';
 import { suite, test } from 'mocha-chain';
-import { withDatabase } from '../helpers/database.js';
+import { withDatabase } from '#test/helpers/database.js';
 
 const fingerprint = 'f'.repeat(64);
 const otherFingerprint = 'e'.repeat(64);

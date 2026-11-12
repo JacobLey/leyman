@@ -6,7 +6,7 @@ import {
     parseIdempotencyKey,
 } from 'idempotency-keys';
 import { suite, test } from 'mocha-chain';
-import { vectors } from '../helpers/vectors.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 const valid = vectors.keys.filter(vector => !vector.error);
 const invalid = vectors.keys.filter(vector => vector.error);

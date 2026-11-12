@@ -4,8 +4,8 @@ import { expect } from '@leyman/expect';
 import { IdempotencyKeysReplyError, ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { claimScript, completeScript, releaseScript } from '#internal/lib/scripts.js';
-import { closeValkey, valkeyContext } from '../helpers/valkey.js';
-import { vectors } from '../helpers/vectors.js';
+import { closeValkey, valkeyContext } from '#test/helpers/valkey.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 const encoder = new TextEncoder();
 const fingerprint = 'f'.repeat(64);

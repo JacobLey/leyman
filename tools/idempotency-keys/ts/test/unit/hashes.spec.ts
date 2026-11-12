@@ -6,7 +6,7 @@ import {
     IdempotencyKeysHeaderValueError,
 } from 'idempotency-keys';
 import { suite, test } from 'mocha-chain';
-import { vectors } from '../helpers/vectors.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 const encoder = new TextEncoder();
 

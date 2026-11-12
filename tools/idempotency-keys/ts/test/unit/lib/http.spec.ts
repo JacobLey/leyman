@@ -2,7 +2,7 @@ import { expect } from '@leyman/expect';
 import { problemResponse } from 'idempotency-keys';
 import { suite, test } from 'mocha-chain';
 import { requestTarget } from '#internal/lib/http.js';
-import { vectors } from '../../helpers/vectors.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 /**
  * The URL of a request with a raw target, as the vectors' README says: an absolute-form target (an HTTP or HTTPS

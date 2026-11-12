@@ -1,15 +1,15 @@
 import type { Client, Pool } from 'pg';
 import type { IdempotencyNotifier, IdempotencyStore } from 'idempotency-keys';
-import type { ValkeyContext } from '../helpers/valkey.js';
+import type { ValkeyContext } from '#test/helpers/valkey.js';
 import { IdempotencyKeys } from 'idempotency-keys';
 import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
 import { ValkeyNotifier, ValkeyStore } from 'idempotency-keys/valkey';
 import { suite } from 'mocha-chain';
-import { withDatabase } from '../helpers/database.js';
-import { MemoryStore } from '../helpers/memory-store.js';
-import { runScenario } from '../helpers/scenario.js';
-import { closeValkey, valkeyContext } from '../helpers/valkey.js';
-import { vectors } from '../helpers/vectors.js';
+import { withDatabase } from '#test/helpers/database.js';
+import { MemoryStore } from '#test/helpers/memory-store.js';
+import { runScenario } from '#test/helpers/scenario.js';
+import { closeValkey, valkeyContext } from '#test/helpers/valkey.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 type Context = ValkeyContext & { readonly pool: Pool; readonly listener: Client };
 

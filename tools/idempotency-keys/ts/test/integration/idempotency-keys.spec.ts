@@ -8,8 +8,8 @@ import {
 } from 'idempotency-keys';
 import { ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
-import { attemptOf } from '../helpers/scenario.js';
-import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
+import { attemptOf } from '#test/helpers/scenario.js';
+import { bufferConnection, closeValkey, valkeyContext } from '#test/helpers/valkey.js';
 
 const encoder = new TextEncoder();
 

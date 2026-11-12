@@ -8,8 +8,8 @@ import {
 } from 'idempotency-keys';
 import { ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
-import { bufferConnection, closeValkey, valkeyContext } from '../helpers/valkey.js';
-import { vectors } from '../helpers/vectors.js';
+import { bufferConnection, closeValkey, valkeyContext } from '#test/helpers/valkey.js';
+import { vectors } from '#test/helpers/vectors.js';
 
 const options: HandleOptions = { scope: 'user_1', operation: 'createNote' };
 

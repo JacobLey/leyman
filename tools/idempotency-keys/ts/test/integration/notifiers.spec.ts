@@ -6,8 +6,8 @@ import { IdempotencyKeysOptionError } from 'idempotency-keys';
 import { PostgresNotifier } from 'idempotency-keys/postgres';
 import { ValkeyNotifier } from 'idempotency-keys/valkey';
 import { beforeEach, suite } from 'mocha-chain';
-import { withDatabase } from '../helpers/database.js';
-import { closeValkey, connectValkey, valkeyContext } from '../helpers/valkey.js';
+import { withDatabase } from '#test/helpers/database.js';
+import { closeValkey, connectValkey, valkeyContext } from '#test/helpers/valkey.js';
 
 const identity = 'a'.repeat(64);
 const otherIdentity = 'b'.repeat(64);
