@@ -146,6 +146,17 @@ suite('loadXsd simple types', () => {
         });
     });
 
+    test('An integer type keeps fractionDigits fixed to 0', async () => {
+        const types = await loadTypes(
+            `<xs:simpleType name="A"><xs:restriction base="xs:int"><xs:fractionDigits value="0"/></xs:restriction></xs:simpleType>
+            <xs:simpleType name="B"><xs:restriction base="t:A"><xs:maxInclusive value="5"/></xs:restriction></xs:simpleType>`
+        );
+        expect(types.at(-1)).to.deep.equal({
+            kind: 'int',
+            facets: { fractionDigits: 0, maxInclusive: 5 },
+        });
+    });
+
     test('Lists and unions, by name or anonymous type', async () => {
         const types = await loadTypes(
             `<xs:simpleType name="Ints"><xs:list itemType="xs:int"/></xs:simpleType>

@@ -334,6 +334,13 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^`maxLength` is fixed by the base type/v,
     ],
     [
+        'fractionDigits on an integer type',
+        `<xs:simpleType name="A"><xs:restriction base="xs:long"/></xs:simpleType>
+        ${simpleType('<xs:restriction base="t:A"><xs:fractionDigits value="1"/></xs:restriction>')}`,
+        XeneverInvalidSchemaError,
+        /^`fractionDigits` is fixed by the base type/v,
+    ],
+    [
         'an enumeration invalid for the base',
         simpleType('<xs:restriction base="xs:int"><xs:enumeration value="x"/></xs:restriction>'),
         XeneverInvalidSchemaError,

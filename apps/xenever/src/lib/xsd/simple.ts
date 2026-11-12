@@ -1,5 +1,5 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
-import type { SimpleType } from '#internal/lib/schema/ir.js';
+import type { BigIntegerKind, IntKind, SimpleType } from '#internal/lib/schema/ir.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { XmlAttributeNode } from '#internal/lib/xml/nodes.js';
 import type { Construct, Located } from './located.js';
@@ -273,6 +273,31 @@ const mergeWhitespace = (
 };
 
 /**
+ * Built-in integer types, which `xs:integer` derives from `xs:decimal` with `fractionDigits` fixed to 0
+ * ([XSD 1.1 Part 2 §3.4.13](https://www.w3.org/TR/xmlschema11-2/#integer)).
+ */
+const integerKinds: ReadonlySet<string> = new Set<BigIntegerKind | IntKind>([
+    'integer',
+    'long',
+    'int',
+    'short',
+    'byte',
+    'nonNegativeInteger',
+    'positiveInteger',
+    'nonPositiveInteger',
+    'negativeInteger',
+    'unsignedLong',
+    'unsignedInt',
+    'unsignedShort',
+    'unsignedByte',
+]);
+
+/**
+ * Facets a built-in type fixes, which no restriction of it may change.
+ */
+const integerFixed: ReadonlyMap<string, unknown> = new Map([['fractionDigits', 0]]);
+
+/**
  * Builds simple types: restrictions merge their facets into their base type's, as the IR has no derivation.
  */
 export class SimpleTypeBuilder {
@@ -336,7 +361,8 @@ export class SimpleTypeBuilder {
      */
     public restrict(at: Located, base: SimpleType, facetNodes: readonly Located[]): SimpleType {
         const step = this.#readStep(at, base, facetNodes);
-        const fixedByBase = this.#fixed.get(base);
+        const fixedByBase =
+            this.#fixed.get(base) ?? (integerKinds.has(base.kind) ? integerFixed : undefined);
         const fixed = new Map(fixedByBase);
         for (const [name, facet] of step.single) {
             if (fixedByBase?.has(name) === true && fixedByBase.get(name) !== facet.value) {
