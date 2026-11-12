@@ -30,7 +30,8 @@
     ".": "./dist/index.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "bin": {
     "leyman-framework": "./bin.mjs"

@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { afterEach, suite, test } from 'mocha-chain';
-import { writeRepo } from '../lib/repo.js';
+import { writeRepo } from '#test/lib/repo.js';
 
 const execFileAsync = promisify(execFile);
 

@@ -1,11 +1,11 @@
 import type { AuditReport, CheckResult } from '@leyman/framework';
-import type { Files } from '../lib/repo.js';
+import type { Files } from '#test/lib/repo.js';
 import { mkdir } from 'node:fs/promises';
 import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { audit } from '@leyman/framework';
 import { afterEach, suite, test } from 'mocha-chain';
-import { writeRepo } from '../lib/repo.js';
+import { writeRepo } from '#test/lib/repo.js';
 
 const latestVersion = async (name: string): Promise<string | undefined> =>
     name === '@leyman/configs' ? '0.2.0' : undefined;
