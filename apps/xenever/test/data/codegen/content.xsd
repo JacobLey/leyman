@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Content models whose shapes codegen prints as Infer does, and facet values a literal can't write plainly. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:c="urn:example:content"
+    targetNamespace="urn:example:content">
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace"/>
+
+  <!-- A repeated choice: every key optional. -->
+  <xs:complexType name="Repeated">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="a" type="xs:string"/>
+      <xs:element name="b" type="xs:int"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- An optional sequence, choices in a sequence, and an element in two branches. -->
+  <xs:complexType name="Shapes">
+    <xs:sequence>
+      <xs:sequence minOccurs="0">
+        <xs:element name="first" type="xs:string"/>
+        <xs:element name="second" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+      <xs:choice>
+        <xs:element name="left" type="xs:string"/>
+        <xs:sequence>
+          <xs:element name="right" type="xs:string"/>
+          <xs:element name="both" type="xs:string"/>
+        </xs:sequence>
+      </xs:choice>
+      <xs:choice minOccurs="0">
+        <xs:element name="up" type="xs:boolean"/>
+        <xs:element name="both" type="xs:string"/>
+      </xs:choice>
+      <xs:any namespace="##other" processContents="lax"/>
+    </xs:sequence>
+    <xs:attribute ref="xml:lang"/>
+  </xs:complexType>
+
+  <!-- An element in two branches of a choice, and an enumeration of numbers. -->
+  <xs:complexType name="Branches">
+    <xs:choice>
+      <xs:element name="same" type="c:Small"/>
+      <xs:sequence>
+        <xs:element name="same" type="c:Small" maxOccurs="2"/>
+        <xs:element name="other" type="xs:string"/>
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+  <xs:simpleType name="Small">
+    <xs:restriction base="xs:int">
+      <xs:enumeration value="1"/>
+      <xs:enumeration value="-2"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Mixed content with a wildcard, and xs:anyType. -->
+  <xs:complexType name="Mixed" mixed="true">
+    <xs:sequence>
+      <xs:element name="b" type="xs:string" minOccurs="0"/>
+      <xs:any namespace="##other" processContents="skip" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="anything"/>
+
+  <!-- Facets of float types, defaults, a simple content restriction and a list of a union. -->
+  <xs:simpleType name="Odd">
+    <xs:restriction base="xs:double">
+      <xs:enumeration value="NaN"/>
+      <xs:enumeration value="-0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Positive">
+    <xs:restriction base="xs:float">
+      <xs:minExclusive value="-INF"/>
+      <xs:maxInclusive value="INF"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Measure">
+    <xs:simpleContent>
+      <xs:extension base="xs:decimal">
+        <xs:attribute name="unit" type="xs:token" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="Length">
+    <xs:simpleContent>
+      <xs:restriction base="c:Measure">
+        <xs:maxInclusive value="10"/>
+      </xs:restriction>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:simpleType name="Values">
+    <xs:list>
+      <xs:simpleType>
+        <xs:union memberTypes="xs:int xs:boolean"/>
+      </xs:simpleType>
+    </xs:list>
+  </xs:simpleType>
+
+  <xs:element name="content">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="repeated" type="c:Repeated"/>
+        <xs:element name="branches" type="c:Branches"/>
+        <xs:element name="shapes" type="c:Shapes" maxOccurs="2"/>
+        <xs:element name="mixed" type="c:Mixed"/>
+        <xs:element name="odd" type="c:Odd" maxOccurs="unbounded"/>
+        <xs:element name="positive" type="c:Positive" default="1.5"/>
+        <xs:element name="length" type="c:Length"/>
+        <xs:element name="values" type="c:Values"/>
+        <xs:element name="empty" nillable="true">
+          <xs:complexType/>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

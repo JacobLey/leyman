@@ -1,0 +1,13 @@
+<c:content xmlns:c="urn:example:content" xmlns:o="urn:example:other" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <repeated><b>1</b><a>x</a><b>2</b></repeated>
+  <branches><same>1</same><same>-2</same><other>o</other></branches>
+  <shapes xml:lang="en"><first>1</first><left>l</left><o:any/></shapes>
+  <shapes><right>r</right><both>b</both><up>true</up><o:any>text</o:any></shapes>
+  <mixed>Some <b>bold</b> text<o:em/></mixed>
+  <odd>NaN</odd>
+  <odd>-0</odd>
+  <positive/>
+  <length unit="cm">9.50</length>
+  <values>1 true 0</values>
+  <empty xsi:nil="true"/>
+</c:content>

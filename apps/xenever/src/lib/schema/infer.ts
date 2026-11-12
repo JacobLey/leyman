@@ -239,6 +239,17 @@ type ParticleKey<P> = P extends Any
       : never;
 
 /**
+ * Value of an element declaration: the one its {@link ElementOf} annotation gives, else inferred from it.
+ *
+ * @template E - an element declaration
+ */
+type DeclarationValue<E> = ElementOfBrand extends keyof E
+    ? NonNullable<E[ElementOfBrand]> extends { readonly value: infer V }
+        ? V
+        : never
+    : ElementValue<E>;
+
+/**
  * Value an element particle has in `children`, once per occurrence.
  *
  * @template P - a particle
@@ -246,11 +257,7 @@ type ParticleKey<P> = P extends Any
 type ParticleValue<P> = P extends Any
     ? XmlNode
     : Referenced<P> extends infer E
-      ? ElementOfBrand extends keyof E
-          ? NonNullable<E[ElementOfBrand]> extends { readonly value: infer V }
-              ? V
-              : never
-          : ElementValue<E>
+      ? DeclarationValue<E>
       : never;
 
 /**
@@ -607,12 +614,13 @@ export type ElementValue<E> = E extends { readonly type: infer T }
     : never;
 
 /**
- * The value `parse` returns for a declaration: of an element, a complex type or a simple type.
+ * The value `parse` returns for a declaration: of an element (the value its `x.ElementOf` annotation gives,
+ * if any), a complex type or a simple type.
  *
  * @template T - a declaration or type
  */
 export type Infer<T> = T extends { readonly kind: 'element' }
-    ? ElementValue<T>
+    ? DeclarationValue<T>
     : T extends ComplexType
       ? ComplexValue<T>
       : T extends SimpleType

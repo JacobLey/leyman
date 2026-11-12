@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A type named as one in names.xsd, in another namespace. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:example:other">
+  <xs:simpleType name="line-item">
+    <xs:restriction base="xs:double">
+      <xs:enumeration value="1.5"/>
+      <xs:enumeration value="INF"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

@@ -1,0 +1,7 @@
+<n:catalog xmlns:n="urn:example:names">
+  <line-item><sku>A-1</sku><note>first</note><sku>A-2</sku></line-item>
+  <line-item><note>only</note></line-item>
+  <default>value</default>
+  <other>INF</other>
+  <count>9007199254740993</count>
+</n:catalog>

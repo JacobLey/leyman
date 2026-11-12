@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<purchaseOrder xmlns="urn:example:order" xmlns:x="urn:example:extra" orderDate="2026-11-12" tags="rush fragile" x:source="web">
+  <shipTo country="US">
+    <name>Alice Smith</name>
+    <street>123 Maple Street</street>
+    <street>Apt 4</street>
+    <city>Mill Valley</city>
+    <state>CA</state>
+    <zip>90952</zip>
+  </shipTo>
+  <comment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+  <plain/>
+  <items>
+    <item partNum="872-AA">
+      <productName>Lawnmower</productName>
+      <quantity>1</quantity>
+      <price currency="USD">148.95</price>
+    </item>
+    <item partNum="926-AA">
+      <productName>Baby Monitor</productName>
+      <quantity>2</quantity>
+      <price currency="EUR">39.98</price>
+      <shipDate>2026-12-21</shipDate>
+    </item>
+  </items>
+  <note>Leave it <em>behind</em> the gate.</note>
+  <x:tracking id="1"/>
+</purchaseOrder>

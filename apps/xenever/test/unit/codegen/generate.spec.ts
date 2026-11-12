@@ -1,0 +1,99 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import Path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { expect } from '@leyman/expect';
+import { suite, test } from 'mocha-chain';
+import { x, XeneverUnsupportedError } from 'xenever';
+import { generate } from 'xenever/xsd';
+import * as names from '#test/generated/names.js';
+import { loadSchema } from '#test/unit/xsd/helpers.js';
+
+/**
+ * Where generated modules are written to be imported: inside the package, so `xenever` resolves to it, and
+ * ignored by Git, lint and the formatter.
+ */
+const tmpDirectory = Path.resolve(import.meta.dirname, '../../tmp');
+
+/**
+ * Generates TypeScript for an XSD and imports it (Node strips the types).
+ *
+ * @param fileName - written as `dist-test/tmp/<fileName>.ts`
+ * @param body - the children of `xs:schema`
+ * @returns the module's exports
+ */
+const importGenerated = async (
+    fileName: string,
+    body: string
+): Promise<Readonly<Record<string, unknown>>> => {
+    const filePath = Path.join(tmpDirectory, `${fileName}.ts`);
+    await mkdir(tmpDirectory, { recursive: true });
+    await writeFile(filePath, generate(await loadSchema(body)).text);
+    return (await import(pathToFileURL(filePath).href)) as Readonly<Record<string, unknown>>;
+};
+
+suite('generate', () => {
+    test('Names exports after the XSD names, suffixing collisions and reserved words in document order', () => {
+        expect(Object.keys(names).toSorted((a, b) => a.localeCompare(b))).to.deep.equal(
+            [
+                'Catalog',
+                'Default',
+                'LineItem',
+                'LineItem_2',
+                'LineItem_3',
+                'catalog',
+                'class_2',
+                'x_2',
+            ].toSorted((a, b) => a.localeCompare(b))
+        );
+    });
+
+    test('Turns XML names into identifiers', async () => {
+        const generated = await importGenerated(
+            'identifiers',
+            ['USState', 'URL', 'purchase-order', 'a.b-c', '_x', '\u{483}a', '\u{E3F}', 'import']
+                .map(name => `<xs:element name="${name}" type="xs:string"/>`)
+                .join('')
+        );
+        expect(Object.keys(generated).toSorted((a, b) => a.localeCompare(b))).to.deep.equal(
+            ['usState', 'url', 'purchaseOrder', 'abc', '_x', '_\u{483}a', '_', 'import_2'].toSorted(
+                (a, b) => a.localeCompare(b)
+            )
+        );
+    });
+
+    test('Builds consts that parse', async () => {
+        const generated = await importGenerated(
+            'parse',
+            '<xs:element name="greeting" type="xs:token"/>'
+        );
+        const { parse } = await import('xenever');
+        expect(parse('<greeting> hi </greeting>', generated.greeting as never)).to.equal('hi');
+    });
+
+    test('Builds a content model that allows no children', async () => {
+        const filePath = Path.join(tmpDirectory, 'empty.ts');
+        const type = x.complex({ content: x.choice([]) });
+        await mkdir(tmpDirectory, { recursive: true });
+        await writeFile(
+            filePath,
+            generate({ elements: [], types: [{ name: 'Empty', type }] }).text
+        );
+        const generated = (await import(pathToFileURL(filePath).href)) as Readonly<
+            Record<string, unknown>
+        >;
+        expect(generated.Empty).to.deep.equal(type);
+    });
+
+    test('Rejects an anonymous complex type that contains itself through a group', async () => {
+        const set = await loadSchema(
+            `<xs:group name="G"><xs:sequence>
+                <xs:element name="e" minOccurs="0"><xs:complexType><xs:group ref="G"/></xs:complexType></xs:element>
+            </xs:sequence></xs:group>
+            <xs:element name="root"><xs:complexType><xs:group ref="G"/></xs:complexType></xs:element>`
+        );
+        expect(() => generate(set)).to.throw(
+            XeneverUnsupportedError,
+            /^An anonymous complex type that contains itself/v
+        );
+    });
+});

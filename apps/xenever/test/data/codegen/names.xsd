@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Names that collide once they are identifiers, reserved words, and an ordered type. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:n="urn:example:names"
+    xmlns:o="urn:example:other" targetNamespace="urn:example:names">
+  <xs:import namespace="urn:example:other" schemaLocation="names-other.xsd"/>
+
+  <!-- A type and an element of the same name. -->
+  <xs:complexType name="catalog">
+    <xs:sequence>
+      <xs:element name="line-item" type="n:line-item" maxOccurs="unbounded"/>
+      <xs:element name="default" type="n:default" minOccurs="0"/>
+      <xs:element name="other" type="o:line-item" minOccurs="0"/>
+      <xs:element name="count" type="xs:integer"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="catalog" type="n:catalog"/>
+
+  <!-- line-item and line.item are both LineItem. -->
+  <xs:complexType name="line-item">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="sku" type="xs:token"/>
+      <xs:element name="note" type="xs:string"/>
+    </xs:choice>
+  </xs:complexType>
+  <xs:simpleType name="line.item">
+    <xs:restriction base="xs:long">
+      <xs:enumeration value="-5"/>
+      <xs:enumeration value="9007199254740993"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Reserved words. -->
+  <xs:simpleType name="default">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:element name="class" type="xs:string"/>
+  <xs:element name="x" type="n:line.item"/>
+</xs:schema>

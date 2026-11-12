@@ -1,0 +1,6 @@
+<tree label="root">
+  <node label="a">
+    <node label="a1"/>
+  </node>
+  <node label="b"/>
+</tree>

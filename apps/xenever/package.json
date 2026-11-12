@@ -57,11 +57,13 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
+    "format-file": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   }
 }

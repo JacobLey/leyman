@@ -1,0 +1,8 @@
+<outline>
+  <title>Book</title>
+  <outline><title>Chapter 1</title></outline>
+  <outline>
+    <title>Chapter 2</title>
+    <outline><title>Section 2.1</title></outline>
+  </outline>
+</outline>

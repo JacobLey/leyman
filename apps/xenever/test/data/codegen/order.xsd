@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A purchase order, after the XML Schema primer, with most of the constructs codegen prints. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:po="urn:example:order"
+    targetNamespace="urn:example:order" elementFormDefault="qualified">
+  <xs:element name="purchaseOrder" type="po:PurchaseOrderType"/>
+  <xs:element name="comment" type="xs:string" nillable="true"/>
+
+  <xs:complexType name="PurchaseOrderType">
+    <xs:sequence>
+      <xs:element name="shipTo" type="po:Address"/>
+      <xs:element name="billTo" type="po:Address" minOccurs="0"/>
+      <xs:element ref="po:comment" minOccurs="0"/>
+      <xs:choice>
+        <xs:element name="giftWrap" type="xs:boolean"/>
+        <xs:element name="plain">
+          <xs:complexType/>
+        </xs:element>
+      </xs:choice>
+      <xs:element name="items" type="po:Items"/>
+      <xs:element name="note" type="po:Note" minOccurs="0" maxOccurs="2"/>
+      <xs:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="orderDate" type="xs:date" use="required"/>
+    <xs:attribute name="status" type="po:Status" default="open"/>
+    <xs:attribute name="version" type="xs:token" fixed="1.0"/>
+    <xs:attribute name="tags" type="po:Tags"/>
+    <xs:anyAttribute namespace="##other" processContents="skip"/>
+  </xs:complexType>
+
+  <xs:complexType name="Address">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="street" type="xs:string" maxOccurs="unbounded"/>
+      <xs:element name="city" type="xs:string"/>
+      <xs:element name="state" type="po:USState"/>
+      <xs:element name="zip" type="po:Zip"/>
+    </xs:sequence>
+    <xs:attribute name="country" type="xs:NMTOKEN" fixed="US"/>
+  </xs:complexType>
+
+  <xs:complexType name="Items">
+    <xs:sequence>
+      <xs:element name="item" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="productName" type="xs:string"/>
+            <xs:element name="quantity">
+              <xs:simpleType>
+                <xs:restriction base="xs:positiveInteger">
+                  <xs:maxExclusive value="100"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+            <xs:element name="price" type="po:Price"/>
+            <xs:element name="shipDate" type="xs:date" minOccurs="0"/>
+          </xs:sequence>
+          <xs:attribute name="partNum" type="po:SKU" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Mixed content: always ordered. -->
+  <xs:complexType name="Note" mixed="true">
+    <xs:sequence>
+      <xs:element name="em" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Price">
+    <xs:simpleContent>
+      <xs:extension base="po:Amount">
+        <xs:attribute name="currency" type="po:Currency" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:simpleType name="Amount">
+    <xs:restriction base="xs:decimal">
+      <xs:fractionDigits value="2"/>
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Currency">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="USD"/>
+      <xs:enumeration value="EUR"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Status">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="open"/>
+      <xs:enumeration value="shipped"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Tags">
+    <xs:list itemType="xs:NCName"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="Zip">
+    <xs:union memberTypes="xs:int">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:pattern value="\d{5}-\d{4}"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="USState">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AK"/>
+      <xs:enumeration value="AL"/>
+      <xs:enumeration value="CA"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SKU">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d{3}-[A-Z]{2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

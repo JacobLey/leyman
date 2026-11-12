@@ -13,6 +13,9 @@
       "path": "../../tools/test-chain/mocha-chain"
     },
     {
+      "path": "../../tools/format-file"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {
