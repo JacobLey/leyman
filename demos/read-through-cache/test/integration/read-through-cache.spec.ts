@@ -34,15 +34,15 @@ import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
 import { beforeEach, suite } from 'mocha-chain';
 import { createRendezvousHash } from 'weighted-rendezvous-hash';
-import { cacheEvents } from '../helpers/events.js';
-import { controlledLoader } from '../helpers/loader.js';
+import { cacheEvents } from '#test/helpers/events.js';
+import { controlledLoader } from '#test/helpers/loader.js';
 import {
     uniquePrefix,
     unreachableValkey,
     valkeyNodes,
     valkeyUrl,
     waitForSubscribers,
-} from '../helpers/valkey.js';
+} from '#test/helpers/valkey.js';
 
 /**
  * Long enough to never run out during a test, so tests never depend on timing.

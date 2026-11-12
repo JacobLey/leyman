@@ -2,7 +2,7 @@ import type { ValkeyNode } from '@leyman/demo-read-through-cache';
 import { ResizableValkeyTopology } from '@leyman/demo-read-through-cache';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
-import { valkeyNodes, valkeyUrl } from '../../helpers/valkey.js';
+import { valkeyNodes, valkeyUrl } from '#test/helpers/valkey.js';
 
 /**
  * Set one node's size to 0, as when draining it.

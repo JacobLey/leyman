@@ -48,5 +48,8 @@
     "mocha-chain": "workspace:^",
     "p-defer": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
   }
 }

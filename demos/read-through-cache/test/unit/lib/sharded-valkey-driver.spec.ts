@@ -1,7 +1,7 @@
 import { ResizableValkeyTopology, ShardedValkeyDriver } from '@leyman/demo-read-through-cache';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { uniquePrefix, valkeyNodes } from '../../helpers/valkey.js';
+import { uniquePrefix, valkeyNodes } from '#test/helpers/valkey.js';
 
 const keys = Array.from({ length: 20 }, (_, i) => `key-${i}`);
 
