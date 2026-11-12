@@ -10,7 +10,7 @@ import {
     PgDollyMissingUrlError,
     PgDollyPrefixError,
 } from 'pg-dolly';
-import { connect, Server, serverUrl, uniquePrefix } from '../helpers/server.js';
+import { connect, Server, serverUrl, uniquePrefix } from '#test/helpers/server.js';
 
 /**
  * A table with a default and a trigger, which only a schema applied as SQL (not an ORM's model of it) carries.

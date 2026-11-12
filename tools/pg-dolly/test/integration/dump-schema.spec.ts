@@ -1,7 +1,7 @@
 import { expect } from '@leyman/expect';
 import { before, suite } from 'mocha-chain';
 import { dumpSchema, PgDolly } from 'pg-dolly';
-import { connect, Server, uniquePrefix } from '../helpers/server.js';
+import { connect, Server, uniquePrefix } from '#test/helpers/server.js';
 
 /**
  * Objects an ORM wouldn't see: a function, a trigger and a view, besides a table with a default and an index.
