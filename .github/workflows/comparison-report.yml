@@ -75,7 +75,7 @@ jobs:
 
       - name: Commit report
         run: |
-          for report in genever genever-go; do
+          for report in genever genever-go xenever; do
             jq empty "$RUNNER_TEMP/comparison-report/$report.json"
           done
           if git fetch origin refs/reports/comparison; then
@@ -84,8 +84,10 @@ jobs:
             git checkout --orphan comparison-report
             git rm -rfq .
           fi
-          cp "$RUNNER_TEMP/comparison-report/genever.json" "$RUNNER_TEMP/comparison-report/genever-go.json" .
-          git add genever.json genever-go.json
+          for report in genever genever-go xenever; do
+            cp "$RUNNER_TEMP/comparison-report/$report.json" .
+          done
+          git add genever.json genever-go.json xenever.json
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
             commit -m "Report for $GITHUB_SHA"
           git push origin HEAD:refs/reports/comparison

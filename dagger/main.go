@@ -299,8 +299,9 @@ func (m *Ci) Docs(
 		Directory(workdir + "/docs/dist")
 }
 
-// Run genever, genever-go and the tools each is compared to through the same probes, for the reports on the docs site
-// (`e2e/genever-comparison`, `e2e/genever-go-comparison`): `genever.json` and `genever-go.json`.
+// Run genever, genever-go, xenever and the tools each is compared to through the same probes, for the reports on the
+// docs site (`e2e/genever-comparison`, `e2e/genever-go-comparison`, `e2e/xenever-comparison`): `genever.json`,
+// `genever-go.json` and `xenever.json`.
 //
 // Export them (`comparison-report --commit=<sha> export --path ./reports`) to publish them.
 func (m *Ci) ComparisonReport(
@@ -314,12 +315,13 @@ func (m *Ci) ComparisonReport(
 		WithEnvVariable("COMPARISON_COMMIT", commit).
 		WithExec([]string{
 			"nx", "run-many", "-t", "comparison-report", "--parallel=1", "-p",
-			"@leyman/e2e-genever-comparison", "@leyman/e2e-genever-go-comparison",
+			"@leyman/e2e-genever-comparison", "@leyman/e2e-genever-go-comparison", "@leyman/e2e-xenever-comparison",
 		})
 
 	return dag.Directory().
 		WithFile("genever.json", ran.File(workdir+"/e2e/genever-comparison/report/genever.json")).
-		WithFile("genever-go.json", ran.File(workdir+"/e2e/genever-go-comparison/report/genever-go.json"))
+		WithFile("genever-go.json", ran.File(workdir+"/e2e/genever-go-comparison/report/genever-go.json")).
+		WithFile("xenever.json", ran.File(workdir+"/e2e/xenever-comparison/report/xenever.json"))
 }
 
 // Deploy the hosted Nx cache's Worker (`infra/nx-cache/worker`) to Cloudflare, with wrangler.

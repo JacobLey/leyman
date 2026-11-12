@@ -1,0 +1,52 @@
+{
+  "name": "@leyman/e2e-xenever-comparison",
+  "version": "0.0.1",
+  "description": "Runs xenever and the tools it is compared to through the same XML schemas and documents, for the report on the docs site.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/xenever-comparison#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "@abapify/ts-xsd": "catalog:",
+    "esbuild": "catalog:",
+    "fast-xml-parser": "catalog:",
+    "typescript": "catalog:",
+    "xenever": "workspace:^",
+    "xml-xsd-engine": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^"
+  }
+}
