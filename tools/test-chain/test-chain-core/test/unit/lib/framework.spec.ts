@@ -2,7 +2,7 @@ import type { ChainHook } from 'test-chain-core';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import { createChain, HookOrderError } from 'test-chain-core';
-import { createFakeFramework } from '../../fixtures/fake-framework.js';
+import { createFakeFramework } from '#test/fixtures/fake-framework.js';
 
 const lockMessage = 'Cannot create new hook/suite/test while executing a hook/test';
 

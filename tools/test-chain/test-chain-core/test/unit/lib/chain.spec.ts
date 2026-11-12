@@ -1,9 +1,9 @@
 import type { Chain, ChainHook, ChainTest } from 'test-chain-core';
-import type { FakeKey } from '../../fixtures/fake-framework.js';
+import type { FakeKey } from '#test/fixtures/fake-framework.js';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import { createChain, HookContextError, HookOrderError } from 'test-chain-core';
-import { createFakeFramework } from '../../fixtures/fake-framework.js';
+import { createFakeFramework } from '#test/fixtures/fake-framework.js';
 
 const hookOf = (chain: Chain, name: string): ChainHook => chain[name] as ChainHook;
 const testOf = (chain: Chain, name: string): ChainTest => chain[name] as ChainTest;
