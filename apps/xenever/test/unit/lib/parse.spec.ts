@@ -204,6 +204,59 @@ suite('parse', () => {
             });
         });
 
+        test('Reads many children of nested repeated groups in time linear in the children', () => {
+            // Each `a` may end one occurrence of either group and start another, so without merging the
+            // branches that differ only in their counters the model would grow with every child.
+            const nested = x.element(
+                'nested',
+                x.complex({
+                    content: x.choice(
+                        [
+                            x.sequence([x.element('a', x.int(), { maxOccurs: 'unbounded' })], {
+                                maxOccurs: 100_000_000,
+                            }),
+                            x.element('b', x.int()),
+                        ],
+                        { maxOccurs: 100_000 }
+                    ),
+                })
+            );
+            const children = '<a>1</a>'.repeat(5000);
+            expect(
+                parse(`<nested>${children}<b>2</b>${children}</nested>`, nested).children
+            ).to.deep.equal({
+                a: Array.from({ length: 10_000 }, () => 1),
+                b: [2],
+            });
+        });
+
+        test('Reads an element that a choice allows once or in a counted group', () => {
+            const either = x.element(
+                'either',
+                x.complex({
+                    content: x.choice([
+                        x.element('a', x.int()),
+                        x.sequence([x.element('a', x.int())], { minOccurs: 2, maxOccurs: 3 }),
+                        x.sequence([x.element('a', x.int()), x.element('b', x.int())]),
+                        x.sequence([
+                            x.element('a', x.int()),
+                            x.element('b', x.int(), { maxOccurs: 2 }),
+                        ]),
+                    ]),
+                })
+            );
+            expect(parse('<either><a>1</a></either>', either).children).to.deep.equal({ a: [1] });
+            expect(parse('<either><a>1</a><a>2</a></either>', either).children).to.deep.equal({
+                a: [1, 2],
+            });
+            expect(
+                parse('<either><a>1</a><b>2</b><b>3</b></either>', either).children
+            ).to.deep.equal({
+                a: [1],
+                b: [2, 3],
+            });
+        });
+
         test('Skips an optional first element', () => {
             const pair = x.element(
                 'pair',

@@ -296,9 +296,14 @@ export class ContentModel {
                 }
             }
         }
-        const items = unique
-            .values()
-            .toArray()
+        const candidates = unique.values().toArray();
+        // A branch whose language another branch contains adds nothing. Dropping it keeps a model whose
+        // branches differ only in how many occurrences their counters allow from growing with every child: in
+        // `((a+){1,100000000}){1,100000}`, each `a` would otherwise add a branch per counter value.
+        const items = candidates
+            .filter(item =>
+                candidates.every(other => other === item || !this.#subsumes(other, item))
+            )
             .toSorted((a, b) => a.id - b.id);
         if (items.length === 0) {
             return this.#fail;
@@ -311,6 +316,37 @@ export class ContentModel {
             { t: 'alt', items },
             items.some(item => item.nullable)
         );
+    }
+
+    /**
+     * Whether a term's language contains another's, by structure alone: equal terms, repetitions of one term
+     * where the counts of one range over the other's, and sequences of equal length where each term contains
+     * the other's term at its position (concatenation preserves containment). Sound, not complete: a `false`
+     * only keeps a redundant branch.
+     *
+     * @param outer - the term that may contain
+     * @param inner - the term that may be contained
+     * @returns whether `outer` matches every sequence of children `inner` matches
+     */
+    #subsumes(outer: Term, inner: Term): boolean {
+        if (outer === inner) {
+            return true;
+        }
+        const { node } = outer;
+        if (node.t === 'repeat') {
+            const innerNode = inner.node;
+            return innerNode.t === 'repeat' && innerNode.item === node.item
+                ? node.min <= innerNode.min && innerNode.max <= node.max
+                : inner === node.item && node.min <= 1;
+        }
+        if (node.t === 'seq' && inner.node.t === 'seq') {
+            const innerItems = inner.node.items;
+            return (
+                node.items.length === innerItems.length &&
+                node.items.every((item, index) => this.#subsumes(item, innerItems[index]!))
+            );
+        }
+        return false;
     }
 
     #repeat(item: Term, min: number, max: number): Term {
