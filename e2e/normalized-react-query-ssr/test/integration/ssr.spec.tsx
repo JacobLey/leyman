@@ -1,5 +1,5 @@
 // eslint-disable-next-line import-x/no-unassigned-import, import-x/order -- registers DOM globals, so must load before `react-dom`
-import '../data/dom.js';
+import '#test/data/dom.js';
 import type { DehydratedState } from '@tanstack/react-query';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -7,8 +7,8 @@ import { hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query
 import { render, screen } from '@testing-library/react';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { fellowshipId, requests } from '../data/api.js';
-import { App } from '../data/app.js';
+import { fellowshipId, requests } from '#test/data/api.js';
+import { App } from '#test/data/app.js';
 
 // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `server.tsx` alongside this file
 const serverPath = new URL('../data/server.js', import.meta.url);
