@@ -1,15 +1,23 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { x } from 'xenever';
-import type * as content from '#test/generated/content.js';
 import type * as names from '#test/generated/names.js';
 import type * as order from '#test/generated/order.js';
 import type * as pom from '#test/generated/pom.js';
 import type * as tree from '#test/generated/tree.js';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-chain';
+import { x } from 'xenever';
+import * as content from '#test/generated/content.js';
+
+/**
+ * Types a declaration's value, to assert on it.
+ *
+ * @param declaration - an element declaration or a type
+ * @returns the declaration itself at runtime, typed as the value `parse` would return
+ */
+const inferred = <T>(declaration: T): x.Infer<T> => declaration as never;
 
 // Each printed type must be the type the builders infer for its const. The type check of this file is the
-// test; the runtime part only gives each a name in the report.
+// test; the runtime part only builds the declarations compared and gives each check a name in the report.
 suite('Generated types', () => {
     test('Are what x.Infer gives for the order fixture', () => {
         expectTypeOf<x.Infer<typeof order.Status>>().toEqualTypeOf<order.Status>();
@@ -59,11 +67,79 @@ suite('Generated types', () => {
         expectTypeOf<x.Infer<typeof tree.Node>>().toEqualTypeOf<tree.Node>();
     });
 
-    test('Are what parse returns for an element', () => {
+    // A generated element const is annotated with its printed type, so `x.Infer` of the const only reads that
+    // annotation back. Each printed element type is instead compared with `x.Infer` of the element declared
+    // again here from the XSD: through its named type's const, or built anew when its type is anonymous.
+    test('Are what parse returns for an element with a named type', () => {
+        expectTypeOf<
+            x.Infer<typeof order.PurchaseOrderType>
+        >().toEqualTypeOf<order.PurchaseOrder>();
+        expectTypeOf<x.Infer<typeof tree.Node>>().toEqualTypeOf<tree.Tree>();
+        expectTypeOf<x.Infer<typeof names.Catalog>>().toEqualTypeOf<names.Catalog_2>();
+        expectTypeOf<x.Infer<typeof names.LineItem_2>>().toEqualTypeOf<names.X>();
+        expectTypeOf<names.X>().toEqualTypeOf<-5n | 9_007_199_254_740_993n>();
+        expectTypeOf<x.Infer<typeof pom.Model>>().toEqualTypeOf<pom.Project>();
+    });
+
+    test('Are what parse returns for an element with an anonymous type', () => {
+        const comment = x.element('comment', x.string(), {
+            namespace: 'urn:example:order',
+            nillable: true,
+        });
+        expectTypeOf(inferred(comment)).toEqualTypeOf<order.Comment>();
+
+        const className = x.element('class', x.string(), { namespace: 'urn:example:names' });
+        expectTypeOf(inferred(className)).toEqualTypeOf<names.Class>();
+
+        const anything = x.element(
+            'anything',
+            x.complex({
+                mixed: true,
+                attributes: [x.anyAttribute()],
+                content: x.sequence([x.any({ minOccurs: 0, maxOccurs: 'unbounded' })]),
+            }),
+            { namespace: 'urn:example:content' }
+        );
+        expectTypeOf(inferred(anything)).toEqualTypeOf<content.Anything>();
+
+        const contentElement = x.element(
+            'content',
+            x.complex({
+                content: x.sequence([
+                    x.element('repeated', content.Repeated),
+                    x.element('branches', content.Branches),
+                    x.element('shapes', content.Shapes, { maxOccurs: 2 }),
+                    x.element('mixed', content.Mixed),
+                    x.element('odd', content.Odd, { maxOccurs: 'unbounded' }),
+                    x.element('positive', content.Positive, { default: '1.5' }),
+                    x.element('length', content.Length),
+                    x.element('values', content.Values),
+                    x.element('empty', x.complex(), { nillable: true }),
+                ]),
+            }),
+            { namespace: 'urn:example:content' }
+        );
+        expectTypeOf(inferred(contentElement)).toEqualTypeOf<content.Content>();
+
+        // The recursive reference needs an annotation, so only the outer level is inferred.
+        const outline = x.element(
+            'outline',
+            x.complex({
+                content: x.sequence([
+                    x.element('title', x.string()),
+                    x.lazy((): x.ElementOf<'outline', tree.Outline> => outline, {
+                        minOccurs: 0,
+                        maxOccurs: 'unbounded',
+                    }),
+                ]),
+            })
+        );
+        expectTypeOf(inferred(outline)).toEqualTypeOf<tree.Outline>();
+    });
+
+    test('Read their printed type back from the annotation', () => {
         expectTypeOf<x.Infer<typeof order.purchaseOrder>>().toEqualTypeOf<order.PurchaseOrder>();
-        expectTypeOf<x.Infer<typeof order.comment>>().toEqualTypeOf<string | null>();
         expectTypeOf<x.Infer<typeof tree.outline>>().toEqualTypeOf<tree.Outline>();
-        expectTypeOf<x.Infer<typeof names.x_2>>().toEqualTypeOf<-5n | 9_007_199_254_740_993n>();
     });
 
     test('Are Standard Schemas parsing a string into the element type', () => {
