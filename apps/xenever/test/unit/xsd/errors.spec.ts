@@ -224,6 +224,22 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^`length` can not be combined with `minLength` or `maxLength` in one restriction/v,
     ],
     [
+        "length with a minLength other than the base type's",
+        simpleType(
+            '<xs:restriction base="xs:IDREFS"><xs:length value="2"/><xs:minLength value="2"/></xs:restriction>'
+        ),
+        XeneverInvalidSchemaError,
+        /^`length` can not be combined with `minLength` or `maxLength` in one restriction/v,
+    ],
+    [
+        'length with a repeated maxLength of a base type with a length',
+        `<xs:simpleType name="L"><xs:restriction base="xs:string"><xs:length value="2"/></xs:restriction></xs:simpleType>${simpleType(
+            '<xs:restriction base="t:L"><xs:length value="2"/><xs:maxLength value="2"/></xs:restriction>'
+        )}`,
+        XeneverInvalidSchemaError,
+        /^`length` can not be combined with `minLength` or `maxLength` in one restriction/v,
+    ],
+    [
         'minLength above maxLength',
         simpleType(
             '<xs:restriction base="xs:string"><xs:minLength value="3"/><xs:maxLength value="2"/></xs:restriction>'

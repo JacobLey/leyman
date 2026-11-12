@@ -157,6 +157,19 @@ suite('loadXsd simple types', () => {
         });
     });
 
+    test('A length may come with the minimum or maximum length the base type already has', async () => {
+        const types = await loadTypes(
+            `<xs:simpleType name="A"><xs:restriction base="xs:IDREFS"><xs:length value="5"/><xs:minLength value="1"/></xs:restriction></xs:simpleType>
+            <xs:simpleType name="Max"><xs:restriction base="xs:string"><xs:maxLength value="3"/></xs:restriction></xs:simpleType>
+            <xs:simpleType name="B"><xs:restriction base="t:Max"><xs:length value="2"/><xs:maxLength value="3"/></xs:restriction></xs:simpleType>`
+        );
+        expect(types.map(type => (type as { readonly facets: unknown }).facets)).to.deep.equal([
+            { length: 5 },
+            { maxLength: 3 },
+            { length: 2 },
+        ]);
+    });
+
     test('Lists and unions, by name or anonymous type', async () => {
         const types = await loadTypes(
             `<xs:simpleType name="Ints"><xs:list itemType="xs:int"/></xs:simpleType>

@@ -153,10 +153,15 @@ const mergeLengths = (facets: Map<string, unknown>, step: Step): void => {
     const minimum = step.single.get('minLength');
     const maximum = step.single.get('maxLength');
     if (length) {
-        if (minimum ?? maximum) {
+        // Unless it repeats a base without `length`, as `minLength="1"` does on a restriction of `xs:IDREFS`
+        // ([XSD 1.0 Part 2 §4.3.1.4](https://www.w3.org/TR/xmlschema-2/#length-minLength-maxLength), clause
+        // 1.1.2, which XSD 1.1 keeps).
+        const isRepeated = (facet: StepFacet | undefined, base: number | undefined): boolean =>
+            !facet || (baseLength === undefined && facet.value === base);
+        if (!isRepeated(minimum, baseMin) || !isRepeated(maximum, baseMax)) {
             invalid(
                 length.at,
-                '`length` can not be combined with `minLength` or `maxLength` in one restriction'
+                "`length` can not be combined with `minLength` or `maxLength` in one restriction, unless it repeats the base type's"
             );
         }
         const value = length.value as number;
