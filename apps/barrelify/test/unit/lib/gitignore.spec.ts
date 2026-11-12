@@ -2,7 +2,7 @@ import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { loadGitignore } from '#internal/lib/gitignore.js';
-import { createTmpDir } from '../../integration/lib/fixtures.js';
+import { createTmpDir } from '#test/integration/lib/fixtures.js';
 
 suite('gitignore', () => {
     const withTmpDir = beforeEach(createTmpDir);
