@@ -4,9 +4,9 @@ import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { runAsMain } from '#entry-script';
 import { MainNotImplementedError } from '#not-implemented-error';
-import entryScriptInstance from '../../data/entry-script-instance.js';
-import EntryScriptStatic from '../../data/entry-script-static.js';
-import { tracker } from '../../data/tracker.js';
+import entryScriptInstance from '#test/data/entry-script-instance.js';
+import EntryScriptStatic from '#test/data/entry-script-static.js';
+import { tracker } from '#test/data/tracker.js';
 
 suite('EntryScript', () => {
     suite('runAsMain', () => {
