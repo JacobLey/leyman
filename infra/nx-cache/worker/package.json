@@ -24,7 +24,8 @@
     ".": "./dist/worker.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

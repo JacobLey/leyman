@@ -3,8 +3,8 @@ import { expect } from '@leyman/expect';
 import worker from '@leyman/nx-cache-worker';
 import { before, suite } from 'mocha-chain';
 import { handle } from '#internal/handle.js';
-import { startIssuer } from '../helpers/issuer.js';
-import { startWorker, uniqueHash } from '../helpers/miniflare.js';
+import { startIssuer } from '#test/helpers/issuer.js';
+import { startWorker, uniqueHash } from '#test/helpers/miniflare.js';
 
 const textEncoder = new TextEncoder();
 
