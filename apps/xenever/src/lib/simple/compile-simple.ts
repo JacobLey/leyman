@@ -33,6 +33,11 @@ export interface CompiledSimple {
      * default) can't resolve.
      */
     readonly hasQName: boolean;
+    /**
+     * Whether the type is `ID` or restricts it, so a value is unique in its document and no declaration may
+     * give it a `default` or `fixed`.
+     */
+    readonly isId: boolean;
 }
 
 /**
@@ -539,6 +544,7 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
 
     return {
         hasQName: kind === 'QName',
+        isId: kind === 'ID',
         parse: (text, namespaces) => {
             const read = readBuiltin(text, namespaces);
             checkPatterns(read.lexical);
@@ -617,6 +623,7 @@ const compileList = (type: Readonly<Record<string, unknown>>, path: string): Com
     const length = compileLength(facets, facetsPath);
     return {
         hasQName: item.hasQName,
+        isId: false,
         parse: (text, namespaces) => {
             const lexical = processWhitespace(text, 'collapse');
             checkPatterns(lexical);
@@ -648,6 +655,8 @@ const compileUnion = (type: Readonly<Record<string, unknown>>, path: string): Co
     const checkPatterns = compilePatterns(facets.pattern, childPath(path, 'facets'));
     return {
         hasQName: members.some(member => member.hasQName),
+        // A union of `ID` doesn't restrict it.
+        isId: false,
         parse: (text, namespaces) => {
             // A union has no whitespace processing of its own; its members each have theirs. Patterns are
             // matched against the collapsed text, as most members collapse it.

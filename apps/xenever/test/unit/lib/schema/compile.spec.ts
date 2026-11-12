@@ -467,6 +467,30 @@ suite('Schema checks', () => {
             );
         });
 
+        test('Rejects a value for an ID, but not for a list or union of IDs', () => {
+            expectInvalidSchema(
+                x.element('a', x.complex({ text: x.id() }), { default: 'i' }),
+                /An `ID` can not have a `default`/v,
+                '/default'
+            );
+            expectInvalidSchema(
+                root({
+                    attributes: [
+                        x.attribute('b', { kind: 'ID', facets: { maxLength: 5 } }, { fixed: 'i' }),
+                    ],
+                }),
+                /An `ID` can not have a `fixed`/v,
+                '/type/attributes/0/fixed'
+            );
+            const element = root({
+                attributes: [
+                    x.attribute('b', x.list(x.id()), { fixed: 'i j' }),
+                    x.attribute('c', x.union([x.id(), x.int()]), { default: 'i' }),
+                ],
+            }) as x.Element;
+            expect(parse('<a/>', element)).to.deep.equal({ attributes: { b: ['i', 'j'], c: 'i' } });
+        });
+
         test('Rejects a value for an element without text', () => {
             expectInvalidSchema(
                 x.element('a', x.complex(), { default: '' }),

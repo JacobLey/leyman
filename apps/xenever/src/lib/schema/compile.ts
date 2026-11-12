@@ -156,7 +156,8 @@ const noNamespaces: ReadonlyMap<string, string> = new Map();
  * @param type - its simple type, or the simple type of its text
  * @param path - path to the declaration
  * @returns the text read when absent or empty, and the fixed value
- * @throws {XeneverInvalidSchemaError} when both are given, or one isn't valid for the type
+ * @throws {XeneverInvalidSchemaError} when both are given, one isn't valid for the type, or the type is an
+ * `ID`
  * @throws {XeneverUnsupportedError} when the type may be a `QName`, which a value written in the schema can't
  * resolve
  */
@@ -181,6 +182,12 @@ const compileValueConstraint = (
             `\`${property}\` needs a simple type or a complex type with \`text\``,
             constraintPath
         );
+    }
+    if (type.isId) {
+        // Every element or attribute it fills in would hold the same ID
+        // ([XSD 1.0 Part 1 §3.2.6](https://www.w3.org/TR/xmlschema-1/#a-props-correct), clause 3, and
+        // [§3.3.6](https://www.w3.org/TR/xmlschema-1/#e-props-correct), clause 5).
+        invalidSchema(`An \`ID\` can not have a \`${property}\``, constraintPath);
     }
     if (type.hasQName) {
         throw new XeneverUnsupportedError(
