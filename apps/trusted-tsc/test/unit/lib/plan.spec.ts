@@ -3,7 +3,7 @@ import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { TrustedTscError } from '#internal/lib/error.js';
 import { planTsc } from '#internal/lib/plan.js';
-import { createFixture } from '../../lib/fixture.js';
+import { createFixture } from '#test/lib/fixture.js';
 
 const mapper = (exec: unknown = ['node', 'bin.mjs']): object => ({
     name: 'mapper',

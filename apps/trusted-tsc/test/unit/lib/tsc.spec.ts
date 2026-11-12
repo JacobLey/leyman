@@ -3,7 +3,7 @@ import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { TrustedTscError } from '#internal/lib/error.js';
 import { findTsc } from '#internal/lib/tsc.js';
-import { createFixture } from '../../lib/fixture.js';
+import { createFixture } from '#test/lib/fixture.js';
 
 const platform = `@typescript/typescript-${process.platform}-${process.arch}`;
 

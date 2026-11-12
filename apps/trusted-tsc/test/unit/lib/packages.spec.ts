@@ -2,7 +2,7 @@ import { realpath } from 'node:fs/promises';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { findManifest, findPackage, readGrants } from '#internal/lib/packages.js';
-import { createFixture } from '../../lib/fixture.js';
+import { createFixture } from '#test/lib/fixture.js';
 
 suite('packages', () => {
     const withFixture = beforeEach(createFixture);

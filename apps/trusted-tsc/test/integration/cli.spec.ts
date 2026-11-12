@@ -4,7 +4,7 @@ import Path from 'node:path';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { createFixture } from '../lib/fixture.js';
+import { createFixture } from '#test/lib/fixture.js';
 
 const execFileAsync = promisify(execFile);
 

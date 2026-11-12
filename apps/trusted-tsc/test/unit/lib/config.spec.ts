@@ -2,7 +2,7 @@ import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { readContentMappers } from '#internal/lib/config.js';
 import { TrustedTscError } from '#internal/lib/error.js';
-import { createFixture } from '../../lib/fixture.js';
+import { createFixture } from '#test/lib/fixture.js';
 
 const mappers = (name: string): object[] => [{ package: name, extensions: ['.x'] }];
 
