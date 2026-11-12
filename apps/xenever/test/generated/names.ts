@@ -52,7 +52,7 @@ export const LineItem_2 = x.long({ bigint: true, enumeration: ['-5', '9007199254
  * The element `{urn:example:names}catalog`.
  */
 export type Catalog_2 = Catalog;
-export const catalog: x.ElementOf<'catalog', Catalog_2> = x.element('catalog', Catalog, {
+export const catalog: x.ElementSchema<'catalog', Catalog_2> = x.element('catalog', Catalog, {
     namespace: 'urn:example:names',
 });
 
@@ -60,7 +60,7 @@ export const catalog: x.ElementOf<'catalog', Catalog_2> = x.element('catalog', C
  * The element `{urn:example:names}class`.
  */
 export type Class = string;
-export const class_2: x.ElementOf<'class', Class> = x.element('class', x.string(), {
+export const class_2: x.ElementSchema<'class', Class> = x.element('class', x.string(), {
     namespace: 'urn:example:names',
 });
 
@@ -68,6 +68,6 @@ export const class_2: x.ElementOf<'class', Class> = x.element('class', x.string(
  * The element `{urn:example:names}x`.
  */
 export type X = LineItem_2;
-export const x_2: x.ElementOf<'x', X> = x.element('x', LineItem_2, {
+export const x_2: x.ElementSchema<'x', X> = x.element('x', LineItem_2, {
     namespace: 'urn:example:names',
 });

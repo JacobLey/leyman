@@ -67,7 +67,7 @@ export const Order = x.complex({
 });
 
 export type Order_2 = Order;
-export const order: x.ElementOf<'order', Order_2> = x.element('order', Order);
+export const order: x.ElementSchema<'order', Order_2> = x.element('order', Order);
 ```
 
 and `parse(xml, order)` returns an `Order`. Types are printed rather than left for TypeScript to infer from the builders. That keeps large schemas quick to type-check, and lets a recursive schema type-check at all.

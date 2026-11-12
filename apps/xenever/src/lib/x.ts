@@ -34,6 +34,7 @@ export type {
     SimpleType,
     Type,
 } from './schema/ir.js';
+export type { ElementSchema } from './schema/builders.js';
 export {
     all,
     any,

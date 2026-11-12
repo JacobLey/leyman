@@ -188,7 +188,7 @@ export const PurchaseOrderType = x.complex({
  * The element `{urn:example:order}purchaseOrder`.
  */
 export type PurchaseOrder = PurchaseOrderType;
-export const purchaseOrder: x.ElementOf<'purchaseOrder', PurchaseOrder> = x.element(
+export const purchaseOrder: x.ElementSchema<'purchaseOrder', PurchaseOrder> = x.element(
     'purchaseOrder',
     PurchaseOrderType,
     { namespace: 'urn:example:order' }
@@ -198,7 +198,7 @@ export const purchaseOrder: x.ElementOf<'purchaseOrder', PurchaseOrder> = x.elem
  * The element `{urn:example:order}comment`.
  */
 export type Comment = string | null;
-export const comment: x.ElementOf<'comment', Comment> = x.element('comment', x.string(), {
+export const comment: x.ElementSchema<'comment', Comment> = x.element('comment', x.string(), {
     namespace: 'urn:example:order',
     nillable: true,
 });

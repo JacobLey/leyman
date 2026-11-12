@@ -492,7 +492,7 @@ class Printer {
         }
         for (const element of this.#set.elements) {
             const { value, type } = this.#elementNames.get(element)!;
-            const annotation = `x.ElementOf<${JSON.stringify(element.name)}, ${type}>`;
+            const annotation = `x.ElementSchema<${JSON.stringify(element.name)}, ${type}>`;
             declarations.push(
                 [
                     docComment(`The element \`${clark(element.namespace, element.name)}\`.`),

@@ -156,6 +156,6 @@ export const Model = x.complex({
  * The element `{http://maven.apache.org/POM/4.0.0}project`.
  */
 export type Project = Model;
-export const project: x.ElementOf<'project', Project> = x.element('project', Model, {
+export const project: x.ElementSchema<'project', Project> = x.element('project', Model, {
     namespace: 'http://maven.apache.org/POM/4.0.0',
 });

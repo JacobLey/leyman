@@ -167,7 +167,7 @@ export type Anything = {
     attributes: { '#any'?: x.XmlAttribute[] };
     children: ({ name: '#text'; value: string } | { name: '#any'; value: x.XmlNode })[];
 };
-export const anything: x.ElementOf<'anything', Anything> = x.element(
+export const anything: x.ElementSchema<'anything', Anything> = x.element(
     'anything',
     x.complex({
         mixed: true,
@@ -194,7 +194,7 @@ export type Content = {
         empty: { attributes: x.NoProperties } | null;
     };
 };
-export const content: x.ElementOf<'content', Content> = x.element(
+export const content: x.ElementSchema<'content', Content> = x.element(
     'content',
     x.complex({
         content: x.sequence([

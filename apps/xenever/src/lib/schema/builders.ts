@@ -12,6 +12,7 @@ import type {
     DateKind,
     DecimalFacets,
     Element,
+    ElementOf,
     FloatFacets,
     FloatKind,
     IntFacets,
@@ -466,6 +467,17 @@ export type ElementBuilt<N extends string, T extends Type, O> = Simplify<
     O & { readonly kind: 'element'; readonly name: N; readonly type: T }
 > &
     StandardSchemaV1<string, Infer<Simplify<O & { readonly kind: 'element'; readonly type: T }>>>;
+
+/**
+ * An element declaration with the key and value it has in `children` (as {@link ElementOf}) that also
+ * implements Standard Schema, parsing an XML string with it as the root into `Value`. What the builder returns
+ * is one, so the importer annotates each global element const with it.
+ *
+ * @template Key - key in `children`
+ * @template Value - value in `children`, and output of `'~standard'`
+ */
+export type ElementSchema<Key extends string, Value> = ElementOf<Key, Value> &
+    StandardSchemaV1<string, Value>;
 
 /**
  * Flattens an intersection into one object type.

@@ -21,7 +21,7 @@ export const Node = x.complex({
  * The element `tree`.
  */
 export type Tree = Node;
-export const tree: x.ElementOf<'tree', Tree> = x.element('tree', Node);
+export const tree: x.ElementSchema<'tree', Tree> = x.element('tree', Node);
 
 /**
  * The element `outline`.
@@ -30,7 +30,7 @@ export type Outline = {
     attributes: x.NoProperties;
     children: { title: string; outline?: Outline[] };
 };
-export const outline: x.ElementOf<'outline', Outline> = x.element(
+export const outline: x.ElementSchema<'outline', Outline> = x.element(
     'outline',
     x.complex({
         content: x.sequence([

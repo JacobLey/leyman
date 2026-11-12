@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { x } from 'xenever';
 import type * as content from '#test/generated/content.js';
 import type * as names from '#test/generated/names.js';
@@ -63,5 +64,20 @@ suite('Generated types', () => {
         expectTypeOf<x.Infer<typeof order.comment>>().toEqualTypeOf<string | null>();
         expectTypeOf<x.Infer<typeof tree.outline>>().toEqualTypeOf<tree.Outline>();
         expectTypeOf<x.Infer<typeof names.x_2>>().toEqualTypeOf<-5n | 9_007_199_254_740_993n>();
+    });
+
+    test('Are Standard Schemas parsing a string into the element type', () => {
+        expectTypeOf<typeof order.purchaseOrder>().toExtend<
+            StandardSchemaV1<string, order.PurchaseOrder>
+        >();
+        expectTypeOf<
+            StandardSchemaV1.InferOutput<typeof order.purchaseOrder>
+        >().toEqualTypeOf<order.PurchaseOrder>();
+        expectTypeOf<
+            StandardSchemaV1.InferInput<typeof order.purchaseOrder>
+        >().toEqualTypeOf<string>();
+        expectTypeOf<
+            StandardSchemaV1.InferOutput<typeof tree.outline>
+        >().toEqualTypeOf<tree.Outline>();
     });
 });
