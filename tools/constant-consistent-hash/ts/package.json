@@ -1,6 +1,6 @@
 {
   "name": "constant-consistent-hash",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Stateless consistent hashing in constant time with no loops, which only moves keys into a newly added bucket. Specified so any language can return the same buckets.",
   "engines": {
     "node": ">=22.12.0"

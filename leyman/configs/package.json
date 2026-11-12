@@ -1,6 +1,6 @@
 {
   "name": "@leyman/configs",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Strict TypeScript, SWC, c8, Biome and Vitest configs for TypeScript ESM packages, with a tsconfig for each Node.js support floor.",
   "type": "module",
   "author": "JacobLey",
