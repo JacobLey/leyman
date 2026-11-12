@@ -118,6 +118,8 @@ suite('Content', () => {
     });
 
     suite('Element wildcards', () => {
+        const xmlOnly = { xml: 'http://www.w3.org/XML/1998/namespace' };
+        const withE = { ...xmlOnly, e: 'urn:e' };
         const extensible = x.element(
             'r',
             x.complex({
@@ -155,8 +157,10 @@ suite('Content', () => {
                                     localName: 'y',
                                     attributes: [],
                                     children: [],
+                                    inScopeNamespaces: withE,
                                 },
                             ],
+                            inScopeNamespaces: withE,
                         },
                         {
                             kind: 'element',
@@ -164,10 +168,28 @@ suite('Content', () => {
                             localName: 'z',
                             attributes: [],
                             children: [],
+                            inScopeNamespaces: withE,
                         },
                     ],
                 },
             });
+        });
+
+        test('Keeps the namespaces in scope at each node, default namespace under an empty prefix', () => {
+            const [node] = parse(
+                '<r><a>1</a><x xmlns="urn:d" xmlns:p="urn:p"><y>p:t</y></x></r>',
+                extensible
+            ).children['#any']!;
+            expect(node!.inScopeNamespaces).to.deep.equal({ ...xmlOnly, '': 'urn:d', p: 'urn:p' });
+        });
+
+        test('Shares one frozen record between nodes that declare no namespaces', () => {
+            const [node] = parse('<r><a>1</a><x xmlns:p="urn:p"><y/></x></r>', extensible).children[
+                '#any'
+            ]!;
+            const [child] = node!.children as x.XmlNode[];
+            expect(child!.inScopeNamespaces).to.equal(node!.inScopeNamespaces);
+            expect(Object.isFrozen(node!.inScopeNamespaces)).to.equal(true);
         });
 
         test('Is an array even for one occurrence, and absent when unmatched', () => {
@@ -197,6 +219,7 @@ suite('Content', () => {
                         localName: 'b',
                         attributes: [],
                         children: [],
+                        inScopeNamespaces: xmlOnly,
                     },
                 ],
             });
@@ -215,6 +238,7 @@ suite('Content', () => {
                         localName: 'a',
                         attributes: [],
                         children: [{ kind: 'text', text: 'not an int' }],
+                        inScopeNamespaces: xmlOnly,
                     },
                 ],
                 a: 1,
@@ -295,6 +319,7 @@ suite('Content', () => {
                         localName: 'b',
                         attributes: [],
                         children: [],
+                        inScopeNamespaces: xmlOnly,
                     },
                 },
                 { name: 'a', value: 1 },

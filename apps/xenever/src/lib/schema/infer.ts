@@ -56,6 +56,13 @@ export interface XmlNode {
     localName: string;
     attributes: XmlAttribute[];
     children: (XmlNode | XmlText)[];
+    /**
+     * Namespaces in scope at this element, its own declarations included: prefix to namespace name, the
+     * default namespace under `''` (absent when there is none), and always `xml`. For resolving QNames written
+     * in text or attribute values, such as `xsi:type="p:t"`, which the prefixes alone can't. A plain object, so
+     * the node stays JSON; frozen, as elements with the same namespaces in scope share one.
+     */
+    readonly inScopeNamespaces: Readonly<Record<string, string>>;
 }
 
 /**

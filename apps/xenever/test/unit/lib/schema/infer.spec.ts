@@ -419,6 +419,12 @@ suite('Infer', () => {
             expectTypeOf(inferred(required).children).toEqualTypeOf<{ '#any': x.XmlNode[] }>();
         });
 
+        test('Types the namespaces in scope of a node as a readonly record', () => {
+            expectTypeOf<x.XmlNode['inScopeNamespaces']>().toEqualTypeOf<
+                Readonly<Record<string, string>>
+            >();
+        });
+
         test('Attributes a wildcard allows are an array', () => {
             const open = x.complex({
                 attributes: [x.attribute('id', x.int()), x.anyAttribute({ namespace: ['urn:a'] })],

@@ -140,6 +140,32 @@ const toXmlAttribute = ({ namespace, localName, value }: XmlAttributeNode): XmlA
 });
 
 /**
+ * Public form of each in-scope namespace map, so elements that share a map (those declaring no namespaces)
+ * share one object.
+ */
+const namespaceRecords = new WeakMap<
+    ReadonlyMap<string, string>,
+    Readonly<Record<string, string>>
+>();
+
+/**
+ * Public form of an in-scope namespace map.
+ *
+ * @param namespaces - prefix to namespace name
+ * @returns the same, as a frozen plain object
+ */
+const toNamespaceRecord = (
+    namespaces: ReadonlyMap<string, string>
+): Readonly<Record<string, string>> => {
+    let record = namespaceRecords.get(namespaces);
+    if (!record) {
+        record = Object.freeze(Object.fromEntries(namespaces));
+        namespaceRecords.set(namespaces, record);
+    }
+    return record;
+};
+
+/**
  * An element a wildcard allowed, as written.
  *
  * @param node - node of the XML tree
@@ -153,6 +179,7 @@ const toXmlNode = (node: XmlElementNode): XmlNode => ({
     children: node.children.map(child =>
         child.kind === 'text' ? { kind: 'text', text: child.text } : toXmlNode(child)
     ),
+    inScopeNamespaces: toNamespaceRecord(node.inScopeNamespaces),
 });
 
 /**
