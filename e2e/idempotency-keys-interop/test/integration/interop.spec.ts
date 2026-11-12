@@ -1,6 +1,6 @@
 import type { Context } from 'mocha';
-import type { InteropResponse } from '../helpers/http.js';
-import type { Language, Server, ServerConfig } from '../helpers/servers.js';
+import type { InteropResponse } from '#test/helpers/http.js';
+import type { Language, Server, ServerConfig } from '#test/helpers/servers.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { expect } from '@leyman/expect';
@@ -8,9 +8,9 @@ import testVectors from '@leyman/idempotency-keys-test-vectors/test-vectors.json
     type: 'json',
 };
 import { suite } from 'mocha-chain';
-import { withDolly } from '../helpers/database.js';
-import { send } from '../helpers/http.js';
-import { startServer } from '../helpers/servers.js';
+import { withDolly } from '#test/helpers/database.js';
+import { send } from '#test/helpers/http.js';
+import { startServer } from '#test/helpers/servers.js';
 
 const combinations = [
     { store: 'postgres', notifier: 'postgres' },

@@ -35,5 +35,8 @@
     "pg": "catalog:",
     "pg-dolly": "workspace:^",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
   }
 }
