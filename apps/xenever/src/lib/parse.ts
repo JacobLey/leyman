@@ -1,19 +1,40 @@
 import type { XeneverInvalidSchemaError, XeneverXmlError, XmlErrorLocation } from './errors.js';
 import type { CompiledComplex, CompiledElement } from './schema/compile.js';
-import type { Infer } from './schema/infer.js';
+import type { Infer, XmlAttribute, XmlNode } from './schema/infer.js';
 import type { Element } from './schema/ir.js';
+import type { CompiledSimple } from './simple/compile-simple.js';
 import type { StandardSchemaV1 } from './standard-schema.js';
-import type { XmlElementNode } from './xml/nodes.js';
+import type { XmlAttributeNode, XmlElementNode } from './xml/nodes.js';
 import { XeneverDocumentError, XeneverUnsupportedError, XeneverValidationError } from './errors.js';
-import { compileElement, describeName, expandedName } from './schema/compile.js';
+import { anyKey, compileElement, describeName, expandedName } from './schema/compile.js';
 import { expectedLabels } from './schema/content.js';
 import { InvalidValueError } from './simple/builtins.js';
+import { compileSimple } from './simple/compile-simple.js';
 import { readXml } from './xml/read-xml.js';
 
 /**
  * Namespace name of the `xsi` attributes ([XSD 1.1 Part 1 §2.7](https://www.w3.org/TR/xmlschema11-1/#xsi-attr)).
  */
 const xsiNamespace = 'http://www.w3.org/2001/XMLSchema-instance';
+
+/**
+ * `xsi` attributes `readAttributes` skips: hints for finding a schema, and `nil`, which `isNil` reads.
+ */
+const xsiAttributes: ReadonlySet<string> = new Set([
+    'schemaLocation',
+    'noNamespaceSchemaLocation',
+    'nil',
+]);
+
+/**
+ * Type of `xsi:nil`.
+ */
+const nilType = compileSimple({ kind: 'boolean' }, '/');
+
+/**
+ * Key of text entries in ordered `children`.
+ */
+const textKey = '#text';
 
 /**
  * Whitespace as XML defines it ([XML 1.0 §2.3](https://www.w3.org/TR/xml/#NT-S)).
@@ -94,12 +115,53 @@ const readValue = (read: () => unknown, location: XmlErrorLocation): unknown => 
 };
 
 /**
+ * Whether two values read from text are the same, for a `fixed` value: equal, or both `NaN` (identical in
+ * XSD 1.1, [Part 2 §2.2.2](https://www.w3.org/TR/xmlschema11-2/#identity)), and lists item by item.
+ *
+ * @param a - one value
+ * @param b - another
+ * @returns whether they are the same
+ */
+const isSameValue = (a: unknown, b: unknown): boolean =>
+    Array.isArray(a) && Array.isArray(b)
+        ? a.length === b.length && a.every((item, index) => isSameValue(item, b[index]))
+        : a === b || (Number.isNaN(a) && Number.isNaN(b));
+
+/**
+ * An attribute a wildcard allowed, as written.
+ *
+ * @param attribute - attribute of the XML tree
+ * @returns its public shape
+ */
+const toXmlAttribute = ({ namespace, localName, value }: XmlAttributeNode): XmlAttribute => ({
+    namespace,
+    localName,
+    value,
+});
+
+/**
+ * An element a wildcard allowed, as written.
+ *
+ * @param node - node of the XML tree
+ * @returns its public shape, children included
+ */
+const toXmlNode = (node: XmlElementNode): XmlNode => ({
+    kind: 'element',
+    namespace: node.namespace,
+    localName: node.localName,
+    attributes: node.attributes.map(attribute => toXmlAttribute(attribute)),
+    children: node.children.map(child =>
+        child.kind === 'text' ? { kind: 'text', text: child.text } : toXmlNode(child)
+    ),
+});
+
+/**
  * Reads an element's attributes.
  *
  * @param node - node of the XML tree
  * @param type - its complex type, or `null` for a simple type, which has no attributes
- * @returns the value of `attributes`, keys in declaration order
- * @throws {XeneverValidationError} when an attribute isn't declared or valid, or a required one is missing
+ * @returns the value of `attributes`, keys in declaration order, then `#any`
+ * @throws {XeneverValidationError} when an attribute isn't allowed or valid, or a required one is missing
  * @throws {XeneverUnsupportedError} on `xsi:type`
  */
 const readAttributes = (
@@ -107,6 +169,7 @@ const readAttributes = (
     type: CompiledComplex | null
 ): Record<string, unknown> => {
     const values = new Map<string, unknown>();
+    const wildcardMatches: XmlAttribute[] = [];
     for (const attribute of node.attributes) {
         if (attribute.namespace === xsiNamespace) {
             if (attribute.localName === 'type') {
@@ -116,37 +179,34 @@ const readAttributes = (
                     { path: attribute.path }
                 );
             }
-            // Hints for finding a schema, which `parse` is already given.
-            if (
-                attribute.localName === 'schemaLocation' ||
-                attribute.localName === 'noNamespaceSchemaLocation'
-            ) {
+            // Hints for finding a schema, which `parse` is already given, and `nil`, which `readElement` read.
+            if (xsiAttributes.has(attribute.localName)) {
                 continue;
-            }
-            if (attribute.localName === 'nil') {
-                // Cvc-elt.3.1: only a nillable element may have xsi:nil, whatever its value.
-                throw new XeneverValidationError(
-                    `Element ${written(node)} is not nillable, so must not have \`xsi:nil\``,
-                    at(attribute)
-                );
             }
         }
         const declaration = type?.attributes.get(
             expandedName(attribute.namespace, attribute.localName)
         );
-        if (!declaration) {
+        if (declaration) {
+            const value = readValue(
+                () => declaration.type.parse(attribute.value, node.inScopeNamespaces),
+                at(attribute)
+            );
+            if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
+                throw new XeneverValidationError(
+                    `Attribute ${written(attribute)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
+                    at(attribute)
+                );
+            }
+            values.set(declaration.key, value);
+        } else if (type?.anyAttribute?.allows(attribute.namespace) === true) {
+            wildcardMatches.push(toXmlAttribute(attribute));
+        } else {
             throw new XeneverValidationError(
                 `Attribute ${written(attribute)} is not declared on ${written(node)}`,
                 at(attribute)
             );
         }
-        values.set(
-            declaration.key,
-            readValue(
-                () => declaration.type.parse(attribute.value, node.inScopeNamespaces),
-                at(attribute)
-            )
-        );
     }
     const attributes: Record<string, unknown> = {};
     if (!type) {
@@ -155,6 +215,11 @@ const readAttributes = (
     for (const declaration of type.attributes.values()) {
         if (values.has(declaration.key)) {
             attributes[declaration.key] = values.get(declaration.key);
+        } else if (declaration.absent !== null) {
+            attributes[declaration.key] = declaration.type.parse(
+                declaration.absent,
+                node.inScopeNamespaces
+            );
         } else if (declaration.required) {
             throw new XeneverValidationError(
                 `Element ${written(node)} is missing attribute ${describeName(declaration.namespace, declaration.name)}`,
@@ -162,25 +227,43 @@ const readAttributes = (
             );
         }
     }
+    if (wildcardMatches.length > 0) {
+        attributes[anyKey] = wildcardMatches;
+    }
     return attributes;
 };
 
 /**
- * Reads the child elements of an element with element-only content.
+ * Reads the child elements of an element with content, and its text when mixed.
  *
  * @param node - node of the XML tree
  * @param type - its complex type, which has content
- * @returns the value of `children`
+ * @returns the value of `children`: an object by key, or entries in document order when ordered
  * @throws {XeneverValidationError} when the children don't match the content model
  */
-const readChildren = (node: XmlElementNode, type: CompiledComplex): Record<string, unknown> => {
+const readChildren = (node: XmlElementNode, type: CompiledComplex): unknown => {
     const { model, elements, keys } = type.content!;
     const values = new Map<string, unknown[]>();
+    const entries: { readonly name: string; readonly value: unknown }[] = [];
+    const add = (key: string, value: unknown): void => {
+        if (type.ordered) {
+            entries.push({ name: key, value });
+            return;
+        }
+        let list = values.get(key);
+        if (!list) {
+            list = [];
+            values.set(key, list);
+        }
+        list.push(value);
+    };
     let term = model.start;
     for (const child of node.children) {
         if (child.kind === 'text') {
-            // Whitespace between elements is formatting; any other text has nowhere to go.
-            if (!whitespaceOnly.test(child.text)) {
+            if (type.mixed) {
+                add(textKey, child.text);
+            } else if (!whitespaceOnly.test(child.text)) {
+                // Whitespace between elements is formatting; any other text has nowhere to go.
                 throw new XeneverValidationError(
                     `Text is not allowed in ${written(node)}, which has element-only content`,
                     { ...child.location, path: node.path }
@@ -188,9 +271,10 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): Record<strin
             }
             continue;
         }
-        const name = expandedName(child.namespace, child.localName);
-        const next = model.derive(term, name);
-        if (model.isFailed(next)) {
+        const { namespace } = child;
+        const name = expandedName(namespace, child.localName);
+        const next = model.derive(term, { name, namespace });
+        if (model.isFailed(next.term)) {
             const expected = [
                 ...expectedLabels(term),
                 ...(term.nullable ? [`the end of ${written(node)}`] : []),
@@ -201,21 +285,23 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): Record<strin
                 at(child)
             );
         }
-        term = next;
-        const declaration = elements.get(name)!;
-        let list = values.get(declaration.key);
-        if (!list) {
-            list = [];
-            values.set(declaration.key, list);
+        ({ term } = next);
+        if (next.isWildcard) {
+            add(anyKey, toXmlNode(child));
+        } else {
+            const declaration = elements.get(name)!;
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
+            add(declaration.key, readElement(child, declaration));
         }
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
-        list.push(readElement(child, declaration));
     }
     if (!term.nullable) {
         throw new XeneverValidationError(
             `Element ${written(node)} is missing ${listLabels(expectedLabels(term))}`,
             at(node)
         );
+    }
+    if (type.ordered) {
+        return entries;
     }
     const children: Record<string, unknown> = {};
     for (const { key, array } of keys) {
@@ -228,6 +314,78 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): Record<strin
 };
 
 /**
+ * Reads `xsi:nil`.
+ *
+ * @param node - node of the XML tree
+ * @param declaration - what declares it
+ * @returns whether the element is nil
+ * @throws {XeneverValidationError} when `xsi:nil` isn't allowed or isn't a boolean, or a nil element isn't
+ * empty or has a `fixed` value
+ */
+const isNil = (node: XmlElementNode, declaration: CompiledElement): boolean => {
+    const nil = node.attributes.find(
+        attribute => attribute.namespace === xsiNamespace && attribute.localName === 'nil'
+    );
+    if (!nil) {
+        return false;
+    }
+    if (!declaration.nillable) {
+        // Cvc-elt.3.1: only a nillable element may have xsi:nil, whatever its value.
+        throw new XeneverValidationError(
+            `Element ${written(node)} is not nillable, so must not have \`xsi:nil\``,
+            at(nil)
+        );
+    }
+    const isTrue = readValue(() => nilType.parse(nil.value, node.inScopeNamespaces), at(nil));
+    if (isTrue === false) {
+        return false;
+    }
+    const [first] = node.children;
+    if (first) {
+        // Cvc-elt.3.2.1: a nil element has no text or children.
+        throw new XeneverValidationError(
+            `Element ${written(node)} is \`xsi:nil\`, so must be empty`,
+            first.kind === 'element' ? at(first) : { ...first.location, path: node.path }
+        );
+    }
+    if (declaration.fixed) {
+        // Cvc-elt.3.2.2: a fixed value can't be nil.
+        throw new XeneverValidationError(
+            `Element ${written(node)} has a fixed value, so must not be \`xsi:nil\``,
+            at(nil)
+        );
+    }
+    return true;
+};
+
+/**
+ * Reads the text of an element with a simple type or text content, checking a `fixed` value: an empty
+ * element reads as its `default` or `fixed` text.
+ *
+ * @param node - node of the XML tree
+ * @param declaration - what declares it
+ * @param type - its simple type, or the type of its text
+ * @returns the value
+ * @throws {XeneverValidationError} when the text isn't valid, or isn't the fixed value
+ */
+const readText = (
+    node: XmlElementNode,
+    declaration: CompiledElement,
+    type: CompiledSimple
+): unknown => {
+    const text =
+        declaration.empty !== null && node.children.length === 0 ? declaration.empty : textOf(node);
+    const value = readValue(() => type.parse(text, node.inScopeNamespaces), at(node));
+    if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
+        throw new XeneverValidationError(
+            `Element ${written(node)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
+            at(node)
+        );
+    }
+    return value;
+};
+
+/**
  * Reads an element as its declaration says.
  *
  * @param node - node of the XML tree
@@ -237,17 +395,21 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): Record<strin
  */
 const readElement = (node: XmlElementNode, declaration: CompiledElement): unknown => {
     const { type } = declaration;
+    const complex = type.kind === 'complex' ? type : null;
+    if (isNil(node, declaration)) {
+        // Validated, but a nil element's value is `null` alone.
+        readAttributes(node, complex);
+        return null;
+    }
     if (type.kind === 'simple') {
         readAttributes(node, null);
-        const text = textOf(node);
-        return readValue(() => type.simple.parse(text, node.inScopeNamespaces), at(node));
+        return readText(node, declaration, type.simple);
     }
     const value: Record<string, unknown> = { attributes: readAttributes(node, type) };
     if (type.content) {
         value.children = readChildren(node, type);
     } else if (type.text) {
-        const text = textOf(node);
-        value.text = readValue(() => type.text!.parse(text, node.inScopeNamespaces), at(node));
+        value.text = readText(node, declaration, type.text);
     } else {
         // Cvc-complex-type.2.1: empty content allows no children at all, not even whitespace.
         const [first] = node.children;

@@ -1,3 +1,5 @@
+import type { XmlAttribute, XmlNode } from './infer.js';
+
 /**
  * The schema IR: plain, JSON-serializable data tagged by `kind`, which the `x` builders return and `parse`
  * reads. A hand-written `as const` literal of the same shape works too. The one function is `x.lazy`'s getter,
@@ -319,7 +321,7 @@ export interface Attribute {
      */
     readonly namespace?: string;
     /**
-     * `optional` (the default) makes the key optional.
+     * `optional` (the default) makes the key optional, unless there is a `default` or `fixed`.
      */
     readonly use?: 'optional' | 'required';
     /**
@@ -327,6 +329,46 @@ export interface Attribute {
      * start with `#`, which marks synthetic keys.
      */
     readonly key?: string;
+    /**
+     * Value, as written in XML, of the attribute when absent, so its key is always present
+     * ([XSD 1.1 Part 1 §3.2.1](https://www.w3.org/TR/xmlschema11-1/#Attribute_Declaration_details)). Only with
+     * `use: 'optional'`; not with `fixed`.
+     */
+    readonly default?: string;
+    /**
+     * Value, as written in XML, the attribute must have when present (compared as values, so `01` matches `1`
+     * for an integer), and has when absent. Not with `default`.
+     */
+    readonly fixed?: string;
+}
+
+/**
+ * Which namespaces a wildcard allows: `namespace` lists the allowed namespace names, `notNamespace` the
+ * disallowed ones, `null` standing for no namespace; neither allows any. XSD's `##other` is `notNamespace`
+ * with the target namespace and `null` ([XSD 1.1 Part 1 §3.10](https://www.w3.org/TR/xmlschema11-1/#Wildcards)).
+ */
+export interface NamespaceConstraint {
+    readonly namespace?: readonly (string | null)[];
+    readonly notNamespace?: readonly (string | null)[];
+}
+
+/**
+ * An attribute wildcard, in a complex type's `attributes`: undeclared attributes it allows are kept in
+ * `attributes['#any']` as {@link XmlAttribute}s, in document order. Their values are never validated, as
+ * with `processContents="skip"`; declared attributes always take precedence.
+ */
+export interface AnyAttribute extends NamespaceConstraint {
+    readonly kind: 'anyAttribute';
+}
+
+/**
+ * An element wildcard, in a content model: elements it allows are kept as {@link XmlNode}s under the `#any`
+ * key, never validated, as with `processContents="skip"`. A child that a declared element in the content
+ * model can match at that point is read as that element, as XSD 1.1 prefers element declarations over
+ * wildcards ([XSD 1.1 Part 1 §3.8.6.4](https://www.w3.org/TR/xmlschema11-1/#cos-nonambig)).
+ */
+export interface Any extends NamespaceConstraint, Occurs {
+    readonly kind: 'any';
 }
 
 /**
@@ -348,6 +390,22 @@ export interface Element extends Occurs {
      * start with `#`, which marks synthetic keys.
      */
     readonly key?: string;
+    /**
+     * Whether the element may be `xsi:nil="true"`, which reads as `null`: its content must then be empty, and
+     * its attributes are validated but dropped. `xsi:nil` on an element that isn't nillable is an error
+     * ([XSD 1.1 Part 1 §3.3.4.4](https://www.w3.org/TR/xmlschema11-1/#cvc-elt), clause 3.1).
+     */
+    readonly nillable?: boolean;
+    /**
+     * Value, as written in XML, of the element when it is empty (no text or children at all, so `<a> </a>`
+     * isn't). Only for a simple type or a complex type with `text`; not with `fixed`.
+     */
+    readonly default?: string;
+    /**
+     * Value, as written in XML, the element must have (compared as values), and has when empty. Only for a
+     * simple type or a complex type with `text`; not with `default`.
+     */
+    readonly fixed?: string;
 }
 
 /**
@@ -417,7 +475,7 @@ export type ModelGroup = All | Choice | Sequence;
 /**
  * Something in a content model.
  */
-export type Particle = Element | Lazy | ModelGroup;
+export type Particle = Any | Element | Lazy | ModelGroup;
 
 /**
  * A complex type: attributes, and either child elements (`content`), text (`text`, XSD's simpleContent), or
@@ -425,9 +483,22 @@ export type Particle = Element | Lazy | ModelGroup;
  */
 export interface ComplexType {
     readonly kind: 'complex';
-    readonly attributes?: readonly Attribute[];
+    /**
+     * Attribute declarations, and at most one attribute wildcard.
+     */
+    readonly attributes?: readonly (AnyAttribute | Attribute)[];
     readonly content?: ModelGroup;
     readonly text?: SimpleType;
+    /**
+     * Whether text may come between the child elements of `content`. Mixed content is always ordered, as the
+     * text has nowhere to go in keyed children; each run of text, whitespace included, is a `#text` entry.
+     */
+    readonly mixed?: boolean;
+    /**
+     * Whether `children` is an array of `{ name, value }` entries in document order, `name` being the key,
+     * rather than an object by key, which loses how different elements interleave. Only with `content`.
+     */
+    readonly ordered?: boolean;
 }
 
 /**

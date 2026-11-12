@@ -1,4 +1,6 @@
 import type {
+    Any,
+    AnyAttribute,
     AtomicType,
     Attribute,
     BigIntegerKind,
@@ -25,6 +27,36 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {};
  */
 // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type -- intentionally declares no keys
 export type NoProperties = Record<never, never>;
+
+/**
+ * Text in an {@link XmlNode}: character data, CDATA sections and references, adjacent runs merged.
+ */
+export interface XmlText {
+    kind: 'text';
+    text: string;
+}
+
+/**
+ * An attribute that a wildcard allowed, as written: no type, so its value is the normalized text. Namespace
+ * declarations aren't attributes.
+ */
+export interface XmlAttribute {
+    namespace: string | null;
+    localName: string;
+    value: string;
+}
+
+/**
+ * An element that a wildcard allowed, as written, children included. Prefixes are cosmetic, so only the
+ * namespace name is kept; comments and processing instructions are dropped, and all text is kept.
+ */
+export interface XmlNode {
+    kind: 'element';
+    namespace: string | null;
+    localName: string;
+    attributes: XmlAttribute[];
+    children: (XmlNode | XmlText)[];
+}
 
 /**
  * Value of a `QName`: the namespace name its prefix (or the default namespace) is bound to, and its local name.
@@ -102,27 +134,36 @@ type DeclarationKey<D> = D extends { readonly key: infer K extends string }
       : never;
 
 /**
- * `true` for an attribute with `use: 'required'`, whose key is then never optional.
+ * `true` for an attribute that is always present: with `use: 'required'`, a `default` or a `fixed`.
  *
  * @template A - an attribute declaration
  */
-type IsRequiredAttribute<A> = A extends { readonly use: 'required' } ? true : false;
+type IsRequiredAttribute<A> = A extends { readonly use: 'required' }
+    ? true
+    : A extends { readonly default: string }
+      ? true
+      : A extends { readonly fixed: string }
+        ? true
+        : false;
 
 /**
- * The `attributes` object of a complex type: each declaration's key, optional unless required.
+ * The `attributes` object of a complex type: each declaration's key, optional unless always present, and
+ * `#any` for attributes a wildcard allowed.
  *
- * @template A - attribute declarations
+ * @template A - attribute declarations and wildcards
  */
-type AttributesValue<A extends readonly Attribute[]> = Simplify<
+type AttributesValue<A extends readonly (AnyAttribute | Attribute)[]> = Simplify<
     {
-        [D in A[number] as IsRequiredAttribute<D> extends true
+        [D in Extract<A[number], Attribute> as IsRequiredAttribute<D> extends true
             ? DeclarationKey<D>
             : never]: SimpleValue<D['type']>;
     } & {
-        [D in A[number] as IsRequiredAttribute<D> extends true
+        [D in Extract<A[number], Attribute> as IsRequiredAttribute<D> extends true
             ? never
             : DeclarationKey<D>]?: SimpleValue<D['type']>;
-    }
+    } & (Extract<A[number], AnyAttribute> extends never
+            ? NoProperties
+            : Partial<Record<'#any', XmlAttribute[]>>)
 >;
 
 /**
@@ -180,28 +221,30 @@ type ElementOfBrand = symbol & keyof ElementOf<string, unknown>;
  *
  * @template P - a particle
  */
-type ParticleKey<P> =
-    Referenced<P> extends infer E
-        ? ElementOfBrand extends keyof E
-            ? NonNullable<E[ElementOfBrand]> extends { readonly key: infer K }
-                ? K
-                : never
-            : DeclarationKey<E>
-        : never;
+type ParticleKey<P> = P extends Any
+    ? '#any'
+    : Referenced<P> extends infer E
+      ? ElementOfBrand extends keyof E
+          ? NonNullable<E[ElementOfBrand]> extends { readonly key: infer K }
+              ? K
+              : never
+          : DeclarationKey<E>
+      : never;
 
 /**
  * Value an element particle has in `children`, once per occurrence.
  *
  * @template P - a particle
  */
-type ParticleValue<P> =
-    Referenced<P> extends infer E
-        ? ElementOfBrand extends keyof E
-            ? NonNullable<E[ElementOfBrand]> extends { readonly value: infer V }
-                ? V
-                : never
-            : ElementValue<E>
-        : never;
+type ParticleValue<P> = P extends Any
+    ? XmlNode
+    : Referenced<P> extends infer E
+      ? ElementOfBrand extends keyof E
+          ? NonNullable<E[ElementOfBrand]> extends { readonly value: infer V }
+              ? V
+              : never
+          : ElementValue<E>
+      : never;
 
 /**
  * Values of each key in a content model.
@@ -236,16 +279,18 @@ type Count = 1 | 2;
  *
  * @template P - a particle
  */
-type Counts<P> = P extends ElementParticle
-    ? { [K in ParticleKey<P>]: CountOf<IsMany<P>> }
-    : P extends ModelGroup
-      ? Repeat<
-            P extends { readonly kind: 'choice' }
-                ? MaxCounts<P['particles']>
-                : SumCounts<P['particles']>,
-            IsMany<P>
-        >
-      : never;
+type Counts<P> = P extends Any
+    ? Record<'#any', 2>
+    : P extends ElementParticle
+      ? { [K in ParticleKey<P>]: CountOf<IsMany<P>> }
+      : P extends ModelGroup
+        ? Repeat<
+              P extends { readonly kind: 'choice' }
+                  ? MaxCounts<P['particles']>
+                  : SumCounts<P['particles']>,
+              IsMany<P>
+          >
+        : never;
 
 /**
  * Every count more than one when repeated.
@@ -476,33 +521,82 @@ export type ChildrenValue<G extends ModelGroup> =
         : ShapesToObjects<Shapes<G, false, false>, Simplify<Values<G>>, Counts<G>>;
 
 /**
+ * An entry of ordered `children`, per key.
+ *
+ * @template V - values of each key
+ */
+type Entries<V> = { [K in keyof V]: { name: K; value: V[K] } }[keyof V];
+
+/**
+ * Value of ordered `children`: entries in document order, with text entries for mixed content.
+ *
+ * @template G - the content model
+ * @template Mixed - whether it is mixed
+ */
+export type OrderedChildrenValue<G extends ModelGroup, Mixed extends boolean> = (
+    | (Mixed extends true ? { name: '#text'; value: string } : never)
+    | (true extends IsWide<G> ? { name: string; value: unknown } : Entries<Simplify<Values<G>>>)
+)[];
+
+/**
+ * Value of `mixed` or `ordered` in a complex type, `false` when absent.
+ *
+ * @template T - the type
+ * @template K - `mixed` or `ordered`
+ */
+type FlagOf<T, K extends 'mixed' | 'ordered'> =
+    T extends Readonly<Record<K, infer V extends boolean>> ? V : false;
+
+/**
+ * Value of `children`, keyed or ordered.
+ *
+ * @template G - the content model
+ * @template Mixed - whether it is mixed
+ * @template Ordered - whether it is ordered
+ */
+type ContentValue<
+    G extends ModelGroup,
+    Mixed extends boolean,
+    Ordered extends boolean,
+> = Mixed extends true
+    ? OrderedChildrenValue<G, true>
+    : Ordered extends true
+      ? OrderedChildrenValue<G, false>
+      : ChildrenValue<G>;
+
+/**
  * Value of a complex type.
  *
  * @template T - the type
  */
 export type ComplexValue<T extends ComplexType> = Simplify<
     {
-        attributes: T extends { readonly attributes: infer A extends readonly Attribute[] }
+        attributes: T extends {
+            readonly attributes: infer A extends readonly (AnyAttribute | Attribute)[];
+        }
             ? AttributesValue<A>
             : NoProperties;
     } & (T extends { readonly content: infer G extends ModelGroup }
-        ? { children: ChildrenValue<G> }
+        ? { children: ContentValue<G, FlagOf<T, 'mixed'>, FlagOf<T, 'ordered'>> }
         : T extends { readonly text: infer S extends SimpleType }
           ? { text: SimpleValue<S> }
           : NoProperties)
 >;
 
 /**
- * What `parse` returns for an element: its simple value, or an object of attributes and content.
+ * What `parse` returns for an element: its simple value, or an object of attributes and content; `null`
+ * too when nillable.
  *
  * @template E - an element declaration
  */
 export type ElementValue<E> = E extends { readonly type: infer T }
-    ? T extends ComplexType
-        ? ComplexValue<T>
-        : T extends SimpleType
-          ? SimpleValue<T>
-          : never
+    ?
+          | (E extends { readonly nillable: infer N } ? (true extends N ? null : never) : never)
+          | (T extends ComplexType
+                ? ComplexValue<T>
+                : T extends SimpleType
+                  ? SimpleValue<T>
+                  : never)
     : never;
 
 /**

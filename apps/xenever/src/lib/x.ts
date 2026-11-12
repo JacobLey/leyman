@@ -7,11 +7,17 @@ export type {
     ElementValue,
     Infer,
     NoProperties,
+    OrderedChildrenValue,
     QNameValue,
     SimpleValue,
+    XmlAttribute,
+    XmlNode,
+    XmlText,
 } from './schema/infer.js';
 export type {
     All,
+    Any,
+    AnyAttribute,
     AtomicKind,
     AtomicType,
     Attribute,
@@ -21,6 +27,7 @@ export type {
     ElementOf,
     Lazy,
     ModelGroup,
+    NamespaceConstraint,
     Occurs,
     Particle,
     Sequence,
@@ -29,6 +36,8 @@ export type {
 } from './schema/ir.js';
 export {
     all,
+    any,
+    anyAttribute,
     anyUri,
     attribute,
     base64Binary,

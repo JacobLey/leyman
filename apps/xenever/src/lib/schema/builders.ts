@@ -1,6 +1,8 @@
 import type { StandardSchemaV1 } from '#internal/lib/standard-schema.js';
 import type { Infer, NoProperties } from './infer.js';
 import type {
+    Any,
+    AnyAttribute,
     AtomicType,
     Attribute,
     BigIntegerKind,
@@ -605,3 +607,36 @@ export const lazy = <const E extends Element, const O extends Occurs = NoPropert
     ({ kind: 'lazy', get, ...options }) as Simplify<
         O & { readonly kind: 'lazy'; readonly get: () => E }
     >;
+
+/**
+ * Options of an element wildcard.
+ */
+export type AnyOptions = Omit<Any, 'kind'>;
+
+/**
+ * An element wildcard: elements it allows are kept, unvalidated, as `x.XmlNode`s under the `#any` key.
+ *
+ * @param options - namespace constraint and occurrences
+ * @returns the wildcard
+ */
+export const any = <const O extends AnyOptions = NoProperties>(
+    options?: O
+): Simplify<NoInfer<O> & { readonly kind: 'any' }> =>
+    ({ kind: 'any', ...options }) as Simplify<O & { readonly kind: 'any' }>;
+
+/**
+ * Options of an attribute wildcard.
+ */
+export type AnyAttributeOptions = Omit<AnyAttribute, 'kind'>;
+
+/**
+ * An attribute wildcard, among a complex type's `attributes`: attributes it allows are kept, unvalidated, as
+ * `x.XmlAttribute`s in `attributes['#any']`.
+ *
+ * @param options - namespace constraint
+ * @returns the wildcard
+ */
+export const anyAttribute = <const O extends AnyAttributeOptions = NoProperties>(
+    options?: O
+): Simplify<NoInfer<O> & { readonly kind: 'anyAttribute' }> =>
+    ({ kind: 'anyAttribute', ...options }) as Simplify<O & { readonly kind: 'anyAttribute' }>;

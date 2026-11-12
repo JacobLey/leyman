@@ -1,6 +1,6 @@
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { parse, x, XeneverInvalidSchemaError } from 'xenever';
+import { parse, x, XeneverInvalidSchemaError, XeneverUnsupportedError } from 'xenever';
 
 /**
  * Asserts a root declaration is an invalid schema value.
@@ -154,7 +154,7 @@ suite('Schema checks', () => {
 
     suite('Complex types', () => {
         test('Rejects an unknown property', () => {
-            expectInvalidSchema(root({ mixed: true }), /Unknown property `mixed`/v, '/type');
+            expectInvalidSchema(root({ mixd: true }), /Unknown property `mixd`/v, '/type');
         });
 
         test('Rejects both content and text', () => {
@@ -317,6 +317,190 @@ suite('Schema checks', () => {
                 /Key `b` is used by two elements in one content model; set `key` on one/v,
                 '/type/content/particles/1'
             );
+        });
+    });
+
+    suite('Ordered and mixed content', () => {
+        test('Rejects ordered or mixed without content', () => {
+            expectInvalidSchema(
+                root({ ordered: true }),
+                /`ordered` needs `content`/v,
+                '/type/ordered'
+            );
+            expectInvalidSchema(
+                root({ mixed: true, text: { kind: 'string' } }),
+                /`mixed` needs `content`; for text only, use `text`/v,
+                '/type/mixed'
+            );
+        });
+
+        test('Rejects mixed content that is not ordered', () => {
+            expectInvalidSchema(
+                root({ mixed: true, ordered: false, content: x.sequence([]) }),
+                /Mixed content is always ordered/v,
+                '/type/ordered'
+            );
+        });
+
+        test('Rejects a flag that is not a boolean', () => {
+            expectInvalidSchema(
+                root({ mixed: 'yes', content: x.sequence([]) }),
+                /Expected a boolean/v,
+                '/type/mixed'
+            );
+        });
+    });
+
+    suite('Wildcards', () => {
+        test('Rejects both namespace and notNamespace', () => {
+            expectInvalidSchema(
+                withContent(x.sequence([x.any({ namespace: ['urn:a'], notNamespace: [null] })])),
+                /either `namespace` or `notNamespace`/v,
+                '/type/content/particles/0'
+            );
+        });
+
+        test('Rejects an empty namespace list', () => {
+            expectInvalidSchema(
+                root({ attributes: [x.anyAttribute({ namespace: [] })] }),
+                /allows nothing/v,
+                '/type/attributes/0/namespace'
+            );
+        });
+
+        test('Rejects a namespace that is not a name or null', () => {
+            expectInvalidSchema(
+                withContent(x.sequence([x.any({ notNamespace: ['urn:a', ''] })])),
+                /Expected a namespace name, or `null` for no namespace/v,
+                '/type/content/particles/0/notNamespace/1'
+            );
+            expectInvalidSchema(
+                withContent({ kind: 'sequence', particles: [{ kind: 'any', namespace: [1] }] }),
+                /Expected a namespace name/v,
+                '/type/content/particles/0/namespace/0'
+            );
+        });
+
+        test('Rejects two attribute wildcards', () => {
+            expectInvalidSchema(
+                root({ attributes: [x.anyAttribute(), x.anyAttribute()] }),
+                /at most one attribute wildcard/v,
+                '/type/attributes/1'
+            );
+        });
+
+        test('Rejects an unknown property', () => {
+            expectInvalidSchema(
+                withContent({
+                    kind: 'sequence',
+                    particles: [{ kind: 'any', processContents: 'lax' }],
+                }),
+                /Unknown property `processContents`/v,
+                '/type/content/particles/0'
+            );
+            expectInvalidSchema(
+                root({ attributes: [{ kind: 'anyAttribute', minOccurs: 0 }] }),
+                /Unknown property `minOccurs`/v,
+                '/type/attributes/0'
+            );
+        });
+
+        test('Rejects a group in an all group', () => {
+            expectInvalidSchema(
+                withContent(x.all([x.sequence([])])),
+                /An `all` group holds only elements and wildcards/v,
+                '/type/content/particles/0'
+            );
+        });
+    });
+
+    suite('Nil, default and fixed', () => {
+        test('Rejects nillable that is not a boolean', () => {
+            expectInvalidSchema(
+                { kind: 'element', name: 'a', type: { kind: 'int' }, nillable: 1 },
+                /Expected a boolean/v,
+                '/nillable'
+            );
+        });
+
+        test('Rejects both default and fixed', () => {
+            expectInvalidSchema(
+                x.element('a', x.int(), { default: '1', fixed: '1' }),
+                /either `default` or `fixed`, not both/v,
+                '/'
+            );
+            expectInvalidSchema(
+                root({ attributes: [x.attribute('b', x.int(), { default: '1', fixed: '1' })] }),
+                /either `default` or `fixed`/v,
+                '/type/attributes/0'
+            );
+        });
+
+        test('Rejects a value that is not valid for the type', () => {
+            expectInvalidSchema(
+                x.element('a', x.int(), { default: 'x' }),
+                /`default` is not valid for the type: .*int/v,
+                '/default'
+            );
+            expectInvalidSchema(
+                root({ attributes: [x.attribute('b', x.int(), { fixed: '1.5' })] }),
+                /`fixed` is not valid for the type/v,
+                '/type/attributes/0/fixed'
+            );
+            expectInvalidSchema(
+                { kind: 'element', name: 'a', type: { kind: 'int' }, default: 1 },
+                /Expected a string/v,
+                '/default'
+            );
+        });
+
+        test('Rejects a value for an element without text', () => {
+            expectInvalidSchema(
+                x.element('a', x.complex(), { default: '' }),
+                /`default` needs a simple type or a complex type with `text`/v,
+                '/default'
+            );
+            expectInvalidSchema(
+                x.element('a', x.complex({ content: x.sequence([]) }), { fixed: 'x' }),
+                /`fixed` needs a simple type/v,
+                '/fixed'
+            );
+        });
+
+        test('Rejects a required attribute with a default', () => {
+            expectInvalidSchema(
+                root({
+                    attributes: [x.attribute('b', x.int(), { use: 'required', default: '1' })],
+                }),
+                /must not be required/v,
+                '/type/attributes/0/default'
+            );
+        });
+
+        test('Rejects a value of a type that may be a QName as unsupported', () => {
+            expect(() => parse('<a/>', x.element('a', x.qname(), { default: 'p:q' })))
+                .to.throw(XeneverUnsupportedError, /QName/v)
+                .that.includes({ path: '/default' });
+            expect(() =>
+                parse(
+                    '<a/>',
+                    x.element('a', x.complex({ mixed: true, content: x.sequence([]) }), {
+                        fixed: 'x',
+                    })
+                )
+            )
+                .to.throw(XeneverUnsupportedError, /mixed content/v)
+                .that.includes({ path: '/fixed' });
+            expect(() =>
+                parse(
+                    '<a/>',
+                    x.element('a', x.complex({ mixed: true, content: x.sequence([]) }), {
+                        default: 'x',
+                    })
+                )
+            )
+                .to.throw(XeneverUnsupportedError, /mixed content/v)
+                .that.includes({ path: '/default' });
         });
     });
 });

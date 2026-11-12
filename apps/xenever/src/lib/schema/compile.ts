@@ -1,6 +1,8 @@
-import type { XeneverInvalidSchemaError, XeneverUnsupportedError } from '#internal/lib/errors.js';
+import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { AllPart, ModelSymbol, Pattern } from './content.js';
+import { XeneverUnsupportedError } from '#internal/lib/errors.js';
+import { InvalidValueError } from '#internal/lib/simple/builtins.js';
 import { compileSimple } from '#internal/lib/simple/compile-simple.js';
 import { ncNamePattern } from '#internal/lib/simple/names.js';
 import {
@@ -10,6 +12,7 @@ import {
     checkString,
     childPath,
     invalidSchema,
+    isFlagged,
 } from './check.js';
 import { ContentModel } from './content.js';
 
@@ -34,6 +37,14 @@ export const describeName = (namespace: string | null, localName: string): strin
     namespace === null ? `\`${localName}\`` : `\`${localName}\` in \`${namespace}\``;
 
 /**
+ * A value constraint's value: as written, and as read.
+ */
+export interface FixedValue {
+    readonly lexical: string;
+    readonly value: unknown;
+}
+
+/**
  * An attribute declaration, ready to read attributes.
  */
 export interface CompiledAttribute {
@@ -42,6 +53,25 @@ export interface CompiledAttribute {
     readonly key: string;
     readonly type: CompiledSimple;
     readonly required: boolean;
+    /**
+     * Text read when the attribute is absent: its `default` or `fixed`.
+     */
+    readonly absent: string | null;
+    readonly fixed: FixedValue | null;
+}
+
+/**
+ * A wildcard, ready to match names.
+ */
+export interface CompiledWildcard {
+    /**
+     * Whether the wildcard allows a name in this namespace.
+     */
+    readonly allows: (namespace: string | null) => boolean;
+    /**
+     * How errors name what it allows, e.g. `any element`.
+     */
+    readonly label: string;
 }
 
 /**
@@ -63,8 +93,14 @@ export interface CompiledComplex {
      * Attribute declarations by expanded name, in declaration order.
      */
     readonly attributes: ReadonlyMap<string, CompiledAttribute>;
+    readonly anyAttribute: CompiledWildcard | null;
     readonly content: CompiledContent | null;
     readonly text: CompiledSimple | null;
+    readonly mixed: boolean;
+    /**
+     * Whether `children` is ordered: set, or mixed.
+     */
+    readonly ordered: boolean;
 }
 
 /**
@@ -83,12 +119,90 @@ export interface CompiledElement {
     readonly namespace: string | null;
     readonly key: string;
     readonly type: CompiledType;
+    readonly nillable: boolean;
+    /**
+     * Text read when the element is empty: its `default` or `fixed`.
+     */
+    readonly empty: string | null;
+    readonly fixed: FixedValue | null;
 }
 
 /**
  * Element properties a declaration may have.
  */
-const elementProperties = ['kind', 'name', 'type', 'namespace', 'minOccurs', 'maxOccurs', 'key'];
+const elementProperties = [
+    'kind',
+    'name',
+    'type',
+    'namespace',
+    'minOccurs',
+    'maxOccurs',
+    'key',
+    'nillable',
+    'default',
+    'fixed',
+];
+
+/**
+ * Namespaces in scope for a value written in the schema: none, so a `QName` value is unsupported there.
+ */
+const noNamespaces: ReadonlyMap<string, string> = new Map();
+
+/**
+ * Checks a declaration's `default` and `fixed`, which must be valid for its type.
+ *
+ * @param record - the declaration
+ * @param type - its simple type, or the simple type of its text
+ * @param path - path to the declaration
+ * @returns the text read when absent or empty, and the fixed value
+ * @throws {XeneverInvalidSchemaError} when both are given, or one isn't valid for the type
+ * @throws {XeneverUnsupportedError} when the type may be a `QName`, which a value written in the schema can't
+ * resolve
+ */
+const compileValueConstraint = (
+    record: Readonly<Record<string, unknown>>,
+    type: CompiledSimple | null,
+    path: string
+): { readonly fallback: string | null; readonly fixed: FixedValue | null } => {
+    const defaultValue = checkString(record.default, childPath(path, 'default'));
+    const fixedValue = checkString(record.fixed, childPath(path, 'fixed'));
+    const lexical = defaultValue ?? fixedValue;
+    if (lexical === undefined) {
+        return { fallback: null, fixed: null };
+    }
+    const property = defaultValue === undefined ? 'fixed' : 'default';
+    const constraintPath = childPath(path, property);
+    if (defaultValue !== undefined && fixedValue !== undefined) {
+        invalidSchema('A declaration has either `default` or `fixed`, not both', path);
+    }
+    if (type === null) {
+        return invalidSchema(
+            `\`${property}\` needs a simple type or a complex type with \`text\``,
+            constraintPath
+        );
+    }
+    if (type.hasQName) {
+        throw new XeneverUnsupportedError(
+            `\`${property}\` of a type that may be a QName is not supported: the schema has no namespaces to resolve it`,
+            { path: constraintPath }
+        );
+    }
+    let value: unknown;
+    try {
+        value = type.parse(lexical, noNamespaces);
+    } catch (error) {
+        // Unreachable: reading a value throws only invalid values.
+        /* c8 ignore next 3 */
+        if (!(error instanceof InvalidValueError)) {
+            throw error;
+        }
+        invalidSchema(
+            `\`${property}\` is not valid for the type: ${error.message}`,
+            constraintPath
+        );
+    }
+    return { fallback: lexical, fixed: fixedValue === undefined ? null : { lexical, value } };
+};
 
 /**
  * Checks a local name.
@@ -201,12 +315,29 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         name,
         namespace: checkNamespace(record.namespace, path),
         key: checkKey(record.key, name, path),
+        nillable: isFlagged(record.nillable, childPath(path, 'nillable')),
         // Set below, once the declaration is cached for recursive references to find.
         type: undefined as unknown as CompiledType,
+        empty: null,
+        fixed: null,
     };
     compiledElements.set(record, compiled);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
-    compiled.type = compileType(record.type, childPath(path, 'type'));
+    const type = compileType(record.type, childPath(path, 'type'));
+    compiled.type = type;
+    if (type.kind === 'complex' && type.mixed && (record.default ?? record.fixed) !== undefined) {
+        throw new XeneverUnsupportedError(
+            '`default` and `fixed` of an element with mixed content are not supported',
+            { path: childPath(path, record.default === undefined ? 'fixed' : 'default') }
+        );
+    }
+    const { fallback, fixed } = compileValueConstraint(
+        record,
+        type.kind === 'simple' ? type.simple : type.text,
+        path
+    );
+    compiled.empty = fallback;
+    compiled.fixed = fixed;
     return compiled;
 };
 
@@ -233,7 +364,7 @@ const compileType = (type: unknown, path: string): CompiledType =>
 const compileAttribute = (declaration: unknown, path: string): CompiledAttribute => {
     const record = checkObject(
         declaration,
-        ['kind', 'name', 'type', 'namespace', 'use', 'key'],
+        ['kind', 'name', 'type', 'namespace', 'use', 'key', 'default', 'fixed'],
         path
     );
     if (record.kind !== 'attribute') {
@@ -246,13 +377,90 @@ const compileAttribute = (declaration: unknown, path: string): CompiledAttribute
     if (record.use !== undefined && !['optional', 'required'].includes(record.use as string)) {
         invalidSchema('`use` must be `optional` or `required`', childPath(path, 'use'));
     }
+    const type = compileSimple(record.type, childPath(path, 'type'));
+    const { fallback, fixed } = compileValueConstraint(record, type, path);
+    if (record.default !== undefined && record.use === 'required') {
+        invalidSchema(
+            'An attribute with a `default` is never missing, so it must not be required',
+            childPath(path, 'default')
+        );
+    }
     return {
         name,
+        type,
+        fixed,
         namespace: checkNamespace(record.namespace, path),
         key: checkKey(record.key, name, path),
-        type: compileSimple(record.type, childPath(path, 'type')),
         required: record.use === 'required',
+        absent: fallback,
     };
+};
+
+/**
+ * Lists namespaces for an error label.
+ *
+ * @param namespaces - namespace names, `null` for none
+ * @returns e.g. `` `urn:a` or no namespace ``
+ */
+const listNamespaces = (namespaces: readonly (string | null)[]): string =>
+    namespaces
+        .map(namespace => (namespace === null ? 'no namespace' : `\`${namespace}\``))
+        .join(' or ');
+
+/**
+ * Checks and compiles a wildcard's namespace constraint.
+ *
+ * @param record - the wildcard's schema value, already checked to be an object
+ * @param noun - `element` or `attribute`, for its error label
+ * @param path - path to it
+ * @returns the compiled wildcard
+ * @throws {XeneverInvalidSchemaError} when the constraint is invalid
+ */
+const compileWildcard = (
+    record: Readonly<Record<string, unknown>>,
+    noun: 'attribute' | 'element',
+    path: string
+): CompiledWildcard => {
+    const list = (property: 'namespace' | 'notNamespace'): readonly (string | null)[] | null => {
+        if (record[property] === undefined) {
+            return null;
+        }
+        const listPath = childPath(path, property);
+        const namespaces = checkArray(record[property], listPath);
+        for (const [index, namespace] of namespaces.entries()) {
+            if (namespace !== null && (typeof namespace !== 'string' || namespace === '')) {
+                invalidSchema(
+                    'Expected a namespace name, or `null` for no namespace',
+                    childPath(listPath, index)
+                );
+            }
+        }
+        return namespaces as readonly (string | null)[];
+    };
+    const allowed = list('namespace');
+    const disallowed = list('notNamespace');
+    if (allowed !== null && disallowed !== null) {
+        invalidSchema('A wildcard has either `namespace` or `notNamespace`, not both', path);
+    }
+    if (allowed !== null) {
+        if (allowed.length === 0) {
+            invalidSchema(
+                'A wildcard with no namespaces allows nothing; leave `namespace` out to allow any',
+                childPath(path, 'namespace')
+            );
+        }
+        return {
+            allows: namespace => allowed.includes(namespace),
+            label: `an ${noun} in ${listNamespaces(allowed)}`,
+        };
+    }
+    if (disallowed !== null && disallowed.length > 0) {
+        return {
+            allows: namespace => !disallowed.includes(namespace),
+            label: `an ${noun} not in ${listNamespaces(disallowed)}`,
+        };
+    }
+    return { allows: () => true, label: `any ${noun}` };
 };
 
 /**
@@ -267,17 +475,38 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     if (cached) {
         return cached;
     }
-    const record = checkObject(type, ['kind', 'attributes', 'content', 'text'], path);
+    const record = checkObject(
+        type,
+        ['kind', 'attributes', 'content', 'text', 'mixed', 'ordered'],
+        path
+    );
 
     const attributesPath = childPath(path, 'attributes');
     const attributes = new Map<string, CompiledAttribute>();
     const attributeKeys = new Set<string>();
+    let anyAttribute: CompiledWildcard | null = null;
     if (record.attributes !== undefined) {
-        for (const [index, declaration] of checkArray(
-            record.attributes,
-            attributesPath
-        ).entries()) {
+        const declarations = checkArray(record.attributes, attributesPath);
+        for (const [index, declaration] of declarations.entries()) {
             const declarationPath = childPath(attributesPath, index);
+            if ((declaration as { readonly kind?: unknown } | null)?.kind === 'anyAttribute') {
+                if (anyAttribute !== null) {
+                    invalidSchema(
+                        'A complex type has at most one attribute wildcard',
+                        declarationPath
+                    );
+                }
+                anyAttribute = compileWildcard(
+                    checkObject(
+                        declaration,
+                        ['kind', 'namespace', 'notNamespace'],
+                        declarationPath
+                    ),
+                    'attribute',
+                    declarationPath
+                );
+                continue;
+            }
             const attribute = compileAttribute(declaration, declarationPath);
             const name = expandedName(attribute.namespace, attribute.name);
             if (attributes.has(name)) {
@@ -297,9 +526,31 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     if (record.content !== undefined && record.text !== undefined) {
         invalidSchema('A complex type has either `content` or `text`, not both', path);
     }
+    const isMixed = isFlagged(record.mixed, childPath(path, 'mixed'));
+    const isOrdered = isFlagged(record.ordered, childPath(path, 'ordered'));
+    for (const [flag, isSet] of [
+        ['mixed', isMixed],
+        ['ordered', isOrdered],
+    ] as const) {
+        if (isSet && record.content === undefined) {
+            invalidSchema(
+                `\`${flag}\` needs \`content\`; for text only, use \`text\``,
+                childPath(path, flag)
+            );
+        }
+    }
+    if (isMixed && record.ordered === false) {
+        invalidSchema(
+            'Mixed content is always ordered: its text has nowhere to go in keyed children',
+            childPath(path, 'ordered')
+        );
+    }
     const compiled: CompiledComplex = {
         attributes,
+        anyAttribute,
         kind: 'complex',
+        mixed: isMixed,
+        ordered: isMixed || isOrdered,
         content:
             record.content === undefined
                 ? null
@@ -353,6 +604,11 @@ const isSameDeclaration = (a: unknown, b: unknown, isOutermost = false): boolean
 };
 
 /**
+ * Key of the elements that wildcards matched, in `children`.
+ */
+export const anyKey = '#any';
+
+/**
  * Kinds of model groups.
  */
 const modelGroupKinds: ReadonlySet<unknown> = new Set(['sequence', 'choice', 'all']);
@@ -371,6 +627,7 @@ class ContentCompiler {
         { readonly compiled: CompiledElement; readonly raw: unknown }
     >();
     readonly #keys = new Map<string, string>();
+    #wildcards = 0;
 
     /**
      * Compiles a content model.
@@ -412,6 +669,27 @@ class ContentCompiler {
         if (modelGroupKinds.has(kind)) {
             return this.#group(particle, kind as 'all' | 'choice' | 'sequence', path);
         }
+        if (kind === 'any') {
+            const record = checkObject(
+                particle,
+                ['kind', 'namespace', 'notNamespace', 'minOccurs', 'maxOccurs'],
+                path
+            );
+            const occurs = checkOccurs(record, path);
+            const wildcard = compileWildcard(record, 'element', path);
+            this.#wildcards++;
+            const symbol: ModelSymbol = {
+                id: `#any${this.#wildcards}`,
+                isWildcard: true,
+                label: wildcard.label,
+                matches: child => wildcard.allows(child.namespace),
+            };
+            return {
+                pattern: { kind: 'repeat', item: { kind: 'symbol', symbol }, ...occurs },
+                // A wildcard's elements are always an array, whatever its `maxOccurs`.
+                counts: new Map([[anyKey, 2]]),
+            };
+        }
         let declaration: unknown = particle;
         let declarationPath = path;
         let occurs;
@@ -430,8 +708,9 @@ class ContentCompiler {
         const symbolName = expandedName(compiled.namespace, compiled.name);
         const symbol: ModelSymbol = {
             id: symbolName,
+            isWildcard: false,
             label: describeName(compiled.namespace, compiled.name),
-            matches: name => name === symbolName,
+            matches: child => child.name === symbolName,
         };
         return {
             pattern: { kind: 'repeat', item: { kind: 'symbol', symbol }, ...occurs },
@@ -497,8 +776,8 @@ class ContentCompiler {
         const compiled = particles.map((particle, index) => {
             const particlePath = childPath(particlesPath, index);
             const particleKind = (particle as { readonly kind?: unknown } | null)?.kind;
-            if (kind === 'all' && !['element', 'lazy'].includes(particleKind as string)) {
-                invalidSchema('An `all` group holds only elements', particlePath);
+            if (kind === 'all' && !['element', 'lazy', 'any'].includes(particleKind as string)) {
+                invalidSchema('An `all` group holds only elements and wildcards', particlePath);
             }
             return this.#particle(particle, particlePath);
         });

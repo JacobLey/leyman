@@ -11,6 +11,13 @@ import { x } from 'xenever';
  */
 const inferred = <T>(declaration: T): x.Infer<T> => declaration as never;
 
+/**
+ * A flag only known at runtime, so typed `boolean`.
+ *
+ * @returns `true`
+ */
+const isKnownAtRuntime = (): boolean => Math.random() >= 0;
+
 suite('Infer', () => {
     suite('Simple types', () => {
         test('String types are strings', () => {
@@ -339,6 +346,129 @@ suite('Infer', () => {
             expectTypeOf(inferred(order)).toEqualTypeOf<{
                 attributes: { id: number };
                 children: { item: ('a' | 'b')[] };
+            }>();
+        });
+    });
+
+    suite('Ordered and mixed content', () => {
+        test('Ordered children are entries named by key', () => {
+            const list = x.element(
+                'list',
+                x.complex({
+                    ordered: true,
+                    content: x.choice(
+                        [x.element('a', x.int()), x.element('b', x.string(), { key: 'bee' })],
+                        {
+                            maxOccurs: 'unbounded',
+                        }
+                    ),
+                })
+            );
+            expectTypeOf(inferred(list)).toEqualTypeOf<{
+                attributes: x.NoProperties;
+                children: ({ name: 'a'; value: number } | { name: 'bee'; value: string })[];
+            }>();
+        });
+
+        test('Mixed children have text entries too', () => {
+            const paragraph = x.element(
+                'p',
+                x.complex({ mixed: true, content: x.sequence([x.element('b', x.string())]) })
+            );
+            expectTypeOf(inferred(paragraph)).toEqualTypeOf<{
+                attributes: x.NoProperties;
+                children: ({ name: '#text'; value: string } | { name: 'b'; value: string })[];
+            }>();
+        });
+
+        test('A widened flag is either shape', () => {
+            const either = x.complex({
+                ordered: isKnownAtRuntime(),
+                content: x.sequence([x.element('a', x.int())]),
+            });
+            expectTypeOf(inferred(either)).toEqualTypeOf<{
+                attributes: x.NoProperties;
+                children: { name: 'a'; value: number }[] | { a: number };
+            }>();
+        });
+
+        test('Particles that are not tuples give entries of unknown values', () => {
+            const particles: readonly x.Particle[] = [x.element('a', x.int())];
+            const wide = x.complex({ ordered: true, content: x.sequence(particles) });
+            expectTypeOf(inferred(wide).children).toEqualTypeOf<
+                { name: string; value: unknown }[]
+            >();
+        });
+    });
+
+    suite('Wildcards', () => {
+        test('Elements a wildcard allows are an array of nodes', () => {
+            const open = x.element(
+                'r',
+                x.complex({
+                    content: x.sequence([x.element('a', x.int()), x.any({ minOccurs: 0 })]),
+                })
+            );
+            expectTypeOf(inferred(open).children).toEqualTypeOf<{
+                a: number;
+                // eslint-disable-next-line @typescript-eslint/naming-convention -- The synthetic key under test
+                '#any'?: x.XmlNode[];
+            }>();
+            const required = x.complex({ content: x.sequence([x.any()]) });
+            // eslint-disable-next-line @typescript-eslint/naming-convention -- The synthetic key under test
+            expectTypeOf(inferred(required).children).toEqualTypeOf<{ '#any': x.XmlNode[] }>();
+        });
+
+        test('Attributes a wildcard allows are an array', () => {
+            const open = x.complex({
+                attributes: [x.attribute('id', x.int()), x.anyAttribute({ namespace: ['urn:a'] })],
+            });
+            expectTypeOf(inferred(open)).toEqualTypeOf<{
+                // eslint-disable-next-line @typescript-eslint/naming-convention -- The synthetic key under test
+                attributes: { id?: number; '#any'?: x.XmlAttribute[] };
+            }>();
+        });
+
+        test('An ordered wildcard entry is a node', () => {
+            const ordered = x.complex({ ordered: true, content: x.sequence([x.any()]) });
+            expectTypeOf(inferred(ordered).children).toEqualTypeOf<
+                { name: '#any'; value: x.XmlNode }[]
+            >();
+        });
+    });
+
+    suite('Nil, default and fixed', () => {
+        test('A nillable element may be null', () => {
+            expectTypeOf(inferred(x.element('n', x.int(), { nillable: true }))).toEqualTypeOf<
+                number | null
+            >();
+            expectTypeOf(
+                inferred(x.element('n', x.int(), { nillable: isKnownAtRuntime() }))
+            ).toEqualTypeOf<number | null>();
+            expectTypeOf(
+                inferred(x.element('n', x.int(), { nillable: false }))
+            ).toEqualTypeOf<number>();
+        });
+
+        test('A nillable child may be null', () => {
+            const parent = x.complex({
+                content: x.sequence([x.element('a', x.int(), { nillable: true })]),
+            });
+            expectTypeOf(inferred(parent).children).toEqualTypeOf<{ a: number | null }>();
+        });
+
+        test('An attribute with a default or fixed value is always present', () => {
+            const type = x.complex({
+                attributes: [
+                    x.attribute('a', x.int(), { default: '1' }),
+                    x.attribute('b', x.int(), { fixed: '1' }),
+                    x.attribute('c', x.int()),
+                ],
+            });
+            expectTypeOf(inferred(type).attributes).toEqualTypeOf<{
+                a: number;
+                b: number;
+                c?: number;
             }>();
         });
     });

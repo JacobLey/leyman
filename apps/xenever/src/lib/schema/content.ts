@@ -8,7 +8,7 @@
  */
 
 /**
- * Something a child element may match: an element declaration, by expanded name.
+ * Something a child element may match: an element declaration, by expanded name, or a wildcard, by namespace.
  */
 export interface ModelSymbol {
     /**
@@ -20,9 +20,32 @@ export interface ModelSymbol {
      */
     readonly label: string;
     /**
-     * Whether a child with this expanded name matches.
+     * Whether it is a wildcard, which only matches a child no element declaration can match there.
      */
-    readonly matches: (name: string) => boolean;
+    readonly isWildcard: boolean;
+    /**
+     * Whether a child matches.
+     */
+    readonly matches: (child: ModelChild) => boolean;
+}
+
+/**
+ * A child element, by name.
+ */
+export interface ModelChild {
+    /**
+     * Expanded name (see `expandedName`).
+     */
+    readonly name: string;
+    readonly namespace: string | null;
+}
+
+/**
+ * The model after a child, and whether a wildcard matched it.
+ */
+export interface Derived {
+    readonly term: Term;
+    readonly isWildcard: boolean;
 }
 
 /**
@@ -152,24 +175,20 @@ export class ContentModel {
     }
 
     /**
-     * The model after a child, or a failed term (see {@link isFailed}) when the child can't come next.
+     * The model after a child, or a failed term (see {@link isFailed}) when the child can't come next. A child
+     * that an element declaration can match next is matched by it, not by a wildcard: XSD 1.1 resolves that
+     * competition in favor of the element
+     * ([XSD 1.1 Part 1 §3.8.6.4](https://www.w3.org/TR/xmlschema11-1/#cos-nonambig)).
      *
      * @param term - model before the child
-     * @param name - the child's expanded name
-     * @returns the model after it
+     * @param child - its name
+     * @returns the model after it, and whether a wildcard matched it
      */
-    public derive(term: Term, name: string): Term {
-        let cached = this.#derivatives.get(term);
-        if (!cached) {
-            cached = new Map();
-            this.#derivatives.set(term, cached);
-        }
-        let derived = cached.get(name);
-        if (!derived) {
-            derived = this.#derive(term, name);
-            cached.set(name, derived);
-        }
-        return derived;
+    public derive(term: Term, child: ModelChild): Derived {
+        const asElement = this.#derived(term, child, false);
+        return asElement === this.#fail
+            ? { term: this.#derived(term, child, true), isWildcard: true }
+            : { term: asElement, isWildcard: false };
     }
 
     /**
@@ -180,6 +199,21 @@ export class ContentModel {
      */
     public isFailed(term: Term): boolean {
         return term === this.#fail;
+    }
+
+    #derived(term: Term, child: ModelChild, isWildcard: boolean): Term {
+        let cached = this.#derivatives.get(term);
+        if (!cached) {
+            cached = new Map();
+            this.#derivatives.set(term, cached);
+        }
+        const cacheKey = `${isWildcard ? '*' : ''}${child.name}`;
+        let derived = cached.get(cacheKey);
+        if (!derived) {
+            derived = this.#derive(term, child, isWildcard);
+            cached.set(cacheKey, derived);
+        }
+        return derived;
     }
 
     #intern(key: string, node: Node, isNullable: boolean): Term {
@@ -309,31 +343,33 @@ export class ContentModel {
         );
     }
 
-    #derive(term: Term, name: string): Term {
+    #derive(term: Term, child: ModelChild, isWildcard: boolean): Term {
+        const isMatch = (symbol: ModelSymbol): boolean =>
+            symbol.isWildcard === isWildcard && symbol.matches(child);
         const { node } = term;
         let derived: Term;
         switch (node.t) {
             case 'symbol': {
-                derived = node.symbol.matches(name) ? this.#empty : this.#fail;
+                derived = isMatch(node.symbol) ? this.#empty : this.#fail;
                 break;
             }
             case 'seq': {
                 const [head, ...rest] = node.items as [Term, ...Term[]];
                 const tail = this.#seq(rest);
-                const headDerived = this.#seq([this.derive(head, name), tail]);
+                const headDerived = this.#seq([this.#derived(head, child, isWildcard), tail]);
                 derived = head.nullable
-                    ? this.#alt([headDerived, this.derive(tail, name)])
+                    ? this.#alt([headDerived, this.#derived(tail, child, isWildcard)])
                     : headDerived;
                 break;
             }
             case 'alt': {
-                derived = this.#alt(node.items.map(item => this.derive(item, name)));
+                derived = this.#alt(node.items.map(item => this.#derived(item, child, isWildcard)));
                 break;
             }
             case 'repeat': {
                 // One more occurrence starts: what is left of it, then the remaining occurrences.
                 derived = this.#seq([
-                    this.derive(node.item, name),
+                    this.#derived(node.item, child, isWildcard),
                     this.#repeat(node.item, Math.max(node.min - 1, 0), node.max - 1),
                 ]);
                 break;
@@ -341,7 +377,7 @@ export class ContentModel {
             case 'all': {
                 derived = this.#alt(
                     node.parts.map((part, index) =>
-                        part.symbol.matches(name) && node.counts[index]! < part.max
+                        isMatch(part.symbol) && node.counts[index]! < part.max
                             ? this.#all(
                                   node.parts,
                                   node.counts.map((count, countIndex) =>
