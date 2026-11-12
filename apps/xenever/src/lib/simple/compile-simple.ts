@@ -310,6 +310,70 @@ const isInRange = (facet: (typeof rangeFacets)[number], comparison: number): boo
     rangeComparisons[facet](comparison);
 
 /**
+ * Compares two numbers of a float type's value space: `INF` equals itself (where subtracting gives `NaN`), and
+ * `NaN` is neither smaller, equal nor larger than anything.
+ *
+ * @param a - one number
+ * @param b - another
+ * @returns negative, zero or positive as `a` is smaller, equal or larger; `NaN` when unordered
+ */
+const compareNumbers = (a: number, b: number): number => {
+    if (a === b) {
+        return 0;
+    }
+    if (a < b) {
+        return -1;
+    }
+    return a > b ? 1 : Number.NaN;
+};
+
+/**
+ * Lower and upper bounds that must be in order, and whether they may be equal
+ * ([XSD 1.1 Part 2 §4.3.7–4.3.10](https://www.w3.org/TR/xmlschema11-2/#rf-maxInclusive), the
+ * `…-less-than-…` constraints). Inclusive and exclusive bounds of one side never meet: they can't be combined.
+ */
+const rangeOrders: readonly {
+    readonly lower: (typeof rangeFacets)[number];
+    readonly upper: (typeof rangeFacets)[number];
+    readonly mayEqual: boolean;
+}[] = [
+    { lower: 'minInclusive', upper: 'maxInclusive', mayEqual: true },
+    { lower: 'minExclusive', upper: 'maxExclusive', mayEqual: true },
+    { lower: 'minExclusive', upper: 'maxInclusive', mayEqual: false },
+    { lower: 'minInclusive', upper: 'maxExclusive', mayEqual: false },
+];
+
+/**
+ * Checks the range facets of a type leave its bounds in order. A type whose lower bound is above its upper bound
+ * accepts nothing, which XSD rejects as an invalid schema rather than reading as an empty type.
+ *
+ * @param ranges - the range facets, read in the type's value space
+ * @param path - path to the facets
+ * @throws {XeneverInvalidSchemaError} when a lower bound is above an upper bound (or equal, where one is
+ * exclusive), or either is `NaN`, which is not ordered
+ */
+const checkRangeOrder = (ranges: readonly RangeCheck<number | Decimal>[], path: string): void => {
+    for (const { lower, upper, mayEqual } of rangeOrders) {
+        const min = ranges.find(range => range.facet === lower);
+        const max = ranges.find(range => range.facet === upper);
+        if (!min || !max) {
+            continue;
+        }
+        const comparison =
+            typeof min.limit === 'number'
+                ? compareNumbers(min.limit, max.limit as number)
+                : compareDecimals(min.limit, max.limit as Decimal);
+        // NaN compares as neither smaller nor larger, so is never in order.
+        if (!(mayEqual ? comparison <= 0 : comparison < 0)) {
+            invalidSchema(
+                `\`${lower}\` ${min.written} must be ${mayEqual ? 'at most' : 'less than'} \`${upper}\` ${max.written}`,
+                path
+            );
+        }
+    }
+};
+
+/**
  * Lexical form of a number written in the schema.
  *
  * @param value - number written in the schema
@@ -425,6 +489,7 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
     if (facets.maxInclusive !== undefined && facets.maxExclusive !== undefined) {
         invalidSchema("`maxInclusive` can't be combined with `maxExclusive`", facetsPath);
     }
+    checkRangeOrder(ranges, facetsPath);
 
     const totalDigitsFacet = checkInteger(
         facets.totalDigits,
@@ -479,7 +544,7 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
             for (const { facet, limit, written } of ranges) {
                 const comparison =
                     typeof limit === 'number'
-                        ? (read.value as number) - limit
+                        ? compareNumbers(read.value as number, limit)
                         : compareDecimals(read.decimal!, limit);
                 // NaN compares as neither smaller nor larger, so fails every range facet.
                 if (!isInRange(facet, comparison)) {

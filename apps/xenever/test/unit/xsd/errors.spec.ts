@@ -192,6 +192,30 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^`length` can not be combined with `minLength` or `maxLength` in one restriction/v,
     ],
     [
+        'minLength above maxLength',
+        simpleType(
+            '<xs:restriction base="xs:string"><xs:minLength value="3"/><xs:maxLength value="2"/></xs:restriction>'
+        ),
+        XeneverInvalidSchemaError,
+        /^`minLength` is greater than `maxLength`/v,
+    ],
+    [
+        'minInclusive above maxInclusive',
+        simpleType(
+            '<xs:restriction base="xs:decimal"><xs:minInclusive value="2.5"/><xs:maxInclusive value="2"/></xs:restriction>'
+        ),
+        XeneverInvalidSchemaError,
+        /^`minInclusive` 2\.5 must be at most `maxInclusive` 2/v,
+    ],
+    [
+        'fractionDigits above totalDigits',
+        simpleType(
+            '<xs:restriction base="xs:decimal"><xs:totalDigits value="2"/><xs:fractionDigits value="3"/></xs:restriction>'
+        ),
+        XeneverInvalidSchemaError,
+        /^`fractionDigits` is greater than `totalDigits`/v,
+    ],
+    [
         'a length outside the base lengths',
         `<xs:simpleType name="A"><xs:restriction base="xs:string"><xs:maxLength value="3"/></xs:restriction></xs:simpleType>
         ${simpleType('<xs:restriction base="t:A"><xs:length value="4"/></xs:restriction>')}`,
@@ -878,6 +902,25 @@ suite('loadXsd errors', () => {
             }
         );
         expect(error.cause).to.be.instanceOf(XeneverSchemaError);
+    });
+
+    test('Locates bounds out of order at the restriction', async () => {
+        await expectSchemaError(
+            loadSchema(
+                `<xs:simpleType name="A"><xs:restriction base="xs:int"><xs:maxInclusive value="5"/></xs:restriction></xs:simpleType>
+                <xs:simpleType name="B">
+                    <xs:restriction base="t:A"><xs:minExclusive value="5"/></xs:restriction>
+                </xs:simpleType>`,
+                tns
+            ),
+            XeneverInvalidSchemaError,
+            /^`minExclusive` 5 must be less than `maxInclusive` 5/v,
+            {
+                filePath: mainPath,
+                line: 3,
+                path: '/xs:schema/xs:simpleType[2]/xs:restriction',
+            }
+        );
     });
 
     test('Locates an error behind a lazy reference', async () => {

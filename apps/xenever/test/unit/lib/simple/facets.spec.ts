@@ -292,6 +292,59 @@ suite('Facets', () => {
             );
         });
 
+        test('Rejects a lower bound above the upper bound', () => {
+            expectInvalidSchema(
+                x.int({ minInclusive: 3, maxInclusive: 2 }),
+                /`minInclusive` 3 must be at most `maxInclusive` 2/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.decimal({ minExclusive: '1.5', maxExclusive: '1.25' }),
+                /`minExclusive` 1\.5 must be at most `maxExclusive` 1\.25/v,
+                '/type/facets'
+            );
+        });
+
+        test('Rejects an exclusive bound equal to the other bound', () => {
+            expectInvalidSchema(
+                x.int({ minExclusive: 2, maxInclusive: 2 }),
+                /`minExclusive` 2 must be less than `maxInclusive` 2/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.integer({ bigint: true, minInclusive: '5', maxExclusive: '5' }),
+                /`minInclusive` 5 must be less than `maxExclusive` 5/v,
+                '/type/facets'
+            );
+        });
+
+        test('Rejects a NaN bound, which is not ordered', () => {
+            expectInvalidSchema(
+                x.double({ minInclusive: Number.NaN, maxInclusive: 1 }),
+                /`minInclusive` NaN must be at most `maxInclusive` 1/v,
+                '/type/facets'
+            );
+        });
+
+        test('Accepts equal inclusive bounds, INF included', () => {
+            expect(read(x.int({ minInclusive: 2, maxInclusive: 2 }), '2')).to.equal(2);
+            // Allowed by XSD, though nothing is in range.
+            expectInvalid(
+                x.int({ minExclusive: 1, maxExclusive: 1 }),
+                '1',
+                /outside `minExclusive`/v
+            );
+            expect(
+                read(
+                    x.double({
+                        minInclusive: Number.POSITIVE_INFINITY,
+                        maxInclusive: Number.POSITIVE_INFINITY,
+                    }),
+                    'INF'
+                )
+            ).to.equal(Number.POSITIVE_INFINITY);
+        });
+
         test('Rejects a bound outside the type', () => {
             expectInvalidSchema(
                 x.byte({ maxInclusive: 1000 }),
