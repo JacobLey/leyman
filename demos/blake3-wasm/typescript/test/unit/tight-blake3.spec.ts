@@ -1,7 +1,7 @@
 import testVectors from '@leyman/demo-blake3-wasm-rust/test-vectors.json' with { type: 'json' };
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { tightBlake3 } from '../bench/tight-blake3.js';
+import { tightBlake3 } from '#test/bench/tight-blake3.js';
 
 // The bench's baseline: a wrong baseline would make every comparison in the README wrong
 suite('The bench’s tight JavaScript', () => {

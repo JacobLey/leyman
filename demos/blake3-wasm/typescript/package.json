@@ -32,7 +32,8 @@
     }
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "dependencies": {
     "@leyman/demo-blake3-wasm-rust": "workspace:^",
