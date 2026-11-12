@@ -24,7 +24,8 @@
     ".": "./dist/mcp.js"
   },
   "imports": {
-    "#internal/*": "./dist/*"
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
   },
   "dependencies": {
     "@leyman/demo-openapi-client": "workspace:^",

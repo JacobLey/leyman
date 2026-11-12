@@ -1,14 +1,14 @@
 import type { CallToolResult } from '@modelcontextprotocol/client';
 import type { NoteSummary } from '@leyman/demo-agents-mcp';
-import type { Agent } from '../helpers/agent.js';
+import type { Agent } from '#test/helpers/agent.js';
 import { sql } from 'drizzle-orm';
 import { NotesMcpApiError } from '@leyman/demo-agents-mcp';
 import { notes } from '@leyman/demo-openapi-server';
 import document from '@leyman/demo-openapi-spec/openapi.json' with { type: 'json' };
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
-import { connectAgent } from '../helpers/agent.js';
-import { defaultUser, withStack } from '../helpers/stack.js';
+import { connectAgent } from '#test/helpers/agent.js';
+import { defaultUser, withStack } from '#test/helpers/stack.js';
 
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 

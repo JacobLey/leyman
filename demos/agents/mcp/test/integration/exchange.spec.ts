@@ -5,7 +5,7 @@ import { NotesMcpAuthorizationServerError, tokenExchange } from '@leyman/demo-ag
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
-import { listen } from '../helpers/serve.js';
+import { listen } from '#test/helpers/serve.js';
 
 const mcpResource = 'https://notes-mcp.test';
 const apiResource = 'https://notes-api.test';

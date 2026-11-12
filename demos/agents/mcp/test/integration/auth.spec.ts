@@ -9,9 +9,9 @@ import { NotesClient } from '@leyman/demo-openapi-client';
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
 import { userTokens } from 'oauth-dev-server';
-import { agentClientId, agentRedirectUri, connectAgent } from '../helpers/agent.js';
-import { listen } from '../helpers/serve.js';
-import { apiAudience, mcpService, withStack } from '../helpers/stack.js';
+import { agentClientId, agentRedirectUri, connectAgent } from '#test/helpers/agent.js';
+import { listen } from '#test/helpers/serve.js';
+import { apiAudience, mcpService, withStack } from '#test/helpers/stack.js';
 
 const textEncoder = new TextEncoder();
 
