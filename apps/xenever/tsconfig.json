@@ -1,5 +1,5 @@
 {
-  "extends": "@leyman/configs/tsconfig.node-22.json",
+  "extends": "@leyman/configs/tsconfig.node-24.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
@@ -10,10 +10,22 @@
   ],
   "references": [
     {
-      "path": "../../tools/test-chain/mocha-chain"
+      "path": "../populate-files/ts"
+    },
+    {
+      "path": "../../tools/parse-cwd"
+    },
+    {
+      "path": "../../tools/generated-signature/ts"
     },
     {
       "path": "../../tools/format-file"
+    },
+    {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/expect"

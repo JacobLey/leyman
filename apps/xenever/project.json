@@ -8,6 +8,7 @@
     "tsc": {},
     "tsc-test": {},
     "mocha-unit-test": {},
+    "mocha-integration-test": {},
     "coverage-report": {},
     "install:_": {},
     "install": {},

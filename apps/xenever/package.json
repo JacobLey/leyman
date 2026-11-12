@@ -4,7 +4,7 @@
   "description": "Parse XML into typed objects, validated against a schema written in TypeScript or generated from an XSD.",
   "private": true,
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",
@@ -34,14 +34,25 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "!dist/tsconfig.tsbuildinfo"
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
   ],
   "exports": {
     ".": "./dist/index.js",
     "./xsd": "./dist/xsd.js"
   },
+  "bin": {
+    "xenever": "./bin.mjs"
+  },
   "dependencies": {
-    "@rgrove/parse-xml": "catalog:"
+    "@rgrove/parse-xml": "catalog:",
+    "ci-info": "catalog:",
+    "entry-script": "workspace:^",
+    "format-file": "workspace:^",
+    "generated-signature": "workspace:^",
+    "parse-cwd": "workspace:^",
+    "populate-files": "workspace:^",
+    "yargs": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -52,14 +63,15 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:node-22",
+    "@types/node": "catalog:node-24",
+    "@types/yargs": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
-    "format-file": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "tmp-promise": "catalog:",
     "typescript": "catalog:"
   },
   "imports": {
