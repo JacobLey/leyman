@@ -42,5 +42,8 @@
     "openapi-types": "catalog:",
     "openapi3-ts": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
   }
 }

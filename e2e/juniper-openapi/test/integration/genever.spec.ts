@@ -1,8 +1,8 @@
 import { expect } from '@leyman/expect';
 import { genever } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { buildSpec } from '../data/api.js';
-import { typeCheck } from '../lib/type-check.js';
+import { buildSpec } from '#test/data/api.js';
+import { typeCheck } from '#test/lib/type-check.js';
 
 // Removes differences between how types are written, but not between what they accept
 const normalizeModule =

@@ -1,6 +1,14 @@
 import type { oas30 } from 'openapi3-ts';
 import type { SchemaType } from 'juniper';
-import type { Comment, NewPost, NewUser, Post, PostPage, User, UserUpdate } from '../data/api.js';
+import type {
+    Comment,
+    NewPost,
+    NewUser,
+    Post,
+    PostPage,
+    User,
+    UserUpdate,
+} from '#test/data/api.js';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { expectTypeOf } from 'expect-type';
 import { assert, expect } from '@leyman/expect';
@@ -15,7 +23,7 @@ import {
     postPageSchema,
     serializedSpec,
     userUpdateSchema,
-} from '../data/api.js';
+} from '#test/data/api.js';
 
 suite('OpenAPI spec built with juniper', () => {
     for (const version of ['3.0.3', '3.1.0'] as const) {
