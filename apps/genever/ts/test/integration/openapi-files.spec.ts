@@ -14,8 +14,8 @@ import {
     equivalentAssertion,
     expectTypes,
     normalizeModule,
-} from '../lib/expect-generated.js';
-import { typeCheck } from '../lib/type-check.js';
+} from '#test/lib/expect-generated.js';
+import { typeCheck } from '#test/lib/type-check.js';
 import { createTmpDir } from './lib/fixtures.js';
 
 const data = (file: string): string =>

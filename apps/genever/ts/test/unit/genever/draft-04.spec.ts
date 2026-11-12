@@ -1,7 +1,7 @@
 import { expect } from '@leyman/expect';
 import { genever, GeneverInvalidSchemaError, GeneverStrictModeError } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
 
 // eslint-disable-next-line unicorn/prefer-https -- draft-04's own $schema is http
 const draft04 = 'http://json-schema.org/draft-04/schema#';

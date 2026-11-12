@@ -2,9 +2,9 @@
 import { expect } from '@leyman/expect';
 import { genever } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
-import { jsDoc } from '../../lib/js-doc.js';
-import { typeCheck } from '../../lib/type-check.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
+import { jsDoc } from '#test/lib/js-doc.js';
+import { typeCheck } from '#test/lib/type-check.js';
 
 suite('objects', () => {
     test('properties and required', () => {

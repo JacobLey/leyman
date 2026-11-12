@@ -1,5 +1,5 @@
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
 
 suite('arrays', () => {
     test('items', () => {

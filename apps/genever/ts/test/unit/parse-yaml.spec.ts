@@ -2,7 +2,7 @@ import { YAMLError } from 'yaml';
 import { expect } from '@leyman/expect';
 import { GeneverInvalidSchemaError, parseYaml, parseYamlDocument, yamlToJson } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../lib/expect-generated.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
 
 suite('parseYaml', () => {
     test('parses YAML', () => {

@@ -5,8 +5,8 @@ import { verify } from 'generated-signature';
 import { geneverFile } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
 import { PopulateFilesOwnershipError } from 'populate-files';
-import { normalizeModule } from '../lib/expect-generated.js';
-import { typeCheck } from '../lib/type-check.js';
+import { normalizeModule } from '#test/lib/expect-generated.js';
+import { typeCheck } from '#test/lib/type-check.js';
 import { createTmpDir, userSchema } from './lib/fixtures.js';
 
 suite('geneverFile', () => {

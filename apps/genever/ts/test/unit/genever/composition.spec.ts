@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string -- expected types are TypeScript source, with template literal types */
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
 
 suite('composition', () => {
     suite('allOf', () => {

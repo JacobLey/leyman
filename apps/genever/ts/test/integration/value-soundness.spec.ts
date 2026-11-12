@@ -5,7 +5,7 @@ import { juniperSchemas as fixtures } from '@leyman/genever-test-vectors';
 import { genever } from 'genever';
 import { makeArbitrary } from 'juniper-arbitrary';
 import { suite, test } from 'mocha-chain';
-import { typeCheck } from '../lib/type-check.js';
+import { typeCheck } from '#test/lib/type-check.js';
 
 const assignments = (typeName: string, values: readonly unknown[]): string =>
     values

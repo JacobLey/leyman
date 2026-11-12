@@ -1,8 +1,8 @@
 import { expect } from '@leyman/expect';
 import { genever, GeneverStrictModeError } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
-import { typeCheck } from '../../lib/type-check.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
+import { typeCheck } from '#test/lib/type-check.js';
 
 suite('references', () => {
     test('$defs are named types', () => {

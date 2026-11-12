@@ -1,7 +1,7 @@
 /* eslint-disable no-template-curly-in-string -- expected types are TypeScript source, with template literal types */
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
 
 suite('primitives', () => {
     test('detects a mismatched type', () => {

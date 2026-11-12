@@ -6,8 +6,8 @@ import {
     GeneverUnsupportedError,
 } from 'genever';
 import { suite, test } from 'mocha-chain';
-import { expectGenerated } from '../../lib/expect-generated.js';
-import { typeCheck } from '../../lib/type-check.js';
+import { expectGenerated } from '#test/lib/expect-generated.js';
+import { typeCheck } from '#test/lib/type-check.js';
 
 const document = (openapi: string, schemas: Record<string, unknown>): unknown => ({
     openapi,

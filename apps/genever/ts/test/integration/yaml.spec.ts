@@ -10,7 +10,7 @@ import {
     GeneverUnsupportedError,
 } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
-import { expectTypes } from '../lib/expect-generated.js';
+import { expectTypes } from '#test/lib/expect-generated.js';
 import { createTmpDir } from './lib/fixtures.js';
 import { startSchemaServer } from './lib/server.js';
 

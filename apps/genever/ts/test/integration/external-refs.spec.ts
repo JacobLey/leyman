@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { expect } from '@leyman/expect';
 import { geneverFile, GeneverLoadError } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
-import { expectTypes } from '../lib/expect-generated.js';
+import { expectTypes } from '#test/lib/expect-generated.js';
 import { fakeFetch } from './lib/fake-fetch.js';
 import { createTmpDir } from './lib/fixtures.js';
 import { startSchemaServer } from './lib/server.js';
