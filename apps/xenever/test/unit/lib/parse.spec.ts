@@ -711,6 +711,112 @@ suite('parse', () => {
         });
     });
 
+    suite('IDs', () => {
+        const node = x.element(
+            'node',
+            x.complex({
+                attributes: [
+                    x.attribute('id', x.id()),
+                    x.attribute('alias', x.id({ pattern: '[a-z]+' })),
+                    x.attribute('ref', x.idref()),
+                    x.attribute('refs', x.list(x.idref())),
+                    x.attribute('either', x.union([x.int(), x.idref()])),
+                ],
+                content: x.sequence([
+                    x.element('key', x.id(), { minOccurs: 0 }),
+                    x.lazy((): x.ElementOf<'node', unknown> => node, {
+                        minOccurs: 0,
+                        maxOccurs: 'unbounded',
+                    }),
+                ]),
+            })
+        );
+
+        test('Accepts unique IDs, and IDREFs that name them, before or after', () => {
+            expect(() =>
+                parse(
+                    '<node ref="b" refs="a b"><key>a</key><node id="b" ref="a" either="b"/><node either="5"/></node>',
+                    node
+                )
+            ).not.to.throw();
+        });
+
+        test('Rejects an ID of two elements, at the second', () => {
+            expectInvalid(
+                () => parse('<node id="a"><node><key>a</key></node></node>', node),
+                /ID "a" is already the ID of `\/node`/v,
+                { path: '/node/node/key' }
+            );
+            expectInvalid(
+                () => parse('<node><node alias="a"/><node id="a"/></node>', node),
+                /already the ID of `\/node\/node\[1\]`/v,
+                { path: '/node/node[2]/@id' }
+            );
+        });
+
+        test('Allows one element its ID twice', () => {
+            expect(() => parse('<node id="a" alias="a"/>', node)).not.to.throw();
+        });
+
+        test('Rejects an IDREF that names no ID, at the first in document order', () => {
+            expectInvalid(
+                () => parse('<node><node ref="x"/><node refs="a y"/></node>', node),
+                /IDREF "x" is not the ID of any element in the document/v,
+                { path: '/node/node[1]/@ref' }
+            );
+            expectInvalid(() => parse('<node refs="a b" id="a"/>', node), /IDREF "b"/v, {
+                path: '/node/@refs',
+            });
+            expectInvalid(() => parse('<node either="z"/>', node), /IDREF "z"/v, {
+                path: '/node/@either',
+            });
+        });
+
+        test('Counts IDs and IDREFs of validated wildcard content only', () => {
+            const wrapped = (processContents: 'lax' | 'skip') =>
+                x.element(
+                    'r',
+                    x.complex({
+                        attributes: [x.attribute('ref', x.idref())],
+                        content: x.sequence([
+                            x.any({ processContents, declarations: () => [node] }),
+                        ]),
+                    })
+                );
+            expect(() => parse('<r ref="a"><node id="a"/></r>', wrapped('lax'))).not.to.throw();
+            expectInvalid(
+                () => parse('<r ref="a"><node id="a"/></r>', wrapped('skip')),
+                /IDREF "a"/v,
+                {
+                    path: '/r/@ref',
+                }
+            );
+        });
+
+        test('Checks a default IDREF', () => {
+            const defaulted = x.element(
+                'r',
+                x.complex({
+                    attributes: [x.attribute('ref', x.idref(), { default: 'a' })],
+                    content: x.sequence([x.element('key', x.id(), { minOccurs: 0 })]),
+                })
+            );
+            expect(parse('<r><key>a</key></r>', defaulted).attributes).to.deep.equal({ ref: 'a' });
+            expectInvalid(() => parse('<r/>', defaulted), /IDREF "a"/v, { path: '/r' });
+        });
+
+        test('Returns an unresolved IDREF as a Standard Schema issue', async () => {
+            const standard = x.element(
+                'r',
+                x.complex({ attributes: [x.attribute('ref', x.idref())] })
+            );
+            const result = await standard['~standard'].validate('<r ref="a"/>');
+            expect(result)
+                .to.have.nested.property('issues[0].path')
+                .that.deep.equals(['r', '@ref']);
+        });
+    });
+
     suite('xsi attributes', () => {
         const xsi = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
 

@@ -78,8 +78,11 @@ suite('Built-in types', () => {
         });
 
         test('NCName, ID, IDREF and ENTITY are names without a colon', () => {
-            for (const type of [x.ncName(), x.id(), x.idref(), x.entity()]) {
+            // An IDREF alone names no ID, so its valid values are in the IDs tests of `parse`.
+            for (const type of [x.ncName(), x.id(), x.entity()]) {
                 expectValues(type, [['a.b', 'a.b']]);
+            }
+            for (const type of [x.ncName(), x.id(), x.idref(), x.entity()]) {
                 expectInvalid(type, ['a:b', '-a']);
             }
         });

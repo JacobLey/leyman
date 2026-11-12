@@ -99,16 +99,91 @@ const textOf = (node: XmlElementNode): string => {
 };
 
 /**
- * Reads a simple value, rethrowing an invalid value where it was written.
- *
- * @param read - reads the value
- * @param location - where the text is
- * @returns what `read` returns
- * @throws {XeneverValidationError} when the text isn't valid
+ * The `ID`s and `IDREF`s of one document: each `ID` is bound to one element, and each `IDREF` must name an
+ * `ID` somewhere in the document ([XSD 1.1 Part 1 §3.17.5.2](https://www.w3.org/TR/xmlschema11-1/#cvc-id)).
+ * An element may have one `ID` more than once (two `ID` attributes with one value), as XSD 1.1 allows.
  */
-const readValue = (read: () => unknown, location: XmlErrorLocation): unknown => {
+class IdTable {
+    readonly #bound = new Map<string, XmlElementNode>();
+    readonly #references: { readonly id: string; readonly location: XmlErrorLocation }[] = [];
+
+    /**
+     * Records the `ID`s and `IDREF`s of a value.
+     *
+     * @param found - each `ID` and `IDREF` of the value
+     * @param element - the element the value is the text or an attribute of, to which an `ID` is bound
+     * @param location - where the value is written
+     * @throws {XeneverValidationError} when an `ID` is already bound to another element
+     */
+    public add(
+        found: readonly (readonly [kind: 'ID' | 'IDREF', id: string])[],
+        element: XmlElementNode,
+        location: XmlErrorLocation
+    ): void {
+        for (const [kind, id] of found) {
+            if (kind === 'IDREF') {
+                this.#references.push({ id, location });
+                continue;
+            }
+            const bound = this.#bound.get(id);
+            if (bound !== undefined && bound !== element) {
+                throw new XeneverValidationError(
+                    `ID ${JSON.stringify(id)} is already the ID of \`${bound.path}\``,
+                    location
+                );
+            }
+            this.#bound.set(id, element);
+        }
+    }
+
+    /**
+     * Checks every `IDREF` names an `ID`, once the whole document is read.
+     *
+     * @throws {XeneverValidationError} at the first `IDREF`, in document order, that names no `ID`
+     */
+    public checkReferences(): void {
+        for (const { id, location } of this.#references) {
+            if (!this.#bound.has(id)) {
+                throw new XeneverValidationError(
+                    `IDREF ${JSON.stringify(id)} is not the ID of any element in the document`,
+                    location
+                );
+            }
+        }
+    }
+}
+
+/**
+ * Reads a simple value, rethrowing an invalid value where it was written, and records its `ID`s and
+ * `IDREF`s.
+ *
+ * @param type - its simple type
+ * @param text - as written
+ * @param node - the element whose text or attribute it is
+ * @param location - where the text is
+ * @param ids - the document's `ID`s and `IDREF`s, or `null` for a value that has none (`xsi:nil`)
+ * @returns its value
+ * @throws {XeneverValidationError} when the text isn't valid, or holds an `ID` another element has
+ */
+const readValue = (
+    type: CompiledSimple,
+    text: string,
+    node: XmlElementNode,
+    location: XmlErrorLocation,
+    ids: IdTable | null
+): unknown => {
+    const found: [kind: 'ID' | 'IDREF', id: string][] = [];
+    let value: unknown;
     try {
-        return read();
+        value = type.parse(
+            text,
+            node.inScopeNamespaces,
+            ids && type.hasIds
+                ? (kind, id) => {
+                      found.push([kind, id]);
+                  }
+                : undefined
+        );
     } catch (error) {
         // Unreachable: reading a value throws only invalid values.
         /* c8 ignore next 3 */
@@ -117,6 +192,8 @@ const readValue = (read: () => unknown, location: XmlErrorLocation): unknown => 
         }
         throw new XeneverValidationError(error.message, { ...location, cause: error });
     }
+    ids?.add(found, node, location);
+    return value;
 };
 
 /**
@@ -180,18 +257,17 @@ const toXmlNode = (node: XmlElementNode): XmlNode => ({
  * @param attribute - attribute of the XML tree
  * @param declaration - what declares it
  * @param node - its element
+ * @param ids - the document's `ID`s and `IDREF`s
  * @returns its value
  * @throws {XeneverValidationError} when it isn't valid, or isn't the fixed value
  */
 const readAttribute = (
     attribute: XmlAttributeNode,
     declaration: CompiledAttribute,
-    node: XmlElementNode
+    node: XmlElementNode,
+    ids: IdTable
 ): unknown => {
-    const value = readValue(
-        () => declaration.type.parse(attribute.value, node.inScopeNamespaces),
-        at(attribute)
-    );
+    const value = readValue(declaration.type, attribute.value, node, at(attribute), ids);
     if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
         throw new XeneverValidationError(
             `Attribute ${written(attribute)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
@@ -208,12 +284,14 @@ const readAttribute = (
  * @param attribute - attribute of the XML tree
  * @param wildcard - the attribute wildcard that allowed it
  * @param node - its element
+ * @param ids - the document's `ID`s and `IDREF`s
  * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
  */
 const checkWildcardAttribute = (
     attribute: XmlAttributeNode,
     wildcard: CompiledWildcard<CompiledAttribute>,
-    node: XmlElementNode
+    node: XmlElementNode,
+    ids: IdTable
 ): void => {
     if (wildcard.processContents === 'skip') {
         return;
@@ -222,7 +300,7 @@ const checkWildcardAttribute = (
         expandedName(attribute.namespace, attribute.localName)
     );
     if (declaration) {
-        readAttribute(attribute, declaration, node);
+        readAttribute(attribute, declaration, node, ids);
     } else if (wildcard.processContents === 'strict') {
         throw new XeneverValidationError(
             `Attribute ${written(attribute)} is not declared, which the strict attribute wildcard of ${written(node)} needs`,
@@ -236,12 +314,14 @@ const checkWildcardAttribute = (
  *
  * @param node - node of the XML tree
  * @param type - its complex type, or `null` for a simple type, which has no attributes
+ * @param ids - the document's `ID`s and `IDREF`s
  * @returns the value of `attributes`, keys in declaration order, then `#any`
  * @throws {XeneverValidationError} when an attribute isn't allowed or valid, or a required one is missing
  */
 const readAttributes = (
     node: XmlElementNode,
-    type: CompiledComplex | null
+    type: CompiledComplex | null,
+    ids: IdTable
 ): Record<string, unknown> => {
     const values = new Map<string, unknown>();
     const wildcardMatches: XmlAttribute[] = [];
@@ -254,9 +334,9 @@ const readAttributes = (
             expandedName(attribute.namespace, attribute.localName)
         );
         if (declaration) {
-            values.set(declaration.key, readAttribute(attribute, declaration, node));
+            values.set(declaration.key, readAttribute(attribute, declaration, node, ids));
         } else if (type?.anyAttribute?.allows(attribute.namespace) === true) {
-            checkWildcardAttribute(attribute, type.anyAttribute, node);
+            checkWildcardAttribute(attribute, type.anyAttribute, node, ids);
             wildcardMatches.push(toXmlAttribute(attribute));
         } else {
             throw new XeneverValidationError(
@@ -280,9 +360,13 @@ const readAttributes = (
                 at(node)
             );
         } else if (declaration.absent !== null) {
-            attributes[declaration.key] = declaration.type.parse(
+            // A default `IDREF` still needs its `ID`.
+            attributes[declaration.key] = readValue(
+                declaration.type,
                 declaration.absent,
-                node.inScopeNamespaces
+                node,
+                at(node),
+                ids
             );
         }
     }
@@ -325,12 +409,14 @@ const processStrength: Readonly<Record<ProcessContents, number>> = { skip: 0, la
  *
  * @param child - node of the XML tree
  * @param wildcards - the wildcards that may have matched it, in model order
+ * @param ids - the document's `ID`s and `IDREF`s
  * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
  * @throws {XeneverUnsupportedError} on `xsi:type` where the element is validated
  */
 const checkWildcardElement = (
     child: XmlElementNode,
-    wildcards: readonly CompiledWildcard<CompiledElement>[]
+    wildcards: readonly CompiledWildcard<CompiledElement>[],
+    ids: IdTable
 ): void => {
     let processContents: ProcessContents = 'skip';
     for (const wildcard of wildcards) {
@@ -348,7 +434,7 @@ const checkWildcardElement = (
         .find(found => found !== undefined);
     if (declaration) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
-        readElement(child, declaration);
+        readElement(child, declaration, ids);
         return;
     }
     // Without a declaration, `xsi:type` would give the type to validate against.
@@ -366,10 +452,11 @@ const checkWildcardElement = (
  *
  * @param node - node of the XML tree
  * @param type - its complex type, which has content
+ * @param ids - the document's `ID`s and `IDREF`s
  * @returns the value of `children`: an object by key, or entries in document order when ordered
  * @throws {XeneverValidationError} when the children don't match the content model
  */
-const readChildren = (node: XmlElementNode, type: CompiledComplex): unknown => {
+const readChildren = (node: XmlElementNode, type: CompiledComplex, ids: IdTable): unknown => {
     const { model, elements, keys, wildcards } = type.content!;
     const values = new Map<string, unknown[]>();
     const entries: { readonly name: string; readonly value: unknown }[] = [];
@@ -420,13 +507,14 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex): unknown => {
                 child,
                 matchingWildcards(before, { name, namespace }).map(
                     symbol => wildcards.get(symbol.id)!
-                )
+                ),
+                ids
             );
             add(anyKey, toXmlNode(child));
         } else {
             const declaration = elements.get(name)!;
             // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
-            add(declaration.key, readElement(child, declaration));
+            add(declaration.key, readElement(child, declaration, ids));
         }
     }
     if (!term.nullable) {
@@ -471,7 +559,7 @@ const isNil = (node: XmlElementNode, declaration: CompiledElement): boolean => {
             at(nil)
         );
     }
-    const isTrue = readValue(() => nilType.parse(nil.value, node.inScopeNamespaces), at(nil));
+    const isTrue = readValue(nilType, nil.value, node, at(nil), null);
     if (isTrue === false) {
         return false;
     }
@@ -500,17 +588,19 @@ const isNil = (node: XmlElementNode, declaration: CompiledElement): boolean => {
  * @param node - node of the XML tree
  * @param declaration - what declares it
  * @param type - its simple type, or the type of its text
+ * @param ids - the document's `ID`s and `IDREF`s
  * @returns the value
  * @throws {XeneverValidationError} when the text isn't valid, or isn't the fixed value
  */
 const readText = (
     node: XmlElementNode,
     declaration: CompiledElement,
-    type: CompiledSimple
+    type: CompiledSimple,
+    ids: IdTable
 ): unknown => {
     const text =
         declaration.empty !== null && node.children.length === 0 ? declaration.empty : textOf(node);
-    const value = readValue(() => type.parse(text, node.inScopeNamespaces), at(node));
+    const value = readValue(type, text, node, at(node), ids);
     if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
         throw new XeneverValidationError(
             `Element ${written(node)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
@@ -525,28 +615,29 @@ const readText = (
  *
  * @param node - node of the XML tree
  * @param declaration - what declares it
+ * @param ids - the document's `ID`s and `IDREF`s
  * @returns its value
  * @throws {XeneverValidationError} when it doesn't match the declaration
  * @throws {XeneverUnsupportedError} on `xsi:type`
  */
-const readElement = (node: XmlElementNode, declaration: CompiledElement): unknown => {
+const readElement = (node: XmlElementNode, declaration: CompiledElement, ids: IdTable): unknown => {
     rejectXsiType(node);
     const { type } = declaration;
     const complex = type.kind === 'complex' ? type : null;
     if (isNil(node, declaration)) {
         // Validated, but a nil element's value is `null` alone.
-        readAttributes(node, complex);
+        readAttributes(node, complex, ids);
         return null;
     }
     if (type.kind === 'simple') {
-        readAttributes(node, null);
-        return readText(node, declaration, type.simple);
+        readAttributes(node, null, ids);
+        return readText(node, declaration, type.simple, ids);
     }
-    const value: Record<string, unknown> = { attributes: readAttributes(node, type) };
+    const value: Record<string, unknown> = { attributes: readAttributes(node, type, ids) };
     if (type.content) {
-        value.children = readChildren(node, type);
+        value.children = readChildren(node, type, ids);
     } else if (type.text) {
-        value.text = readText(node, declaration, type.text);
+        value.text = readText(node, declaration, type.text, ids);
     } else {
         // Cvc-complex-type.2.1: empty content allows no children at all, not even whitespace.
         const [first] = node.children;
@@ -575,7 +666,8 @@ const compileRoot = (element: Element): CompiledElement => compileElement(elemen
  * @param root - what declares the root element
  * @returns the root's value
  * @throws {XeneverXmlError} when the document is not namespace-well-formed XML
- * @throws {XeneverValidationError} when the document doesn't match the declaration
+ * @throws {XeneverValidationError} when the document doesn't match the declaration, or an `ID` is not
+ * unique, or an `IDREF` names no `ID`
  */
 const readDocument = (xml: string, root: CompiledElement): unknown => {
     const node = readXml(xml);
@@ -585,7 +677,10 @@ const readDocument = (xml: string, root: CompiledElement): unknown => {
             at(node)
         );
     }
-    return readElement(node, root);
+    const ids = new IdTable();
+    const value = readElement(node, root, ids);
+    ids.checkReferences();
+    return value;
 };
 
 /**

@@ -22,6 +22,12 @@ import { compareDecimals, readDecimal, totalDigits } from './decimal.js';
 import { compilePattern } from './regex.js';
 
 /**
+ * Receives each `ID` and `IDREF` in a value once it is read: the value itself, the items of a list, or the
+ * value of the union member that read it.
+ */
+export type IdCollector = (kind: 'ID' | 'IDREF', value: string) => void;
+
+/**
  * A simple type, ready to read text.
  */
 export interface CompiledSimple {
@@ -30,10 +36,16 @@ export interface CompiledSimple {
      *
      * @param text - text as written (whitespace not yet processed)
      * @param namespaces - namespaces in scope, for `QName` values
+     * @param ids - receives the `ID`s and `IDREF`s of the value, once it is valid
      * @returns its value
      * @throws {InvalidValueError} when the text isn't valid for the type
      */
-    readonly parse: (text: string, namespaces: Namespaces) => unknown;
+    readonly parse: (text: string, namespaces: Namespaces, ids?: IdCollector) => unknown;
+    /**
+     * Whether a value may hold an `ID` or `IDREF`: the type is one, restricts one, or is a list or union of
+     * one.
+     */
+    readonly hasIds: boolean;
     /**
      * Whether a value of the type may be a `QName`, which a value written in the schema (an enumeration or a
      * default) can't resolve.
@@ -576,10 +588,12 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
         );
     }
 
+    const idKind = kind === 'ID' || kind === 'IDREF' ? kind : null;
     return {
         hasQName: kind === 'QName',
         isId: kind === 'ID',
-        parse: (text, namespaces) => {
+        hasIds: idKind !== null,
+        parse: (text, namespaces, ids) => {
             const read = readBuiltin(text, namespaces);
             checkPatterns(read.lexical);
             if (read.length !== undefined) {
@@ -614,6 +628,9 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
                 throw new InvalidValueError(
                     `${JSON.stringify(read.lexical)} is not one of the enumerated values`
                 );
+            }
+            if (idKind !== null) {
+                ids?.(idKind, read.value as string);
             }
             return read.value;
         },
@@ -658,12 +675,14 @@ const compileList = (type: Readonly<Record<string, unknown>>, path: string): Com
     return {
         hasQName: item.hasQName,
         isId: false,
-        parse: (text, namespaces) => {
+        hasIds: item.hasIds,
+        parse: (text, namespaces, ids) => {
             const lexical = processWhitespace(text, 'collapse');
             checkPatterns(lexical);
             const items = lexical === '' ? [] : lexical.split(' ');
             checkLength(items.length, length, lexical);
-            return items.map(itemText => item.parse(itemText, namespaces));
+            // An item past an invalid one never reaches `ids`, but the error ends the document anyway.
+            return items.map(itemText => item.parse(itemText, namespaces, ids));
         },
     };
 };
@@ -691,17 +710,26 @@ const compileUnion = (type: Readonly<Record<string, unknown>>, path: string): Co
         hasQName: members.some(member => member.hasQName),
         // A union of `ID` doesn't restrict it.
         isId: false,
-        parse: (text, namespaces) => {
+        hasIds: members.some(member => member.hasIds),
+        parse: (text, namespaces, ids) => {
             // A union has no whitespace processing of its own; its members each have theirs. Patterns are
             // matched against the collapsed text, as most members collapse it.
             const lexical = processWhitespace(text, 'collapse');
             checkPatterns(lexical);
             for (const member of members) {
+                let value: unknown;
                 try {
-                    return member.parse(text, namespaces);
+                    value = member.parse(text, namespaces);
                 } catch {
                     // The next member may accept it.
+                    continue;
                 }
+                // Read again for its IDs only once it is the member that reads the text, so a member that
+                // fails halfway through a list reports none.
+                if (ids && member.hasIds) {
+                    member.parse(text, namespaces, ids);
+                }
+                return value;
             }
             throw new InvalidValueError(
                 `${JSON.stringify(lexical)} is not valid for any member of the union`

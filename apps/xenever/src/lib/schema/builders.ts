@@ -103,11 +103,11 @@ export const name: StringBuilder<'Name'> = stringBuilder('Name');
  */
 export const ncName: StringBuilder<'NCName'> = stringBuilder('NCName');
 /**
- * `xs:ID`: an NCName. Uniqueness in the document is not checked.
+ * `xs:ID`: an NCName, which no other element in the document may have as its ID.
  */
 export const id: StringBuilder<'ID'> = stringBuilder('ID');
 /**
- * `xs:IDREF`: an NCName. Whether an `ID` has it is not checked.
+ * `xs:IDREF`: an NCName, which must be the `ID` of an element in the document.
  */
 export const idref: StringBuilder<'IDREF'> = stringBuilder('IDREF');
 /**

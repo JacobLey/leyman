@@ -93,7 +93,7 @@ The type of an element decides the shape of its value, whatever the document hol
 - `xs:decimal` is a canonical string (`9.50` reads as `'9.5'`). Big integer types are a `number`, and a value past `Number.MAX_SAFE_INTEGER` is an error, unless the type is `x.integer({ bigint: true })`. `float` and `double` read `INF`, `-INF` and `NaN`. Dates, times and durations stay strings.
 - `xsi:nil="true"` on a `nillable` element is `null`. Elements an `x.any()` wildcard matches are kept as untyped `XmlNode` trees under `'#any'`, and attributes an `x.anyAttribute()` matches as `XmlAttribute`s under `attributes['#any']`.
 
-Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored.
+Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored. No two elements may have the same `xs:ID`, and each `xs:IDREF`, including each item of an `xs:IDREFS`, must be the ID of an element somewhere in the document.
 
 A wildcard validates what it matches as its `processContents` says, as XSD does, while the value keeps its untyped shape. The default is `'strict'`: each element needs one of the wildcard's `declarations`, the global declarations it may match by name, and is validated against it. `'lax'` validates only the elements that have a declaration, and `'skip'` validates nothing:
 
@@ -215,8 +215,6 @@ Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at th
 - Identity constraints (`xs:key`, `xs:keyref`, `xs:unique`).
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Range and enumeration facets on date, time and duration types.
-
-Some checks are missing, and documents that fail them are read anyway: `xs:ID` values aren't checked for uniqueness.
 
 ## Compared to alternatives
 

@@ -49,7 +49,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 
 ## Limits
 
-xenever doesn't write XML yet. Substitution groups, abstract types, `xsi:type`, identity constraints, `xs:redefine` and range facets on date and time types are not supported, and fail when the XSD is loaded. `xs:ID` values aren't checked for uniqueness.
+xenever doesn't write XML yet. Substitution groups, abstract types, `xsi:type`, identity constraints, `xs:redefine` and range facets on date and time types are not supported, and fail when the XSD is loaded.
 
 ## Compared to
 
