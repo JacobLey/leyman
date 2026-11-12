@@ -19,9 +19,9 @@ import {
     orwellId,
     shiningId,
     tolkienId,
-} from '../data/api.js';
-import { authors, books, infiniteAuthors, infiniteBooksByAuthor } from '../data/normalized.js';
-import { createWrapper, renderHook, waitFor } from '../data/render.js';
+} from '#test/data/api.js';
+import { authors, books, infiniteAuthors, infiniteBooksByAuthor } from '#test/data/normalized.js';
+import { createWrapper, renderHook, waitFor } from '#test/data/render.js';
 
 const booksWithAuthor = books.propagate(book => ({
     ...book,

@@ -19,9 +19,9 @@ import {
     useNormalizedQuery,
     useNormalizedSuspenseQuery,
 } from 'normalized-react-query';
-import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '../data/api.js';
-import { authors, books } from '../data/normalized.js';
-import { createWrapper, renderHook, suspenseWrapper, waitFor } from '../data/render.js';
+import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '#test/data/api.js';
+import { authors, books } from '#test/data/normalized.js';
+import { createWrapper, renderHook, suspenseWrapper, waitFor } from '#test/data/render.js';
 
 const authorsWithFavoriteAuthor = authors.propagate(author => ({
     ...author,
