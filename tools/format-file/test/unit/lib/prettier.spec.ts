@@ -2,7 +2,7 @@ import { symlink } from 'node:fs/promises';
 import { resolveConfigFile } from 'prettier';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { createFormatters, createTmpCwd, formatted, unformatted } from '../helpers.js';
+import { createFormatters, createTmpCwd, formatted, unformatted } from '#test/unit/helpers.js';
 
 suite('Prettier', () => {
     const withTmpCwd = beforeEach(createTmpCwd);

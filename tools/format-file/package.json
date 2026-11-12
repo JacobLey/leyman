@@ -34,7 +34,8 @@
   ],
   "imports": {
     "#lib": "./dist/lib/index.js",
-    "#types": "./dist/lib/lib/types.js"
+    "#types": "./dist/lib/lib/types.js",
+    "#test/*": "./dist-test/*"
   },
   "dependencies": {
     "find-up": "catalog:",

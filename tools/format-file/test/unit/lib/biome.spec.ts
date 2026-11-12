@@ -1,7 +1,7 @@
 import type { Suite } from 'mocha';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { createFormatters, createTmpCwd, formatted, unformatted } from '../helpers.js';
+import { createFormatters, createTmpCwd, formatted, unformatted } from '#test/unit/helpers.js';
 
 suite('Biome', function (this: Suite) {
     // Each test runs the real formatter's process: tens of milliseconds alone, but a full CI run shares a small runner
