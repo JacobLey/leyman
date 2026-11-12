@@ -1,14 +1,14 @@
-import type { LifecycleExplanation } from '../lifecycle/explain.js';
-import type { LifecyclePlan } from '../lifecycle/processor.js';
+import type { LifecycleExplanation } from '#internal/lifecycle/explain.js';
+import type { LifecyclePlan } from '#internal/lifecycle/processor.js';
 import type { Command, LifecycleCommandInput } from './lib/types.js';
 import Path from 'node:path';
 import { createProjectGraphAsync, readJsonFile, workspaceRoot } from '@nx/devkit';
 import { bind } from 'haywire';
 import { getErrorMessage } from 'unknown-error';
-import { explainLifecycle, formatExplanation } from '../lifecycle/explain.js';
-import { loadOptions } from '../lifecycle/normalizer.js';
-import { planLifecycle } from '../lifecycle/processor.js';
-import { planPluginOptions } from '../plugin/lifecycle-plugin.js';
+import { explainLifecycle, formatExplanation } from '#internal/lifecycle/explain.js';
+import { loadOptions } from '#internal/lifecycle/normalizer.js';
+import { planLifecycle } from '#internal/lifecycle/processor.js';
+import { planPluginOptions } from '#internal/plugin/lifecycle-plugin.js';
 import { commandId } from './lib/types.js';
 
 interface ExplainCommandExtendedInput extends LifecycleCommandInput {

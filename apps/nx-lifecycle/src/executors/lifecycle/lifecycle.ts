@@ -1,6 +1,6 @@
 import type { ExecutorContext } from '@nx/devkit';
-import type { LifecycleOptionsOrConfig } from '../../lifecycle/schema.js';
-import { lifecycleInternal } from '../../lifecycle/lifecycle-internal.js';
+import type { LifecycleOptionsOrConfig } from '#internal/lifecycle/schema.js';
+import { lifecycleInternal } from '#internal/lifecycle/lifecycle-internal.js';
 
 export type SimpleExecutorContext = Pick<ExecutorContext, 'projectsConfigurations' | 'root'>;
 

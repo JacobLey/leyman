@@ -2,7 +2,7 @@ import type { SchemaType } from 'juniper';
 import type { JuniperValidator } from 'juniper-validator';
 import { booleanSchema, objectSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
-import { bindingsSchema, stagesSchema } from '../lifecycle/schema.js';
+import { bindingsSchema, stagesSchema } from '#internal/lifecycle/schema.js';
 
 const lifecyclePluginOptionsSchema = objectSchema({
     title: 'nx-lifecycle plugin',

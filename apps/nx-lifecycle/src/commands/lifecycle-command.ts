@@ -2,7 +2,7 @@ import type { Command, LifecycleCommandInput } from './lib/types.js';
 import { createProjectGraphAsync, workspaceRoot } from '@nx/devkit';
 import { isCI } from 'ci-info';
 import { bind } from 'haywire';
-import { lifecycleInternal } from '../lifecycle/lifecycle-internal.js';
+import { lifecycleInternal } from '#internal/lifecycle/lifecycle-internal.js';
 import { commandId } from './lib/types.js';
 
 interface LifecycleCommandExtendedInput extends LifecycleCommandInput {

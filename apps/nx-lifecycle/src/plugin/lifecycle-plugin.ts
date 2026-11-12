@@ -7,15 +7,15 @@ import type {
     ProjectConfiguration,
     TargetConfiguration,
 } from '@nx/devkit';
+import type { LifecyclePlan, LifecycleTarget } from '#internal/lifecycle/processor.js';
 import type { DependsOn } from '#schemas';
-import type { LifecyclePlan, LifecycleTarget } from '../lifecycle/processor.js';
 import type { LifecyclePluginOptions } from './schema.js';
 import Path from 'node:path';
 import { createNodesFromFiles, logger, readJsonFile } from '@nx/devkit';
 import { deepEqual } from 'fast-equals';
+import { NOOP_EXECUTOR } from '#internal/lifecycle/constants.js';
+import { planLifecycle } from '#internal/lifecycle/processor.js';
 import { assertProjectJson } from '#schemas';
-import { NOOP_EXECUTOR } from '../lifecycle/constants.js';
-import { planLifecycle } from '../lifecycle/processor.js';
 import { assertLifecyclePluginOptions } from './schema.js';
 
 // Nx's own config may hold any dependency it accepts, not only those the lifecycle schema allows
