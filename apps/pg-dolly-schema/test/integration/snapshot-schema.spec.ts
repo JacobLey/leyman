@@ -15,7 +15,7 @@ import {
     migrate,
     migrateTracked,
     uniquePrefix,
-} from '../helpers/project.js';
+} from '#test/helpers/project.js';
 
 suite('snapshotSchema', () => {
     const withProject = beforeEach(async () => ({

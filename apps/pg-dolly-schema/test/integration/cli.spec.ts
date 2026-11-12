@@ -4,7 +4,13 @@ import Path from 'node:path';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
-import { copyProject, dropAll, migrate, migrateTracked, uniquePrefix } from '../helpers/project.js';
+import {
+    copyProject,
+    dropAll,
+    migrate,
+    migrateTracked,
+    uniquePrefix,
+} from '#test/helpers/project.js';
 
 const execAsync = promisify(exec);
 const bin = Path.join(import.meta.dirname, '../../bin.mjs');
