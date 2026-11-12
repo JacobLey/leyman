@@ -57,6 +57,19 @@ The other npm packages for `Idempotency-Key` that we looked at, as their READMEs
 | Replay header                       | `Idempotent-Replayed: true`                                           | Not documented                                                                    | `Idempotency-Replayed: true`                                        | Not documented                                                                      |
 | Other languages on the same keys    | Go                                                                    | None documented                                                                   | None documented                                                     | None documented                                                                     |
 
+The Go modules we looked at, the same way (versions as of November 2026):
+
+|                                     | idempotency-keys (Go)                                    | [idempo](https://github.com/eben-vranken/idempo) 1.0.0              | [gopotency](https://github.com/fco-gt/gopotency) 1.0.0 |
+| ----------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| Frameworks                          | `net/http` middleware, others through `Begin`            | Any `func(http.Handler) http.Handler`: `net/http`, chi, Gin, Echo   | Gin, `net/http`                                        |
+| Stores                              | Postgres, Valkey or Redis, or your own                   | Memory, Redis, Postgres, or your own                                | Memory, Redis, SQL (Postgres, SQLite), GORM            |
+| A duplicate while the first runs    | Waits up to 10 s (woken early by a notifier), then `409` | `409` at once                                                       | An in-progress error; the status isn't documented      |
+| A key reused on a different request | `422`: method, path, query, body and named headers       | `422`: method, path and body                                        | A mismatch error: a request hash (the body by default) |
+| Responses stored                    | All but a `429`, by a policy you can change              | All, up to 1 MiB                                                    | Successful ones; which statuses isn't documented       |
+| A request that crashed mid-run      | Taken over once its lease (60 s) runs out                | Released when the handler fails or panics; otherwise not documented | The lock expires after `LockTimeout` (5 min)           |
+| Replay header                       | `Idempotent-Replayed: true`                              | `Idempotency-Replayed: true`                                        | Not documented                                         |
+| Other languages on the same keys    | TypeScript                                               | None documented                                                     | None documented                                        |
+
 The defaults are close to how [Stripe's API](https://docs.stripe.com/api/idempotent_requests) (v1) describes its own keys: up to 255 characters, forgotten after 24 hours (Stripe: at least 24 hours), a reused key checked against the first request's parameters, and a `500` replayed like any other response once the handler has started. As at Stripe, a request answered before it runs (a `409`, or a key that can't be read) stores nothing, so it can be retried.
 
 ## Related
