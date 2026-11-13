@@ -14,7 +14,7 @@ import { XeneverDocumentError, XeneverUnsupportedError, XeneverValidationError }
 import { anyKey, compileElement, describeName, expandedName } from './schema/compile.js';
 import { expectedLabels, matchingWildcards } from './schema/content.js';
 import { InvalidValueError } from './simple/builtins.js';
-import { compileSimple, isSameValue } from './simple/compile-simple.js';
+import { compileSimple } from './simple/compile-simple.js';
 import { readXml } from './xml/read-xml.js';
 
 /**
@@ -268,7 +268,7 @@ const readAttribute = (
     ids: IdTable
 ): unknown => {
     const value = readValue(declaration.type, attribute.value, node, at(attribute), ids);
-    if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
+    if (declaration.fixed && !declaration.type.isEqual(value, declaration.fixed.value)) {
         throw new XeneverValidationError(
             `Attribute ${written(attribute)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
             at(attribute)
@@ -601,7 +601,7 @@ const readText = (
     const text =
         declaration.empty !== null && node.children.length === 0 ? declaration.empty : textOf(node);
     const value = readValue(type, text, node, at(node), ids);
-    if (declaration.fixed && !isSameValue(value, declaration.fixed.value)) {
+    if (declaration.fixed && !type.isEqual(value, declaration.fixed.value)) {
         throw new XeneverValidationError(
             `Element ${written(node)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
             at(node)

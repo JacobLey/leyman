@@ -33,7 +33,7 @@ import { element as buildElement, lazy } from '#internal/lib/schema/builders.js'
 import { ShapeConflictError } from '#internal/lib/schema/check.js';
 import { compileElement } from '#internal/lib/schema/compile.js';
 import { InvalidValueError } from '#internal/lib/simple/builtins.js';
-import { compileSimple, isSameValue } from '#internal/lib/simple/compile-simple.js';
+import { compileSimple } from '#internal/lib/simple/compile-simple.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 import {
     atomicKinds,
@@ -468,7 +468,7 @@ const isSameFixed = (
         unsupported(at, '`fixed` of a type that may be a QName is not supported');
     }
     try {
-        return isSameValue(type.parse(fixed, noNamespaces), type.parse(redeclared, noNamespaces));
+        return type.isEqual(type.parse(fixed, noNamespaces), type.parse(redeclared, noNamespaces));
     } catch (error) {
         // Unreachable: reading a value throws only invalid values.
         /* c8 ignore next 3 */

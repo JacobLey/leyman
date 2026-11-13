@@ -114,10 +114,12 @@ suite('loadXsd elements and attributes', () => {
                 <xs:complexType name="Base">
                     <xs:attribute name="list" type="Ints" fixed="1   2 3"/>
                     <xs:attribute name="int" type="xs:int" fixed=" -1"/>
+                    <xs:attribute name="at" type="xs:dateTime" fixed="2026-11-12T00:00:00Z"/>
                 </xs:complexType>
                 <xs:complexType name="Derived"><xs:complexContent><xs:restriction base="Base">
                     <xs:attribute name="list" type="Ints" fixed="1 2  3"/>
                     <xs:attribute name="int" type="xs:int" fixed="-01"/>
+                    <xs:attribute name="at" type="xs:dateTime" fixed="2026-11-11T24:00:00+00:00"/>
                 </xs:restriction></xs:complexContent></xs:complexType>
                 <xs:complexType name="Text"><xs:simpleContent><xs:extension base="xs:string">
                     <xs:attribute name="on" type="xs:boolean" fixed="1"/>

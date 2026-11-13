@@ -651,6 +651,33 @@ suite('Content', () => {
             expectInvalid(() => parse('<r v="1"/>', listed), /must be "1 2"/v, { path: '/r/@v' });
         });
 
+        test('Compares a fixed date as a value, and keeps it as written', () => {
+            const declaration = x.element(
+                'r',
+                x.complex({ attributes: [x.attribute('v', x.date(), { fixed: '2026-11-12Z' })] })
+            );
+            expect(parse('<r v="2026-11-12+00:00"/>', declaration).attributes.v).to.equal(
+                '2026-11-12+00:00'
+            );
+            expectInvalid(
+                () => parse('<r v="2026-11-12"/>', declaration),
+                /must be "2026-11-12Z"/v,
+                {
+                    path: '/r/@v',
+                }
+            );
+            const day = x.element('d', x.list(x.gDay()), { fixed: '---01Z' });
+            expect(parse('<d>---01+00:00</d>', day)).to.deep.equal(['---01+00:00']);
+        });
+
+        test('Compares a fixed union value as its member reads it', () => {
+            const either = x.element('e', x.union([x.list(x.int()), x.token()]), {
+                fixed: '1 2',
+            });
+            expect(parse('<e>01 2</e>', either)).to.deep.equal([1, 2]);
+            expectInvalid(() => parse('<e>1</e>', either), /must be "1 2"/v, { path: '/e' });
+        });
+
         test('Reads an empty element as its default', () => {
             const count = x.element('n', x.int(), { default: '7' });
             expect(parse('<n/>', count)).to.equal(7);

@@ -77,7 +77,7 @@ export interface CompiledSimple {
  * @param b - another
  * @returns whether they are the same
  */
-export const isSameValue = (a: unknown, b: unknown): boolean =>
+const isSameValue = (a: unknown, b: unknown): boolean =>
     Array.isArray(a) && Array.isArray(b)
         ? a.length === b.length && a.every((item, index) => isSameValue(item, b[index]))
         : a === b || (Number.isNaN(a) && Number.isNaN(b));
