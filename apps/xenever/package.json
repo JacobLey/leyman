@@ -2,7 +2,6 @@
   "name": "xenever",
   "version": "0.0.1",
   "description": "Parse XML into typed objects, validated against a schema written in TypeScript or generated from an XSD.",
-  "private": true,
   "engines": {
     "node": ">=24"
   },
