@@ -677,7 +677,7 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
 export const limits: readonly Limit[] = [
     {
         pattern: /^The facet `\w+` is not supported on this type/v,
-        reason: 'Facets xenever has no value comparison for: enumerations of dates, durations, binary, QName, lists and unions; ranges of dates, times and durations; lengths of QName',
+        reason: 'Facets xenever has no value comparison for: enumerations of binary values, QNames, unions and lists of them; lengths of QName',
     },
     {
         pattern: /uses the block escape `\\[Pp]\{Is/v,

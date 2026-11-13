@@ -100,6 +100,21 @@
     <xs:list itemType="xs:NCName"/>
   </xs:simpleType>
 
+  <!-- Date enumerations match by value, so stay strings. -->
+  <xs:simpleType name="Holiday">
+    <xs:restriction base="xs:gMonthDay">
+      <xs:enumeration value="--01-01"/>
+      <xs:enumeration value="--12-25"/>
+      <xs:minInclusive value="--01-01"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TagPair">
+    <xs:restriction base="po:Tags">
+      <xs:enumeration value="new sale"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="Zip">
     <xs:union memberTypes="xs:int">
       <xs:simpleType>

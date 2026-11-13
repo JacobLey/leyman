@@ -190,6 +190,21 @@ export const PurchaseOrderType = x.complex({
 });
 
 /**
+ * The type `{urn:example:order}Holiday`.
+ */
+export type Holiday = string;
+export const Holiday = x.gMonthDay({
+    minInclusive: '--01-01',
+    enumeration: ['--01-01', '--12-25'],
+});
+
+/**
+ * The type `{urn:example:order}TagPair`.
+ */
+export type TagPair = string[];
+export const TagPair = x.list(x.ncName(), { enumeration: ['new sale'] });
+
+/**
  * The type `{urn:example:order}FewTags`.
  */
 export type FewTags = string[];

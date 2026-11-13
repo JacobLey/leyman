@@ -21,7 +21,7 @@ Ideally the schema decides the shape. A repeatable element is always an array, a
 - `xs:decimal` is a string, and `xs:integer` and the other big integer types are a `number` only within the safe range, or `bigint` when you ask for it. Nothing is rounded.
 - A document that breaks the schema throws with the line, column and path of the problem. DTDs are rejected, so entities are never expanded.
 
-It doesn't write XML yet, and some XSD constructs are not supported: substitution groups, `xsi:type`, identity constraints and range facets on dates among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
+It doesn't write XML yet, and some XSD constructs are not supported: substitution groups, `xsi:type` and identity constraints among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
 
 Guides and the comparison with other XML tools are on the [docs site](https://jacobley.github.io/leyman/packages/xenever/).
 
@@ -90,7 +90,7 @@ The type of an element decides the shape of its value, whatever the document hol
 - An element of a complex type is `{ attributes }`, plus `children` when it has child elements or `text` when it has simple content. `attributes` is always there, `{}` when the type has none, so adding an attribute to a type doesn't change its shape.
 - Children are keyed by local name, in declaration order. `maxOccurs` above 1 is an array, even for one occurrence, and `minOccurs="0"` is an optional key, absent when the element is. A `choice` is a union of objects.
 - With `ordered: true` on the complex type, and always for `mixed`, children are a list of `{ name, value }` in document order, with `{ name: '#text', value }` for text in mixed content.
-- `xs:decimal` is a canonical string (`9.50` reads as `'9.5'`). Big integer types are a `number`, and a value past `Number.MAX_SAFE_INTEGER` is an error, unless the type is `x.integer({ bigint: true })`. `float` and `double` read `INF`, `-INF` and `NaN`. Dates, times and durations stay strings.
+- `xs:decimal` is a canonical string (`9.50` reads as `'9.5'`). Big integer types are a `number`, and a value past `Number.MAX_SAFE_INTEGER` is an error, unless the type is `x.integer({ bigint: true })`. `float` and `double` read `INF`, `-INF` and `NaN`. Dates, times and durations stay strings as written, even when enumerated: their facets compare values, so `2026-11-12Z` matches an enumerated `2026-11-12+00:00`. A value without a timezone may be up to 14 hours either side of one with a timezone, so a range facet rejects it when that could put it on either side of the bound, and `P1M` neither is nor isn't below `P30D`.
 - `xsi:nil="true"` on a `nillable` element is `null`. Elements an `x.any()` wildcard matches are kept as untyped `XmlNode` trees under `'#any'`, and attributes an `x.anyAttribute()` matches as `XmlAttribute`s under `attributes['#any']`.
 
 Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored. No two elements may have the same `xs:ID`, and each `xs:IDREF`, including each item of an `xs:IDREFS`, must be the ID of an element somewhere in the document.
@@ -214,7 +214,7 @@ Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at th
 - Substitution groups, abstract elements and types, and `xsi:type`.
 - Identity constraints (`xs:key`, `xs:keyref`, `xs:unique`).
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
-- Range and enumeration facets on date, time and duration types.
+- Enumerations of binary values, QNames and unions, and of lists of them, whose values xenever has no equality for; length facets on QNames.
 
 ## Compared to alternatives
 

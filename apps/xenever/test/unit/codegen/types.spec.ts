@@ -26,6 +26,9 @@ suite('Generated types', () => {
         expectTypeOf<x.Infer<typeof order.Zip>>().toEqualTypeOf<order.Zip>();
         expectTypeOf<x.Infer<typeof order.FewTags>>().toEqualTypeOf<order.FewTags>();
         expectTypeOf<x.Infer<typeof order.ShortZip>>().toEqualTypeOf<order.ShortZip>();
+        expectTypeOf<x.Infer<typeof order.Holiday>>().toEqualTypeOf<order.Holiday>();
+        expectTypeOf<order.Holiday>().toEqualTypeOf<string>();
+        expectTypeOf<x.Infer<typeof order.TagPair>>().toEqualTypeOf<order.TagPair>();
         expectTypeOf<x.Infer<typeof order.Address>>().toEqualTypeOf<order.Address>();
         expectTypeOf<x.Infer<typeof order.SKU>>().toEqualTypeOf<order.SKU>();
         expectTypeOf<x.Infer<typeof order.Currency>>().toEqualTypeOf<order.Currency>();

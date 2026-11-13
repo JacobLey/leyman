@@ -5,6 +5,7 @@ import type {
     Attribute,
     BigIntegerKind,
     ComplexType,
+    DateKind,
     ElementOf,
     FloatKind,
     IntKind,
@@ -103,15 +104,18 @@ type EnumerationValue<T extends AtomicType, E> = T extends { readonly bigint: tr
     : E;
 
 /**
- * Value of a built-in type: a literal union when enumerated.
+ * Value of a built-in type: a literal union when enumerated, except dates, which match their enumeration by
+ * value.
  *
  * @template T - the type
  */
-type AtomicValue<T extends AtomicType> = T extends {
-    readonly facets: { readonly enumeration: readonly (infer E)[] };
-}
-    ? EnumerationValue<T, E>
-    : BaseValue<T>;
+type AtomicValue<T extends AtomicType> = T['kind'] extends DateKind
+    ? string
+    : T extends {
+            readonly facets: { readonly enumeration: readonly (infer E)[] };
+        }
+      ? EnumerationValue<T, E>
+      : BaseValue<T>;
 
 /**
  * Value of a simple type: `unknown` for the whole `SimpleType` union, whose recursion through union members

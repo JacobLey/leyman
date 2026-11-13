@@ -1,5 +1,5 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
-import type { AtomicKind, BigIntegerKind } from '#internal/lib/schema/ir.js';
+import type { AtomicKind, BigIntegerKind, DateKind } from '#internal/lib/schema/ir.js';
 import type { Builtin, Namespaces, Whitespace } from './builtins.js';
 import type { Decimal } from './decimal.js';
 import { XeneverUnsupportedError } from '#internal/lib/errors.js';
@@ -18,6 +18,12 @@ import {
     processWhitespace,
     whitespaceOrder,
 } from './builtins.js';
+import {
+    compareDateValues,
+    compareDurationValues,
+    readDateValue,
+    readDurationValue,
+} from './date-time.js';
 import { compareDecimals, readDecimal, totalDigits } from './decimal.js';
 import { compilePattern } from './regex.js';
 
@@ -46,6 +52,11 @@ export interface CompiledSimple {
      * one.
      */
     readonly hasIds: boolean;
+    /**
+     * Whether two values the type read are equal in its value space: dates on the timeline, lists item by
+     * item, others as {@link isSameValue}.
+     */
+    readonly isEqual: (a: unknown, b: unknown) => boolean;
     /**
      * Whether a value of the type may be a `QName`, which a value written in the schema (an enumeration or a
      * default) can't resolve.
@@ -150,9 +161,9 @@ const digitsFacets = ['totalDigits', 'fractionDigits'] as const;
 
 /**
  * Facets each family takes, and those XSD allows but xenever doesn't support yet
- * ([XSD 1.1 Part 2 §4.1.5](https://www.w3.org/TR/xmlschema11-2/#rf-facets)). Range facets on date and time
- * types need XSD's partial order across timezones; enumerations of dates, binary values, QNames, lists and
- * unions need equality in their value space, where a literal union of the written values would be unsound.
+ * ([XSD 1.1 Part 2 §4.1.5](https://www.w3.org/TR/xmlschema11-2/#rf-facets)). Enumerations of binary values,
+ * QNames and unions need equality in their value space, which xenever doesn't have for them: a binary value's
+ * encoding, a QName's namespace or a union's member type.
  */
 const familyFacets: Readonly<
     Record<
@@ -170,10 +181,10 @@ const familyFacets: Readonly<
     },
     float: { supported: [...rangeFacets, 'pattern', 'enumeration'], unsupported: [] },
     boolean: { supported: ['pattern'], unsupported: [] },
-    date: { supported: ['pattern'], unsupported: [...rangeFacets, 'enumeration'] },
+    date: { supported: [...rangeFacets, 'pattern', 'enumeration'], unsupported: [] },
     binary: { supported: [...lengthFacets, 'pattern'], unsupported: ['enumeration'] },
     qname: { supported: ['pattern'], unsupported: [...lengthFacets, 'enumeration'] },
-    list: { supported: [...lengthFacets, 'pattern'], unsupported: ['enumeration'] },
+    list: { supported: [...lengthFacets, 'pattern', 'enumeration'], unsupported: [] },
     union: { supported: ['pattern'], unsupported: ['enumeration'] },
 };
 
@@ -593,6 +604,7 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
         hasQName: kind === 'QName',
         isId: kind === 'ID',
         hasIds: idKind !== null,
+        isEqual: isSameValue,
         parse: (text, namespaces, ids) => {
             const read = readBuiltin(text, namespaces);
             checkPatterns(read.lexical);
@@ -638,6 +650,129 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
 };
 
 /**
+ * Compiles a date, time or duration type. Values stay as written (whitespace collapsed); range facets and
+ * enumerations compare them in XSD's partial order, where a value with a timezone and one without, or two
+ * durations like `P1M` and `P30D`, may be neither smaller, equal nor larger: such a value is outside a range
+ * facet, and matches no enumeration value. Facet values are lexical forms.
+ *
+ * @param type - schema value of the type
+ * @param path - path to it
+ * @returns its compiled form
+ */
+const compileDate = (type: Readonly<Record<string, unknown>>, path: string): CompiledSimple => {
+    checkObject(type, ['kind', 'facets'], path);
+    const kind = type.kind as DateKind;
+    const facetsPath = childPath(path, 'facets');
+    const facets = readFacets(type.facets, 'date', path);
+    const order: {
+        readonly read: (lexical: string) => unknown;
+        readonly compare: (a: never, b: never) => number;
+    } =
+        kind === 'duration'
+            ? { read: readDurationValue, compare: compareDurationValues }
+            : { read: lexical => readDateValue(kind, lexical), compare: compareDateValues };
+    const compare = order.compare as (a: unknown, b: unknown) => number;
+
+    /**
+     * Reads a text's lexical form, checked for the type.
+     *
+     * @param text - text as written
+     * @returns the lexical form, whitespace collapsed
+     */
+    const readLexical = (text: string): string => {
+        const lexical = processWhitespace(text, 'collapse');
+        builtins[kind].read(lexical, new Map(), false);
+        return lexical;
+    };
+
+    /**
+     * Reads a facet value.
+     *
+     * @param value - value as written in the schema
+     * @param facetPath - path to it
+     * @returns its lexical form and value
+     */
+    const readSchemaValue = (
+        value: unknown,
+        facetPath: string
+    ): { readonly lexical: string; readonly value: unknown } => {
+        if (typeof value !== 'string') {
+            return invalidSchema('Expected a string', facetPath);
+        }
+        let lexical: string;
+        try {
+            lexical = readLexical(value);
+        } catch (error) {
+            return invalidSchema((error as InvalidValueError).message, facetPath);
+        }
+        return { lexical, value: order.read(lexical) };
+    };
+
+    const checkPatterns = compilePatterns(facets.pattern, facetsPath);
+    if (facets.minInclusive !== undefined && facets.minExclusive !== undefined) {
+        invalidSchema("`minInclusive` can't be combined with `minExclusive`", facetsPath);
+    }
+    if (facets.maxInclusive !== undefined && facets.maxExclusive !== undefined) {
+        invalidSchema("`maxInclusive` can't be combined with `maxExclusive`", facetsPath);
+    }
+    const ranges = rangeFacets
+        .filter(facet => facets[facet] !== undefined)
+        .map(facet => {
+            const read = readSchemaValue(facets[facet], childPath(facetsPath, facet));
+            return { facet, limit: read.value, written: JSON.stringify(read.lexical) };
+        });
+    for (const { lower, upper, mayEqual } of rangeOrders) {
+        const min = ranges.find(range => range.facet === lower);
+        const max = ranges.find(range => range.facet === upper);
+        if (!min || !max) {
+            continue;
+        }
+        // Only a lower bound above the upper one is an error: bounds the order can't compare are allowed
+        // ([XSD 1.0 Part 2 §4.3.10.4](https://www.w3.org/TR/xmlschema-2/#minInclusive-coss)).
+        const comparison = compare(min.limit, max.limit);
+        if (mayEqual ? comparison > 0 : comparison >= 0) {
+            invalidSchema(
+                `\`${lower}\` ${min.written} must be ${mayEqual ? 'at most' : 'less than'} \`${upper}\` ${max.written}`,
+                facetsPath
+            );
+        }
+    }
+    let enumeration: readonly unknown[] | null = null;
+    if (facets.enumeration !== undefined) {
+        const enumerationPath = childPath(facetsPath, 'enumeration');
+        enumeration = checkArray(facets.enumeration, enumerationPath).map(
+            (value, index) => readSchemaValue(value, childPath(enumerationPath, index)).value
+        );
+    }
+
+    return {
+        hasQName: false,
+        isId: false,
+        hasIds: false,
+        isEqual: (a, b) => compare(order.read(a as string), order.read(b as string)) === 0,
+        parse: text => {
+            const lexical = readLexical(text);
+            checkPatterns(lexical);
+            const value = order.read(lexical);
+            for (const { facet, limit, written } of ranges) {
+                // An indeterminate comparison is NaN, which fails every range facet.
+                if (!isInRange(facet, compare(value, limit))) {
+                    throw new InvalidValueError(
+                        `${JSON.stringify(lexical)} is outside \`${facet}\` ${written}`
+                    );
+                }
+            }
+            if (enumeration?.every(allowed => compare(value, allowed) !== 0) === true) {
+                throw new InvalidValueError(
+                    `${JSON.stringify(lexical)} is not one of the enumerated values`
+                );
+            }
+            return lexical;
+        },
+    };
+};
+
+/**
  * Whether a simple type is a list, or a union with a list among its members (at any depth).
  *
  * @param type - schema value of the type
@@ -659,6 +794,7 @@ const isOrContainsList = (type: unknown): boolean => {
  * @param type - schema value of the type
  * @param path - path to it
  * @returns its compiled form
+ * @throws {XeneverUnsupportedError} for an enumeration of a list of binary values, QNames or unions
  */
 const compileList = (type: Readonly<Record<string, unknown>>, path: string): CompiledSimple => {
     checkObject(type, ['kind', 'item', 'facets'], path);
@@ -672,17 +808,76 @@ const compileList = (type: Readonly<Record<string, unknown>>, path: string): Com
     const facets = readFacets(type.facets, 'list', path);
     const checkPatterns = compilePatterns(facets.pattern, facetsPath);
     const length = compileLength(facets, facetsPath);
+    const isEqual = (a: unknown, b: unknown): boolean => {
+        const itemsA = a as readonly unknown[];
+        const itemsB = b as readonly unknown[];
+        return (
+            itemsA.length === itemsB.length &&
+            itemsA.every((value, index) => item.isEqual(value, itemsB[index]))
+        );
+    };
+
+    /**
+     * Reads a list without its enumeration.
+     *
+     * @param text - text as written
+     * @param namespaces - namespaces in scope
+     * @param ids - receives its `ID`s and `IDREF`s
+     * @returns its lexical form, whitespace collapsed, and its items
+     * @throws {InvalidValueError} when the text is not a valid list
+     */
+    const read = (
+        text: string,
+        namespaces: Namespaces,
+        ids?: IdCollector
+    ): { readonly lexical: string; readonly items: readonly unknown[] } => {
+        const lexical = processWhitespace(text, 'collapse');
+        checkPatterns(lexical);
+        const texts = lexical === '' ? [] : lexical.split(' ');
+        checkLength(texts.length, length, lexical);
+        // An item past an invalid one never reaches `ids`, but the error ends the document anyway.
+        return { lexical, items: texts.map(itemText => item.parse(itemText, namespaces, ids)) };
+    };
+
+    let enumeration: readonly (readonly unknown[])[] | null = null;
+    if (facets.enumeration !== undefined) {
+        const enumerationPath = childPath(facetsPath, 'enumeration');
+        const itemKind = (type.item as { readonly kind?: unknown }).kind;
+        // Equality of their items' values isn't known: see `familyFacets`.
+        if (
+            itemKind === 'union' ||
+            ['binary', 'qname'].includes(families[itemKind as AtomicKind])
+        ) {
+            throw new XeneverUnsupportedError(
+                'The facet `enumeration` is not supported on this type: a list of binary values, QNames or unions',
+                { path: enumerationPath }
+            );
+        }
+        enumeration = checkArray(facets.enumeration, enumerationPath).map((value, index) => {
+            const valuePath = childPath(enumerationPath, index);
+            if (typeof value !== 'string') {
+                return invalidSchema('Expected a string', valuePath);
+            }
+            try {
+                return read(value, new Map()).items;
+            } catch (error) {
+                return invalidSchema((error as InvalidValueError).message, valuePath);
+            }
+        });
+    }
     return {
+        isEqual,
         hasQName: item.hasQName,
         isId: false,
         hasIds: item.hasIds,
         parse: (text, namespaces, ids) => {
-            const lexical = processWhitespace(text, 'collapse');
-            checkPatterns(lexical);
-            const items = lexical === '' ? [] : lexical.split(' ');
-            checkLength(items.length, length, lexical);
-            // An item past an invalid one never reaches `ids`, but the error ends the document anyway.
-            return items.map(itemText => item.parse(itemText, namespaces, ids));
+            const { lexical, items } = read(text, namespaces, ids);
+            if (enumeration?.every(allowed => !isEqual(items, allowed)) === true) {
+                throw new InvalidValueError(
+                    `${JSON.stringify(lexical)} is not one of the enumerated values`
+                );
+            }
+            return items;
         },
     };
 };
@@ -711,6 +906,8 @@ const compileUnion = (type: Readonly<Record<string, unknown>>, path: string): Co
         // A union of `ID` doesn't restrict it.
         isId: false,
         hasIds: members.some(member => member.hasIds),
+        // The value doesn't say which member read it, so values compare as they are.
+        isEqual: isSameValue,
         parse: (text, namespaces, ids) => {
             // A union has no whitespace processing of its own; its members each have theirs. Patterns are
             // matched against the collapsed text, as most members collapse it.
@@ -763,7 +960,10 @@ export const compileSimple = (type: unknown, path: string): CompiledSimple => {
         } else if (record.kind === 'union') {
             compiled = compileUnion(record, path);
         } else if (typeof record.kind === 'string' && Object.hasOwn(builtins, record.kind)) {
-            compiled = compileAtomic(record, path);
+            compiled =
+                families[record.kind as AtomicKind] === 'date'
+                    ? compileDate(record, path)
+                    : compileAtomic(record, path);
         } else {
             return invalidSchema(`Unknown simple type kind ${JSON.stringify(record.kind)}`, path);
         }

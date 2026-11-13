@@ -188,6 +188,27 @@ export interface FloatFacets extends PatternFacet, RangeFacets<number> {
 }
 
 /**
+ * Facets of date, time and duration types. Values are lexical strings, checked against the type when the
+ * schema is built, and compare in its value space: on the timeline, a value without a timezone placed 14
+ * hours either side of one with a timezone
+ * ([XSD 1.1 Part 2 §3.3.7.3](https://www.w3.org/TR/xmlschema11-2/#dateTime-order)), and durations by the four
+ * reference dateTimes ([§3.3.6.2](https://www.w3.org/TR/xmlschema11-2/#duration-order)). A comparison that
+ * is indeterminate fails a range facet. An enumeration doesn't narrow the value's type, as `2026-11-12Z`
+ * matches `2026-11-12+00:00`.
+ */
+export interface DateFacets extends PatternFacet, RangeFacets<string> {
+    readonly enumeration?: readonly string[];
+}
+
+/**
+ * Facets of a list. Enumeration values are lexical lists, matched item by item in the item type's value
+ * space; they aren't supported on lists of binary values, QNames or unions.
+ */
+export interface ListFacets extends LengthFacets, PatternFacet {
+    readonly enumeration?: readonly string[];
+}
+
+/**
  * A string type.
  */
 export interface StringType {
@@ -248,7 +269,7 @@ export interface BooleanType {
  */
 export interface DateType {
     readonly kind: DateKind;
-    readonly facets?: PatternFacet;
+    readonly facets?: DateFacets;
 }
 
 /**
@@ -288,7 +309,7 @@ export type AtomicType =
 export interface ListType {
     readonly kind: 'list';
     readonly item: AtomicType | UnionType;
-    readonly facets?: LengthFacets & PatternFacet;
+    readonly facets?: ListFacets;
 }
 
 /**

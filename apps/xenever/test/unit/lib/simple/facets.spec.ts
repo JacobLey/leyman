@@ -150,6 +150,153 @@ suite('Facets', () => {
         });
     });
 
+    suite('Dates', () => {
+        test('Compares dateTimes on the timeline', () => {
+            const type = x.dateTime({
+                minInclusive: '2026-01-01T00:00:00Z',
+                maxExclusive: '2026-02-01T00:00:00.5-01:30',
+            });
+            expect(read(type, ' 2026-01-01T01:00:00+01:00 ')).to.equal('2026-01-01T01:00:00+01:00');
+            expect(read(type, '2026-02-01T01:30:00.4999Z')).to.equal('2026-02-01T01:30:00.4999Z');
+            expectInvalid(
+                type,
+                '2026-01-01T00:59:59.9+01:00',
+                /"2026-01-01T00:59:59\.9\+01:00" is outside `minInclusive` "2026-01-01T00:00:00Z"/v
+            );
+            expectInvalid(type, '2026-02-01T01:30:00.5Z', /outside `maxExclusive`/v);
+            expectInvalid(type, '-2026-01-15T00:00:00Z', /outside `minInclusive`/v);
+        });
+
+        test('Compares values without a timezone with each other', () => {
+            const type = x.date({ minExclusive: '-0001-12-31', maxInclusive: '0001-03-01' });
+            expect(read(type, '0001-01-01')).to.equal('0001-01-01');
+            expectInvalid(type, '-0001-12-31', /outside `minExclusive`/v);
+            expectInvalid(type, '0001-03-02', /outside `maxInclusive`/v);
+        });
+
+        test('Places a value without a timezone 14 hours either side of one with', () => {
+            const type = x.dateTime({ minInclusive: '2026-01-02T00:00:00Z' });
+            expect(read(type, '2026-01-02T14:00:01')).to.equal('2026-01-02T14:00:01');
+            expectInvalid(type, '2026-01-01T09:59:59', /outside `minInclusive`/v);
+            // Indeterminate: it may be either side of the bound.
+            expectInvalid(type, '2026-01-02T14:00:00', /outside `minInclusive`/v);
+            expectInvalid(type, '2026-01-01T10:00:00', /outside `minInclusive`/v);
+            const local = x.dateTime({ maxInclusive: '2026-01-02T00:00:00' });
+            expect(read(local, '2026-01-01T09:59:59Z')).to.equal('2026-01-01T09:59:59Z');
+            expectInvalid(local, '2026-01-01T10:00:00Z', /outside `maxInclusive`/v);
+            expectInvalid(local, '2026-01-02T14:00:01Z', /outside `maxInclusive`/v);
+        });
+
+        test('Fills the fields a type lacks', () => {
+            expect(read(x.time({ maxInclusive: '00:00:00' }), '24:00:00')).to.equal('24:00:00');
+            expectInvalid(x.time({ maxExclusive: '23:00:00' }), '23:00:00.0', /outside/v);
+            expect(read(x.gYear({ minInclusive: '2026' }), '2026')).to.equal('2026');
+            expectInvalid(x.gYearMonth({ maxInclusive: '2026-02' }), '2026-03', /outside/v);
+            expectInvalid(x.gMonthDay({ minInclusive: '--02-29' }), '--02-28', /outside/v);
+            expectInvalid(x.gDay({ maxInclusive: '---30' }), '---31', /outside/v);
+            expect(read(x.gMonth({ enumeration: ['--02'] }), '--02')).to.equal('--02');
+        });
+
+        test('Matches an enumeration by value, returning the text as written', () => {
+            const type = x.date({ enumeration: ['2026-11-12Z', '2026-11-13'] });
+            expect(read(type, '2026-11-12+00:00')).to.equal('2026-11-12+00:00');
+            expect(read(type, '2026-11-13')).to.equal('2026-11-13');
+            expectInvalid(
+                type,
+                '2026-11-13Z',
+                /"2026-11-13Z" is not one of the enumerated values/v
+            );
+            expect(
+                read(x.dateTime({ enumeration: ['2026-11-12T24:00:00Z'] }), '2026-11-13T00:00:00Z')
+            ).to.equal('2026-11-13T00:00:00Z');
+        });
+
+        test('Compares durations by the four dateTimes', () => {
+            const type = x.duration({ minInclusive: 'P1M', maxInclusive: 'P1Y' });
+            expect(read(type, 'P12M')).to.equal('P12M');
+            expect(read(type, 'P32D')).to.equal('P32D');
+            expect(read(type, 'PT744H0.5S')).to.equal('PT744H0.5S');
+            // Shorter than some months and longer than others.
+            expectInvalid(type, 'P30D', /"P30D" is outside `minInclusive` "P1M"/v);
+            expectInvalid(type, 'P365DT0.000001S', /outside `maxInclusive`/v);
+            expectInvalid(type, '-P1M', /outside `minInclusive`/v);
+            expect(read(x.duration({ enumeration: ['P1Y', '-PT1M'] }), '-PT60S')).to.equal(
+                '-PT60S'
+            );
+            expect(read(x.duration({ enumeration: ['PT1.50S'] }), 'PT1.5S')).to.equal('PT1.5S');
+        });
+
+        test('Rejects facet values that are not valid for the type', () => {
+            expectInvalidSchema(
+                x.date({ minInclusive: 1 } as never),
+                /Expected a string/v,
+                '/type/facets/minInclusive'
+            );
+            expectInvalidSchema(
+                x.date({ enumeration: ['2026-11-12', '2026-13-01'] }),
+                /"2026-13-01" is not a valid date/v,
+                '/type/facets/enumeration/1'
+            );
+        });
+
+        test('Rejects a lower bound above the upper bound, but not one it can not compare', () => {
+            expectInvalidSchema(
+                x.duration({ minInclusive: 'P2D', maxInclusive: 'P1D' }),
+                /`minInclusive` "P2D" must be at most `maxInclusive` "P1D"/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.date({ minExclusive: '2026-01-01', maxInclusive: '2026-01-01' }),
+                /`minExclusive` "2026-01-01" must be less than `maxInclusive` "2026-01-01"/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.time({ minInclusive: '01:00:00', minExclusive: '00:00:00' }),
+                /`minInclusive` can't be combined/v,
+                '/type/facets'
+            );
+            expectInvalidSchema(
+                x.time({ maxInclusive: '01:00:00', maxExclusive: '02:00:00' }),
+                /`maxInclusive` can't be combined/v,
+                '/type/facets'
+            );
+            const type = x.duration({ minInclusive: 'P1M', maxInclusive: 'P30D' });
+            expectInvalid(type, 'P30D', /outside `minInclusive`/v);
+        });
+    });
+
+    suite('List enumerations', () => {
+        test('Matches lists item by item, by value', () => {
+            const type = x.list(x.int(), { enumeration: ['1 2', ' 3 '] });
+            expect(read(type, ' 01  +2 ')).to.deep.equal([1, 2]);
+            expect(read(type, '3')).to.deep.equal([3]);
+            expectInvalid(type, '1', /"1" is not one of the enumerated values/v);
+            expectInvalid(type, '2 1', /"2 1" is not one of the enumerated values/v);
+            expect(
+                read(x.list(x.date(), { enumeration: ['2026-11-12Z'] }), '2026-11-12+00:00')
+            ).to.deep.equal(['2026-11-12+00:00']);
+            expect(read(x.list(x.token(), { enumeration: [''] }), ' ')).to.deep.equal([]);
+        });
+
+        test('Rejects enumeration values that are not valid lists', () => {
+            expectInvalidSchema(
+                x.list(x.int(), { enumeration: [1] } as never),
+                /Expected a string/v,
+                '/type/facets/enumeration/0'
+            );
+            expectInvalidSchema(
+                x.list(x.int(), { enumeration: ['1 a'] }),
+                /"a" is not a valid int/v,
+                '/type/facets/enumeration/0'
+            );
+            expectInvalidSchema(
+                x.list(x.int(), { maxLength: 1, enumeration: ['1 2'] }),
+                /has length 2/v,
+                '/type/facets/enumeration/0'
+            );
+        });
+    });
+
     suite('Digits', () => {
         test('Counts total digits of the value', () => {
             const type = x.decimal({ totalDigits: 4 });
@@ -230,11 +377,22 @@ suite('Facets', () => {
 
         test('Rejects a facet xenever does not support', () => {
             for (const [type, facet] of [
-                [{ kind: 'date', facets: { minInclusive: '2026-01-01' } }, 'minInclusive'],
                 [{ kind: 'hexBinary', facets: { enumeration: ['00'] } }, 'enumeration'],
                 [{ kind: 'QName', facets: { length: 1 } }, 'length'],
                 [
-                    { kind: 'list', item: { kind: 'int' }, facets: { enumeration: [] } },
+                    { kind: 'list', item: { kind: 'hexBinary' }, facets: { enumeration: [] } },
+                    'enumeration',
+                ],
+                [
+                    { kind: 'list', item: { kind: 'QName' }, facets: { enumeration: [] } },
+                    'enumeration',
+                ],
+                [
+                    {
+                        kind: 'list',
+                        item: { kind: 'union', members: [{ kind: 'int' }] },
+                        facets: { enumeration: [] },
+                    },
                     'enumeration',
                 ],
                 [

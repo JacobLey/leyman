@@ -9,6 +9,7 @@ import type {
     BigIntFacets,
     BinaryKind,
     ComplexType,
+    DateFacets,
     DateKind,
     DecimalFacets,
     Element,
@@ -18,6 +19,7 @@ import type {
     IntFacets,
     IntKind,
     LengthFacets,
+    ListFacets,
     ModelGroup,
     Occurs,
     Particle,
@@ -304,7 +306,7 @@ export const boolean = <const F extends PatternFacet = never>(
  *
  * @template Kind - built-in type
  */
-type DateBuilder<Kind extends DateKind> = <const F extends PatternFacet = never>(
+type DateBuilder<Kind extends DateKind> = <const F extends DateFacets = never>(
     facets?: F
 ) => Atomic<Kind, NoInfer<F>>;
 
@@ -406,13 +408,10 @@ export type List<Item, Facets> = {
  * A whitespace-separated list: an array of the item type's values.
  *
  * @param item - type of each item: atomic or a union
- * @param facets - facets restricting the list; lengths count items
+ * @param facets - facets restricting the list; lengths count items, and enumeration values are lexical lists
  * @returns the type
  */
-export const list = <
-    const Item extends AtomicType | UnionType,
-    const F extends LengthFacets & PatternFacet = never,
->(
+export const list = <const Item extends AtomicType | UnionType, const F extends ListFacets = never>(
     item: Item,
     facets?: F
 ): List<Item, NoInfer<F>> =>

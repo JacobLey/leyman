@@ -5,6 +5,7 @@ import type {
     AtomicType,
     Attribute,
     ComplexType,
+    DateKind,
     Element,
     ModelGroup,
     Particle,
@@ -368,8 +369,24 @@ const enumerationLiteral = (value: number | string, isBigint: boolean): string =
 };
 
 /**
- * TypeScript type of a built-in type's value: a literal union when enumerated (`AtomicValue` in `infer.ts`).
- * An enumerated `INF`, `-INF` or `NaN` has no literal type, so makes it `number`.
+ * Date, time and duration types, which match their enumeration by value, so it doesn't narrow their type.
+ */
+const dateKinds: ReadonlySet<string> = new Set<DateKind>([
+    'date',
+    'dateTime',
+    'duration',
+    'gDay',
+    'gMonth',
+    'gMonthDay',
+    'gYear',
+    'gYearMonth',
+    'time',
+]);
+
+/**
+ * TypeScript type of a built-in type's value: a literal union when enumerated, except dates
+ * (`AtomicValue` in `infer.ts`). An enumerated `INF`, `-INF` or `NaN` has no literal type, so makes it
+ * `number`.
  *
  * @param type - a built-in type with its facets
  * @returns the TypeScript type
@@ -379,7 +396,7 @@ const atomicValue = (type: AtomicType): string => {
     const enumeration = (
         type.facets as { readonly enumeration?: readonly (number | string)[] } | undefined
     )?.enumeration;
-    if (enumeration === undefined) {
+    if (enumeration === undefined || dateKinds.has(type.kind)) {
         return isBigint ? 'bigint' : baseValues[type.kind];
     }
     if (enumeration.some(value => typeof value === 'number' && !Number.isFinite(value))) {

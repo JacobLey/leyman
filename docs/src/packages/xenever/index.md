@@ -41,6 +41,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 - Elements match on namespace and local name, so the same document with other prefixes reads the same.
 - Children are keyed by name. Mixed content, and any type you mark `ordered`, keep text and elements in document order as a list.
 - `xs:decimal` is a string that keeps every digit. `xs:integer`, `xs:long` and the other big integer types are a `number` within the safe range and an error past it, or a `bigint` when you ask for one.
+- Dates, times and durations stay strings as written. Their range and enumeration facets compare values as XSD orders them, timezones included, so `2026-11-12Z` matches an enumerated `2026-11-12+00:00`.
 - A document that breaks the schema throws an error with the line, column and path of the problem, such as `/order/item[2]/quantity`.
 - A document with a DTD is rejected, so no entity is expanded and no external file is read.
 - The `xenever` CLI turns an XSD, with the files it includes and imports, into a TypeScript file of `x` builders and named types. The same XSD always gives the same file, and `--check` fails in CI when it is out of date.
@@ -49,7 +50,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 
 ## Limits
 
-xenever doesn't write XML yet. Substitution groups, abstract types, `xsi:type`, identity constraints, `xs:redefine` and range facets on date and time types are not supported, and fail when the XSD is loaded.
+xenever doesn't write XML yet. Substitution groups, abstract types, `xsi:type`, identity constraints, `xs:redefine` and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded.
 
 ## Compared to
 

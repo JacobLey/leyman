@@ -63,6 +63,16 @@ suite('Infer', () => {
             expectTypeOf(inferred(big)).toEqualTypeOf<-5n | 9_007_199_254_740_993n>();
         });
 
+        test('Enumerated dates stay strings, as they match by value', () => {
+            const day = x.date({ enumeration: ['2026-11-12Z'] });
+            expectTypeOf(inferred(day)).toEqualTypeOf<string>();
+        });
+
+        test('Enumerated lists are arrays of their items', () => {
+            const pair = x.list(x.int({ enumeration: [1, 2] }), { enumeration: ['1 2'] });
+            expectTypeOf(inferred(pair)).toEqualTypeOf<(1 | 2)[]>();
+        });
+
         test('Lists are arrays', () => {
             const numbers = x.list(x.int(), { maxLength: 3 });
             expectTypeOf(inferred(numbers)).toEqualTypeOf<number[]>();
