@@ -27,9 +27,6 @@ const options = {
  * test, so the list stays true.
  */
 const xeneverGaps = [
-    // Range facets on date and time types are unsupported
-    'XSD: date range facets: accepts a value inside the facet',
-    'XSD: date range facets: rejects a value outside the facet',
     // Abstract types, xsi:type and substitution groups wait for polymorphism
     'XSD: xsi:type: accepts a derived type named by xsi:type',
     'XSD: xsi:type: rejects invalid content of the derived type',
