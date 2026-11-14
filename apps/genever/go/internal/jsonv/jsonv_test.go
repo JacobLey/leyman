@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
@@ -177,6 +178,37 @@ func TestEqual(t *testing.T) {
 	} {
 		if jsonv.Equal(parse(pair[0]), parse(pair[1])) {
 			t.Errorf("%s == %s", pair[0], pair[1])
+		}
+	}
+}
+
+// A lone surrogate fails, rather than becoming U+FFFD and merging keys that differ only there. Pairs, and text that
+// only looks like an escape, are read.
+func TestLoneSurrogates(t *testing.T) {
+	t.Parallel()
+
+	for input, escape := range map[string]string{
+		`{"\ud800": 1, "\udc00": 2}`: `\ud800`,
+		`["ok", "a\uDFFF"]`:          `\uDFFF`,
+		`"\ud83d\ud83d\ude00"`:       `\ud83d`,
+		`"\ud800\n"`:                 `\ud800`,
+		`"\ud800\u0041"`:             `\ud800`,
+		`"\ud800"`:                   `\ud800`,
+	} {
+		_, err := jsonv.Parse([]byte(input))
+		if !errors.Is(err, jsonv.ErrSyntax) || !strings.Contains(err.Error(), "lone surrogate "+escape) {
+			t.Errorf("%s: got %v", input, err)
+		}
+	}
+
+	for input, expected := range map[string]string{
+		`"\ud83d\ude00\u0041"`: "\U0001F600A",
+		`"\\ud800"`:            `\ud800`,
+		`"\"\ud83d\udE00"`:     "\"\U0001F600",
+	} {
+		value, err := jsonv.Parse([]byte(input))
+		if err != nil || value != expected {
+			t.Errorf("%s: got %q, %v", input, value, err)
 		}
 	}
 }

@@ -115,6 +115,7 @@ Go can't express every type TypeScript can, so some types are wider:
 - A `pattern`, or a template of strings, is a `string`. Patterns are still checked for strict mode, by a lenient parser, as Go's regexp doesn't read ECMAScript's lookarounds and backreferences.
 - An enum's constants don't restrict its type.
 - `encoding/json` matches keys case-insensitively, so `{"A": 1}` fills the field for `"a"`.
+- A JSON string with an escaped lone surrogate, such as `"\ud800"`, fails with `ErrSyntax`, as a Go string can't hold one: `encoding/json` would read it as U+FFFD, merging keys that differ only there. genever reads it, though I-JSON ([RFC 7493 §2.1](https://www.rfc-editor.org/rfc/rfc7493#section-2.1)) forbids it.
 - An OpenAPI document has no `Paths` or `Operations` types, only each operation's types (see [Operations](#operations)), and `--typed-min-items` doesn't apply.
 - Manifests record the generator as `genever-go`, so the Go and TypeScript genever never take each other's output as up to date. They are written unformatted.
 

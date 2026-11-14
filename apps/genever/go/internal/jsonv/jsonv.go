@@ -108,6 +108,10 @@ var ErrSyntax = errors.New("invalid JSON")
 
 // Parse decodes one JSON document. A duplicate key keeps its first place and its last value, as JSON.parse does, and a
 // number too large for a float64 is infinite.
+//
+// A string with an escaped lone surrogate, such as "\ud800", fails: a Go string can't hold one, and encoding/json would
+// read it as U+FFFD, so two keys that differ only there would silently become one. I-JSON forbids them too (RFC 7493
+// §2.1, https://www.rfc-editor.org/rfc/rfc7493#section-2.1).
 func Parse(data []byte) (any, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
@@ -121,7 +125,61 @@ func Parse(data []byte) (any, error) {
 		return nil, fmt.Errorf("%w: more than one value", ErrSyntax)
 	}
 
+	if offset := loneSurrogate(data); offset >= 0 {
+		return nil, fmt.Errorf("%w: lone surrogate %s at offset %d, which a Go string can't hold", ErrSyntax,
+			data[offset:offset+len(`\u0000`)], offset)
+	}
+
 	return value, nil
+}
+
+// loneSurrogate returns the offset of the first `\u` escape in valid JSON that is half of a UTF-16 surrogate pair
+// without the other half, or -1 if there is none. Valid JSON has backslashes only in strings, each starting an escape.
+func loneSurrogate(data []byte) int {
+	for offset := 0; offset < len(data); offset++ {
+		if data[offset] != '\\' {
+			continue
+		}
+
+		unit, isUnit := escapedUnit(data, offset)
+		if !isUnit {
+			// Skip the escaped character, which may be a backslash
+			offset++
+
+			continue
+		}
+
+		if !utf16.IsSurrogate(unit) {
+			offset += len(`\u0000`) - 1
+
+			continue
+		}
+
+		low, isLow := escapedUnit(data, offset+len(`\u0000`))
+		if unit >= lowSurrogates || !isLow || low < lowSurrogates || !utf16.IsSurrogate(low) {
+			return offset
+		}
+
+		offset += len(`\u0000\u0000`) - 1
+	}
+
+	return -1
+}
+
+// lowSurrogates is the first low (trailing) surrogate. Every surrogate before it is high (leading).
+const lowSurrogates = 0xDC00
+
+// escapedUnit returns the UTF-16 code unit of the `\u` escape at an offset of valid JSON, if there is one there. The
+// offset is in a string, or at its closing quote.
+func escapedUnit(data []byte, offset int) (rune, bool) {
+	if data[offset] != '\\' || data[offset+1] != 'u' {
+		return 0, false
+	}
+
+	// Valid JSON has four hex digits after each `\u`
+	unit, _ := strconv.ParseUint(string(data[offset+2:offset+len(`\u0000`)]), 16, 16)
+
+	return rune(unit), true
 }
 
 func parseValue(decoder *json.Decoder) (any, error) {

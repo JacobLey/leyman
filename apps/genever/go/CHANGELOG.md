@@ -9,6 +9,7 @@
 - `FileOptions.Client` may follow redirects: GenerateFile fetches through a copy of it that doesn't, so a redirect to a host `FetchHosts` doesn't allow fails with ErrLoad instead of being followed. The caller's client is left as it was.
 - An `enum` of only numbers, such as `[2, 3]`, is a `float64` type with a constant per value, as an enum of only strings is a `string` type, instead of a union of one variant. One of `true` and `false` is a `bool` type.
 - Generated code lists properties, definitions and operations in the order the TypeScript genever does, a JavaScript object's: keys that are array indices (`0` or `12`, not `012`) first, by value, then the rest in the order they are written. So `{"b", "2", "1"}` is `F1`, `F2`, `B`, in both.
+- A JSON string with an escaped lone surrogate, such as `"\ud800"`, fails with ErrSyntax, saying where, instead of being read as U+FFFD, which merged two keys that differed only there and dropped one of them. A Go string can't hold a lone surrogate.
 
 ## 0.2.0
 
