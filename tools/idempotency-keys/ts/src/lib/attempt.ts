@@ -42,12 +42,12 @@ export interface ClaimParams {
  * - `completed`: a response is stored
  */
 export type ClaimResult =
+    | { readonly state: 'claimed' }
     | {
           readonly state: 'completed';
           readonly fingerprint: string;
           readonly response: StoredResponse;
       }
-    | { readonly state: 'claimed' }
     | { readonly state: 'running'; readonly fingerprint: string };
 
 /**

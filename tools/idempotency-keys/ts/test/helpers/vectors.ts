@@ -21,19 +21,19 @@ export interface VectorRequest {
 export type Expectation = 'conflict' | 'mismatch' | 'replay' | 'run';
 
 export type Step =
+    | { readonly await: string; readonly expect: Expectation; readonly response?: VectorResponse }
     | {
           readonly begin: string;
           readonly request: string;
           readonly expect: Expectation;
           readonly response?: VectorResponse;
       }
+    | { readonly release: string; readonly expect: boolean }
     | {
           readonly respond: string;
           readonly response: VectorResponse;
           readonly expect: 'error' | 'lost' | 'released' | 'stored';
       }
-    | { readonly await: string; readonly expect: Expectation; readonly response?: VectorResponse }
-    | { readonly release: string; readonly expect: boolean }
     | { readonly sleep: number }
     | { readonly start: string; readonly request: string };
 
