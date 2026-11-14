@@ -73,6 +73,7 @@ class Resource<
 
     public constructor(
         ...options:
+            | [Resource<TParams, TData, any, TQueryKey>, (x: any) => TPropagatedData]
             | [
                   {
                       key: TQueryKey | ((params: TParams) => TQueryKey);
@@ -82,7 +83,6 @@ class Resource<
                       ) => Promise<TData> | TData;
                   },
               ]
-            | [Resource<TParams, TData, any, TQueryKey>, (x: any) => TPropagatedData]
     ) {
         super(options[0]);
         if (options.length === 1) {

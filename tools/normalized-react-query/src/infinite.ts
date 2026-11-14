@@ -110,6 +110,7 @@ class Infinite<
 
     public constructor(
         ...options:
+            | [Infinite<TParams, TPageParam, TData, any, TQueryKey>, (x: any) => TPropagatedData]
             | [
                   {
                       key: TQueryKey | ((params: TParams) => TQueryKey);
@@ -135,7 +136,6 @@ class Infinite<
                       ) => Promise<TData> | TData;
                   },
               ]
-            | [Infinite<TParams, TPageParam, TData, any, TQueryKey>, (x: any) => TPropagatedData]
     ) {
         super(options[0]);
         if (options.length === 1) {
