@@ -36,6 +36,38 @@ suite('protocol', () => {
         ).to.deep.equal([{ jsonrpc: '2.0', id: 2, result: '💥' }]);
     });
 
+    test('a large message in many chunks is joined once', async () => {
+        const body = Buffer.from(
+            JSON.stringify({ jsonrpc: '2.0', id: 3, result: 'a'.repeat(2 ** 20) }),
+            'utf8'
+        );
+        const framed = Buffer.concat([Buffer.from(`Content-Length: ${body.length}\r\n\r\n`), body]);
+        const chunkSize = 2 ** 10;
+        const chunks: Buffer[] = [];
+        for (let start = 0; start < framed.length; start += chunkSize) {
+            chunks.push(framed.subarray(start, start + chunkSize));
+        }
+
+        // Joining the bytes read so far on every chunk would copy about chunks / 2 times the message
+        let copied = 0;
+        const concat = Buffer.concat.bind(Buffer);
+        Buffer.concat = (list, totalLength) => {
+            const joined = concat(list, totalLength);
+            copied += joined.length;
+            return joined;
+        };
+        let messages: unknown[];
+        try {
+            messages = await read(chunks);
+        } finally {
+            // eslint-disable-next-line require-atomic-updates -- restores the original, which nothing else replaces
+            Buffer.concat = concat;
+        }
+
+        expect(messages).to.deep.equal([{ jsonrpc: '2.0', id: 3, result: 'a'.repeat(2 ** 20) }]);
+        expect(copied).to.be.lessThan(2 * framed.length);
+    });
+
     test('other headers', async () => {
         expect(
             await read([
