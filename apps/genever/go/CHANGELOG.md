@@ -2,6 +2,7 @@
 
 ## 0.2.1
 
+- Requires populate-files/go v0.2.0. GenerateFile never cleans, so its new UnsafeCleanUnlisted option changes nothing here.
 - GenerateFile gives each URL 30 seconds to load, its redirects and body included, and then fails with ErrLoad, instead of waiting forever on a server that never answers.
 - A definition with only `$id` and `$ref` that the schema itself declares is a type like any other, and its `$ref` is checked, so one to a document that isn't loaded fails with ErrUnsupported instead of being dropped. Only the aliases GenerateFile adds itself, when a file's `$id` isn't the URL it was loaded from, are still seen through. So a referenced file that only holds a `$ref` is a type named after it, and two such definitions referring to each other are a strict mode error, like any other `$ref` back to the same value.
 

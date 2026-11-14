@@ -249,13 +249,14 @@ func GenerateFile(ctx context.Context, input string, options FileOptions) (FileR
 	result, err := populatefiles.PopulateFile(
 		populatefiles.File{ManifestInputs: inputs, Path: output, Content: content, Signed: options.Signed},
 		populatefiles.Options{
-			Cwd:       cwd,
-			TargetDir: "",
-			Manifest:  manifestPath,
-			Check:     options.Check,
-			DryRun:    options.DryRun,
-			Force:     options.Force,
-			Clean:     false,
+			Cwd:                 cwd,
+			TargetDir:           "",
+			Manifest:            manifestPath,
+			Check:               options.Check,
+			DryRun:              options.DryRun,
+			Force:               options.Force,
+			Clean:               false,
+			UnsafeCleanUnlisted: false,
 		},
 	)
 	if err != nil {

@@ -11,7 +11,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
-	github.com/JacobLey/leyman/apps/populate-files/go v0.1.1 // indirect
+	github.com/JacobLey/leyman/apps/populate-files/go v0.2.0 // indirect
 	github.com/JacobLey/leyman/tools/generated-signature/go v0.1.0 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect
