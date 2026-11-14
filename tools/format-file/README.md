@@ -121,6 +121,8 @@ await formatFiles(['./src/generated.ts', './src/other.ts']);
 
 Formats a raw text string as if it were a file in the current working directory, so the project's formatter configuration applies, and returns the formatted result. If no formatter is installed, the text is returned unchanged.
 
+The text is formatted by its extension only: settings matched by path, like Biome's `overrides` and `files.includes`, don't apply, so the result depends only on the text, the extension and the configuration. Formatting it as its real destination would make it depend on the disk instead, since Biome applies its ignore settings to text only when a file exists at that path.
+
 **Parameters**
 
 | Parameter | Type                   | Default | Description                                                  |

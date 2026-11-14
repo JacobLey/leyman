@@ -130,7 +130,7 @@ export class Formatter {
     }
 
     async #formatText(text: string, options: TextFormatterOptions = {}): Promise<string> {
-        // Formatted as if it were a file in the working directory, so that the project's configuration applies
+        // A path that doesn't exist, so the result doesn't depend on the disk (see `TextFormatter`)
         const filePath = Path.resolve(`format-file${options.ext ?? '.js'}`);
         const formatters = await this.#getFormatters(options);
         if (options.unsafeFallback !== true) {

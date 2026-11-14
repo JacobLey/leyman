@@ -44,8 +44,11 @@ export interface TextFormatterOptions extends FileFormatterOptions {
     ext?: '.json' | `.${'' | 'c' | 'm'}${'js' | 'ts'}${'' | 'x'}`;
 }
 /**
- * Format text as if it were a file in the working directory, so the project's configuration applies.
- * Returns the text unchanged if no formatter is installed, or the formatter ignores that path.
+ * Format text as if it were a file named `format-file<ext>` in the working directory, so the project's configuration
+ * applies. Only by its extension: settings matched by path, such as Biome's `overrides` and `files.includes`, don't
+ * apply, so the result depends only on the text, the extension and the configuration. Biome applies its ignore settings
+ * to text only when a file exists at the path, so formatting text as its real destination would change the result once
+ * the file is written. Returns the text unchanged if no formatter is installed.
  *
  * @rejects {FormatFileError} if the formatter fails, such as on a syntax error or an invalid config
  */
