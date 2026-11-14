@@ -139,6 +139,21 @@ suite('findImport', () => {
         }
     });
 
+    context.test('A directory named like .. is inside startAt', async ({ rootJs }) => {
+        const dir = Path.join(dataDir, '..dots');
+        await mkdir(dir, { recursive: true });
+        try {
+            expect(
+                await FindImport.findImport('root.js', { cwd: dir, startAt: dataDir })
+            ).to.deep.equal({
+                filePath: Path.join(dataDir, 'root.js'),
+                content: rootJs,
+            });
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
+
     test('Not found', async () => {
         const notFound = await FindImport.findImport('does-not-exist.mjs');
 

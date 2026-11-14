@@ -7,8 +7,22 @@ import { parseCwd } from 'parse-cwd';
 // Re-export for convenience
 export type { Directory } from 'parse-cwd';
 
-const isInside = (parent: string, target: string): boolean =>
-    !Path.relative(parent, target).startsWith('..');
+/**
+ * Whether `target` is `parent` or a directory below it.
+ * Only a `..` segment leaves `parent`, not a name that starts with `..` (e.g. `..foo`).
+ *
+ * @param parent - absolute directory
+ * @param target - absolute directory
+ * @returns true if `target` is `parent` or below it
+ */
+const isInside = (parent: string, target: string): boolean => {
+    const relative = Path.relative(parent, target);
+    return !(
+        relative === '..' ||
+        relative.startsWith(`..${Path.sep}`) ||
+        Path.isAbsolute(relative)
+    );
+};
 
 /**
  * Whether a file exists at `filePath`.
