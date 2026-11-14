@@ -9,7 +9,7 @@ An ESLint flat config for TypeScript ESM packages with nearly every rule on and 
 
 </div>
 
-`@leyman/eslint-config` turns on every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks and JSX accessibility) as an error. The rules are read from the installed plugins, so a new rule is on as soon as this package takes the plugin release that adds it. Each rule that is turned off or configured has a comment saying why.
+`@leyman/eslint-config` turns on every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks and JSX accessibility) as an error, along with the successors of the deprecated rules it still wants: comment spacing from [ESLint Stylistic](https://eslint.style) and type union and intersection sorting from [Perfectionist](https://perfectionist.dev). The rules are read from the installed plugins, so a new rule is on as soon as this package takes the plugin release that adds it. Each rule that is turned off or configured has a comment saying why.
 
 The config is generated from the package's `package.json`. Its workspace dependencies are treated as internal imports, rules that suggest APIs the package's oldest supported Node.js (`engines.node`) lacks are turned off, and the React rules depend on whether the package uses React. typescript-eslint's type-checked rules run through its project service, so there is no `parserOptions.project` to maintain.
 
@@ -108,9 +108,8 @@ The options passed to `@typescript-eslint/naming-convention`, the second only in
 
 Before 1.0, a release that can make passing code fail (a new rule, a stricter option) is a minor, and other changes are patches.
 
-Every rule a plugin ships is on, so the plugins (and `@eslint/js` and typescript-eslint) are dependencies with `~` ranges: a plugin's patch releases reach you, but its minors, which add rules, only come with a release of this package, once each new rule is decided. Other dependencies take `^`.
+Every rule a plugin ships is on, so the plugins (and `@eslint/js`, typescript-eslint, ESLint Stylistic and Perfectionist) are dependencies with `~` ranges: a plugin's patch releases reach you, but its minors, which add rules, only come with a release of this package, once each new rule is decided. Other dependencies take `^`.
 
 ## Known issues
 
 - In typescript-eslint 8.72, `@typescript-eslint/prefer-string-starts-ends-with` misreads regular expressions with the `v` flag, and its autofix can change behavior. For example, `/^\p{N}/v.test(s)` becomes `s.startsWith('p{N}')`. Since `regexp/require-unicode-sets-regexp` (which is on) moves every regular expression to the `v` flag, you are likely to run into it. The fix ([typescript-eslint#13102](https://github.com/typescript-eslint/typescript-eslint/pull/13102)) is merged but not yet released. Until it is, leyman applies [a patch](https://github.com/JacobLey/leyman/blob/main/patches/@typescript-eslint__eslint-plugin@8.72.1.patch) (pnpm's `patchedDependencies`); run `--fix` with care on `v`-flag expressions, or apply the same patch.
-- Three deprecated rules are still on, configured, for want of a successor among the config's dependencies: `multiline-comment-style` and `spaced-comment` (ESLint moved them to [ESLint Stylistic](https://eslint.style), and removes them in ESLint 11), and `@typescript-eslint/sort-type-constituents` (replaced by `eslint-plugin-perfectionist`'s `sort-union-types` and `sort-intersection-types`). They work until then, and `unicorn/prefer-type-literal-last` stays off, as it contradicts `sort-type-constituents`.

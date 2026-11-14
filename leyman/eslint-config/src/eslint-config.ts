@@ -18,9 +18,11 @@ import {
     importPlugin,
     jsDocPlugin,
     nodePlugin,
+    perfectionistPlugin,
     prettierConfig,
     regexpPlugin,
     sonarPlugin,
+    stylisticPlugin,
     unicornPlugin,
 } from './lib/plugins.js';
 
@@ -295,7 +297,6 @@ export default async function makeEslintConfigForPackage({
         'max-lines-per-function': 'off',
         // Complexity and size are left to review, not capped
         'max-statements': 'off',
-        'multiline-comment-style': ['error', 'separate-lines'],
         // TypeScript rejects calling a class without `new`, and some libraries' functions are capitalized (`oauth.None()`)
         'new-cap': ['error', { capIsNew: false }],
         // Some work runs one at a time on purpose, e.g. against one database
@@ -358,14 +359,6 @@ export default async function makeEslintConfigForPackage({
         ],
         // Keys are ordered by meaning, not alphabetically
         'sort-keys': 'off',
-        'spaced-comment': [
-            'error',
-            'always',
-            {
-                exceptions: ['*'],
-                markers: ['!'],
-            },
-        ],
         // `var` only appears in `declare global`, where its position doesn't matter
         'vars-on-top': 'off',
 
@@ -457,25 +450,6 @@ export default async function makeEslintConfigForPackage({
             {
                 allowAny: false,
                 allowNullish: false,
-            },
-        ],
-        '@typescript-eslint/sort-type-constituents': [
-            'error',
-            {
-                groupOrder: [
-                    'literal',
-                    'keyword',
-                    'named',
-                    'operator',
-                    'import',
-                    'object',
-                    'tuple',
-                    'function',
-                    'conditional',
-                    'intersection',
-                    'union',
-                    'nullish',
-                ],
             },
         ],
         '@typescript-eslint/strict-boolean-expressions': 'error',
@@ -716,6 +690,38 @@ export default async function makeEslintConfigForPackage({
         // JSX a11y, React and React Hooks, for a package that depends on React
         ...react?.rules,
 
+        // Perfectionist: only its union and intersection sorting, the successors of typescript-eslint's deprecated
+        // `sort-type-constituents`: by kind, then naturally (numbers by value), ignoring case and whitespace
+        ...Object.fromEntries(
+            ['perfectionist/sort-intersection-types', 'perfectionist/sort-union-types'].map(
+                rule => [
+                    rule,
+                    [
+                        'error',
+                        {
+                            type: 'natural',
+                            ignoreCase: true,
+                            locales: 'en',
+                            groups: [
+                                'literal',
+                                'keyword',
+                                'named',
+                                'operator',
+                                'import',
+                                'object',
+                                'tuple',
+                                'function',
+                                'conditional',
+                                'intersection',
+                                'union',
+                                'nullish',
+                            ],
+                        },
+                    ],
+                ]
+            )
+        ),
+
         // Regexp
         ...nonDeprecatedRules('regexp', regexpPlugin),
         // `unicorn/prefer-unicode-code-point-escapes` writes `\u{7F}`, not `\x7f`
@@ -761,6 +767,17 @@ export default async function makeEslintConfigForPackage({
         'sonarjs/prefer-specific-assertions': 'off',
         // A TODO comment may record a known follow-up
         'sonarjs/todo-tag': 'off',
+
+        // Stylistic: only the comment rules ESLint deprecated for it
+        '@stylistic/multiline-comment-style': ['error', 'separate-lines'],
+        '@stylistic/spaced-comment': [
+            'error',
+            'always',
+            {
+                exceptions: ['*'],
+                markers: ['!'],
+            },
+        ],
 
         // Unicorn
         // Every disable says why, after `--`. An `eslint-enable` only ends one.
@@ -811,7 +828,8 @@ export default async function makeEslintConfigForPackage({
         // Contradicts `unicorn/prefer-number-properties`
         'unicorn/prefer-global-number-constants': 'off',
         'unicorn/prefer-ternary': ['error', 'only-single-line'],
-        // Contradicts `@typescript-eslint/sort-type-constituents`
+        // Contradicts `perfectionist/sort-union-types`, whose kinds put object types before tuples, functions,
+        // conditional types and `void`
         'unicorn/prefer-type-literal-last': 'off',
         // Deprecated for `unicorn/name-replacements`, which is off too
         'unicorn/prevent-abbreviations': 'off',
@@ -849,8 +867,10 @@ export default async function makeEslintConfigForPackage({
                 'import-x': importPlugin,
                 jsdoc: jsDocPlugin,
                 n: nodePlugin,
+                perfectionist: perfectionistPlugin,
                 regexp: regexpPlugin,
                 sonarjs: sonarPlugin,
+                '@stylistic': stylisticPlugin,
                 unicorn: unicornPlugin,
                 ...react?.plugins,
             },

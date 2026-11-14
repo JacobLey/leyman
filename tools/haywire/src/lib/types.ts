@@ -15,10 +15,7 @@ declare abstract class ProtectedConstructable {
 export type IsClass = typeof Constructable | typeof ProtectedConstructable;
 export type GenericClass<T = unknown> = new (...args: any) => T;
 export type DepsClass<T, Deps extends readonly [...unknown[]]> = new (...args: Deps) => T;
-export type InstanceOfClass<T extends IsClass> = InstanceType<
-    // eslint-disable-next-line @typescript-eslint/sort-type-constituents -- The order of the intersection changes the instance type
-    (new () => never) & T
->;
+export type InstanceOfClass<T extends IsClass> = InstanceType<(new () => never) & T>;
 
 declare const invalidInput: unique symbol;
 export interface InvalidInput<Title extends string = 'InvalidInput'> {

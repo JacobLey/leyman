@@ -263,6 +263,7 @@ catalogs:
   eslint-rules:
     '@eslint-community/eslint-plugin-eslint-comments': ~4.8.1
     '@eslint/js': ~10.0.1
+    '@stylistic/eslint-plugin': ~5.10.0
     '@typescript-eslint/eslint-plugin': ~8.72.1
     '@typescript-eslint/parser': ~8.72.1
     '@typescript-eslint/utils': ~8.72.1
@@ -270,6 +271,7 @@ catalogs:
     eslint-plugin-jsdoc: ~65.4.2
     'eslint-plugin-jsx-a11y': ~6.10.2
     eslint-plugin-n: ~18.5.0
+    eslint-plugin-perfectionist: ~5.13.0
     eslint-plugin-react: ~7.37.5
     eslint-plugin-react-hooks: ~7.1.1
     eslint-plugin-regexp: ~3.3.2

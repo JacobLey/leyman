@@ -43,6 +43,7 @@
   "dependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "catalog:eslint-rules",
     "@eslint/js": "catalog:eslint-rules",
+    "@stylistic/eslint-plugin": "catalog:eslint-rules",
     "@typescript-eslint/eslint-plugin": "catalog:eslint-rules",
     "@typescript-eslint/parser": "catalog:eslint-rules",
     "@typescript-eslint/utils": "catalog:eslint-rules",
@@ -52,6 +53,7 @@
     "eslint-plugin-jsdoc": "catalog:eslint-rules",
     "eslint-plugin-jsx-a11y": "catalog:eslint-rules",
     "eslint-plugin-n": "catalog:eslint-rules",
+    "eslint-plugin-perfectionist": "catalog:eslint-rules",
     "eslint-plugin-react": "catalog:eslint-rules",
     "eslint-plugin-react-hooks": "catalog:eslint-rules",
     "eslint-plugin-regexp": "catalog:eslint-rules",

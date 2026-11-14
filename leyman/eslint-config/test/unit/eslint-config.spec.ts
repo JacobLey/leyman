@@ -1,4 +1,4 @@
-import type { Linter } from 'eslint';
+import type { Linter, Rule } from 'eslint';
 import type { Suite } from 'mocha';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -6,6 +6,8 @@ import Path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect } from 'chai';
 import { ESLint } from 'eslint';
+// eslint-disable-next-line sonarjs/deprecation -- The only export of the core rules' metadata, which says which are deprecated
+import { builtinRules } from 'eslint/use-at-your-own-risk';
 import { after, before, suite, test } from 'mocha';
 import configGenerator, { nonDeprecatedRules } from '#internal/eslint-config.js';
 import { importPlugin } from '#internal/lib/plugins.js';
@@ -198,6 +200,8 @@ suite('configGenerator per file', function (this: Suite) {
                     "'use strict';\n\nconst path = require('node:path');\n\nmodule.exports = path.sep;\n",
                 'src/d.js':
                     '// biome-ignore lint/suspicious/noDebugger: example\n// biome-ignore-all format: example\nexport const d = 1;\n',
+                'src/f.ts':
+                    "/*\n * Block\n * comment\n */\n//Unspaced\nexport type F = '' | 0;\nexport type G = { b: 1 } & { a: 1 };\n",
             },
             { dependencies: { react: '^19' } }
         );
@@ -265,5 +269,38 @@ suite('configGenerator per file', function (this: Suite) {
 
     test("Doesn't capitalize Biome suppressions", async () => {
         expect(await eslint.reported('src/d.js')).to.deep.equal([]);
+    });
+
+    test('Checks comments with ESLint Stylistic, and type constituents with Perfectionist', async () => {
+        expect(await eslint.reported('src/f.ts')).to.deep.equal([
+            '@stylistic/multiline-comment-style',
+            '@stylistic/spaced-comment',
+            'perfectionist/sort-union-types',
+            'perfectionist/sort-intersection-types',
+        ]);
+    });
+
+    test('Turns on no deprecated rule', async () => {
+        const config = await configOf({ dependencies: { react: '^19' } });
+        const plugins = Object.assign({}, ...config.map(block => block.plugins)) as Record<
+            string,
+            ESLint.Plugin
+        >;
+        const [ts, tsx, js] = await Promise.all(
+            ['src/a.ts', 'src/e.tsx', 'src/b.js'].map(async file => eslint.rulesFor(file))
+        );
+        const deprecated = Object.entries({ ...ts, ...tsx, ...js })
+            .filter(([, [severity]]) => severity !== 0)
+            .map(([name]) => name)
+            .filter(name => {
+                const slash = name.lastIndexOf('/');
+                const rule =
+                    slash === -1
+                        ? // eslint-disable-next-line sonarjs/deprecation, @typescript-eslint/no-deprecated -- The only export of the core rules' metadata
+                          builtinRules.get(name)
+                        : plugins[name.slice(0, slash)]?.rules?.[name.slice(slash + 1)];
+                return Boolean((rule as Rule.RuleModule | undefined)?.meta?.deprecated);
+            });
+        expect(deprecated).to.deep.equal([]);
     });
 });
