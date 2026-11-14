@@ -3,9 +3,11 @@ package idempotencykeys_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -339,6 +341,38 @@ func TestHandleSendsTheResponseAsWrittenAndStoresIt(t *testing.T) {
 		if recorder.Code != http.StatusAccepted || recorder.Body.String() != "accepted" ||
 			recorder.Header().Get("X-Before") != "1" || recorder.Header().Get("X-After") != "" {
 			t.Fatalf("got %d %s %v", recorder.Code, recorder.Body, recorder.Header())
+		}
+	}
+}
+
+// Header names are in byte order of their lower case, names differing only in case (set in the map directly) in byte
+// order: a total order, whatever order the map gives them in.
+func TestHandleStoresHeadersInByteOrderOfTheirName(t *testing.T) {
+	t.Parallel()
+
+	var got [][][2]string
+
+	keys := newKeys(t, newMemoryStore(), idempotencykeys.WithRespondPolicy(func(response idempotencykeys.StoredResponse) idempotencykeys.Action {
+		got = append(got, response.Headers)
+
+		return idempotencykeys.ActionComplete
+	}))
+	next := http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		header := writer.Header()
+		header["x-a"] = []string{"3"}
+		header["X-A"] = []string{"1", "2"}
+		header["B"] = []string{"4"}
+		header["a"] = []string{"0"}
+	})
+
+	for i := range 20 {
+		serve(keys, newRequest(t, "/notes", fmt.Sprint("k", i), ""), handleOptions(), next)
+	}
+
+	expected := [][2]string{{"a", "0"}, {"B", "4"}, {"X-A", "1"}, {"X-A", "2"}, {"x-a", "3"}}
+	for _, headers := range got {
+		if !slices.Equal(headers, expected) {
+			t.Fatalf("got %q", headers)
 		}
 	}
 }

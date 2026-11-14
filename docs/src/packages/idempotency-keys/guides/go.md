@@ -118,7 +118,7 @@ The two agree on every hash and every record. Where Go's HTTP types differ from 
 - The request target is hashed as a WHATWG URL serializes it, as TypeScript gets it from `Request.url`. `RequestTarget` parses `r.RequestURI` with the URL Standard's rules, so `/a/../notes` and `/notes` are one request, `/café` is `/caf%C3%A9`, and an absolute-form target (`http://host/notes`) hashes as its path. A request whose `RequestURI` is empty (built for a handler, not read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped its own way.
 - Go strings are bytes, so a header value is hashed and stored as the bytes received, where TypeScript reads each byte as one character.
 - Go moves `Host` out of the request's headers, so `Handle` takes it from `r.Host` when it is a fingerprint header.
-- Go's `http.Header` is a map, so a response's headers are stored by name in byte order, each name's values in order.
+- Go's `http.Header` is a map, so a response's headers are stored by name, in byte order of their lower-case names, each name's values in order.
 
 The [interop e2e](/packages/idempotency-keys/reference/specification#interop) runs a server in each language against the other on every store and notifier.
 

@@ -1,5 +1,9 @@
 # idempotency-keys-go
 
+## 0.2.1
+
+- `Handle` stores a response's headers in a fixed order: by lower-case name in byte order, as documented, and names that differ only in case (which a handler can only set by writing to the header map directly) by their bytes, instead of in whatever order the map gave them.
+
 ## 0.2.0
 
 - `SpecVersion` is the version of the idempotency-keys specification the module implements (`"1.0"`). The specification is now versioned as `major.minor`, and servers whose implementations share a major version share keys.

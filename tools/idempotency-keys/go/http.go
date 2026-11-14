@@ -2,6 +2,7 @@ package idempotencykeys
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -125,8 +126,8 @@ func (k *Keys) Middleware(options func(r *http.Request) HandleOptions) func(next
 // the whole body, and next gets it unread, so put a body-size limit ([net/http.MaxBytesReader]) before it.
 //
 // next writes to a recorder, so its response is buffered and sent once it returns: it can't flush, hijack the
-// connection, or send informational (1xx) responses. Go's Header is a map, so its response headers are stored by name
-// in byte order, each name's values in order.
+// connection, or send informational (1xx) responses. Go's Header is a map, so its response headers are stored in byte
+// order of their lower-case names (names differing only in case in byte order), each name's values in order.
 //
 // A request without a key runs as is, unless Required. When next panics, the attempt doesn't end: its lease runs out,
 // and a later request with the key runs. When the response can't be stored ([ErrUnsendableResponse]) or the store
@@ -278,8 +279,10 @@ func (rec *recorder) Write(data []byte) (int, error) {
 
 func (rec *recorder) response() StoredResponse {
 	rec.WriteHeader(http.StatusOK)
+	// Names differing only in case, which a handler can only set by writing to the map directly, are told apart by their
+	// bytes, so the order is total and the map's random order never shows
 	names := slices.SortedFunc(maps.Keys(rec.sent), func(a, b string) int {
-		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
+		return cmp.Or(strings.Compare(strings.ToLower(a), strings.ToLower(b)), strings.Compare(a, b))
 	})
 
 	var headers [][2]string

@@ -183,7 +183,7 @@ Go strings are bytes, so a header value is hashed and stored as the bytes receiv
 ## Limits
 
 - **Responses are buffered** so they can be stored. `next` writes to a recorder, which means it can't flush, hijack the connection or send informational (`1xx`) responses, and the response is only sent once `next` returns.
-- **Headers are stored by name, in byte order.** Go's `http.Header` is a map, so there is no other order to keep. The values under each name keep their order.
+- **Headers are stored by name, in byte order of their lower-case names.** Go's `http.Header` is a map, so there is no other order to keep. Names differing only in case, which a handler can only set by writing to the map directly, are in byte order of the names as set. The values under each name keep their order.
 - **A request with an empty `RequestURI`** (one built to call a handler directly, rather than read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped in its own way.
 - **No lease renewal.** Set the lease above your slowest handler, since a request that runs longer can be taken over and run twice.
 
