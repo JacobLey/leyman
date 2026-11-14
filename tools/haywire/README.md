@@ -569,7 +569,7 @@ bind(pluginId.list('multi')).withFactory(() => [{ name: 'a' }, { name: 'b' }]);
 ```
 
 Things to keep in mind:
-- Elements from one provider keep their order. **No order is guaranteed across providers**, so do not rely on the order bindings were added.
+- Elements come in the order their bindings were added: `addBinding()` appends, `mergeModule(other)` puts `other`'s bindings after this module's, and a container factory's `bindInstance()` elements follow the module's, in the order they were bound. A `list('multi')` binding's elements keep the order its provider returned them in.
 - `nullable()`/`undefinable()` apply to each _element_. A list can only be requested (or depended on) as non-null if _every_ binding is non-null, so a single `.nullable()` binding makes the whole list nullable.
 - A nullable `list('multi')` provider that returns `null` contributes a single `null` element (same for `undefined`). Return `[]` for "no elements".
 - Adding the exact same binding instance more than once (e.g. via merged modules) only includes it once. Separate bindings are always included, even if they return the same value.
@@ -590,7 +590,7 @@ You can turn a single binding into a Module using `createModule(<binding>)`. Thi
 
 You can continue to attach bindings to the module with `module.addBinding`. This is type safe, so attaching a binding is an immutable operation, it does not mutate the existing module, but instead return a _new_ module with updated types.
 
-You can also attach an entire other module! `module.mergeModule(otherModule)` will return a new module that is a combination of both. The order that bindings and modules are combined does not matter.
+You can also attach an entire other module! `module.mergeModule(otherModule)` will return a new module that is a combination of both. The order that bindings and modules are combined does not matter, except for the order of [list](#lists) elements.
 
 It is important that one-and-only-one binding is declared for every dependency, so Haywire enforces this with both type safety and runtime enforcement!
 
@@ -1212,7 +1212,7 @@ Represents a collection of `Binding`s, each for a unique identifier.
 | Method                         | Parameters         | Return Type                  | Notes                                                                                                                                                                                                                                                                                    |
 | ------------------------------ | ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `addBinding(binding)`          | `Binding`          | `Module`                     | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied                                                                                                              |
-| `mergeModule(module)`          | `Module`           | `Module`                     | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied                                                                         |
+| `mergeModule(module)`          | `Module`           | `Module`                     | Returns a _new_ module with two modules merged. Order does not matter, except that `A.mergeModule(B)` puts `B`'s list elements after `A`'s. Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied                                              |
 | `replaceBinding(binding)`      | `Binding`          | `Module`                     | Returns a _new_ module with the existing binding for that output id (every binding, for a list) swapped for this one. Type+runtime validations ensure a binding already exists and all dependencies are still satisfied. See [Replacing bindings in tests](#replacing-bindings-in-tests) |
 | `toContainer(options?)`        | `ContainerOptions` | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. Same as [`createContainer(module, options)`](#createcontainer).                                                                       |
 | `toContainerFactory(options?)` | `ContainerOptions` | `ContainerFactory`           | Returns a container factory to bind instances for the remaining dependencies.                                                                                                                                                                                                            |

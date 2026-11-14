@@ -104,13 +104,13 @@ Once both are set, the result is a `Binding`. Its methods return a new binding:
 
 An immutable collection of bindings, one per id (except [lists](/packages/haywire/guides/lists)). Every method returns a new module, and checks at compile time and runtime that outputs are unique and dependencies are satisfied.
 
-| Method                         | Description                                                                                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `addBinding(binding)`          | Adds a binding.                                                                                                                            |
-| `mergeModule(module)`          | Adds every binding of another module. Order doesn't matter.                                                                                |
-| `replaceBinding(binding)`      | Replaces the binding for an id, or every binding of a list. See [Replacing bindings](/packages/haywire/guides/testing#replacing-bindings). |
-| `toContainer(options?)`        | Same as [`createContainer(module, options)`](#createcontainer-moduleorfactory).                                                            |
-| `toContainerFactory(options?)` | Same as [`createContainerFactory(module, options)`](#createcontainerfactory-module).                                                       |
+| Method                         | Description                                                                                                                                           |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addBinding(binding)`          | Adds a binding.                                                                                                                                       |
+| `mergeModule(module)`          | Adds every binding of another module. Order doesn't matter, except that its [list](/packages/haywire/guides/lists) elements come after this module's. |
+| `replaceBinding(binding)`      | Replaces the binding for an id, or every binding of a list. See [Replacing bindings](/packages/haywire/guides/testing#replacing-bindings).            |
+| `toContainer(options?)`        | Same as [`createContainer(module, options)`](#createcontainer-moduleorfactory).                                                                       |
+| `toContainerFactory(options?)` | Same as [`createContainerFactory(module, options)`](#createcontainerfactory-module).                                                                  |
 
 ## `Container`
 

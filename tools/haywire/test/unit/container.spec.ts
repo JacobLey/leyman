@@ -4035,6 +4035,33 @@ suite('container', () => {
         });
 
         suite('Ordering', () => {
+            test('Elements come in binding order', async () => {
+                const letterId = identifier<string>().named('binding-order').list();
+                const first = createModule(
+                    bind(letterId).withAsyncFactory(async () => {
+                        await setTimeout(10);
+                        return 'a';
+                    })
+                ).addBinding(bind(letterId.list('multi')).withFactory(() => ['c', 'b']));
+                const second = createModule(bind(letterId).withFactory(() => 'e')).addBinding(
+                    bind(letterId).withAsyncFactory(async () => 'd')
+                );
+
+                expect(
+                    await createContainer(first.mergeModule(second)).getAsync(letterId)
+                ).to.deep.equal(['a', 'c', 'b', 'e', 'd']);
+                expect(
+                    await createContainer(second.mergeModule(first)).getAsync(letterId)
+                ).to.deep.equal(['e', 'd', 'a', 'c', 'b']);
+                expect(
+                    await createContainerFactory(first)
+                        .bindInstance(letterId, 'z')
+                        .bindInstance(letterId, 'y')
+                        .toContainer()
+                        .getAsync(letterId)
+                ).to.deep.equal(['a', 'c', 'b', 'z', 'y']);
+            });
+
             test('Elements from a single provider retain their order', async () => {
                 const letterId = identifier<string>().named('letters');
                 const outId = identifier<string[]>().named('letters-out');
@@ -4059,10 +4086,7 @@ suite('container', () => {
                     await container.getAsync(letterId.list()),
                     await container.getAsync(outId),
                 ]) {
-                    // No ordering is guaranteed across providers
-                    expect(result).to.have.members(['a', 'b', 'c', 'x', 'y']);
-                    const start = result.indexOf('c');
-                    expect(result.slice(start, start + 3)).to.deep.equal(['c', 'a', 'b']);
+                    expect(result).to.deep.equal(['c', 'a', 'b', 'x', 'y']);
                 }
             });
 

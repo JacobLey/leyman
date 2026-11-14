@@ -459,7 +459,9 @@ export class HaywireId<
      * spread into the collected list). A nullable/undefinable 'multi' provider returning `null`/`undefined`
      * contributes a single `null`/`undefined` element.
      *
-     * Elements from a single provider retain their order, but no order is guaranteed across providers.
+     * Elements come in the order their bindings were added (`mergeModule()` appends the other module's,
+     * and a container factory's `bindInstance()` elements follow the module's). A 'multi' binding's elements keep the
+     * order its provider returned them in.
      *
      * @param [list=true] - (un)sets the ability to depend on a list of values (from multiple providers),
      * 'multi' allows providers to return an array themselves.

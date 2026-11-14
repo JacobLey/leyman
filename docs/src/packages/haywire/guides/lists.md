@@ -25,7 +25,7 @@ const container = createContainer(
         .addBinding(bind(PluginRunner).withDependencies([pluginId]).withConstructorProvider())
 );
 
-container.get(pluginId); // [{ name: 'logging' }, { name: 'metrics' }], in any order
+container.get(pluginId); // [{ name: 'logging' }, { name: 'metrics' }]
 ```
 
 Each `list()` binding's provider returns one element. To contribute several, or none, bind with `.list('multi')` and return an array:
@@ -45,7 +45,7 @@ bind(pluginId.list('multi')).withFactory(() => [{ name: 'auth' }, { name: 'cache
 
 ## Things to know
 
-- Order is only kept within a provider. Elements from different bindings come in no guaranteed order, so don't rely on the order they were added.
+- Elements come in the order their bindings were added: `addBinding()` appends, `mergeModule(other)` puts `other`'s bindings after this module's, and a container factory's `bindInstance()` elements follow the module's, in the order they were bound. A `list('multi')` binding's elements keep the order its provider returned them in.
 - `nullable()` and `undefinable()` apply to each element. A list can only be depended on as non-null if every binding is non-null, so one `.nullable()` binding makes the whole list nullable.
 - A nullable `list('multi')` provider that returns `null` contributes one `null` element. Return `[]` to contribute nothing.
 - The same binding added more than once, for example through two merged modules, is included once. Separate bindings are always included, even if they return equal values.
