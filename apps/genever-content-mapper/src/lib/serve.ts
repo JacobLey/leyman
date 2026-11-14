@@ -17,20 +17,20 @@ const invalidParams = -32_602;
 /**
  * A request the mapper can't answer, reported to TypeScript as a JSON-RPC error rather than a result.
  */
-class ProtocolError extends Error {
-    public readonly code: number;
-
-    /**
-     * @param message - what is wrong with the request
-     * @param options - details of the error
-     * @param options.code - JSON-RPC error code
-     */
-    public constructor(message: string, options: ErrorOptions & { readonly code: number }) {
-        super(message, options);
-        this.name = 'ProtocolError';
-        this.code = options.code;
-    }
+interface ProtocolError {
+    readonly error: { readonly code: number; readonly message: string };
 }
+
+/**
+ * Answer a request with a JSON-RPC error.
+ *
+ * @param code - JSON-RPC error code
+ * @param message - what is wrong with the request
+ * @returns the error response's payload
+ */
+const protocolError = (code: number, message: string): ProtocolError => ({
+    error: { code, message },
+});
 
 /**
  * Prefix TypeScript shows before each of the mapper's diagnostic codes.
@@ -44,35 +44,40 @@ type Params = Readonly<Record<string, unknown>>;
  *
  * @returns handler of each method
  */
-const handlers = (): Readonly<Record<string, (params: Params) => unknown>> => {
+const handlers = (): Readonly<
+    Record<string, (params: Params) => ProtocolError | { readonly result: unknown }>
+> => {
     const projects = new Map<unknown, MapperOptions>();
     return {
         // JavaScript string indices, as the `yaml` package's ranges are
-        initialize: () => ({ positionEncoding: 'utf-16', diagnosticSource }),
+        initialize: () => ({ result: { positionEncoding: 'utf-16', diagnosticSource } }),
         openProject: params => {
             const { options, diagnostics } = parseOptions(params.options);
             projects.set(params.projectHandle, options);
-            return { optionDiagnostics: diagnostics };
+            return { result: { optionDiagnostics: diagnostics } };
         },
         closeProject: params => {
             projects.delete(params.projectHandle);
-            return null;
+            return { result: null };
         },
         transform: params => {
             const options = projects.get(params.projectHandle);
             // Default options would hide a mistake in TypeScript's bookkeeping, or the mapper's
             if (!options) {
-                throw new ProtocolError(
-                    `Unknown projectHandle: ${JSON.stringify(params.projectHandle)}`,
-                    { code: invalidParams }
+                return protocolError(
+                    invalidParams,
+                    `Unknown projectHandle: ${JSON.stringify(params.projectHandle)}`
                 );
             }
-            const { text, diagnostics, mappings } = mapDocument(
-                String(params.content),
-                String(params.fileName),
-                options
-            );
-            return { text, diagnostics, mappings, extension: '.ts' };
+            const { content, fileName } = params;
+            if (typeof content !== 'string' || typeof fileName !== 'string') {
+                return protocolError(
+                    invalidParams,
+                    'transform needs a string content and fileName'
+                );
+            }
+            const { text, diagnostics, mappings } = mapDocument(content, fileName, options);
+            return { result: { text, diagnostics, mappings, extension: '.ts' } };
         },
     };
 };
@@ -84,7 +89,7 @@ const handlers = (): Readonly<Record<string, (params: Params) => unknown>> => {
  * @param input - stream of requests (the mapper process's stdin)
  * @param output - stream of responses (the mapper process's stdout)
  * @returns promise that resolves once `input` ends
- * @rejects {Error} if a message's header has no `Content-Length`, or a handler fails other than on a bad request
+ * @rejects {Error} if a message's header has no `Content-Length`, or a handler fails other than on a bad request (a bug)
  */
 export const serve = async (input: Readable, output: Writable): Promise<void> => {
     const handle = handlers();
@@ -93,24 +98,9 @@ export const serve = async (input: Readable, output: Writable): Promise<void> =>
             continue;
         }
         const handler = Object.hasOwn(handle, method) ? handle[method] : undefined;
-        try {
-            if (!handler) {
-                throw new ProtocolError(`Unknown method: ${method}`, { code: methodNotFound });
-            }
-            writeMessage(output, {
-                id,
-                jsonrpc: '2.0',
-                result: handler((params ?? {}) as Params),
-            });
-        } catch (error) {
-            if (!(error instanceof ProtocolError)) {
-                throw error;
-            }
-            writeMessage(output, {
-                id,
-                jsonrpc: '2.0',
-                error: { code: error.code, message: error.message },
-            });
-        }
+        const response = handler
+            ? handler((params ?? {}) as Params)
+            : protocolError(methodNotFound, `Unknown method: ${method}`);
+        writeMessage(output, { id, jsonrpc: '2.0', ...response });
     }
 };

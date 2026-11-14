@@ -165,22 +165,23 @@ suite('serve', () => {
             .that.equals(diagnosticCodes.syntax);
     });
 
-    test('rejects when a handler fails other than on a bad request', async () => {
-        await expect(
-            exchange([
-                { id: 1, method: 'openProject', params: { projectHandle: 'a' } },
-                {
-                    id: 2,
-                    method: 'transform',
-                    // Not a primitive, so it can't be read as the document's text
-                    params: {
-                        fileName: '/project/a.yaml',
-                        content: { toString: 1 },
-                        projectHandle: 'a',
-                    },
+    test('a transform whose content or fileName is not a string', async () => {
+        const responses = await exchange([
+            { id: 1, method: 'openProject', params: { projectHandle: 'a' } },
+            {
+                id: 2,
+                method: 'transform',
+                params: {
+                    fileName: '/project/a.yaml',
+                    content: { toString: 1 },
+                    projectHandle: 'a',
                 },
-            ])
-        ).to.be.rejectedWith(TypeError);
+            },
+            { id: 3, method: 'transform', params: { content: 'a: 1', projectHandle: 'a' } },
+        ]);
+        expect(responses.slice(1).map(response => response.error?.code)).to.deep.equal([
+            -32_602, -32_602,
+        ]);
     });
 
     test('an unknown method, and notifications', async () => {
