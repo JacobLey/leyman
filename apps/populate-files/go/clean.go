@@ -59,12 +59,12 @@ type listed struct {
 	path  string
 }
 
-// listStale lists the regular files of a directory, recursively, that aren't generated, by path in depth-first order:
-// none when it doesn't exist.
+// listStale lists the regular files of a directory, recursively, that aren't generated, sorted by comparePaths: none
+// when it doesn't exist.
 func listStale(dir string, generated map[string]bool) ([]plan, error) {
 	var stale []plan
 
-	// A stack: the last is next, so each directory's entries are pushed in reverse
+	// Entries still to visit, sorted at the end
 	pending := []listed{{entry: nil, path: dir}}
 
 	for len(pending) > 0 {
@@ -88,10 +88,12 @@ func listStale(dir string, generated map[string]bool) ([]plan, error) {
 			return nil, fmt.Errorf("listing %s: %w", next.path, err)
 		}
 
-		for _, entry := range slices.Backward(entries) {
+		for _, entry := range entries {
 			pending = append(pending, listed{entry: entry, path: filepath.Join(next.path, entry.Name())})
 		}
 	}
+
+	slices.SortFunc(stale, func(a, b plan) int { return comparePaths(a.result.Path, b.result.Path) })
 
 	return stale, nil
 }

@@ -101,6 +101,19 @@ suite('Manifest', () => {
         );
     });
 
+    withDir.test('Names both paths of a file listed twice', async ctx => {
+        const entry = { hash: contentHash('') };
+        await writeFile(
+            ctx.resolve('manifest.json'),
+            JSON.stringify({ version: 1, files: { 'out/a.json': entry, './out/a.json': entry } })
+        );
+
+        await expect(populateFiles([...files], ctx.options)).to.be.rejectedWith(
+            GeneratedSignatureManifestError,
+            `${ctx.resolve('manifest.json')} lists ./out/a.json and out/a.json, which are the same file`
+        );
+    });
+
     suite('Ownership', () => {
         withDir.test('Refuses to overwrite an edited file', async ctx => {
             await populateFiles([...files], ctx.options);

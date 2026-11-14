@@ -127,7 +127,7 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 | `params`  | `readonly PopulateFileParams[]` | —       | Required. A list of [populateFile params](#params), with unique `filePath`s. |
 | `options` | `PopulateOptions`               | `{}`    | Optional. Same as [populateFile options](#options).                          |
 
-**Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
+**Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`), sorted by path.
 
 Every file is decided before any is written or removed, so a failure leaves the files as they were: with `check`, one `PopulateFilesCheckError` reports everything out of date, and a `PopulateFilesOwnershipError` writes nothing.
 
@@ -192,6 +192,7 @@ await populateFiles(
 - Edits are detected for any file type. An unsigned file that exists but doesn't match its hash fails with `edited`, and one the manifest doesn't list fails with `not-owned`, unless `force`. A file that already has exactly the content being written is fine, so adding a manifest to existing output needs no `force`. Signed files are still checked by their own token.
 - `clean` only removes files the manifest lists. Files the previous manifest lists that this run doesn't write are removed (failing with `edited` if they were changed, unless `force`). Nothing else in `targetDir` is touched, so the output can share a directory with other files.
 - The manifest is a generated file too, and it lists exactly this run's files. `check` fails if it would change, and `dryRun` doesn't write it. `populateFile` updates only its own file's entry, keeping the others. Calls writing the same manifest must not run concurrently, so write those files in one `populateFiles` call instead.
+- Paths are recorded exactly as given, relative to the manifest, with no Unicode normalization. Files named with a decomposed `é` and a precomposed `é` are two files on Linux, so they get two entries. Git on macOS commits names precomposed anyway, and normalizing would rewrite manifests that are already written. A manifest that lists one file by two paths, like `a.json` and `./a.json`, can only come from a hand edit, so it throws `GeneratedSignatureManifestError` naming both.
 - `manifestInputs` on a file records hashes of what produced it (such as source files and the generator's version), so a generator can tell its output is up to date without regenerating.
 
 ## Also See

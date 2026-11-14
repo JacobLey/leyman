@@ -12,7 +12,13 @@ import Path from 'node:path';
 import { stringToUint8Array } from 'uint8array-extras';
 import { hasCode } from 'unknown-error';
 import { safeLoadFile } from './lib/loader.js';
-import { assertOwnedByManifest, entryFor, loadManifest, renderManifest } from './lib/manifest.js';
+import {
+    assertOwnedByManifest,
+    comparePaths,
+    entryFor,
+    loadManifest,
+    renderManifest,
+} from './lib/manifest.js';
 import { normalizeFileParams, normalizeFilesParams } from './lib/normalize.js';
 import { applyPlans, planFile } from './lib/populate-file.js';
 
@@ -113,13 +119,17 @@ const readdirIfExists = async (dir: string): Promise<Dirent[]> => {
  * this run didn't write. With one, only files the previous manifest lists, which are known to be
  * generated, so `clean` is safe in a directory that also holds other files.
  *
+ * Stale files are sorted by path (see {@link comparePaths}), and ownership is checked in that
+ * order, so the reported files and the first refusal don't depend on the order the file system
+ * lists them in, or on which read finishes first.
+ *
  * @param params - run state
  * @param params.files - files this run writes
  * @param params.targetDir - target directory
  * @param params.previous - previous manifest entries, or `null` without a manifest
  * @param params.manifestPath - absolute path of the manifest, or `null`
  * @param params.force - remove stale files even if they were edited
- * @returns absolute paths of stale files
+ * @returns absolute paths of stale files, sorted
  * @throws {PopulateFilesOwnershipError} if a stale file listed in the manifest was edited
  */
 const findStalePaths = async ({
@@ -142,25 +152,33 @@ const findStalePaths = async ({
         return entries
             .filter(e => e.isFile())
             .map(e => Path.join(e.parentPath, e.name))
-            .filter(p => !generatedPaths.has(p));
+            .filter(p => !generatedPaths.has(p))
+            .toSorted(comparePaths);
     }
 
-    const stale = await Promise.all(
+    const listed = await Promise.all(
         previous
             .entries()
             .filter(([filePath]) => !generatedPaths.has(filePath))
-            .map(async ([filePath, entry]) => {
-                const existing = await safeLoadFile(filePath);
-                if (existing === null) {
-                    return null;
-                }
-                if (!force) {
-                    assertOwnedByManifest({ filePath, existing, entry });
-                }
-                return filePath;
-            })
+            .toArray()
+            .toSorted(([a], [b]) => comparePaths(a, b))
+            .map(async ([filePath, entry]) => ({
+                filePath,
+                entry,
+                existing: await safeLoadFile(filePath),
+            }))
     );
-    return stale.filter(filePath => filePath !== null);
+    const stale: string[] = [];
+    for (const { filePath, entry, existing } of listed) {
+        if (existing === null) {
+            continue;
+        }
+        if (!force) {
+            assertOwnedByManifest({ filePath, existing, entry });
+        }
+        stale.push(filePath);
+    }
+    return stale;
 };
 
 export const populateFiles: PopulateFiles = async (params, options) => {

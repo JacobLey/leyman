@@ -5,6 +5,7 @@ import { uint8ArrayToString } from 'uint8array-extras';
 import { formatText } from 'format-file';
 import {
     contentHash,
+    GeneratedSignatureManifestError,
     parseManifest,
     serializeManifest,
     verifyManifestEntry,
@@ -13,20 +14,35 @@ import { PopulateFilesOwnershipError } from './lib/errors.js';
 import { safeLoadFile } from './loader.js';
 
 /**
- * @import { GeneratedSignatureManifestError } from 'generated-signature'
- */
-
-/**
  * Manifest entries by absolute file path.
  */
 export type ManifestEntries = ReadonlyMap<string, ManifestEntry>;
 
+const slashed = (filePath: string): string => filePath.replaceAll(Path.sep, '/');
+
+/**
+ * Compare distinct paths by UTF-16 code unit, with `/` separators on every platform: the order a
+ * manifest lists them in, so files are visited (and reported) in an order that doesn't depend on
+ * how they were found.
+ *
+ * @param a - path
+ * @param b - another path
+ * @returns negative or positive
+ */
+export const comparePaths = (a: string, b: string): number =>
+    // eslint-disable-next-line sonarjs/strings-comparison -- code unit order is the point, not a locale's
+    slashed(a) < slashed(b) ? -1 : 1;
+
 /**
  * Read a manifest, if it exists.
  *
+ * Paths are kept exactly as listed, with no Unicode normalization. Two listed paths that resolve
+ * to the same file (like `a.json` and `./a.json`) are an error rather than one silently winning:
+ * populate-files never writes them, so the manifest was edited by hand.
+ *
  * @param manifestPath - absolute path of the manifest
  * @returns entries by absolute path, empty if there is no manifest yet
- * @throws {GeneratedSignatureManifestError} if the manifest is invalid
+ * @rejects {GeneratedSignatureManifestError} if the manifest is invalid, or lists a file twice
  */
 export const loadManifest = async (manifestPath: string): Promise<ManifestEntries> => {
     const raw = await safeLoadFile(manifestPath);
@@ -35,9 +51,22 @@ export const loadManifest = async (manifestPath: string): Promise<ManifestEntrie
     }
     const { files } = parseManifest(uint8ArrayToString(raw));
     const dir = Path.dirname(manifestPath);
-    return new Map(
-        Object.entries(files).map(([relative, entry]) => [Path.resolve(dir, relative), entry])
-    );
+    const entries = new Map<string, ManifestEntry>();
+    const listedAs = new Map<string, string>();
+    // Sorted, so the error names the same pair whatever order the manifest holds them in
+    const sorted = Object.entries(files).toSorted(([a], [b]) => comparePaths(a, b));
+    for (const [relative, entry] of sorted) {
+        const filePath = Path.resolve(dir, relative);
+        const other = listedAs.get(filePath);
+        if (other !== undefined) {
+            throw new GeneratedSignatureManifestError(
+                `${manifestPath} lists ${other} and ${relative}, which are the same file`
+            );
+        }
+        listedAs.set(filePath, relative);
+        entries.set(filePath, entry);
+    }
+    return entries;
 };
 
 /**
@@ -97,12 +126,7 @@ export const renderManifest = async (
 ): Promise<string> => {
     const dir = Path.dirname(manifestPath);
     const files = Object.fromEntries(
-        entries
-            .entries()
-            .map(([filePath, entry]) => [
-                Path.relative(dir, filePath).replaceAll(Path.sep, '/'),
-                entry,
-            ])
+        entries.entries().map(([filePath, entry]) => [slashed(Path.relative(dir, filePath)), entry])
     );
     return formatText(serializeManifest(files), { ext: '.json' });
 };

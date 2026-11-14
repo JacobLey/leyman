@@ -78,7 +78,7 @@ const results = await populateFiles(
 );
 ```
 
-**Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean`.
+**Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean`, sorted by path.
 
 Every file is decided before any is written or removed, so a failure leaves the files as they were: with `check`, one error lists everything out of date, and an [ownership error](#errors) writes nothing.
 

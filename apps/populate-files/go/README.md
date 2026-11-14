@@ -24,7 +24,6 @@ Compared to the TypeScript package:
 
 - Content is bytes, and nothing is formatted. The caller writes JSON content as it should appear, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
 - `Check` is a plain option, where the TypeScript package defaults it to whether it runs in CI.
-- Stale files without a manifest are found in sorted order.
 
 ## Development
 

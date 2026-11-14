@@ -1569,6 +1569,44 @@
       }
     },
     {
+      "description": "Clean removes stale files in path order",
+      "writes": {
+        "out/a/x.txt": "old\n",
+        "out/a.txt": "old\n",
+        "out/Ａ.txt": "old\n",
+        "out/😀.txt": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/a.txt",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/a/x.txt",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/😀.txt",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/Ａ.txt",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {}
+    },
+    {
       "description": "Lists every file, relative to the manifest",
       "call": "populateFiles",
       "files": [
@@ -1994,6 +2032,102 @@
         "out/a.json": {
           "hash": "v1:e346432021b04179518d9614f3560ccd"
         }
+      }
+    },
+    {
+      "description": "Lists a decomposed (NFD) path as given",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "é.txt",
+          "content": "é.txt\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/é.txt",
+          "reason": "file-not-exist",
+          "updated": true
+        },
+        {
+          "filePath": "manifest.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/é.txt": "é.txt\n"
+      },
+      "manifest": {
+        "out/é.txt": {
+          "hash": "v1:911298f38793dfe92c86068cfb08f82e"
+        }
+      }
+    },
+    {
+      "description": "Keeps decomposed (NFD) and precomposed (NFC) paths apart",
+      "writes": {
+        "manifest.json": "{\"version\": 1, \"files\": {\"out/é.txt\": {\"hash\": \"v1:nfc\"}, \"out/é.txt\": {\"hash\": \"v1:nfd\"}}}"
+      },
+      "call": "populateFile",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "results": [
+        {
+          "filePath": "out/a.json",
+          "reason": "file-not-exist",
+          "updated": true
+        }
+      ],
+      "after": {
+        "out/a.json": "{\"a\":1}\n"
+      },
+      "manifest": {
+        "out/a.json": {
+          "hash": "v1:e346432021b04179518d9614f3560ccd"
+        },
+        "out/é.txt": {
+          "hash": "v1:nfd"
+        },
+        "out/é.txt": {
+          "hash": "v1:nfc"
+        }
+      }
+    },
+    {
+      "description": "Rejects a manifest listing one file by two paths",
+      "writes": {
+        "manifest.json": "{\"version\": 1, \"files\": {\"out/a.json\": {\"hash\": \"v1:01d09d19c2139a46aebfb577780d123d\"}, \"./out/a.json\": {\"hash\": \"v1:01d09d19c2139a46aebfb577780d123d\"}}}",
+        "out/a.json": "old\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json"
+      },
+      "error": {
+        "kind": "manifest"
+      },
+      "after": {
+        "out/a.json": "old\n"
       }
     },
     {
@@ -2707,6 +2841,110 @@
       "after": {
         "out/a.json": "{\"a\":1}\n",
         "out/b.ts": "// @generated-signature v1:1600ddbc289fe8ea90169ab0b1a78d6a Generated file. Do not edit outside of manual sections.\nexport const generated = 1;\n// @manual-start custom\nexport const custom = 1;\n// @manual-end custom\n"
+      }
+    },
+    {
+      "description": "Clean removes listed files in path order",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "9",
+              "content": "9\n"
+            },
+            {
+              "filePath": "10",
+              "content": "10\n"
+            },
+            {
+              "filePath": "a",
+              "content": "a\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "out/manifest.json"
+          }
+        }
+      ],
+      "call": "populateFiles",
+      "files": [],
+      "options": {
+        "targetDir": "out",
+        "manifest": "out/manifest.json",
+        "clean": true
+      },
+      "results": [
+        {
+          "filePath": "out/manifest.json",
+          "reason": "content-changed",
+          "updated": true
+        },
+        {
+          "filePath": "out/10",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/9",
+          "updated": true,
+          "reason": "stale-file"
+        },
+        {
+          "filePath": "out/a",
+          "updated": true,
+          "reason": "stale-file"
+        }
+      ],
+      "after": {},
+      "manifest": {}
+    },
+    {
+      "description": "Clean refuses the first edited file in path order",
+      "setup": [
+        {
+          "call": "populateFiles",
+          "files": [
+            {
+              "filePath": "9",
+              "content": "9\n"
+            },
+            {
+              "filePath": "10",
+              "content": "10\n"
+            },
+            {
+              "filePath": "a",
+              "content": "a\n"
+            }
+          ],
+          "options": {
+            "targetDir": "out",
+            "manifest": "out/manifest.json"
+          }
+        }
+      ],
+      "writes": {
+        "out/9": "edited\n",
+        "out/10": "edited\n"
+      },
+      "call": "populateFiles",
+      "files": [],
+      "options": {
+        "targetDir": "out",
+        "manifest": "out/manifest.json",
+        "clean": true
+      },
+      "error": {
+        "kind": "ownership",
+        "filePath": "out/10",
+        "reason": "edited"
+      },
+      "after": {
+        "out/9": "edited\n",
+        "out/10": "edited\n",
+        "out/a": "a\n"
       }
     },
     {

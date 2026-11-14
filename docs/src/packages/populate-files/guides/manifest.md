@@ -39,6 +39,8 @@ await populateFiles(
 
 The manifest path is resolved from `cwd`, not `targetDir`, so it can sit outside the output. Paths in it are relative to the manifest. Commit it with the files it lists. The format is part of [`generated-signature`](/packages/generated-signature/reference/format#manifest).
 
+Paths are recorded exactly as given, with no Unicode normalization. Files named with a decomposed `é` and a precomposed `é` are two files on Linux, so they get two entries. Git on macOS commits names precomposed anyway, and normalizing would rewrite manifests that are already written.
+
 ## Hand edits
 
 Before overwriting an unsigned file that exists and would change, populate-files checks the manifest:
@@ -56,7 +58,7 @@ The last row means adding a manifest to existing output needs no `force`: run on
 
 ## Clean
 
-With a manifest, `clean` removes the files the _previous_ manifest lists that this run doesn't write, and nothing else. A listed file that was edited since fails with `'edited'` instead of being removed, unless `force`.
+With a manifest, `clean` removes the files the _previous_ manifest lists that this run doesn't write, and nothing else. A listed file that was edited since fails with `'edited'` instead of being removed, unless `force`. Stale files are checked, removed and reported sorted by path, so the first refusal is always the same file.
 
 Without a manifest, `clean` removes every file in `targetDir` that this run didn't write.
 
@@ -65,7 +67,7 @@ Without a manifest, `clean` removes every file in `targetDir` that this run didn
 - It lists exactly the files of the last run, and is rewritten after it. With `check`, a manifest that would change fails the check like any other file. `dryRun` doesn't write it.
 - `populateFile` (one file) updates only its own entry, and keeps the others. Separate calls writing the same manifest must not run at the same time, so write those files with one `populateFiles` call instead.
 - It is never checked for edits. Editing it by hand, e.g. to accept a change to a generated file, is deliberate.
-- An invalid manifest fails the run with `GeneratedSignatureManifestError`, from `generated-signature`.
+- An invalid manifest fails the run with `GeneratedSignatureManifestError`, from `generated-signature`. So does one that lists the same file by two paths, like `a.json` and `./a.json`: populate-files never writes that, so it comes from a hand edit, and the error names both paths.
 
 ## Recording inputs
 
