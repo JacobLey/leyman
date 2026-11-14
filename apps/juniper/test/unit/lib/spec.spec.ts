@@ -109,6 +109,13 @@ suite('serializeSpec', () => {
         expect(spec.components.schemas.User).to.have.property('type', 'object');
     });
 
+    test('A defined schema under its own escaped name is its definition', () => {
+        const odd = stringSchema().define('a/b c');
+        const spec = serializeSpec({ openapi: '3.1.0', components: { schemas: { 'a/b c': odd } } });
+
+        expect(spec.components.schemas).to.deep.equal({ 'a/b c': { type: 'string' } });
+    });
+
     test('Keeps other components', () => {
         const spec = serializeSpec({
             openapi: '3.1.0',

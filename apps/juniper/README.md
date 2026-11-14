@@ -505,7 +505,7 @@ const nullableResourceSchema = mergeSchema().oneOf([
 
 #### `.define(name)`
 
-Makes the schema a reusable definition, emitted as `$ref` and collected into `$defs`. See [Reusing schemas with define](#reusing-schemas-with-define).
+Makes the schema a reusable definition, emitted as `$ref` and collected into `$defs`. Any name works: the `$ref` escapes it as a [JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901#section-6) URI fragment, so `.define('a/b c')` is `{ "$ref": "#/$defs/a~1b%20c" }` next to `$defs: { "a/b c": ... }`. See [Reusing schemas with define](#reusing-schemas-with-define).
 
 | Parameter | Type     | Default | Description                                                                 |
 | --------- | -------- | ------- | --------------------------------------------------------------------------- |

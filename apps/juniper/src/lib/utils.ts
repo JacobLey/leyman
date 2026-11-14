@@ -152,3 +152,28 @@ export const copyJson = <T>(value: T): T => {
     }
     return value;
 };
+
+/**
+ * Percent-encodings of the characters a URI fragment may hold as they are, besides those `encodeURIComponent` already
+ * leaves: `$ & + , / : ; = ? @`. See {@link definitionRef}.
+ */
+const fragmentEscapes = /%(?:2[46BCF]|3[ABDF]|40)/gv;
+
+/**
+ * The `$ref` to a definition: its name appended to the definitions path as a JSON Pointer segment in URI fragment form.
+ * `~` is escaped as `~0` and `/` as `~1` (RFC 6901 §3, https://www.rfc-editor.org/rfc/rfc6901#section-3), then each
+ * UTF-8 byte of a character outside RFC 3986's `fragment` (https://www.rfc-editor.org/rfc/rfc3986#section-3.5) is
+ * percent-encoded in uppercase (RFC 6901 §6, https://www.rfc-editor.org/rfc/rfc6901#section-6). So the definition
+ * `a/b c` is `#/$defs/a~1b%20c`, while the key in `$defs` stays `a/b c`. A lone surrogate, which has no UTF-8, is
+ * encoded as U+FFFD.
+ *
+ * @param path - definitions path, already a URI fragment (e.g. `#/$defs/`)
+ * @param name - key of the definition, e.g. `User`
+ * @returns `$ref` value
+ */
+export const definitionRef = (path: string, name: string): string =>
+    path +
+    encodeURIComponent(name.replaceAll('~', '~0').replaceAll('/', '~1').toWellFormed()).replaceAll(
+        fragmentEscapes,
+        kept => decodeURIComponent(kept)
+    );

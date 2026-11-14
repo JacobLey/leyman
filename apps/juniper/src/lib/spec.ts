@@ -1,6 +1,7 @@
 import type { ComponentsParams } from './schema.js';
 import type { JsonSchema, OpenApi30JsonSchema, Schema } from './types.js';
 import { components, isSchema } from './schema.js';
+import { definitionRef } from './utils.js';
 
 const componentsPath = '#/components/schemas/';
 
@@ -135,7 +136,7 @@ export const serializeSpec = <
             !(
                 isRecord(schema) &&
                 Object.keys(schema).length === 1 &&
-                schema.$ref === `${definitionsPath}${name}`
+                schema.$ref === definitionRef(definitionsPath, name)
             )
     );
     for (const [name, schema] of existing) {

@@ -11,7 +11,7 @@ import type {
 } from './types.js';
 import { toDraft07 } from './draft-07.js';
 import { reservedWords } from './types.js';
-import { copyJson, mergeAllOf, mergeRef } from './utils.js';
+import { copyJson, definitionRef, mergeAllOf, mergeRef } from './utils.js';
 
 const allOfSym = Symbol('allOf');
 const anyOfSym = Symbol('anyOf');
@@ -1072,7 +1072,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                 schema.#ref.recursive.schema!,
                 refParams
             );
-            const $ref = definitions.path + schema.#ref.name;
+            const $ref = definitionRef(definitions.path, schema.#ref.name);
             const annotations: JsonSchema<T2> = {};
             for (const [key, value] of Object.entries(baseSchema)) {
                 if (annotationKeywords.has(key)) {
@@ -1169,7 +1169,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
 
         const definitions = params.definitions!;
         const { name } = ref;
-        const refPath = definitions.path + name;
+        const refPath = definitionRef(definitions.path, name);
         const { $ref, ...differences } = mergeRef<T2>({
             baseSchema,
             refSchema,

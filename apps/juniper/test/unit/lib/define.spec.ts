@@ -119,6 +119,33 @@ suite('define', () => {
         expect(validate([{ id: 1.5, name: 'Ann' }])).to.equal(false);
     });
 
+    test('Names are escaped and percent-encoded in the $ref, as a JSON Pointer', () => {
+        const odd = stringSchema().define('a/b~c d%é#');
+        const recursive = defineRecursive<{ next?: unknown }>('self/ref', self =>
+            objectSchema({ properties: { next: self } })
+        );
+        const json = objectSchema({ properties: { odd, recursive } }).toJSON();
+
+        expect(json).to.deep.equal({
+            type: 'object',
+            properties: {
+                odd: { $ref: '#/$defs/a~1b~0c%20d%25%C3%A9%23' },
+                recursive: { $ref: '#/$defs/self~1ref' },
+            },
+            $defs: {
+                'a/b~c d%é#': { type: 'string' },
+                'self/ref': {
+                    type: 'object',
+                    properties: { next: { $ref: '#/$defs/self~1ref' } },
+                },
+            },
+        });
+        const validate = compile(json);
+        expect(validate({ odd: 'x', recursive: { next: {} } })).to.equal(true);
+        expect(validate({ odd: 1 })).to.equal(false);
+        expect(validate({ recursive: { next: { next: 1 } } })).to.equal(false);
+    });
+
     suite('Derived schemas', () => {
         test('Annotations keep the reference', () => {
             expect(
