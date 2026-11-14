@@ -233,7 +233,7 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 
 **Returns** `Promise<PgDolly>`
 
-**Rejects** with `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, and `PgDollyPrefixError` for an invalid prefix. Also with the error from `pg` if the server can't be reached.
+**Rejects** with `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, `PgDollyPrefixError` for an invalid prefix, and `PgDollyRetainMsError` for an invalid `retainMs`. Also with the error from `pg` if the server can't be reached.
 
 #### Options
 
@@ -242,7 +242,7 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 | `url`      | `string`                             | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL. The URLs of clones differ from it only in the database name.                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `prefix`   | `string`                             | `'pg_dolly'`               | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter.                                                                                                                                                                                                                                                                                                                                                                                             |
 | `settings` | `Record<string, string \| string[]>` | `defaultSettings`          | Settings of every database, as `ALTER DATABASE … SET`. A list is a setting that takes several values (`search_path: ['app', 'public']`). Names are case-insensitive, as in Postgres. Merged over the exported `defaultSettings`, which pin what `initdb` takes from the machine: `TimeZone: 'UTC'`, `DateStyle: 'ISO, MDY'`, `lc_monetary`, `lc_numeric` and `lc_time: 'C'`, and `default_text_search_config: 'pg_catalog.simple'`. Templates are built with them, and they are part of the template's hash. |
-| `retainMs` | `number`                             | `86_400_000` (a day)       | How long a template no run has used is kept, and a clone kept from a failed test.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `retainMs` | `number`                             | `86_400_000` (a day)       | How long a template no run has used is kept, and a clone kept from a failed test. A finite number of at least 0.                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ### `dolly.template(sql, options?)`
 
@@ -293,11 +293,12 @@ To keep a committed `schema.sql` up to date, and check it in CI, use [`pg-dolly-
 
 Every error `pg-dolly` throws extends `PgDollyError`. The types `PgDollyOptions`, `DollyTemplate`, `DollyDatabase`, `TemplateOptions`, `DatabaseSetting` and `DumpSchemaOptions` are exported too.
 
-| Error                    | When                                                  |
-| ------------------------ | ----------------------------------------------------- |
-| `PgDollyMissingUrlError` | Neither `url` nor `DATABASE_URL` is set.              |
-| `PgDollyPrefixError`     | The prefix can't start a database name. Has `prefix`. |
-| `PgDollyClosedError`     | Used after `close()`.                                 |
+| Error                    | When                                                            |
+| ------------------------ | --------------------------------------------------------------- |
+| `PgDollyMissingUrlError` | Neither `url` nor `DATABASE_URL` is set.                        |
+| `PgDollyPrefixError`     | The prefix can't start a database name. Has `prefix`.           |
+| `PgDollyRetainMsError`   | `retainMs` isn't a finite number of at least 0. Has `retainMs`. |
+| `PgDollyClosedError`     | Used after `close()`.                                           |
 
 ## Compared to alternatives
 

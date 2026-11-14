@@ -9,6 +9,7 @@ import {
     PgDollyError,
     PgDollyMissingUrlError,
     PgDollyPrefixError,
+    PgDollyRetainMsError,
 } from 'pg-dolly';
 import { connect, Server, serverUrl, uniquePrefix } from '#test/helpers/server.js';
 
@@ -160,6 +161,14 @@ suite('PgDolly', () => {
                 PgDollyPrefixError
             );
         });
+
+        for (const retainMs of [Number.NaN, -1, Number.POSITIVE_INFINITY]) {
+            test(`Rejects a retainMs of ${retainMs}`, async () => {
+                await expect(
+                    PgDolly.connect({ prefix: uniquePrefix(), retainMs })
+                ).to.be.rejectedWith(PgDollyRetainMsError);
+            });
+        }
 
         test('Throws errors that share a base class', async () => {
             await expect(PgDolly.connect({ prefix: 'Not-Valid' })).to.be.rejectedWith(PgDollyError);

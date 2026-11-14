@@ -1,7 +1,12 @@
 import type { QueryResult, QueryResultRow } from 'pg';
 import { createHash, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
-import { PgDollyClosedError, PgDollyMissingUrlError, PgDollyPrefixError } from './errors.js';
+import {
+    PgDollyClosedError,
+    PgDollyMissingUrlError,
+    PgDollyPrefixError,
+    PgDollyRetainMsError,
+} from './errors.js';
 
 export interface PgDollyOptions {
     /**
@@ -32,6 +37,7 @@ export interface PgDollyOptions {
     readonly settings?: Readonly<Record<string, DatabaseSetting>> | undefined;
     /**
      * How long, in milliseconds, a template no run has used is kept, and so is a database kept from a failed test.
+     * A finite number of at least 0: `0` drops them on the next run.
      *
      * @default 86_400_000 (a day)
      */
@@ -327,6 +333,7 @@ export class PgDolly {
      * @returns A connected `PgDolly`
      * @rejects {PgDollyMissingUrlError} Without `url` or `DATABASE_URL`
      * @rejects {PgDollyPrefixError} When the prefix can't start a database name
+     * @rejects {PgDollyRetainMsError} When `retainMs` isn't a finite number of at least 0
      */
     public static async connect(options: PgDollyOptions = {}): Promise<PgDolly> {
         // eslint-disable-next-line n/no-process-env -- `DATABASE_URL` is the one input, by design
@@ -338,6 +345,10 @@ export class PgDolly {
         if (!prefixPattern.test(prefix)) {
             throw new PgDollyPrefixError(prefix);
         }
+        const retainMs = options.retainMs ?? defaultRetainMs;
+        if (!Number.isFinite(retainMs) || retainMs < 0) {
+            throw new PgDollyRetainMsError(retainMs);
+        }
 
         const client = new Client({ connectionString: url });
         // Unhandled, a lost connection would crash the process. The next query rejects instead.
@@ -345,8 +356,8 @@ export class PgDolly {
         await client.connect();
         const dolly = new PgDolly(client, url, {
             prefix,
+            retainMs,
             settings: mergeSettings(options.settings),
-            retainMs: options.retainMs ?? defaultRetainMs,
         });
         try {
             await dolly.#lock('run', dolly.#run);

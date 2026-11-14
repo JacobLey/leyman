@@ -4,6 +4,7 @@ export {
     PgDollyError,
     PgDollyMissingUrlError,
     PgDollyPrefixError,
+    PgDollyRetainMsError,
 } from './lib/errors.js';
 export {
     type DatabaseSetting,

@@ -28,6 +28,19 @@ export class PgDollyPrefixError extends PgDollyError {
 }
 
 /**
+ * `retainMs` isn't a finite number of at least 0. Not a number would never drop anything, and a negative number would
+ * drop kept clones while someone may be looking at them.
+ */
+export class PgDollyRetainMsError extends PgDollyError {
+    public readonly retainMs: number;
+    public constructor(retainMs: number) {
+        super(`Invalid retainMs ${retainMs}: use a finite number of milliseconds of at least 0`);
+        this.name = 'PgDollyRetainMsError';
+        this.retainMs = retainMs;
+    }
+}
+
+/**
  * The `PgDolly` was used after `close()`.
  */
 export class PgDollyClosedError extends PgDollyError {
