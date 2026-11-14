@@ -1,4 +1,4 @@
-import type { CipherGCM, DecipherGCM } from 'node:crypto';
+import type { CipherGCM, CipherGCMOptions, DecipherGCM } from 'node:crypto';
 import type { Encryption, Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import type * as Encrypt from './types.js';
 import { createCipheriv, createDecipheriv } from 'node:crypto';
@@ -22,6 +22,17 @@ const mergeUint8Array = (a: Uint8ArrayBuffer, b: Uint8ArrayBuffer): Uint8ArrayBu
     return merged;
 };
 
+/**
+ * Fixes the GCM tag at the full 16 bytes Web Crypto uses by default. Without it,
+ * Node 22 and 24 accept a truncated 4, 8 or 12 byte tag in `setAuthTag`, which
+ * authenticates with far less security than the browser build gives.
+ *
+ * @param encryption - the encryption in use
+ * @returns cipher options pinning the tag length for GCM, otherwise none
+ */
+const gcmOptions = (encryption: Encryption): CipherGCMOptions | undefined =>
+    encryption.mode === 'GCM' ? { authTagLength: GCM_TAG_BYTES } : undefined;
+
 export const encrypt: (typeof Encrypt)['encrypt'] = async (
     { data, secret },
     { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash, additionalData } = {}
@@ -37,7 +48,8 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
     const cipher = createCipheriv(
         encryptionToCipher(encryption),
         fitKey(secretHash, encryption, hashAlgorithm),
-        iv
+        iv,
+        gcmOptions(encryption)
     );
 
     if (aad) {
@@ -64,11 +76,19 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
     const decipher = createDecipheriv(
         encryptionToCipher(encryption),
         fitKey(hashedSecret, encryption, hashAlgorithm),
-        decode(iv)
+        decode(iv),
+        gcmOptions(encryption)
     );
 
     let content = decode(encrypted);
     if (encryption.mode === 'GCM') {
+        if (content.length < GCM_TAG_BYTES) {
+            // What Web Crypto rejects with, so both builds fail the same way
+            throw new DOMException(
+                `AES-GCM content is shorter than its ${GCM_TAG_BYTES} byte authentication tag`,
+                'OperationError'
+            );
+        }
         if (aad) {
             (decipher as DecipherGCM).setAAD(aad);
         }

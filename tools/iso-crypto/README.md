@@ -411,7 +411,7 @@ Asynchronously decrypts the data using the provided algorithms. Make sure that t
 
 Both the `encrypted` + `iv` comes from the output of `encrypt`, alongside the original `secret`.
 
-With `GCM`, the last 16 bytes of `encrypted` are the authentication tag (the same layout as Web Crypto), and `decrypt` rejects if the content, IV or secret don't match what was encrypted.
+With `GCM`, the last 16 bytes of `encrypted` are the authentication tag (the same layout as Web Crypto), and `decrypt` rejects if the content, IV or secret don't match what was encrypted. Content shorter than the tag rejects with an `OperationError` `DOMException`, as Web Crypto does, so a truncated tag never authenticates.
 
 #### Additional authenticated data
 

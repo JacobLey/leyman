@@ -240,6 +240,20 @@ suite('Encrypt', () => {
         await expect(
             target.decrypt({ ...encrypted, secret: 'Wrong secret' }, { encryption })
         ).to.be.rejectedWith(Error);
+
+        // Only the full 16 byte tag authenticates, not a truncated one
+        const empty = await source.encrypt({ data: '', secret }, { encryption });
+        expect(empty.encrypted).to.have.length(16);
+        for (const length of [0, 4, 8, 12, 15]) {
+            await expect(
+                target.decrypt(
+                    { ...empty, encrypted: empty.encrypted.slice(0, length), secret },
+                    { encryption }
+                )
+            )
+                .to.be.rejectedWith(DOMException)
+                .and.eventually.have.property('name', 'OperationError');
+        }
     };
 
     const legacyTest = async ({ source }: SourceEncrypt) => {
