@@ -16,6 +16,12 @@ const MAX_SEED = 2 ** SEED_BITS - 1;
 export const SPEC_VERSION = '1.0';
 
 /**
+ * Hash of a key: two unsigned 32 bit lanes. The same type as `constant-consistent-hash` exports, kept identical by a
+ * test rather than imported, so this package doesn't depend on the TypeScript implementation.
+ */
+export type KeyHash = readonly [lane0: number, lane1: number];
+
+/**
  * Options for {@link consistentHash}.
  */
 export interface ConsistentHashOptions {
@@ -51,7 +57,7 @@ const parseSeed = (options?: ConsistentHashOptions): number => {
  * @returns two unsigned 32 bit integers
  * @throws {RangeError} when seed is out of bounds
  */
-export const hashKey = (key: string, options?: ConsistentHashOptions): [number, number] => {
+export const hashKey = (key: string, options?: ConsistentHashOptions): KeyHash => {
     const [a, b] = hashKeyInWasm(key, parseSeed(options));
     return [a!, b!];
 };

@@ -48,6 +48,7 @@
     "c8": "catalog:",
     "constant-consistent-hash": "workspace:^",
     "eslint": "catalog:",
+    "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"

@@ -1,3 +1,5 @@
+import type * as wasm from '@leyman/constant-consistent-hash-wasm';
+import { expectTypeOf } from 'expect-type';
 import { bucket } from '@leyman/constant-consistent-hash-rust';
 import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with {
     type: 'json',
@@ -23,6 +25,13 @@ suite('Through WASM', () => {
 
     test('Implements the spec version of the test vectors', () => {
         expect(SPEC_VERSION).to.equal(specVersion);
+    });
+
+    test('Has the same types as the TypeScript implementation', () => {
+        expectTypeOf<wasm.KeyHash>().toEqualTypeOf<typescript.KeyHash>();
+        expectTypeOf<wasm.ConsistentHashOptions>().toEqualTypeOf<typescript.ConsistentHashOptions>();
+        expectTypeOf(hashKey).toEqualTypeOf(typescript.hashKey);
+        expectTypeOf(consistentHash).toEqualTypeOf(typescript.consistentHash);
     });
 
     test('Defaults seed to 0', () => {

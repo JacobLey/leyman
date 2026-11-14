@@ -32,7 +32,7 @@ export interface ConsistentHashOptions {
      *
      * @default 0
      */
-    seed?: number;
+    readonly seed?: number;
 }
 
 /**
