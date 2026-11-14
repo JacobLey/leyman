@@ -49,7 +49,9 @@ suite('Biome', function (this: Suite) {
         });
 
         withIgnored.test('formatBiomeFiles', async ctx => {
-            await createFormatters().biome.formatBiomeFiles([ctx.resolve('ignored/file.js')]);
+            await createFormatters().biome.formatBiomeFiles([ctx.resolve('ignored/file.js')], {
+                skipUnmatched: false,
+            });
 
             expect(await ctx.read('ignored/file.js')).to.equal(formatted.biome);
         });
@@ -61,6 +63,55 @@ suite('Biome', function (this: Suite) {
                     ctx.resolve('ignored/file.js')
                 )
             ).to.equal(formatted.biome);
+        });
+    });
+
+    suite('formatBiomeFiles', () => {
+        const withIgnored = withTmpCwd.beforeEach(async ctx => {
+            await ctx.write(
+                'biome.json',
+                JSON.stringify({ files: { includes: ['**', '!skip.js'] } })
+            );
+            await ctx.write('skip.js', unformatted.js);
+            await ctx.write('file.js', unformatted.js);
+        });
+
+        withIgnored.test('Rejects when every file is ignored', async ctx => {
+            await expect(
+                createFormatters().biome.formatBiomeFiles([ctx.resolve('skip.js')], {
+                    skipUnmatched: false,
+                })
+            ).to.be.rejectedWith(Error);
+
+            expect(await ctx.read('skip.js')).to.equal(unformatted.js);
+        });
+
+        withIgnored.test('Skips every ignored file with skipUnmatched', async ctx => {
+            await createFormatters().biome.formatBiomeFiles([ctx.resolve('skip.js')], {
+                skipUnmatched: true,
+            });
+
+            expect(await ctx.read('skip.js')).to.equal(unformatted.js);
+        });
+
+        withIgnored.test('Skips an ignored file with skipUnmatched', async ctx => {
+            await createFormatters().biome.formatBiomeFiles(
+                [ctx.resolve('skip.js'), ctx.resolve('file.js')],
+                { skipUnmatched: true }
+            );
+
+            expect(await ctx.read('skip.js')).to.equal(unformatted.js);
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+        });
+
+        withTmpCwd.test('Skips an unsupported file with skipUnmatched', async ctx => {
+            await ctx.write('file.less', unformatted.less);
+
+            await createFormatters().biome.formatBiomeFiles([ctx.resolve('file.less')], {
+                skipUnmatched: true,
+            });
+
+            expect(await ctx.read('file.less')).to.equal(unformatted.less);
         });
     });
 });

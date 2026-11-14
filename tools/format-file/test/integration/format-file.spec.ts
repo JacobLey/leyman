@@ -72,4 +72,10 @@ suite('format-file', () => {
         });
         expect(formattedJs).to.equal(formattedFixtures.js.prettierFormatted);
     });
+
+    withTmpFile.test('Rejects with FormatFileError when the formatter fails', async () => {
+        await expect(
+            BiomeFormatter.formatText('const x = {', { formatter: 'prettier' })
+        ).to.be.rejectedWith(BiomeFormatter.FormatFileError);
+    });
 });

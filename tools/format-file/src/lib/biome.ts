@@ -1,5 +1,5 @@
 import type { Supplier } from 'haywire';
-import type { CanUseFormatter } from '#types';
+import type { CanUseFormatter, FormatterFilesOptions } from '#types';
 import { findUp } from 'find-up';
 import { execFileAsync, execWithInput } from './exec.js';
 
@@ -10,12 +10,18 @@ import { execFileAsync, execWithInput } from './exec.js';
  *
  * Every file passed is formatted, including ones that version control ignores: Biome's VCS integration is disabled.
  * The project's own `files.includes` still applies.
+ *
+ * Biome exits with an error when a file passed is ignored, unsupported or missing, unless told not to with
+ * `--no-errors-on-unmatched`. Either way it writes every file it can before exiting.
  */
 export class Biome {
     readonly #getBiomePath: Supplier<string>;
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
-    public readonly formatBiomeFiles: (files: readonly string[]) => Promise<void>;
+    public readonly formatBiomeFiles: (
+        files: readonly string[],
+        options: FormatterFilesOptions
+    ) => Promise<void>;
     public readonly formatBiomeText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getBiomePath: Supplier<string>) {
@@ -37,10 +43,14 @@ export class Biome {
         return file === undefined ? 1 : 2;
     }
 
-    async #formatBiomeFiles(files: readonly string[]): Promise<void> {
+    async #formatBiomeFiles(
+        files: readonly string[],
+        { skipUnmatched }: FormatterFilesOptions
+    ): Promise<void> {
         await execFileAsync(this.#getBiomePath(), [
             'format',
             '--vcs-enabled=false',
+            ...(skipUnmatched ? ['--no-errors-on-unmatched'] : []),
             '--write',
             ...files,
         ]);

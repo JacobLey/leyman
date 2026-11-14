@@ -3,16 +3,18 @@ import type {
     FileFormatter,
     FileFormatterOptions,
     FilesFormatter,
+    FormatterFilesOptions,
     TextFormatter,
     TextFormatterOptions,
 } from '#types';
 import type { Biome } from './biome.js';
 import type { Prettier } from './prettier.js';
 import Path from 'node:path';
+import { FormatFileError } from './errors.js';
 
 interface NamedFormatter {
-    name: string;
-    formatFiles: (files: readonly string[]) => Promise<void>;
+    name: 'biome' | 'prettier';
+    formatFiles: (files: readonly string[], options: FormatterFilesOptions) => Promise<void>;
     formatText: (text: string, filePath: string) => Promise<string>;
 }
 
@@ -35,7 +37,30 @@ const markdownFormatters = (formatters: readonly NamedFormatter[]): readonly Nam
     formatters.filter(({ name }) => name !== 'biome');
 
 /**
- * Format files with the first formatter that succeeds. Without files, no formatter runs.
+ * Format files with the most preferred formatter. Files it ignores, doesn't support or can't find are left unchanged.
+ * Without files or formatters, nothing runs.
+ *
+ * @param files - files to format
+ * @param formatters - formatters, most preferred first
+ * @rejects {FormatFileError} if the formatter fails
+ */
+const formatWithPreferred = async (
+    files: readonly string[],
+    formatters: readonly NamedFormatter[]
+): Promise<void> => {
+    const [preferred] = formatters;
+    if (!preferred || files.length === 0) {
+        return;
+    }
+    try {
+        await preferred.formatFiles(files, { skipUnmatched: true });
+    } catch (error) {
+        throw new FormatFileError(preferred.name, { cause: error });
+    }
+};
+
+/**
+ * Format files with the first formatter that succeeds, for `unsafeFallback`. Without files, no formatter runs.
  *
  * @param files - files to format
  * @param formatters - formatters to try in order
@@ -49,10 +74,11 @@ const tryFormatFiles = async (
     }
     for (const { formatFiles } of formatters) {
         try {
-            await formatFiles(files);
+            // A formatter that fails on an ignored or unsupported file passes it on to the next
+            await formatFiles(files, { skipUnmatched: false });
             return;
         } catch {
-            // This formatter isn't installed, or failed: try the next
+            // This formatter failed: try the next
         }
     }
 };
@@ -88,11 +114,12 @@ export class Formatter {
         options: FileFormatterOptions = {}
     ): Promise<void> {
         const formatters = await this.#getFormatters(options);
-        await tryFormatFiles(
+        const format = options.unsafeFallback === true ? tryFormatFiles : formatWithPreferred;
+        await format(
             files.filter(file => !isMarkdown(file)),
             formatters
         );
-        await tryFormatFiles(
+        await format(
             files.filter(file => isMarkdown(file)),
             markdownFormatters(formatters)
         );
@@ -106,25 +133,36 @@ export class Formatter {
         // Formatted as if it were a file in the working directory, so that the project's configuration applies
         const filePath = Path.resolve(`format-file${options.ext ?? '.js'}`);
         const formatters = await this.#getFormatters(options);
+        if (options.unsafeFallback !== true) {
+            const [preferred] = formatters;
+            if (!preferred) {
+                return text;
+            }
+            try {
+                return await preferred.formatText(text, filePath);
+            } catch (error) {
+                throw new FormatFileError(preferred.name, { cause: error });
+            }
+        }
         for (const { formatText } of formatters) {
             try {
                 return await formatText(text, filePath);
             } catch {
-                // This formatter isn't installed, or failed: try the next
+                // This formatter failed: try the next
             }
         }
         return text;
     }
 
     /**
-     * Formatters to try in order: the requested one, or every usable one, configured first.
+     * Usable formatters in order of preference: the requested one, or every usable one, configured first.
      *
      * @param options - which formatter to use, if not every usable one
      * @returns formatters, most preferred first
      */
     async #getFormatters({
         formatter = 'inherit',
-    }: FileFormatterOptions): Promise<NamedFormatter[]> {
+    }: FileFormatterOptions): Promise<readonly NamedFormatter[]> {
         this.#usability ??= Promise.all([
             this.#biome.canUseBiome(),
             this.#prettier.canUsePrettier(),
@@ -133,7 +171,7 @@ export class Formatter {
         // `null` also inherits
         const requested = formatter ?? 'inherit';
 
-        return [
+        const formatters: (NamedFormatter & { usable: CanUseFormatter })[] = [
             {
                 name: 'biome',
                 usable: biomeUsability,
@@ -146,7 +184,8 @@ export class Formatter {
                 formatFiles: this.#prettier.formatPrettierFiles,
                 formatText: this.#prettier.formatPrettierText,
             },
-        ]
+        ];
+        return formatters
             .filter(({ name }) => requested === 'inherit' || requested === name)
             .filter(({ usable }) => usable > 0)
             .toSorted((a, b) => b.usable - a.usable);

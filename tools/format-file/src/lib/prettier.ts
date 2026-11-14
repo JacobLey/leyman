@@ -1,6 +1,6 @@
 import type { Options } from 'prettier';
 import type { Supplier } from 'haywire';
-import type { CanUseFormatter } from '#types';
+import type { CanUseFormatter, FormatterFilesOptions } from '#types';
 import type { PrettierImport, PrettierModule } from './lib-path.js';
 import { lstat, readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
@@ -102,28 +102,61 @@ const resolveOptions = async (prettier: PrettierModule, file: string): Promise<O
 });
 
 /**
- * Format a file in place, as `prettier --write` does. Throws if Prettier can't format it: it is missing, not a regular
- * file (the CLI rejects a symbolic link, and a directory isn't a file), no parser is inferred, or it doesn't parse.
+ * Whether an error is Node's for a missing file.
+ *
+ * @param error - thrown error
+ * @returns true if the file is missing
+ */
+const isMissingFile = (error: unknown): boolean =>
+    Error.isError(error) && 'code' in error && error.code === 'ENOENT';
+
+/**
+ * Whether an error is Prettier's for a file it has no parser for, by the name Prettier gives it.
+ *
+ * @see https://github.com/prettier/prettier/blob/1172b82c295c4f889fd787dc6c78c3e194ebf353/src/common/errors.js#L5-L7
+ *
+ * @param error - thrown error
+ * @returns true if the file is unsupported
+ */
+const isUnsupportedFile = (error: unknown): boolean =>
+    Error.isError(error) && error.name === 'UndefinedParserError';
+
+/**
+ * Format a file in place, as `prettier --write` does. Throws if Prettier can't format it: it is not a regular file (the
+ * CLI rejects a symbolic link, and a directory isn't a file) or it doesn't parse. A missing file, or one no parser is
+ * inferred for, throws too unless `skipUnmatched` leaves it unchanged, as Biome's `--no-errors-on-unmatched` does.
  *
  * @see https://github.com/prettier/prettier/blob/1172b82c295c4f889fd787dc6c78c3e194ebf353/src/cli/expand-patterns.js#L66-L80
  *
  * @param prettier - Prettier module
  * @param file - absolute path
+ * @param options - how to treat a file Prettier doesn't format
  * @rejects if Prettier can't format the file
  */
-const formatFile = async (prettier: PrettierModule, file: string): Promise<void> => {
-    const stats = await lstat(file);
-    if (!stats.isFile()) {
-        throw new Error(`Not a regular file: ${file}`);
-    }
-    if (await isIgnored(prettier, file)) {
-        return;
-    }
-    const options = await resolveOptions(prettier, file);
-    const input = await readFile(file, 'utf8');
-    const output = await prettier.format(input, options);
-    if (output !== input) {
-        await writeFile(file, output);
+const formatFile = async (
+    prettier: PrettierModule,
+    file: string,
+    { skipUnmatched }: FormatterFilesOptions
+): Promise<void> => {
+    try {
+        const stats = await lstat(file);
+        if (!stats.isFile()) {
+            throw new Error(`Not a regular file: ${file}`);
+        }
+        if (await isIgnored(prettier, file)) {
+            return;
+        }
+        const options = await resolveOptions(prettier, file);
+        const input = await readFile(file, 'utf8');
+        const output = await prettier.format(input, options);
+        if (output !== input) {
+            await writeFile(file, output);
+        }
+    } catch (error) {
+        if (skipUnmatched && (isMissingFile(error) || isUnsupportedFile(error))) {
+            return;
+        }
+        throw error;
     }
 };
 
@@ -140,7 +173,10 @@ export class Prettier {
     #prettier: Promise<PrettierModule> | null = null;
 
     public readonly canUsePrettier: () => Promise<CanUseFormatter>;
-    public readonly formatPrettierFiles: (files: readonly string[]) => Promise<void>;
+    public readonly formatPrettierFiles: (
+        files: readonly string[],
+        options: FormatterFilesOptions
+    ) => Promise<void>;
     public readonly formatPrettierText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getPrettierImport: Supplier<PrettierImport>) {
@@ -173,18 +209,22 @@ export class Prettier {
     }
 
     /**
-     * Format each file, then throw if any failed, so that the caller tries the next formatter on them all,
-     * as when the CLI exited with an error. Files in a directory the CLI skips are left unchanged.
+     * Format each file, then throw if any failed, as the CLI exits with an error after formatting the rest.
+     * Files in a directory the CLI skips are left unchanged.
      *
      * @param files - files to format
-     * @rejects if Prettier failed on any file, or every file is in a directory the CLI skips
+     * @param options - how to treat a file Prettier doesn't format
+     * @rejects if Prettier failed on any file, or every file is in a directory the CLI skips without `skipUnmatched`
      */
-    async #formatPrettierFiles(files: readonly string[]): Promise<void> {
+    async #formatPrettierFiles(
+        files: readonly string[],
+        options: FormatterFilesOptions
+    ): Promise<void> {
         const prettier = await this.#loadPrettier();
         // Each file once, as the CLI does
         const uniqueFiles = new Set(files.map(filePath => Path.resolve(filePath)));
         const formattable = [...uniqueFiles].filter(file => !isInIgnoredDirectory(file));
-        if (formattable.length === 0) {
+        if (formattable.length === 0 && !options.skipUnmatched) {
             // The CLI fails when every file passed is in a skipped directory, though it skips them among others
             // https://github.com/prettier/prettier/blob/1172b82c295c4f889fd787dc6c78c3e194ebf353/src/cli/expand-patterns.js#L38-L43
             throw new Error('Every file is in a directory Prettier skips');
@@ -192,7 +232,7 @@ export class Prettier {
         const errors: unknown[] = [];
         for (const file of formattable) {
             try {
-                await formatFile(prettier, file);
+                await formatFile(prettier, file, options);
             } catch (error) {
                 errors.push(error);
             }

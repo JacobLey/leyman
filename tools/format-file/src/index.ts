@@ -1,5 +1,7 @@
 import { formatFileContainer, Formatter } from '#lib';
 
+export { FormatFileError } from '#lib';
+
 export type {
     FileFormatter,
     FileFormatterOptions,

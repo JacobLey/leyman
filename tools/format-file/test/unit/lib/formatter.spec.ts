@@ -1,6 +1,7 @@
 import type { Suite } from 'mocha';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
+import { FormatFileError } from '#lib';
 import { createFormatters, createTmpCwd, formatted, unformatted } from '#test/unit/helpers.js';
 
 suite('Formatter', function (this: Suite) {
@@ -43,22 +44,116 @@ suite('Formatter', function (this: Suite) {
             expect(await ctx.read('file.js')).to.equal(formatted.prettier);
         });
 
-        withTmpCwd.test('Falls back when a formatter fails', async ctx => {
+        withTmpCwd.test('Leaves a file the formatter does not support unchanged', async ctx => {
             // Biome does not support Less
             await ctx.write('file.less', unformatted.less);
 
             await createFormatters().formatter.formatFiles([ctx.resolve('file.less')]);
 
-            expect(await ctx.read('file.less')).to.equal(formatted.less);
+            expect(await ctx.read('file.less')).to.equal(unformatted.less);
         });
 
-        withTmpCwd.test('Falls back when configured formatter has invalid config', async ctx => {
+        withTmpCwd.test('Leaves a file the formatter ignores unchanged', async ctx => {
+            await ctx.write(
+                'biome.json',
+                JSON.stringify({ files: { includes: ['**', '!skip.js'] } })
+            );
+            await ctx.write('skip.js', unformatted.js);
+
+            // Not passed on to Prettier
+            await createFormatters().formatter.formatFiles([ctx.resolve('skip.js')]);
+
+            expect(await ctx.read('skip.js')).to.equal(unformatted.js);
+        });
+
+        withTmpCwd.test('Leaves a missing file alone', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+
+            await createFormatters().formatter.formatFiles([
+                ctx.resolve('missing.js'),
+                ctx.resolve('file.js'),
+            ]);
+
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+        });
+
+        withTmpCwd.test('Rejects when the formatter fails on a file', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+            await ctx.write('invalid.js', unformatted.invalid);
+
+            const thrown: unknown = await expect(
+                createFormatters().formatter.formatFiles([
+                    ctx.resolve('file.js'),
+                    ctx.resolve('invalid.js'),
+                ])
+            ).to.be.rejectedWith(FormatFileError);
+
+            expect(thrown).to.have.property('formatter', 'biome');
+            expect(thrown).to.have.property('cause').that.is.an.instanceOf(Error);
+            // Written by Biome before it failed, and not reformatted by Prettier
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+            expect(await ctx.read('invalid.js')).to.equal(unformatted.invalid);
+        });
+
+        withTmpCwd.test('Rejects when the formatter has an invalid config', async ctx => {
             await ctx.write('.prettierrc', '{ invalid');
             await ctx.write('file.js', unformatted.js);
 
-            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
+            const thrown: unknown = await expect(
+                createFormatters().formatter.formatFiles([ctx.resolve('file.js')])
+            ).to.be.rejectedWith(FormatFileError);
 
-            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+            expect(thrown).to.have.property('formatter', 'prettier');
+            expect(await ctx.read('file.js')).to.equal(unformatted.js);
+        });
+
+        suite('unsafeFallback', () => {
+            withTmpCwd.test('Falls back when a formatter fails', async ctx => {
+                // Biome does not support Less
+                await ctx.write('file.less', unformatted.less);
+
+                await createFormatters().formatter.formatFiles([ctx.resolve('file.less')], {
+                    unsafeFallback: true,
+                });
+
+                expect(await ctx.read('file.less')).to.equal(formatted.less);
+            });
+
+            withTmpCwd.test(
+                'Falls back when configured formatter has invalid config',
+                async ctx => {
+                    await ctx.write('.prettierrc', '{ invalid');
+                    await ctx.write('file.js', unformatted.js);
+
+                    await createFormatters().formatter.formatFiles([ctx.resolve('file.js')], {
+                        unsafeFallback: true,
+                    });
+
+                    expect(await ctx.read('file.js')).to.equal(formatted.biome);
+                }
+            );
+
+            withTmpCwd.test('Next formatter reformats every file', async ctx => {
+                await ctx.write('file.js', unformatted.js);
+                await ctx.write('invalid.js', unformatted.invalid);
+
+                await createFormatters().formatter.formatFiles(
+                    [ctx.resolve('file.js'), ctx.resolve('invalid.js')],
+                    { unsafeFallback: true }
+                );
+
+                expect(await ctx.read('file.js')).to.equal(formatted.prettier);
+            });
+
+            withTmpCwd.test('Resolves even if all formatters fail', async ctx => {
+                await ctx.write('file.js', unformatted.invalid);
+
+                await createFormatters().formatter.formatFiles([ctx.resolve('file.js')], {
+                    unsafeFallback: true,
+                });
+
+                expect(await ctx.read('file.js')).to.equal(unformatted.invalid);
+            });
         });
 
         withTmpCwd.test('Skips formatters that are not installed', async ctx => {
@@ -145,14 +240,6 @@ suite('Formatter', function (this: Suite) {
             });
         });
 
-        withTmpCwd.test('Resolves even if all formatters fail', async ctx => {
-            await ctx.write('file.js', unformatted.invalid);
-
-            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
-
-            expect(await ctx.read('file.js')).to.equal(unformatted.invalid);
-        });
-
         withTmpCwd.test('Resolves even if no formatters installed', async ctx => {
             await ctx.write('file.js', unformatted.js);
 
@@ -204,13 +291,25 @@ suite('Formatter', function (this: Suite) {
             ).to.equal('{ "a": 1 }\n');
         });
 
-        withTmpCwd.test('Falls back when a formatter fails', async ctx => {
+        withTmpCwd.test('Rejects when the formatter has an invalid config', async ctx => {
+            await ctx.write('.prettierrc', '{ invalid');
+
+            const thrown: unknown = await expect(
+                createFormatters().formatter.formatText(unformatted.js)
+            ).to.be.rejectedWith(FormatFileError);
+
+            expect(thrown).to.have.property('formatter', 'prettier');
+        });
+
+        withTmpCwd.test('Falls back when a formatter fails with unsafeFallback', async ctx => {
             // Preferred, but fails on its invalid config
             await ctx.write('.prettierrc', '{ invalid');
 
-            expect(await createFormatters().formatter.formatText(unformatted.js)).to.equal(
-                formatted.biome
-            );
+            expect(
+                await createFormatters().formatter.formatText(unformatted.js, {
+                    unsafeFallback: true,
+                })
+            ).to.equal(formatted.biome);
         });
 
         withTmpCwd.test('A null formatter uses every formatter', async () => {
@@ -219,10 +318,31 @@ suite('Formatter', function (this: Suite) {
             ).to.equal(formatted.biome);
         });
 
-        withTmpCwd.test('Returns the text when every formatter fails', async () => {
-            expect(await createFormatters().formatter.formatText(unformatted.invalid)).to.equal(
-                unformatted.invalid
-            );
+        withTmpCwd.test('Rejects when the formatter fails', async () => {
+            const thrown: unknown = await expect(
+                createFormatters().formatter.formatText(unformatted.invalid)
+            ).to.be.rejectedWith(FormatFileError);
+
+            expect(thrown).to.have.property('formatter', 'biome');
         });
+
+        withTmpCwd.test('Returns the text when no formatter is installed', async () => {
+            expect(
+                await createFormatters({ biome: false, prettier: false }).formatter.formatText(
+                    unformatted.invalid
+                )
+            ).to.equal(unformatted.invalid);
+        });
+
+        withTmpCwd.test(
+            'Returns the text when every formatter fails with unsafeFallback',
+            async () => {
+                expect(
+                    await createFormatters().formatter.formatText(unformatted.invalid, {
+                        unsafeFallback: true,
+                    })
+                ).to.equal(unformatted.invalid);
+            }
+        );
     });
 });

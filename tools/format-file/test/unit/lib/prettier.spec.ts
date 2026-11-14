@@ -116,7 +116,10 @@ suite('Prettier', () => {
         });
 
         withIgnored.test('formatPrettierFiles', async ctx => {
-            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('ignored/file.js')]);
+            await createFormatters().prettier.formatPrettierFiles(
+                [ctx.resolve('ignored/file.js')],
+                { skipUnmatched: false }
+            );
 
             expect(await ctx.read('ignored/file.js')).to.equal(formatted.prettier);
         });
@@ -133,7 +136,10 @@ suite('Prettier', () => {
         withIgnored.test('.prettierignore still applies', async ctx => {
             await ctx.write('.prettierignore', 'ignored/\n');
 
-            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('ignored/file.js')]);
+            await createFormatters().prettier.formatPrettierFiles(
+                [ctx.resolve('ignored/file.js')],
+                { skipUnmatched: false }
+            );
 
             expect(await ctx.read('ignored/file.js')).to.equal(unformatted.js);
         });
@@ -155,7 +161,9 @@ suite('Prettier', () => {
             await ctx.write('.editorconfig', '[*]\nindent_style = tab\n');
             await ctx.write('file.js', unformatted.js);
 
-            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.js')], {
+                skipUnmatched: false,
+            });
 
             expect(await ctx.read('file.js')).to.equal(formatted.biome);
         });
@@ -174,7 +182,9 @@ suite('Prettier', () => {
             );
             await ctx.write('file.shout', '  hello  ');
 
-            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.shout')]);
+            await createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.shout')], {
+                skipUnmatched: false,
+            });
 
             expect(await ctx.read('file.shout')).to.equal('HELLO');
         });
@@ -183,9 +193,9 @@ suite('Prettier', () => {
             await ctx.write('file.js', unformatted.js);
             const { prettier } = createFormatters();
 
-            await prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+            await prettier.formatPrettierFiles([ctx.resolve('file.js')], { skipUnmatched: false });
             await ctx.write('.prettierrc', '{ "useTabs": true }');
-            await prettier.formatPrettierFiles([ctx.resolve('file.js')]);
+            await prettier.formatPrettierFiles([ctx.resolve('file.js')], { skipUnmatched: false });
 
             expect(await ctx.read('file.js')).to.equal(formatted.biome);
         });
@@ -196,11 +206,10 @@ suite('Prettier', () => {
             await ctx.write('second.js', unformatted.js);
 
             await expect(
-                createFormatters().prettier.formatPrettierFiles([
-                    ctx.resolve('first.js'),
-                    ctx.resolve('invalid.js'),
-                    ctx.resolve('second.js'),
-                ])
+                createFormatters().prettier.formatPrettierFiles(
+                    [ctx.resolve('first.js'), ctx.resolve('invalid.js'), ctx.resolve('second.js')],
+                    { skipUnmatched: false }
+                )
             ).to.be.rejectedWith(AggregateError);
 
             expect(await ctx.read('first.js')).to.equal(formatted.prettier);
@@ -210,7 +219,9 @@ suite('Prettier', () => {
 
         withTmpCwd.test('Rejects a missing file', async ctx => {
             await expect(
-                createFormatters().prettier.formatPrettierFiles([ctx.resolve('missing.js')])
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('missing.js')], {
+                    skipUnmatched: false,
+                })
             ).to.be.rejectedWith(AggregateError);
         });
 
@@ -218,7 +229,9 @@ suite('Prettier', () => {
             await ctx.write('file.unknown', unformatted.js);
 
             await expect(
-                createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.unknown')])
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('file.unknown')], {
+                    skipUnmatched: false,
+                })
             ).to.be.rejectedWith(AggregateError);
         });
 
@@ -227,7 +240,9 @@ suite('Prettier', () => {
             await symlink(ctx.resolve('file.js'), ctx.resolve('link.js'));
 
             await expect(
-                createFormatters().prettier.formatPrettierFiles([ctx.resolve('link.js')])
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('link.js')], {
+                    skipUnmatched: false,
+                })
             ).to.be.rejectedWith(AggregateError);
 
             expect(await ctx.read('file.js')).to.equal(unformatted.js);
@@ -238,10 +253,10 @@ suite('Prettier', () => {
                 await ctx.write(`${directory}/file.js`, unformatted.js);
                 await ctx.write('file.js', unformatted.js);
 
-                await createFormatters().prettier.formatPrettierFiles([
-                    ctx.resolve(`${directory}/file.js`),
-                    ctx.resolve('file.js'),
-                ]);
+                await createFormatters().prettier.formatPrettierFiles(
+                    [ctx.resolve(`${directory}/file.js`), ctx.resolve('file.js')],
+                    { skipUnmatched: false }
+                );
 
                 expect(await ctx.read(`${directory}/file.js`)).to.equal(unformatted.js);
                 expect(await ctx.read('file.js')).to.equal(formatted.prettier);
@@ -253,9 +268,10 @@ suite('Prettier', () => {
                     await ctx.write(`${directory}/file.js`, unformatted.js);
 
                     await expect(
-                        createFormatters().prettier.formatPrettierFiles([
-                            ctx.resolve(`${directory}/file.js`),
-                        ])
+                        createFormatters().prettier.formatPrettierFiles(
+                            [ctx.resolve(`${directory}/file.js`)],
+                            { skipUnmatched: false }
+                        )
                     ).to.be.rejectedWith(Error);
 
                     expect(await ctx.read(`${directory}/file.js`)).to.equal(unformatted.js);
@@ -263,10 +279,49 @@ suite('Prettier', () => {
             );
         }
 
+        withTmpCwd.test('Skips missing and unsupported files with skipUnmatched', async ctx => {
+            await ctx.write('file.unknown', unformatted.js);
+            await ctx.write('file.js', unformatted.js);
+
+            await createFormatters().prettier.formatPrettierFiles(
+                [ctx.resolve('missing.js'), ctx.resolve('file.unknown'), ctx.resolve('file.js')],
+                { skipUnmatched: true }
+            );
+
+            expect(await ctx.read('file.unknown')).to.equal(unformatted.js);
+            expect(await ctx.read('file.js')).to.equal(formatted.prettier);
+        });
+
+        withTmpCwd.test('Still rejects a syntax error with skipUnmatched', async ctx => {
+            await ctx.write('invalid.js', unformatted.invalid);
+
+            await expect(
+                createFormatters().prettier.formatPrettierFiles([ctx.resolve('invalid.js')], {
+                    skipUnmatched: true,
+                })
+            ).to.be.rejectedWith(AggregateError);
+        });
+
+        withTmpCwd.test(
+            'Resolves when every file is in node_modules with skipUnmatched',
+            async ctx => {
+                await ctx.write('node_modules/file.js', unformatted.js);
+
+                await createFormatters().prettier.formatPrettierFiles(
+                    [ctx.resolve('node_modules/file.js')],
+                    { skipUnmatched: true }
+                );
+
+                expect(await ctx.read('node_modules/file.js')).to.equal(unformatted.js);
+            }
+        );
+
         withTmpCwd.test('Resolves relative paths from the working directory', async ctx => {
             await ctx.write('file.js', unformatted.js);
 
-            await createFormatters().prettier.formatPrettierFiles(['file.js', './file.js']);
+            await createFormatters().prettier.formatPrettierFiles(['file.js', './file.js'], {
+                skipUnmatched: false,
+            });
 
             expect(await ctx.read('file.js')).to.equal(formatted.prettier);
         });

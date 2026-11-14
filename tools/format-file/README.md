@@ -11,7 +11,7 @@ Format files and text with Biome or Prettier, whichever the project uses.
 
 Generated code and config files are often checked into version control, so they should follow the repository's formatting rules like the rest of the code. `format-file` formats them with the project's own [Biome](https://biomejs.dev/) or [Prettier](https://prettier.io/) setup, whichever is installed and configured. It can format files in place, or format a string of text and return the result.
 
-Formatting is best-effort. If no formatter is installed, or the formatter fails on the input, the content is left as it was (see [Usage](#usage)).
+If no formatter is installed, or the formatter ignores or doesn't support a file, the content is left as it was. If the formatter fails on the input (a syntax error, say, or an invalid config), the promise rejects with a `FormatFileError` (see [Usage](#usage)).
 
 ## Contents
 
@@ -22,6 +22,8 @@ Formatting is best-effort. If no formatter is installed, or the formatter fails 
   - [formatFile](#formatfilefilepath-options)
   - [formatFiles](#formatfilesfilepaths-options)
   - [formatText](#formattextcontent-options)
+  - [FormatFileError](#formatfileerror)
+- [Migrating from 1.x](#migrating-from-1x)
 
 ## Install
 
@@ -57,11 +59,13 @@ const result = await formatText(
 
 `format-file` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { formatFile } = await import('format-file');`.
 
-Formatting is best-effort and never throws because of the formatter. If neither biome nor prettier is installed, files and text are left unchanged. So is anything a formatter fails on (such as a syntax error), a file that does not exist, and a file the formatter's own ignore settings exclude. Nothing is reported, so check the result if it matters. Since the output may not be formatted at all, it is best to generate reasonable output to begin with (for example `JSON.stringify(data, null, 2)`).
+If neither biome nor prettier is installed, files and text are left unchanged. So is a file that does not exist, a file the formatter's own ignore settings exclude, and a file it doesn't support (such as `.less` for Biome). None of these is reported. Since the output may not be formatted at all, it is best to generate reasonable output to begin with (for example `JSON.stringify(data, null, 2)`).
+
+When the formatter fails, such as on a syntax error or an invalid config, the promise rejects with a [`FormatFileError`](#formatfileerror). The formatter may already have written the other files it was given. A project can still ask Biome to format files with syntax errors (`formatter.formatWithErrors`), and then they don't fail.
 
 Every file passed is formatted, even when `.gitignore` lists it, since generated files are often ignored. Biome runs with its VCS integration off and Prettier reads only `.prettierignore`, so each formatter's own ignore settings (Biome's `files.includes`, `.prettierignore`) still apply. Prettier also skips files in `node_modules` and version control directories (`.git`...), as its CLI does.
 
-Without `formatter` (`'inherit'`), every installed formatter is tried: one with a config file found (`biome.json`/`biome.jsonc` above the working directory, or a Prettier config) first, then `biome` before `prettier`. The first one that succeeds is used, and the others are not run. Only Prettier formats Markdown (`.md`, `.markdown`), because Biome formats YAML frontmatter as a heading unless a project opts in with `markdown.parser.frontmatter`. Without Prettier, Markdown is left unchanged. Biome runs as a child process. Prettier runs in the calling process: it is imported on first use, so a project that only uses Biome never loads it, and each call reads its configuration (and `.editorconfig`) as it is at the time. Which formatters are installed and configured is determined once per process. Both are resolved as peer dependencies of `format-file`, so install them where `format-file` is installed.
+Without `formatter` (`'inherit'`), one installed formatter is used: one with a config file found (`biome.json`/`biome.jsonc` above the working directory, or a Prettier config) first, then `biome` before `prettier`. The others are not run, even if it fails, so a file is never formatted in a style the project didn't choose. Only Prettier formats Markdown (`.md`, `.markdown`), because Biome formats YAML frontmatter as a heading unless a project opts in with `markdown.parser.frontmatter`. Without Prettier, Markdown is left unchanged. Biome runs as a child process. Prettier runs in the calling process: it is imported on first use, so a project that only uses Biome never loads it, and each call reads its configuration (and `.editorconfig`) as it is at the time. Which formatters are installed and configured is determined once per process. Both are resolved as peer dependencies of `format-file`, so install them where `format-file` is installed.
 
 ## API
 
@@ -76,7 +80,7 @@ Formats a file in-place according to the project's formatter configuration.
 | `filePath` | `string`               | —       | Required. Path to the file. Relative paths resolve from `process.cwd()`. |
 | `options`  | `FileFormatterOptions` | `{}`    | Optional. See [FileFormatterOptions](#fileformatteroptions).             |
 
-**Returns** `Promise<void>` — resolves when the file has been formatted and written.
+**Returns** `Promise<void>` — resolves when the file has been formatted and written. Rejects with a [`FormatFileError`](#formatfileerror) if the formatter fails.
 
 ```ts
 await formatFile('./src/generated.ts');
@@ -87,9 +91,10 @@ await formatFile('./config.json', { formatter: 'prettier' });
 
 Exported as a type: `import type { FileFormatterOptions } from 'format-file'`.
 
-| Option      | Type                                 | Default     | Description                                                            |
-| ----------- | ------------------------------------ | ----------- | ---------------------------------------------------------------------- |
-| `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. `'inherit'` tries each available formatter in order. |
+| Option           | Type                                 | Default     | Description                                                                                                                                |
+| ---------------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `formatter`      | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. `'inherit'` uses the most preferred installed formatter (see [Usage](#usage)).                                           |
+| `unsafeFallback` | `boolean`                            | `false`     | Try the next formatter when one fails, and resolve even if they all fail. Only for the 1.x behavior (see [Migrating](#migrating-from-1x)). |
 
 ---
 
@@ -104,7 +109,7 @@ Formats a set of files in-place. Equivalent to calling `formatFile` on each path
 | `filePaths` | `readonly string[]`    | —       | Required. List of file paths. Relative paths resolve from `process.cwd()`. An empty list does nothing. |
 | `options`   | `FileFormatterOptions` | `{}`    | Optional. Same options as [`formatFile`](#formatfilefilepath-options).                                 |
 
-**Returns** `Promise<void>` — resolves when all files have been formatted and written.
+**Returns** `Promise<void>` — resolves when all files have been formatted and written. Rejects with a [`FormatFileError`](#formatfileerror) if the formatter fails.
 
 ```ts
 await formatFiles(['./src/generated.ts', './src/other.ts']);
@@ -114,7 +119,7 @@ await formatFiles(['./src/generated.ts', './src/other.ts']);
 
 ### `formatText(content, options?)`
 
-Formats a raw text string as if it were a file in the current working directory, so the project's formatter configuration applies, and returns the formatted result. If no formatter succeeds, the text is returned unchanged.
+Formats a raw text string as if it were a file in the current working directory, so the project's formatter configuration applies, and returns the formatted result. If no formatter is installed, the text is returned unchanged.
 
 **Parameters**
 
@@ -123,7 +128,7 @@ Formats a raw text string as if it were a file in the current working directory,
 | `content` | `string`               | —       | Required. The raw text content to format.                    |
 | `options` | `TextFormatterOptions` | `{}`    | Optional. See [TextFormatterOptions](#textformatteroptions). |
 
-**Returns** `Promise<string>` — the formatted text content.
+**Returns** `Promise<string>` — the formatted text content. Rejects with a [`FormatFileError`](#formatfileerror) if the formatter fails.
 
 ```ts
 const formatted = await formatText('export    const  foo={abc:1}', { ext: '.ts' });
@@ -133,7 +138,37 @@ const formatted = await formatText('export    const  foo={abc:1}', { ext: '.ts' 
 
 Extends [FileFormatterOptions](#fileformatteroptions) with:
 
-| Option      | Type                                                                                                                                   | Default     | Description                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------- |
-| `formatter` | `'biome' \| 'prettier' \| 'inherit'`                                                                                                   | `'inherit'` | Formatter to use.                               |
-| `ext`       | `'.json'` or `` `.${'' \| 'c' \| 'm'}${'js' \| 'ts'}${'' \| 'x'}` `` (`.js`, `.ts`, `.mjs`, `.mts`, `.cjs`, `.cts`, `.jsx`, `.tsx`, …) | `'.js'`     | File extension used to select formatting rules. |
+| Option           | Type                                                                                                                                   | Default     | Description                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------- |
+| `formatter`      | `'biome' \| 'prettier' \| 'inherit'`                                                                                                   | `'inherit'` | Formatter to use.                               |
+| `unsafeFallback` | `boolean`                                                                                                                              | `false`     | As for [files](#fileformatteroptions).          |
+| `ext`            | `'.json'` or `` `.${'' \| 'c' \| 'm'}${'js' \| 'ts'}${'' \| 'x'}` `` (`.js`, `.ts`, `.mjs`, `.mts`, `.cjs`, `.cts`, `.jsx`, `.tsx`, …) | `'.js'`     | File extension used to select formatting rules. |
+
+---
+
+### `FormatFileError`
+
+`import { FormatFileError } from 'format-file'`. The formatter failed on the input, such as on a syntax error or an invalid config.
+
+| Property    | Type                    | Description                                            |
+| ----------- | ----------------------- | ------------------------------------------------------ |
+| `formatter` | `'biome' \| 'prettier'` | The formatter that failed.                             |
+| `cause`     | `unknown`               | The formatter's own error, such as Biome's exit error. |
+
+```ts
+try {
+    await formatFile('./src/generated.ts');
+} catch (error) {
+    if (error instanceof FormatFileError) {
+        console.warn(`${error.formatter} could not format the file`, error.cause);
+    } else {
+        throw error;
+    }
+}
+```
+
+## Migrating from 1.x
+
+Version 1 tried the next formatter whenever one failed, and resolved even if all of them failed. Biome writes the files it can before it exits with an error, so one syntax error had Prettier reformat the whole batch in its own style. A file the project excluded with Biome's `files.includes` was formatted by Prettier instead.
+
+Version 2 runs only the most preferred formatter, leaves ignored and unsupported files unchanged, and rejects with a `FormatFileError` when the formatter fails. To keep formatting best-effort, catch the error. Passing `unsafeFallback: true` restores the old behavior exactly, but it is not recommended.
