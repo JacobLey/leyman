@@ -104,6 +104,18 @@ const toPath = (error: ErrorObject, value: unknown): PropertyKey[] => {
     return path;
 };
 
+/**
+ * Format an issue path for an error message, as a JSON Pointer (RFC 6901), or `(root)` for the value itself, whose
+ * pointer is empty.
+ *
+ * @param path - issue path, from {@link toPath}
+ * @returns JSON Pointer, e.g. `/users/0/name`
+ */
+const formatPath = (path: readonly PropertyKey[]): string =>
+    path.length === 0
+        ? '(root)'
+        : path.map(key => `/${String(key).replaceAll('~', '~0').replaceAll('/', '~1')}`).join('');
+
 export const makeValidator = <T>(
     schema: JsonSchema<T> | Schema<T>,
     options?: Omit<AjvOptions, 'jsPropertySyntax' | 'strict'>
@@ -122,20 +134,27 @@ export const makeValidator = <T>(
     }
     const validator = ajv.compile<T>(json);
 
+    /**
+     * The issues of the last failed validation of `value`, as `validate` and `assert` report them.
+     *
+     * @param value - value that failed validation
+     * @returns issues with paths and messages
+     */
+    const toIssues = (value: unknown): (ErrorObject & { message: string; path: PropertyKey[] })[] =>
+        validator.errors!.map(error => ({
+            ...error,
+            // Ajv omits messages with `messages: false`
+            message: error.message ?? `must pass "${error.keyword}" keyword validation`,
+            path: toPath(error, value),
+        }));
+
     const validate = (value: unknown): StandardSchemaV1.Result<T> => {
         if (validator(value)) {
             return {
                 value,
             };
         }
-        return {
-            issues: validator.errors!.map(error => ({
-                ...error,
-                // Ajv omits messages with `messages: false`
-                message: error.message ?? `must pass "${error.keyword}" keyword validation`,
-                path: toPath(error, value),
-            })),
-        };
+        return { issues: toIssues(value) };
     };
 
     const jsonSchema: StandardJSONSchemaV1.Converter = isSchema(schema)
@@ -156,7 +175,13 @@ export const makeValidator = <T>(
             if (validator(x)) {
                 return;
             }
-            throw new Error('Value does not match schema', { cause: validator.errors });
+            throw new Error(
+                [
+                    'Value does not match schema:',
+                    ...toIssues(x).map(issue => `  ${formatPath(issue.path)}: ${issue.message}`),
+                ].join('\n'),
+                { cause: validator.errors }
+            );
         },
         '~standard': {
             version: 1,

@@ -44,7 +44,7 @@ Returned by `makeValidator`, and implements [`StandardSchemaV1<T>`](/packages/ju
 | `validate`  | `(value: unknown) => StandardSchemaV1.Result<T>`            | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't.                                                                                                                           |
 | `~standard` | `StandardJSONSchemaV1.Props<T> & StandardSchemaV1.Props<T>` | The [Standard Schema](/packages/juniper-validator/guides/standard-schema#the-standard-property) and [Standard JSON Schema](/packages/juniper-validator/guides/standard-schema#json-schema) interfaces. |
 
-`assert` throws an `Error` with the message `Value does not match schema`, and Ajv's [error objects](https://ajv.js.org/api.html#error-objects) as its `cause`. To narrow with it, its type must be written out. See [`assert()`](/packages/juniper-validator/getting-started#assert-throw).
+`assert` throws an `Error` whose message is `Value does not match schema:` followed by each issue `validate` would return, one per line as `  <path>: <message>` (the path a JSON Pointer such as `/users/0/name`, or `(root)`), with Ajv's [error objects](https://ajv.js.org/api.html#error-objects) as its `cause`. To narrow with it, its type must be written out. See [`assert()`](/packages/juniper-validator/getting-started#assert-throw).
 
 ## Utility types
 

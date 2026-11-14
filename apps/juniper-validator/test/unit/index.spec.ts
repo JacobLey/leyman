@@ -291,7 +291,15 @@ suite('juniper-validator', () => {
             } catch (err) {
                 thrown = err;
             }
-            expect(thrown).to.be.an.instanceOf(Error, 'Value does not match schema');
+            expect(thrown).to.be.an.instanceOf(Error);
+            expect((thrown as Error).message).to.equal(
+                [
+                    'Value does not match schema:',
+                    '  (root): must be number',
+                    '  (root): must be string',
+                    '  (root): must match a schema in anyOf',
+                ].join('\n')
+            );
             const cause = (thrown as Error).cause as { message: string }[];
             expect(cause.map(issue => issue.message)).to.deep.equal([
                 'must be number',
@@ -299,6 +307,27 @@ suite('juniper-validator', () => {
                 'must match a schema in anyOf',
             ]);
         });
+    });
+
+    test('assert names the path of each issue', () => {
+        const users = objectSchema({
+            properties: { id: numberSchema(), 'a/b': arraySchema({ items: numberSchema() }) },
+            required: ['id'],
+        });
+        const assert: AssertionType<JuniperValidator<SchemaType<typeof users>>> =
+            makeValidator(users).assert;
+        expect(() => {
+            assert({ 'a/b': [1, 'x'] });
+        }).to.throw(
+            Error,
+            ['Value does not match schema:', "  /id: must have required property 'id'"].join('\n')
+        );
+        expect(() => {
+            assert({ id: 1, 'a/b': [1, 'x'] });
+        }).to.throw(
+            Error,
+            ['Value does not match schema:', '  /a~1b/1: must be number'].join('\n')
+        );
     });
 
     test('Validates standard formats', () => {

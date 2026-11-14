@@ -114,7 +114,7 @@ if (validator.is(value)) {
 
 #### `.assert(value): asserts value is T`
 
-Throws an `Error` with message `'Value does not match schema'` and Ajv error objects as `cause` if validation fails. Narrows the type to `T` after the call.
+Throws an `Error` if validation fails. Its message lists each issue `validate` would return, one per line at its path as a JSON Pointer (`(root)` for the value itself), such as `Value does not match schema:\n  /users/0/name: must be string`, and its `cause` holds Ajv's error objects. Narrows the type to `T` after the call.
 
 TypeScript only narrows with an assertion function whose type is written out. Calling `assert` on `const validator = makeValidator(schema)`, or on a destructured `const { assert } = validator`, fails with `TS2775: Assertions require every name in the call target to be declared with an explicit type annotation`. Annotate the validator with `JuniperValidator<T>`, or the function with `AssertionType`:
 

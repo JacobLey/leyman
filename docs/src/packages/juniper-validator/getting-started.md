@@ -132,7 +132,12 @@ const { assert } = makeValidator(stringSchema());
 assert(input);
 ```
 
-The thrown `Error` has the message `Value does not match schema`, and Ajv's [error objects](https://ajv.js.org/api.html#error-objects) as its `cause`.
+The thrown `Error`'s message lists each issue that `validate` would return, one per line, at its path as a JSON Pointer (`(root)` for the value itself), and its `cause` holds Ajv's [error objects](https://ajv.js.org/api.html#error-objects):
+
+```text
+Value does not match schema:
+  /users/0/name: must be string
+```
 
 ## Plain JSON Schemas
 
