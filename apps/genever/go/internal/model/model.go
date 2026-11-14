@@ -6,6 +6,7 @@
 package model
 
 import (
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -671,14 +672,15 @@ func intersectFlat(members []*Type) *Type {
 }
 
 // dropInteger removes integer from the members of an intersection with a literal, and reports a contradiction when
-// the literal is a number with a fraction.
+// the literal is a number with a fraction. Every float64 too large to have one is an integer, e.g. `1e20`, as JSON
+// Schema counts them.
 func dropInteger(members []*Type, literal *Type) ([]*Type, bool) {
 	if !slices.ContainsFunc(members, func(member *Type) bool { return member.Is(Integer) }) {
 		return members, false
 	}
 
 	number, isNumber := literal.Literal.(float64)
-	if isNumber && number != float64(int64(number)) {
+	if isNumber && number != math.Trunc(number) {
 		return nil, true
 	}
 

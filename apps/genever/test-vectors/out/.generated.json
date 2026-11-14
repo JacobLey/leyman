@@ -55,6 +55,9 @@
     "fixtures/integer.json": {
       "hash": "v1:a75d2b3641d33a7ca71f1e7dfd4af688"
     },
+    "fixtures/largeInteger.json": {
+      "hash": "v1:e0e63252ae4b5ad82197eb5dcc6fbcfa"
+    },
     "fixtures/mergeNotNull.json": {
       "hash": "v1:7c1563e9ce6350305ab93bf2f2299328"
     },

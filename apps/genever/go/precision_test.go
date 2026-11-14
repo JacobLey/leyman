@@ -198,6 +198,9 @@ var precision = map[string]map[string]string{
 	"integer": {
 		"Schema": "= *int64",
 	},
+	"largeInteger": {
+		"Schema": "float64",
+	},
 	"mergeNotNull": {
 		"Schema": "string",
 	},

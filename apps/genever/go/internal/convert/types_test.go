@@ -47,6 +47,7 @@ func TestPrimitives(t *testing.T) {
 		"number":          {model.NumberType, `{ "type": "number" }`},
 		"integer":         {model.IntegerType, `{ "type": "integer", "minimum": 0 }`},
 		"fraction const":  {model.Literal(1.5), `{ "type": "number", "const": 1.5 }`},
+		"huge integer":    {model.Literal(1e20), `{ "type": "integer", "const": 1e20 }`},
 		"null enum":       {model.Union(model.NullType, model.Literal("a")), `{ "type": ["null", "string"], "enum": [null, "a"] }`},
 		"bounds":          {model.NumberType, `{ "type": ["number", "integer"], "minimum": 1, "exclusiveMinimum": 1, "maximum": 4, "exclusiveMaximum": 3 }`},
 		"one value":       {model.NumberType, `{ "type": "number", "minimum": 2, "maximum": 2 }`},

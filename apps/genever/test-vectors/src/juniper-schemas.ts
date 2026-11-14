@@ -27,6 +27,10 @@ export const startsAndEndsWith = stringSchema().startsWith('a').endsWith('z');
 export const nullableString = stringSchema().startsWith('a').nullable();
 export const number = numberSchema({ minimum: 0, maximum: 10 }).multipleOf(2);
 export const integer = numberSchema({ type: 'integer' }).nullable();
+// An integer too large for an int64, or to have a fraction
+export const largeInteger = mergeSchema()
+    .allOf(numberSchema({ type: 'integer' }))
+    .allOf(enumSchema().enum(1e20 as const));
 export const boolean = booleanSchema();
 export const nullValue = nullSchema();
 export const never = neverSchema();
