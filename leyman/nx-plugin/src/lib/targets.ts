@@ -40,6 +40,8 @@ export const namedInputs = (options: ResolvedOptions): Record<NamedInputName, In
             '{projectRoot}/executors.json',
             '{projectRoot}/*.(c|m)?js',
             '{projectRoot}/*.d.(c|m)?ts',
+            // A schema a package exports for dependents to load, e.g. with `import.meta.resolve`
+            '{projectRoot}/*.sql',
             '{projectRoot}/data/**/*',
             '{projectRoot}/out/**/*',
         ],

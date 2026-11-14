@@ -78,4 +78,10 @@ suite('namedInputs', () => {
             transitive: true,
         });
     });
+
+    test('Hashes the root SQL files a dependency exports', () => {
+        const inputs = namedInputs(resolveOptions({}));
+
+        expect(inputs['dependency-files']).to.include('{projectRoot}/*.sql');
+    });
 });
