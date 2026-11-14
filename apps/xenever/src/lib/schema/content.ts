@@ -52,14 +52,14 @@ export interface Derived {
  * A content model before matching: a tree of particles.
  */
 export type Pattern =
+    | { readonly kind: 'all'; readonly parts: readonly AllPart[]; readonly optional: boolean }
+    | { readonly kind: 'choice'; readonly items: readonly Pattern[] }
     | {
           readonly kind: 'repeat';
           readonly item: Pattern;
           readonly min: number;
           readonly max: number;
       }
-    | { readonly kind: 'all'; readonly parts: readonly AllPart[]; readonly optional: boolean }
-    | { readonly kind: 'choice'; readonly items: readonly Pattern[] }
     | { readonly kind: 'sequence'; readonly items: readonly Pattern[] }
     | { readonly kind: 'symbol'; readonly symbol: ModelSymbol };
 
