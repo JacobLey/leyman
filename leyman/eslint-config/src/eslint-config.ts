@@ -128,11 +128,6 @@ export const baseNamingConvention = [
         format: ['camelCase', 'snake_case'],
     },
     {
-        selector: 'typeProperty',
-        modifiers: ['public'],
-        format: ['PascalCase'],
-    },
-    {
         selector: 'property',
         modifiers: ['static', 'readonly'],
         format: ['camelCase'],
