@@ -44,7 +44,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 - Dates, times and durations stay strings as written. Their range and enumeration facets compare values as XSD orders them, timezones included, so `2026-11-12Z` matches an enumerated `2026-11-12+00:00`.
 - A document that breaks the schema throws an error with the line, column and path of the problem, such as `/order/item[2]/quantity`.
 - A document with a DTD is rejected, so no entity is expanded and no external file is read.
-- The `xenever` CLI turns an XSD, with the files it includes and imports, into a TypeScript file of `x` builders and named types. The same XSD always gives the same file, and `--check` fails in CI when it is out of date.
+- The `xenever` CLI turns an XSD, with the files it includes and imports, into a TypeScript file of `x` builders and named types. The same XSD always gives the same file, and `--ci` fails in CI when it is out of date.
 - An XSD construct xenever doesn't support fails when the schema is loaded, with its file, line and column, so a schema is never read more loosely than it says.
 - Elements implement [Standard Schema](https://standardschema.dev/), with an XML string as the input.
 

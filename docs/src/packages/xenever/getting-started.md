@@ -190,7 +190,7 @@ const value = parse('<order id="A-17"><item>Lawnmower</item></order>', order);
 //    ^?
 ```
 
-Commit the generated file. Run the same command with `--check` in CI, or anywhere [ci-info](https://www.npmjs.com/package/ci-info) detects CI, where it is on by default, and it fails when the file is out of date instead of writing it. The same XSD always gives the same file.
+Commit the generated file. Run the same command with `--ci` (or its alias `--check`) in CI, or anywhere [ci-info](https://www.npmjs.com/package/ci-info) detects CI, where it is on by default, and it fails when the file is out of date instead of writing it. The same XSD always gives the same file.
 
 An XSD construct xenever doesn't support, such as a substitution group, fails with its file, line and column. The `--ordered`, `--bigint` and `--catalog` options, and the same steps as an API (`loadXsd`, `generate` and `xeneverFile` in `xenever/xsd`), are in the [README](https://github.com/JacobLey/leyman/blob/main/apps/xenever/README.md#xeneverxsd).
 

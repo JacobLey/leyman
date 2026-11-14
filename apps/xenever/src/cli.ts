@@ -83,7 +83,8 @@ export default class Cli extends EntryScript {
                                     'Path of the TypeScript file to write. Defaults to the input path, with a .ts extension',
                                 type: 'string',
                             },
-                            check: {
+                            ci: {
+                                alias: 'check',
                                 describe:
                                     'Fail if the output file is not up to date, without writing it. On by default in CI',
                                 type: 'boolean',
@@ -145,7 +146,7 @@ export default class Cli extends EntryScript {
                     const { output, updated } = await xeneverFile(options.input, {
                         bigint: options.bigint,
                         catalog: read.catalog,
-                        check: options.check,
+                        check: options.ci,
                         cwd: options.cwd,
                         dryRun: options.dryRun,
                         force: options.force,

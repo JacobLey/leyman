@@ -198,7 +198,7 @@ Names come from the XSD. Types are PascalCase and element consts camelCase. When
 The options:
 
 - `-o <path>`: where to write the file, instead of next to the XSD.
-- `--check`: fail if the file is out of date, without writing it. This is on by default in CI.
+- `--ci` (or `--check`): fail if the file is out of date, without writing it. This is on by default in CI, and `--no-ci` turns it off there.
 - `--dry-run`: don't write the file.
 - `--signed`: sign the file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), and refuse to overwrite it once someone edits it. `--force` overwrites it anyway.
 - `--manifest <path>`: record the file in a manifest, with a hash of every XSD read.

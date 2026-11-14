@@ -157,6 +157,15 @@ suite('cli', () => {
             await expect(access(ctx.resolve('main.ts'))).to.be.rejectedWith(Error);
         });
 
+        withTmpDir.test('--ci, which --check aliases, passes when up to date', async ctx => {
+            await execAsync(`./bin.mjs main.xsd --no-ci --cwd ${ctx.tmpDir.path}`);
+
+            const result = await execAsync(`./bin.mjs main.xsd --ci --cwd ${ctx.tmpDir.path}`);
+
+            expect(result.stdout).to.equal('');
+            expect(result.stderr).to.equal('');
+        });
+
         withTmpDir.test('--dry-run does not write', async ctx => {
             await execAsync(`./bin.mjs main.xsd --check=false --dry-run --cwd ${ctx.tmpDir.path}`);
 
