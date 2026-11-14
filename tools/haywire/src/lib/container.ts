@@ -77,6 +77,14 @@ type ScopeCache = Map<
     GenericBinding,
     {
         promise?: Promise<readonly [unknown]>;
+        /**
+         * Async version only: resolves once the provider has returned, without waiting for deferred dependencies.
+         */
+        output?: Promise<readonly [unknown]>;
+        /**
+         * Async version only: path of the request creating the value, see `#getImplementation`.
+         */
+        creatingPath?: RequestPath;
         value?: unknown;
     }
 >;
@@ -119,6 +127,26 @@ const requestPathIds = (path: RequestPath): GenericHaywireId[] => {
         ids.push(node.id);
     }
     return ids.toReversed();
+};
+
+/**
+ * Whether a request path passes through another: the request was made while creating the binding at `ancestor`,
+ * e.g. by a supplier that binding's deferred dependency called.
+ *
+ * Compared by identity, so only requests made by the creation that wrote a cache entry match its path,
+ * not another request for the same id.
+ *
+ * @param path - path of the request
+ * @param ancestor - path of the request creating a cached value
+ * @returns whether `ancestor` is on `path`
+ */
+const isNestedIn = (path: RequestPath, ancestor: RequestPath | undefined): boolean => {
+    for (let node: RequestPath | null = path; node; node = node.parent) {
+        if (node === ancestor) {
+            return true;
+        }
+    }
+    return false;
 };
 
 /**
@@ -1276,7 +1304,9 @@ export class Container<Outputs extends [Extendable]> {
                 // Only if there is deferred can circular dependencies be acceptable
 
                 if (chain.some(({ binding }) => singletonScopes.has(binding.scope))) {
-                    // Singletons will eventually run into cached value, so are safe (regardless of suppliers)
+                    // Singletons will eventually run into cached value, so are safe (regardless of suppliers).
+                    // A supplier called while the cached value's deferred dependencies are created gets it as soon as
+                    // its provider returns (see `#getImplementation`), so an async container doesn't wait on itself.
                     return true;
                 }
 
@@ -1731,7 +1761,7 @@ export class Container<Outputs extends [Extendable]> {
         requestCache,
         supplierCache,
         deferredCache,
-        path,
+        path: requestedPath,
     }: {
         binding: GenericBinding;
         requestCache: ScopeCache;
@@ -1764,13 +1794,23 @@ export class Container<Outputs extends [Extendable]> {
         if (relevantCache) {
             const cached = relevantCache.get(binding);
             if (cached) {
-                const [value] = await cached.promise!;
+                // A request nested inside the one creating the value (a supplier called while resolving its deferred
+                // dependencies) takes it as soon as its provider returns, as a sync container does. Waiting for the
+                // deferred dependencies would never finish, since they wait for this request. Any other request waits,
+                // so it never receives a value whose deferred dependencies then fail.
+                const [value] = await (isNestedIn(requestedPath, cached.creatingPath)
+                    ? cached.output!
+                    : cached.promise!);
                 return {
                     value,
                     deferredRequests: [],
                 };
             }
         }
+
+        // A node of this creation's own, so `isNestedIn` only matches requests made by this creation: the node a caller
+        // passes is shared by every element of a list, and by every call of the same supplier.
+        const path: RequestPath = { id: requestedPath.id, parent: requestedPath.parent };
 
         // Create the value that will be put in cache immediately. Will be necessary to check during deferred rejections
         // to safely evict from cache.
@@ -1784,7 +1824,7 @@ export class Container<Outputs extends [Extendable]> {
 
         // Collect a promise that will resolve with the (wrapped) value, but don't actually
         // await it until we get the cache setup.
-        const outputPromise = (async () => {
+        const outputPromise = (async (): Promise<readonly [unknown]> => {
             const settled = await Promise.allSettled(
                 binding.dependencyIds.map(async (dependencyId): Promise<readonly [unknown]> => {
                     if (dependencyId.annotations.deferred) {
@@ -1851,8 +1891,12 @@ export class Container<Outputs extends [Extendable]> {
             // if this async method was actually generated "eagerly" and therefore fully resolved.
             const cacheValue = cacheContainer as {
                 promise: Promise<[unknown]>;
+                output: Promise<readonly [unknown]>;
+                creatingPath: RequestPath;
                 value: unknown;
             };
+            cacheValue.output = outputPromise;
+            cacheValue.creatingPath = path;
             cacheValue.promise = (async (): Promise<[unknown]> => {
                 try {
                     const [value] = await outputPromise;

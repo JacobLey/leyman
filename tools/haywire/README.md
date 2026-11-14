@@ -503,6 +503,8 @@ const eggBinding = bind(Egg).withDependencies([identifier(Chicken).deferred()]).
 
 Deferred dependencies can be mixed with suppliers, and enjoy the benefits of both. In this case, it will be a promise that resolves to a supplier.
 
+A cycle that closes through a supplier is only accepted by `container.check()` when it reuses a value the request already built: a singleton on the cycle, or a request-scoped binding with every supplier on the cycle propagating scope. A supplier called while that value's deferred dependencies are still being built gets the value as soon as its provider has returned, in async containers as in sync ones. Any other request for it waits until its deferred dependencies are built, so it never gets a value whose deferred dependency then fails.
+
 ** **NOTE!!** ** The promise passed to provider _will not_ resolve before the provider returns. You should _never_ block the provider on the result of a deferred promise. This will end up blocking the promise resolution infinitely. Since this issue is in provider implementation, it is not possible for Haywire to detect these kinds of issues at either build or execution time.
 
 ```ts

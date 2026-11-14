@@ -4184,6 +4184,107 @@ suite('container', () => {
         });
     });
 
+    suite('Supplier back to a binding still creating its deferred dependency', () => {
+        interface Parent {
+            readonly child: Promise<Child>;
+        }
+        interface Child {
+            readonly parent: Parent;
+        }
+        const parentId = identifier<Parent>().named('parent');
+        const childId = identifier<Child>().named('child');
+
+        const buildModule = ({
+            scope,
+            propagateScope,
+            fail = false,
+        }: {
+            readonly scope: typeof requestScope | typeof singletonScope;
+            readonly propagateScope: boolean;
+            readonly fail?: boolean;
+        }) =>
+            createModule(
+                bind(parentId)
+                    .withDependencies([childId.deferred()])
+                    .withProvider(child => ({ child }))
+                    .scoped(scope)
+            ).addBinding(
+                bind(childId)
+                    .withDependencies([parentId.supplier({ sync: false, propagateScope })])
+                    .withAsyncProvider(async getParent => {
+                        const parent = await getParent();
+                        if (fail) {
+                            throw new Error('child failed');
+                        }
+                        return { parent };
+                    })
+            );
+
+        for (const [name, scope, propagateScope] of [
+            ['singleton', singletonScope, false],
+            ['singleton', singletonScope, true],
+            ['request', requestScope, true],
+        ] as const) {
+            test(`${name} with ${propagateScope ? 'a propagating' : 'an'} async supplier`, async () => {
+                const container = createContainer(buildModule({ scope, propagateScope }));
+                container.check();
+
+                const parent = await container.getAsync(parentId);
+                const child = await parent.child;
+                expect(child.parent).to.equal(parent);
+            });
+        }
+
+        test('A separate request still waits for the deferred dependency', async () => {
+            const { promise: childStarted, resolve: startChild } = Promise.withResolvers<void>();
+            const { promise: childReleased, resolve: releaseChild } = Promise.withResolvers<void>();
+            const events: string[] = [];
+
+            const container = createContainer(
+                createModule(
+                    bind(parentId)
+                        .withDependencies([childId.deferred()])
+                        .withProvider(child => ({ child }))
+                        .scoped(singletonScope)
+                ).addBinding(
+                    bind(childId)
+                        .withDependencies([parentId.supplier('async')])
+                        .withAsyncProvider(async getParent => {
+                            const parent = await getParent();
+                            startChild();
+                            await childReleased;
+                            events.push('child created');
+                            return { parent };
+                        })
+                )
+            );
+
+            const first = container.getAsync(parentId);
+            await childStarted;
+            const second = (async () => {
+                const parent = await container.getAsync(parentId);
+                events.push('separate request resolved');
+                return parent;
+            })();
+            await setTimeout(0);
+            releaseChild();
+
+            expect(await second).to.equal(await first);
+            expect(events).to.deep.equal(['child created', 'separate request resolved']);
+        });
+
+        test('A failed deferred dependency still rejects, and evicts the cached value', async () => {
+            const container = createContainer(
+                buildModule({ scope: singletonScope, propagateScope: false, fail: true })
+            );
+
+            for (let i = 0; i < 2; i++) {
+                const err = await catchThrown(async () => container.getAsync(parentId));
+                expect(err).to.be.an.instanceOf(HaywireProviderError);
+            }
+        });
+    });
+
     suite('Regression guards', () => {
         test('Async request for a non-list output returns the value, not an array', async () => {
             const container = createContainer(
