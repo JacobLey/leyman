@@ -4,6 +4,7 @@ import { NotesCliError, NotesCliLoginError } from './errors.js';
 import { refresh, requestTimeoutMs } from './oauth.js';
 
 const statusUnauthorized = 401;
+const notLoggedIn = 'Not logged in. Run notes login --api <url> first.';
 
 /**
  * The notes API, as the logged-in user: `NotesClient`'s `call`, with the login kept good. The access token is
@@ -19,12 +20,13 @@ export interface Notes {
  *
  * @param store - Where the session is
  * @returns The API
- * @rejects {NotesCliLoginError} When nobody is logged in
+ * @rejects {NotesCliLoginError} When nobody is logged in. Its `call` rejects with it too when the login has to be
+ * refreshed after `notes logout` forgot it
  */
 export const connect = async (store: SessionStore): Promise<Notes> => {
     const session = await store.load();
     if (session === null) {
-        throw new NotesCliLoginError('Not logged in. Run notes login --api <url> first.');
+        throw new NotesCliLoginError(notLoggedIn);
     }
     let current: Session = session;
     let hasRenewed = false;
@@ -33,7 +35,11 @@ export const connect = async (store: SessionStore): Promise<Notes> => {
         // One command refreshes at a time: another may have done it while this one waited
         current = await store.locked(async () => {
             const latest = await store.load();
-            if (latest !== null && latest.accessToken !== current.accessToken) {
+            // Logged out meanwhile: refreshing the copy held here would bring the login back
+            if (latest === null) {
+                throw new NotesCliLoginError(notLoggedIn);
+            }
+            if (latest.accessToken !== current.accessToken) {
                 return latest;
             }
             const fresh = await refresh(current);

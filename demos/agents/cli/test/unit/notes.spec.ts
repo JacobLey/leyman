@@ -8,6 +8,7 @@ import Path from 'node:path';
 import { SessionStore } from '@leyman/demo-agents-cli';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
+import { NotesCliLoginError } from '#internal/lib/errors.js';
 import { connect } from '#internal/lib/notes.js';
 
 /**
@@ -25,6 +26,18 @@ class RefreshedElsewhereStore extends SessionStore {
     public override async locked<T>(use: () => Promise<T>): Promise<T> {
         return super.locked(async () => {
             await this.save(this.#session);
+            return use();
+        });
+    }
+}
+
+/**
+ * A store where `notes logout` forgets the login while this command waits for the lock.
+ */
+class LoggedOutElsewhereStore extends SessionStore {
+    public override async locked<T>(use: () => Promise<T>): Promise<T> {
+        return super.locked(async () => {
+            await this.remove();
             return use();
         });
     }
@@ -71,6 +84,31 @@ suite('connect', () => {
             await notes.call('listNotes', {});
 
             expect(tokens).to.deep.equal(['Bearer fresh']);
+        }
+    );
+
+    withApi.test(
+        'Fails as logged out, without bringing the login back, when logged out while it waited',
+        async ({ api, directory, tokens }) => {
+            const store = new LoggedOutElsewhereStore(directory);
+            await store.save({
+                api,
+                // Nothing listens here, so refreshing would fail differently
+                issuer: 'http://127.0.0.1:1',
+                clientId: 'client',
+                accessToken: 'expired',
+                refreshToken: 'refresh',
+                expiresAt: 0,
+            });
+
+            const notes = await connect(store);
+
+            await expect(notes.call('listNotes', {})).to.be.rejectedWith(
+                NotesCliLoginError,
+                'Not logged in. Run notes login --api <url> first.'
+            );
+            expect(await store.load()).to.equal(null);
+            expect(tokens).to.deep.equal([]);
         }
     );
 });
