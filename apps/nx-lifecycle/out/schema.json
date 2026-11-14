@@ -90,8 +90,15 @@
           },
           "hooks": {
             "type": "array",
+            "uniqueItems": true,
             "items": {
-              "type": "string"
+              "type": "string",
+              "description": "Name of a hook, which becomes the `stage:hook` target",
+              "not": {
+                "description": "`_` is reserved for the stage anchor, `stage:_`",
+                "pattern": "^_$"
+              },
+              "minLength": 1
             }
           }
         }

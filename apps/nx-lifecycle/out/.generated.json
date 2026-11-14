@@ -2,10 +2,10 @@
   "version": 1,
   "files": {
     "nx-executor/schema.json": {
-      "hash": "v1:91612d6a27e9d7e72e322fb4090c46ec"
+      "hash": "v1:424983308f39cb3752eadb9b86688b4c"
     },
     "schema.json": {
-      "hash": "v1:48ceef79954dd3f12f934fd8b208a896"
+      "hash": "v1:c8e05c630b77194ba18f65305377fe82"
     }
   }
 }

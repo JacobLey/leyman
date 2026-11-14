@@ -223,7 +223,7 @@ Declares the abstract workflow stages that `nx-lifecycle` will own. Each key is 
 
 **Note:** If a stage declares `hooks`, bindings must reference a specific hook (`build:run`), not the stage name alone (`build`). A stage without hooks still generates an anchor: `lint:_ → eslint → lint`.
 
-The config is checked whenever Nx builds the project graph, and fails for a binding that names a hook that doesn't exist, a stage that has hooks, an anchor (`build:_`) or a lifecycle target, and for a stage `dependsOn` on another stage's anchor or hook.
+The config is checked whenever Nx builds the project graph, and fails for a binding that names a hook that doesn't exist, a stage that has hooks, an anchor (`build:_`) or a lifecycle target, for a stage `dependsOn` on another stage's anchor or hook, and for hook and stage names that don't form distinct targets: an empty hook, a hook listed twice, a hook named `_` (the anchor), or a stage whose name another stage's target already has (stage `build:run` beside `build`'s hook `run`).
 
 ```json
 {

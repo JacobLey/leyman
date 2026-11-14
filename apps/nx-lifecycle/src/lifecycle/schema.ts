@@ -21,7 +21,18 @@ const checkAndDryRunSchema = objectSchema({
     },
 });
 
-const hooksSchema = arraySchema(stringSchema());
+const hooksSchema = arraySchema({
+    items: stringSchema({
+        description: 'Name of a hook, which becomes the `stage:hook` target',
+        minLength: 1,
+    }).not(
+        stringSchema({
+            description: '`_` is reserved for the stage anchor, `stage:_`',
+            pattern: '^_$',
+        })
+    ),
+    uniqueItems: true,
+});
 
 export const stagesSchema = objectSchema({
     description: 'Lifecycle stages by name',

@@ -27,10 +27,10 @@ A JSON Schema for the executor's config file is published at `nx-lifecycle/out/s
 
 Required. Stages by name.
 
-| Field       | Type          | Default | Description                                                                                                                                                    |
-| ----------- | ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hooks`     | `string[]`    | `[]`    | Steps inside the stage, in order. Each becomes a `stage:hook` target, like `build:run`. Without hooks, targets are bound to the stage itself.                  |
-| `dependsOn` | `dependsOn[]` | `[]`    | What the stage runs after, in Nx's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson) format. Can't name another stage's anchor or hooks. |
+| Field       | Type          | Default | Description                                                                                                                                                                               |
+| ----------- | ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks`     | `string[]`    | `[]`    | Steps inside the stage, in order. Each becomes a `stage:hook` target, like `build:run`, so hooks are unique, non-empty and not `_`. Without hooks, targets are bound to the stage itself. |
+| `dependsOn` | `dependsOn[]` | `[]`    | What the stage runs after, in Nx's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson) format. Can't name another stage's anchor or hooks.                            |
 
 See [Stages and hooks](/packages/nx-lifecycle/guides/stages-and-hooks) for the targets each stage generates.
 

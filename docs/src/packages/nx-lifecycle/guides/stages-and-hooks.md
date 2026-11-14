@@ -99,5 +99,8 @@ nx-lifecycle checks the stages and bindings whenever Nx builds the project graph
 | A binding names an anchor                         | `"tsc": "build:_"`                               |
 | A bound target has the name of a lifecycle target | `"build:run": "test:run"`                        |
 | A stage depends on another stage's anchor or hook | `"dependsOn": ["^build:post"]`                   |
+| A stage lists a hook twice                        | `"hooks": ["run", "run"]`                        |
+| A hook is empty, or named `_` (the anchor)        | `"hooks": ["_"]`                                 |
+| Two stages generate the same target               | stage `build:run` beside `build`'s hook `run`    |
 
 A bound target that no project declares is a warning, not an error, since it is usually a typo. Targets created by other Nx plugins aren't declared in `project.json`, so they trigger it too. The plugin's [`warnUnusedBindings: false`](/packages/nx-lifecycle/reference/configuration#warnunusedbindings) turns it off.
