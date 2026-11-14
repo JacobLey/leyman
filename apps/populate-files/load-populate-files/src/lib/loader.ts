@@ -1,4 +1,5 @@
 import type { PopulateFileParams } from 'populate-files';
+import { pathToFileURL } from 'node:url';
 import { defaultImport } from 'default-import';
 import { hasCode } from 'unknown-error';
 import { populateFileParamsValidator } from './lib/populate-files-validator.js';
@@ -27,7 +28,9 @@ const formatIssue = ({ path, message }: Issue): string => {
 export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> => {
     let mod: unknown;
     try {
-        mod = await import(filePath);
+        // A bare absolute path is resolved as a URL: `C:\` reads as a scheme on Windows,
+        // and `#` or `%` change which file it names.
+        mod = await import(pathToFileURL(filePath).href);
     } catch (err) {
         if (hasCode(err, 'ERR_MODULE_NOT_FOUND')) {
             throw new Error(`JS file not found: ${filePath}`, { cause: err });
