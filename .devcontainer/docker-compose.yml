@@ -23,6 +23,13 @@ services:
       GH_CONFIG_DIR: ${WORKTREES_DIR}/.shared/gh-config
       # Every worktree installs from one shared store
       pnpm_config_store_dir: ${WORKTREES_DIR}/.shared/pnpm-store
+      # Caches that grow live in `.shared/`, not the container's own filesystem: they survive rebuilds, and a rebuild
+      # has less to delete before VS Code starts the new container (the devcontainer skill's "Rebuilding").
+      # pnpm's registry metadata, shared like the store
+      pnpm_config_cache_dir: ${WORKTREES_DIR}/.shared/pnpm-cache
+      # Go's build and module caches, both safe for several `go` commands at once
+      GOCACHE: ${WORKTREES_DIR}/.shared/go-build
+      GOMODCACHE: ${WORKTREES_DIR}/.shared/go-mod
       # Browsers for Playwright tests, downloaded once and kept across rebuilds
       PLAYWRIGHT_BROWSERS_PATH: ${WORKTREES_DIR}/.shared/playwright-browsers
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
@@ -33,6 +40,10 @@ services:
       WORKTREE_NAME: ${WORKTREE_NAME:?run .devcontainer/initialize.sh}
       # A tunnel's public host name, served as well (tools/local-ingress/README.md#tunnels). Empty for none
       TUNNEL_HOST: ${TUNNEL_HOST:-}
+
+    # Scratch files, in memory: nothing there outlives the container, and a tmpfs costs nothing to delete
+    tmpfs:
+      - /tmp
 
     # Only this container joins the machine's shared ingress (`tools/local-ingress`). The sidecars stay off it, so
     # `postgres` and `valkey` resolve to this worktree's own, while every worktree's are named the same.

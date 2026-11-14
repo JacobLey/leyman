@@ -23,6 +23,8 @@ The main checkout stays wherever you cloned it. Worktrees go in a **dedicated si
     feat-x/                    <- worktree for branch feat/x
     .shared/
       pnpm-store/              <- pnpm content-addressed store
+      pnpm-cache/              <- pnpm registry metadata
+      go-build/, go-mod/       <- Go build and module caches
       nx-cache/                <- Nx task outputs (served by the nx-cache sidecar)
       claude-config/           <- CLAUDE_CONFIG_DIR (auth, memory; settings.json and CLAUDE.md link to .claude-shared/)
       gh-config/               <- GH_CONFIG_DIR (GitHub CLI login)
@@ -101,6 +103,8 @@ To support another editor, add a case to `open_worktree` in `scripts/worktree` t
 |-------|-------|-----------|
 | `node_modules` | per worktree | Normal `pnpm install` (via `postCreateCommand`) |
 | pnpm store | shared | `pnpm_config_store_dir=<worktrees>/.shared/pnpm-store` in `docker-compose.yml` |
+| pnpm metadata cache | shared | `pnpm_config_cache_dir=<worktrees>/.shared/pnpm-cache` in `docker-compose.yml` |
+| Go build and module caches | shared | `GOCACHE` and `GOMODCACHE` under `<worktrees>/.shared/` in `docker-compose.yml`, kept out of the container so rebuilds stay fast (see the [devcontainer skill](../devcontainer/SKILL.md#rebuilding)) |
 | Nx local cache and project graph (`.nx/`) | per worktree | Nx default |
 | Nx task outputs | shared | `nx-cache` sidecar ([`nx-cache-server.mjs`](../../../.devcontainer/nx-cache-server.mjs)) via `NX_SELF_HOSTED_REMOTE_CACHE_SERVER` |
 | Nx task outputs built by `dagger-test` | shared | `dagger-nx-cache` sidecar, the same server on `.shared/nx-cache-dagger`, with no upstream (see the [dagger-ci skill](../dagger-ci/SKILL.md#caching)) |

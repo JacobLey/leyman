@@ -40,7 +40,7 @@ if [ ! -e "$shared/claude-config" ] && [ -d "$main_checkout/.claude-config" ]; t
     echo "Copying $main_checkout/.claude-config -> $shared/claude-config"
     cp -R "$main_checkout/.claude-config" "$shared/claude-config"
 fi
-mkdir -p "$shared/pnpm-store" "$shared/claude-config" "$shared/gh-config"
+mkdir -p "$shared/pnpm-store" "$shared/pnpm-cache" "$shared/go-build" "$shared/go-mod" "$shared/claude-config" "$shared/gh-config"
 
 # Claude settings and instructions shared with other repos' devcontainers: the config dir's settings.json and
 # CLAUDE.md are absolute links into a folder beside the main checkout, mounted at the same path. Memory (`projects/`)

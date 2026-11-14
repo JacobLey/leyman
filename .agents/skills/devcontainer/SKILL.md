@@ -49,6 +49,31 @@ The `Dockerfile` is multi-stage, so a version bump rebuilds only what it must (b
 
 ---
 
+## Rebuilding
+
+**Rebuild Container** in VS Code deletes the workspace container (`leyman`, not the sidecars) and starts a new one. VS Code doesn't wait for Docker to finish deleting the old container before running `docker compose up --no-recreate`. If the delete is still under way, compose finds the old container, tries to start it and fails:
+
+```
+Error response from daemon: container is marked for removal and cannot be started
+```
+
+**Retry** then works, because the delete has finished by the time you click it. To confirm it was this race, list the container's events: the old container's `destroy` lands after the failed `up` in the log.
+
+```sh
+docker events --since 10m --until 0s --filter type=container \
+  --filter "label=devcontainer.local_folder=$(git rev-parse --show-toplevel)" \
+  --format '{{.Time}} {{.Action}} {{.Actor.ID}}' | grep -E ' (kill|destroy|create|start) '
+```
+
+Dev Containers 0.385.0 fixed an earlier form of this race, where `docker rm -f` itself failed ([microsoft/vscode-remote-release#6509](https://github.com/microsoft/vscode-remote-release/issues/6509)). It still happens when the delete takes long enough. Seen on OrbStack: 19 seconds from kill to delete, while two other repos' devcontainers were rebuilt in the same minute. How long a delete takes depends on how busy Docker is and on how much the container wrote to its own filesystem, which Docker deletes with it. Idle, 2.4 GB written as 30,000 files deletes in about a second, and 9.6 GB in under 3. The container keeps what grows elsewhere, which also keeps those caches across rebuilds:
+
+- pnpm's metadata cache (`pnpm_config_cache_dir`) and Go's build and module caches (`GOCACHE`, `GOMODCACHE`) are in `.shared/`, set in `docker-compose.yml`. They're shared by every worktree like the pnpm store, and survive rebuilds.
+- `/tmp` is a `tmpfs`, which costs nothing to delete. It's in memory, so it's cleared whenever the container stops, and what's written there counts against Docker's memory.
+
+`~/.vscode-server` (VS Code's server and extensions) and `~/.local/share/claude` (Claude Code's auto-updated versions) still hold about 1.5 GB. Moving them would take a named volume per worktree, and someone would have to clean those up. To see what has grown, use `docker ps --size` and `docker diff <container>`, and move it to `.shared/` the same way. Rebuilding one devcontainer at a time also makes the race less likely.
+
+---
+
 ## Version parity: DevContainer ↔ Dagger
 
 The Dagger CI pipeline runs in its own container — it does **not** use the DevContainer image. Versions are specified separately in two places and must be kept in sync:
