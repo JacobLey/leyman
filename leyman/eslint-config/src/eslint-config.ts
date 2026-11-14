@@ -269,7 +269,8 @@ export default async function makeEslintConfigForPackage({
             {
                 ignoreConsecutiveComments: true,
                 ignoreInlineComments: true,
-                ignorePattern: String.raw`\w+:|^ biome-ignore (?:format|lint):`,
+                // `label: ...`, and Biome's suppressions (`biome-ignore lint/suspicious/noDebugger: ...`, `biome-ignore-all`...)
+                ignorePattern: String.raw`\w+:|biome-ignore\b`,
             },
         ],
         // Replaced by `@typescript-eslint/class-methods-use-this`

@@ -262,4 +262,8 @@ suite('configGenerator per file', function (this: Suite) {
             config.map(block => block.settings?.n).find(settings => settings !== undefined)
         ).to.deep.equal({ version: `>=${process.versions.node}` });
     });
+
+    test("Doesn't capitalize Biome suppressions", async () => {
+        expect(await eslint.reported('src/d.js')).to.deep.equal([]);
+    });
 });
