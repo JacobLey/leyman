@@ -273,19 +273,19 @@ The types TypeScript reads from it are. A change that makes a generated type acc
 
 Generate TypeScript types from a JSON Schema.
 
-| Parameter                   | Type      | Default       | Description                                                                                                                          |
-| --------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `schema`                    | `unknown` | —             | Required. Parsed JSON Schema, or OpenAPI document.                                                                                   |
-| `options.name`              | `string`  | `'Schema'`    | Name of the root schema's type. Not used for an OpenAPI document.                                                                    |
-| `options.strict`            | `boolean` | `true`        | Fail on likely mistakes. See [Strict mode](#strict-mode).                                                                            |
-| `options.baseUri`           | `string`  | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against.                                                     |
-| `options.parameterDefaults` | `boolean` | `false`       | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run. |
-| `options.typedMinItems`     | `number`  | `3`           | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper.                       |
-| `options.openApi30`         | `boolean` | `false`       | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead.  |
+| Parameter                   | Type      | Default       | Description                                                                                                                                    |
+| --------------------------- | --------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`                    | `unknown` | —             | Required. Parsed JSON Schema, or OpenAPI document.                                                                                             |
+| `options.name`              | `string`  | `'Schema'`    | Name of the root schema's type. Not used for an OpenAPI document.                                                                              |
+| `options.strict`            | `boolean` | `true`        | Fail on likely mistakes. See [Strict mode](#strict-mode).                                                                                      |
+| `options.baseUri`           | `string`  | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against.                                                               |
+| `options.parameterDefaults` | `boolean` | `false`       | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run.           |
+| `options.typedMinItems`     | `number`  | `3`           | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. Must be a non-negative integer. |
+| `options.openApi30`         | `boolean` | `false`       | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead.            |
 
 **Returns** `string` — TypeScript source, not formatted.
 
-**Throws** `GeneverError` — see [Errors](#errors).
+**Throws** `GeneverError` — see [Errors](#errors). Throws a `TypeError` if `typedMinItems` is not a non-negative integer.
 
 ```ts
 import { genever } from 'genever';
@@ -315,7 +315,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
-**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws a `PopulateFilesCheckError` (from [`populate-files`](https://www.npmjs.com/package/populate-files#errors), `... not up to date. Reason: content-changed`) if the file is out of date. Rejects with the file system's error (`ENOENT`) if `input` doesn't exist, and a `SyntaxError` for invalid JSON. Throws a `TypeError` if `fetch` lists something that is not a host.
+**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws a `PopulateFilesCheckError` (from [`populate-files`](https://www.npmjs.com/package/populate-files#errors), `... not up to date. Reason: content-changed`) if the file is out of date. Rejects with the file system's error (`ENOENT`) if `input` doesn't exist, and a `SyntaxError` for invalid JSON. Throws a `TypeError` if `fetch` lists something that is not a host, or `typedMinItems` is not a non-negative integer.
 
 ---
 
@@ -364,7 +364,7 @@ Generate types as [`genever`](#geneverschema-options) does, and say where each t
 
 **Returns** `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property declared by both a schema and its `allOf` members points to the schema's own `properties`, or else the first member that declares it. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
 
-**Throws** `GeneverError` — see [Errors](#errors).
+**Throws** `GeneverError` — see [Errors](#errors). Throws a `TypeError` if `typedMinItems` is not a non-negative integer.
 
 ```ts
 import { geneverSource } from 'genever';

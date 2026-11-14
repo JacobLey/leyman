@@ -7,6 +7,7 @@ import { formatText } from 'format-file';
 import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
 import { generate } from './genever.js';
+import { readTypedMinItems } from './lib/convert.js';
 import { loadReferences } from './lib/load.js';
 import { generatorIdentity, isUpToDate, recordInputs } from './lib/manifest-inputs.js';
 import { openApiDialect } from './lib/openapi.js';
@@ -87,7 +88,7 @@ export interface GeneverFileOptions extends GeneverOptions {
  * @returns path of the output file, and whether it changed
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
  * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
- * @throws {TypeError} if `fetch` lists something that is not a host
+ * @throws {TypeError} if `fetch` lists something that is not a host, or `typedMinItems` is not a non-negative integer
  * @throws {PopulateFilesOwnershipError} with `signed`, if the output file was edited or is not signed
  * @throws {SyntaxError | YAMLError} if the input can't be parsed
  */
@@ -95,6 +96,8 @@ export const geneverFile = async (
     input: string,
     options: GeneverFileOptions = {}
 ): Promise<{ output: string; updated: boolean }> => {
+    // Checked before anything is read, as an output whose manifest entry matches is up to date without generating
+    readTypedMinItems(options.typedMinItems);
     const cwd = await parseCwd(options.cwd ?? null);
     const inputPath = Path.resolve(cwd, input);
     const output = Path.resolve(

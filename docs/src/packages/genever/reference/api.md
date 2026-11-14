@@ -33,19 +33,19 @@ The path of a written file is logged. Nothing is logged when it was already up t
 
 Generate TypeScript types from a JSON Schema.
 
-| Parameter                   | Type      | Default       | Description                                                                                                                          |
-| --------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `schema`                    | `unknown` | —             | Required. Parsed JSON Schema, or OpenAPI document.                                                                                   |
-| `options.name`              | `string`  | `'Schema'`    | Name of the root schema's type. Not used for an OpenAPI document.                                                                    |
-| `options.strict`            | `boolean` | `true`        | Fail on likely mistakes. See [Strict mode](/packages/genever/guides/strict-mode).                                                    |
-| `options.baseUri`           | `string`  | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against.                                                     |
-| `options.parameterDefaults` | `boolean` | `false`       | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run. |
-| `options.typedMinItems`     | `number`  | `3`           | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper.                       |
-| `options.openApi30`         | `boolean` | `false`       | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead.  |
+| Parameter                   | Type      | Default       | Description                                                                                                                                    |
+| --------------------------- | --------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`                    | `unknown` | —             | Required. Parsed JSON Schema, or OpenAPI document.                                                                                             |
+| `options.name`              | `string`  | `'Schema'`    | Name of the root schema's type. Not used for an OpenAPI document.                                                                              |
+| `options.strict`            | `boolean` | `true`        | Fail on likely mistakes. See [Strict mode](/packages/genever/guides/strict-mode).                                                              |
+| `options.baseUri`           | `string`  | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against.                                                               |
+| `options.parameterDefaults` | `boolean` | `false`       | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run.           |
+| `options.typedMinItems`     | `number`  | `3`           | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. Must be a non-negative integer. |
+| `options.openApi30`         | `boolean` | `false`       | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead.            |
 
 **Returns** `string` — TypeScript source, not formatted.
 
-**Throws** `GeneverError` — see [Errors](#errors).
+**Throws** `GeneverError` — see [Errors](#errors). Throws a `TypeError` if `typedMinItems` is not a non-negative integer.
 
 ```ts
 import { genever } from 'genever';
@@ -75,7 +75,7 @@ Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its typ
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
-**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date. Throws a `TypeError` if `fetch` lists something that is not a host.
+**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date. Throws a `TypeError` if `fetch` lists something that is not a host, or `typedMinItems` is not a non-negative integer.
 
 ---
 

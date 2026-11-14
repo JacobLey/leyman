@@ -1,6 +1,6 @@
 import type { geneverFile } from './genever-file.js';
 import type { Bundle } from './lib/load.js';
-import { Converter, defaultTypedMinItems } from './lib/convert.js';
+import { Converter, readTypedMinItems } from './lib/convert.js';
 import { openApiDialect } from './lib/openapi.js';
 import { printDoc, printType } from './lib/print.js';
 import { defaultBaseUri } from './lib/resources.js';
@@ -51,7 +51,7 @@ export interface GeneverOptions {
     /**
      * Largest `minItems` typed as that many required items: `minItems: 1` is `[T, ...T[]]`.
      * Larger values are a plain array, as long tuples are hard to read and build. `0` turns it off.
-     * The default matches Juniper.
+     * The default matches Juniper. Anything but a non-negative integer throws a `TypeError`.
      *
      * @default 3
      */
@@ -114,6 +114,7 @@ const separator = '\n\n';
  * @param options - see {@link GeneverOptions}
  * @returns TypeScript source, and where each type's and property's name is
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
+ * @throws {TypeError} if `typedMinItems` is not a non-negative integer
  */
 export const generate = (
     { aliases, files, input: schema }: Bundle,
@@ -127,7 +128,7 @@ export const generate = (
         dialect: documentDialect ?? (options.openApi30 === true ? 'openapi-3.0' : 'draft-2020-12'),
         parameterDefaults: options.parameterDefaults ?? false,
         strict: options.strict ?? true,
-        typedMinItems: options.typedMinItems ?? defaultTypedMinItems,
+        typedMinItems: readTypedMinItems(options.typedMinItems),
     });
     const types = documentDialect
         ? converter.convertDocument()
@@ -172,6 +173,7 @@ export const generate = (
  * @param [options.typedMinItems] - largest `minItems` typed as required items, defaults to `3`
  * @returns TypeScript source
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
+ * @throws {TypeError} if `typedMinItems` is not a non-negative integer
  */
 export const genever = (schema: unknown, options: GeneverOptions = {}): string =>
     generate(unbundled(schema), options).text;
@@ -185,6 +187,7 @@ export const genever = (schema: unknown, options: GeneverOptions = {}): string =
  * @param [options] - see {@link genever}
  * @returns TypeScript source, and where each type's and property's name is
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
+ * @throws {TypeError} if `typedMinItems` is not a non-negative integer
  */
 export const geneverSource = (schema: unknown, options: GeneverOptions = {}): GeneratedSource =>
     generate(unbundled(schema), options);

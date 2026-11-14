@@ -144,6 +144,19 @@ suite('cli', () => {
             expect(await ctx.read('user.ts')).not.to.contain('[unknown');
         });
 
+        withTmpDir.test('--typed-min-items that is not a count', async ctx => {
+            await ctx.writeJson('user.json', { type: 'array', minItems: 1 });
+
+            const thrown: unknown = await expect(
+                execAsync(
+                    `./bin.mjs user.json --ci=false --typed-min-items -1 --cwd ${ctx.tmpDir.path}`
+                )
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('stderr')
+                .that.includes('typedMinItems must be a non-negative integer, got -1');
+        });
+
         withTmpDir.test('--no-strict', async ctx => {
             await ctx.writeJson('user.json', { type: 'string', unknownKeyword: true });
 

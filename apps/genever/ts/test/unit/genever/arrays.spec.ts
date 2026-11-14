@@ -1,3 +1,5 @@
+import { expect } from '@leyman/expect';
+import { genever } from 'genever';
 import { suite, test } from 'mocha-chain';
 import { expectGenerated } from '#test/lib/expect-generated.js';
 
@@ -74,6 +76,15 @@ suite('arrays', () => {
                 { typedMinItems: 4 }
             );
         });
+
+        for (const typedMinItems of [-1, Number.NaN, 1.5, Number.POSITIVE_INFINITY]) {
+            test(`typedMinItems ${typedMinItems} is rejected`, () => {
+                expect(() => genever({ type: 'array' }, { typedMinItems })).to.throw(
+                    TypeError,
+                    `typedMinItems must be a non-negative integer, got ${typedMinItems}`
+                );
+            });
+        }
     });
 
     suite('tuples', () => {

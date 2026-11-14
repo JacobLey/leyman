@@ -55,6 +55,26 @@ import { visitEntries, visitOrder } from './visit-order.js';
  */
 export const defaultTypedMinItems = 3;
 
+/**
+ * Read the `typedMinItems` option. Anything but a count is rejected rather than ignored: `NaN` or `-1`
+ * would otherwise turn typed `minItems` off without saying so.
+ *
+ * @param typedMinItems - the option, if given
+ * @returns the option, or {@link defaultTypedMinItems} if not given
+ * @throws {TypeError} if it is not a non-negative integer
+ */
+export const readTypedMinItems = (typedMinItems: number | undefined): number => {
+    if (typedMinItems === undefined) {
+        return defaultTypedMinItems;
+    }
+    if (!Number.isSafeInteger(typedMinItems) || typedMinItems < 0) {
+        throw new TypeError(
+            `typedMinItems must be a non-negative integer, got ${String(typedMinItems)}`
+        );
+    }
+    return typedMinItems;
+};
+
 export interface ConvertOptions {
     /**
      * JSON Pointers of the aliases the loader embedded (`{ $id, $ref }` giving another URI to a loaded
