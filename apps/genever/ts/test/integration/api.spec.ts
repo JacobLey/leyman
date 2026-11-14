@@ -43,6 +43,19 @@ suite('geneverFile', () => {
         expect(result.output).to.equal(Path.join(ctx.tmpDir.path, 'out.ts'));
     });
 
+    withTmpDir.test('takes no baseUri, as the input file is its own', async ctx => {
+        await ctx.writeJson('user.json', userSchema);
+
+        const result = await geneverFile('user.json', {
+            cwd: ctx.tmpDir.path,
+            dryRun: true,
+            // @ts-expect-error -- not an option of geneverFile
+            baseUri: 'https://example.test/user.json',
+        });
+
+        expect(result.updated).to.equal(true);
+    });
+
     withTmpDir.test('is not updated when up to date', async ctx => {
         await ctx.writeJson('user.json', userSchema);
         await geneverFile(ctx.resolve('user.json'));

@@ -20,9 +20,9 @@ import { isYaml, parseText } from './lib/parse.js';
  */
 
 /**
- * Options for {@link geneverFile}.
+ * Options for {@link geneverFile}. The input file's own URL is the base URI, so it takes no `baseUri`.
  */
-export interface GeneverFileOptions extends GeneverOptions {
+export interface GeneverFileOptions extends Omit<GeneverOptions, 'baseUri'> {
     /**
      * Fail, rather than write, if the output file is not up to date.
      *
