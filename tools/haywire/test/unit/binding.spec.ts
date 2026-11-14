@@ -969,7 +969,7 @@ suite('bind', () => {
 });
 
 suite('binding', () => {
-    const binding = bind(identifier<'2' | 1 | true>())
+    const binding = bind(identifier<1 | '2' | true>())
         .withDependencies([identifier<boolean>()])
         .withProvider(which => (which ? 1 : '2'));
     const uniqueSym = Symbol('abc');
@@ -981,7 +981,7 @@ suite('binding', () => {
         Undefinable extends boolean,
         Async extends boolean,
     > = Binding<
-        HaywireId<'2' | 1 | true, null, Name, List, Nullable, Undefinable, false, false>,
+        HaywireId<1 | '2' | true, null, Name, List, Nullable, Undefinable, false, false>,
         [HaywireId<boolean, null, null, false, false, false, false, false>],
         Async
     >;
@@ -1019,7 +1019,7 @@ suite('binding', () => {
         // @ts-expect-error
         binding.nullable(false);
 
-        expectTypeOf(nullableBinding.provider(true)).toEqualTypeOf<'2' | 1 | true | null>();
+        expectTypeOf(nullableBinding.provider(true)).toEqualTypeOf<1 | '2' | true | null>();
     });
 
     test('undefinable', () => {
@@ -1033,7 +1033,7 @@ suite('binding', () => {
         // @ts-expect-error
         binding.undefinable(false);
 
-        expectTypeOf(undefinableBinding.provider(true)).toEqualTypeOf<'2' | 1 | true | undefined>();
+        expectTypeOf(undefinableBinding.provider(true)).toEqualTypeOf<1 | '2' | true | undefined>();
     });
 
     test('list', () => {
@@ -1047,7 +1047,7 @@ suite('binding', () => {
         // @ts-expect-error
         binding.list(false);
 
-        expectTypeOf(listBinding.provider(true)).toEqualTypeOf<MultiList<'2' | 1 | true>>();
+        expectTypeOf(listBinding.provider(true)).toEqualTypeOf<MultiList<1 | '2' | true>>();
         expect(listBinding.provider(false)).to.deep.equal(['2']);
     });
 

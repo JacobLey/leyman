@@ -559,12 +559,12 @@ export class Container<Outputs extends [Extendable]> {
      */
     protected constructor(
         ...params:
+            | readonly [Container<Outputs>]
             | readonly [
                   ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
                   ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
                   ContainerOptions,
               ]
-            | readonly [Container<Outputs>]
     ) {
         if (params.length === 1) {
             const [container] = params;
