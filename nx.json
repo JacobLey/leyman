@@ -39,6 +39,10 @@
       "{projectRoot}/package.json",
       "dependency-files"
     ],
+    "package-docs": [
+      "{projectRoot}/README.md",
+      "{projectRoot}/CHANGELOG.md"
+    ],
     "go-release-files": [
       "{projectRoot}/VERSION"
     ],
@@ -625,7 +629,8 @@
           "externalDependencies": []
         },
         "dependency-builds",
-        "^package-files"
+        "^package-files",
+        "^package-docs"
       ],
       "outputs": [
         "{projectRoot}/dist"

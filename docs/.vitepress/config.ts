@@ -48,12 +48,24 @@ const existsOrExcluded = (path: string): boolean =>
     ciExcluded.some(dir => path.startsWith(`${dir}/`) && !existsSync(`${repoRoot}${dir}`));
 
 /**
+ * The npm name of a package's source directory.
+ */
+const npmName = (source: string): string =>
+    (JSON.parse(readFileSync(`${repoRoot}${source}/package.json`, 'utf8')) as { name: string })
+        .name;
+
+/**
  * Fails the build when the registry and the repo disagree: a source path that moved, a slug that
  * names nothing, a pages directory with no entry, or a documented package whose `homepage` and
- * README don't point at its pages.
+ * README don't point at its pages, or that isn't one of the site's `devDependencies`. Nx hashes
+ * the README and changelog read here as dependencies' `package-docs` (`vitepress-build` in
+ * `nx.json`), so a package outside them would replay a stale result.
  */
 const checkRegistry = (): void => {
     const problems: string[] = [];
+    const { devDependencies = {} } = JSON.parse(
+        readFileSync(`${repoRoot}docs/package.json`, 'utf8')
+    ) as { devDependencies?: Record<string, string> };
     const packageSlugs = new Set(packages.map(({ slug }) => slug));
     const demoSlugs = new Set(demos.map(({ slug }) => slug));
     const infrastructureSlugs = new Set(infrastructure.map(({ slug }) => slug));
@@ -72,6 +84,12 @@ const checkRegistry = (): void => {
                 if (homepage !== pageUrl) {
                     problems.push(
                         `Package ${slug}: ${source}/package.json "homepage" is not ${pageUrl}`
+                    );
+                }
+                const name = npmName(source);
+                if (!Object.hasOwn(devDependencies, name)) {
+                    problems.push(
+                        `Package ${slug}: ${name} is not in docs/package.json "devDependencies"`
                     );
                 }
             }
@@ -182,13 +200,6 @@ const showcaseLinks = (entries: readonly Demo[]): Links['demos'] =>
             },
         ])
     );
-
-/**
- * The npm name of a package's source directory.
- */
-const npmName = (source: string): string =>
-    (JSON.parse(readFileSync(`${repoRoot}${source}/package.json`, 'utf8')) as { name: string })
-        .name;
 
 const links: Links = {
     packages: Object.fromEntries(
