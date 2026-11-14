@@ -23,8 +23,8 @@ type LoadOptions struct {
 	// OnRead is called with the text of each file or URL read, by the URI it was referenced by, e.g. to record hashes of
 	// the inputs. It may be nil.
 	OnRead func(uri string, text []byte)
-	// Client fetches URLs. It must not follow redirects, which Load follows only to allowed hosts. Nil is a client that
-	// doesn't.
+	// Client fetches URLs, or nil for http.DefaultClient's defaults. Load fetches through a copy whose CheckRedirect
+	// stops at each redirect, as it follows redirects itself, only to allowed hosts.
 	Client *http.Client
 	// BaseURI is the URI the input was read from, which relative references resolve against.
 	BaseURI string
@@ -155,10 +155,7 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 		return none, err
 	}
 
-	client := options.Client
-	if client == nil {
-		client = noRedirects()
-	}
+	client := noRedirects(options.Client)
 
 	schema, isSchema := input.(*jsonv.Object)
 	isInputDraft04 := false
@@ -200,11 +197,17 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 	return Bundle{Input: bundled, Files: files, Aliases: aliases}, nil
 }
 
-// noRedirects is a client that doesn't follow redirects.
-func noRedirects() *http.Client {
-	return &http.Client{ //nolint:exhaustruct_v5 // Defaults, but for redirects
-		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+// noRedirects is a shallow copy of a client (or the default client, when nil) that doesn't follow redirects, so the
+// caller's client is left as it is.
+func noRedirects(client *http.Client) *http.Client {
+	var copied http.Client
+	if client != nil {
+		copied = *client
 	}
+
+	copied.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+
+	return &copied
 }
 
 // indexInput indexes the schemas of an input: itself, or an OpenAPI document's, whose components must be an object to

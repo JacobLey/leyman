@@ -500,6 +500,17 @@ func TestLoadRedirects(t *testing.T) {
 		_, err := load(t, `{"$ref": "https://allowed.com/`+file+`"}`, "file:///root.json", fetching(client, "allowed.com"))
 		expectLoadError(t, err, "#/$ref", "file:///root.json", reason)
 	}
+
+	// A client that follows redirects itself still only reaches allowed hosts, and is left as it was
+	following := *client
+	following.CheckRedirect = nil
+
+	_, err := load(t, `{"$ref": "https://allowed.com/away.json"}`, "file:///root.json", fetching(&following, "allowed.com"))
+	expectLoadError(t, err, "#/$ref", "file:///root.json", "other.com is not an allowed host")
+
+	if following.CheckRedirect != nil {
+		t.Error("changed the client")
+	}
 }
 
 func TestLoadServer(t *testing.T) {

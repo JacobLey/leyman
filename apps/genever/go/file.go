@@ -30,8 +30,9 @@ func Version() string {
 type FileOptions struct {
 	Options
 
-	// Client fetches URLs. It must not follow redirects, which GenerateFile follows only to allowed hosts. Nil is a
-	// client that doesn't. Each URL has 30 seconds to load, its redirects and body included, or it fails with ErrLoad.
+	// Client fetches URLs, or nil for http.DefaultClient's defaults. Its CheckRedirect is never called: GenerateFile
+	// follows redirects itself, only to allowed hosts, through a copy of the client. Each URL has 30 seconds to load, its
+	// redirects and body included, or it fails with ErrLoad.
 	Client *http.Client
 	// Cwd is the directory that the input, Output and Manifest are relative to, or the working directory when empty.
 	Cwd string
