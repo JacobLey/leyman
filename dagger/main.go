@@ -565,9 +565,15 @@ func changelogSection(ctx context.Context, dir *dagger.Directory, pkg string, ve
 
 // Publish every public package whose current version is not yet on npm, from a fresh (uncached) build.
 //
-// Returns a line per package: `published <name>@<version>`, or `failed <name>@<version>: <error>` for the first one
-// npm rejects, after which nothing more is published. A failure is in the output, not an error, so the packages
-// published before it are still listed (to be tagged); the caller must fail on a `failed` line.
+// Returns a line per package: `published <name>@<version>`, `already published <name>@<version>` when npm refuses the
+// version because it already has it, or `failed <name>@<version>: <error>` for the first one npm rejects otherwise,
+// after which nothing more is published. A failure is in the output, not an error, so the packages published before it
+// are still listed (to be tagged); the caller must fail on a `failed` line.
+//
+// The registry's version documents lag behind a publish by minutes, so the check for what to publish can miss a
+// version a run just before this one published. npm's refusal to publish over it is the authoritative answer: that
+// version is done, and the run that published it tagged it, so it is reported apart from `published` and the packages
+// after it still publish.
 //
 // A version below the package's `latest` (a patch to an older major) is published under a `release-<major>` dist-tag,
 // so `latest` stays where it is.
@@ -644,6 +650,12 @@ func publishTarballs(
 			_, err = publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", tarballPath(i), distTag}).Sync(ctx)
 		}
 
+		if alreadyPublished(err) {
+			results = append(results, fmt.Sprintf("already published %s@%s", pkg.Name, pkg.Version))
+
+			continue
+		}
+
 		if err != nil {
 			// On one line, so it can't be mistaken for another package's result
 			results = append(results, fmt.Sprintf("failed %s@%s: %s", pkg.Name, pkg.Version, strings.Join(strings.Fields(err.Error()), " ")))
@@ -655,6 +667,15 @@ func publishTarballs(
 	}
 
 	return strings.Join(results, "\n")
+}
+
+// Whether `npm publish` failed because the registry already has that version, which it refuses with this message
+// whatever the tarball holds.
+func alreadyPublished(err error) bool {
+	var execErr *dagger.ExecError
+
+	return errors.As(err, &execErr) &&
+		strings.Contains(execErr.Stderr, "You cannot publish over the previously published versions")
 }
 
 // Where `Publish` packs the i-th package.
