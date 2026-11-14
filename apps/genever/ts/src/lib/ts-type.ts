@@ -59,6 +59,8 @@ export type TsTemplatePart =
  * e.g. `(string | null) & string` is generated as `string`, not left for TypeScript to reduce.
  */
 export type TsType =
+    | { readonly kind: 'array'; readonly element: TsType }
+    | { readonly kind: 'intersection'; readonly members: readonly TsType[] }
     | {
           readonly kind: 'keyword';
           readonly keyword:
@@ -70,21 +72,19 @@ export type TsType =
               | 'string'
               | 'unknown';
       }
+    | { readonly kind: 'literal'; readonly value: boolean | number | string }
     | {
           readonly kind: 'object';
           readonly index: readonly TsIndex[];
           readonly properties: readonly TsProperty[];
       }
+    | { readonly kind: 'reference'; readonly name: string }
+    | { readonly kind: 'template'; readonly parts: readonly TsTemplatePart[] }
     | {
           readonly kind: 'tuple';
           readonly elements: readonly TsTupleElement[];
           readonly rest: TsType | null;
       }
-    | { readonly kind: 'array'; readonly element: TsType }
-    | { readonly kind: 'intersection'; readonly members: readonly TsType[] }
-    | { readonly kind: 'literal'; readonly value: boolean | number | string }
-    | { readonly kind: 'reference'; readonly name: string }
-    | { readonly kind: 'template'; readonly parts: readonly TsTemplatePart[] }
     | { readonly kind: 'union'; readonly members: readonly TsType[] };
 
 export const unknownType: TsType = { kind: 'keyword', keyword: 'unknown' };
