@@ -288,8 +288,35 @@ func namedCase() testCase {
 	}
 }
 
+// untaggedCases have properties whose keys a struct tag can't name: encoding/json would cut "a,b" at the comma, skip
+// "-", and use the field's name for the rest.
+func untaggedCases() []testCase {
+	properties := []model.Property{
+		prop("-", model.StringType, false), prop("a,b", model.NumberType, true), prop("q'r", model.BooleanType, false),
+		prop("", model.Union(model.StringType, model.NullType), true), prop("x\"y`z\\", model.UnknownType, true),
+		prop("ok", model.StringType, false),
+	}
+	full := `{"-": "d", "a,b": 1, "q'r": true, "": null, "x\"y` + "`" + `z\\": [1], "ok": "o"}`
+	partial := `{"-": "d", "q'r": false, "": "e", "ok": "o"}`
+
+	return []testCase{
+		{
+			name:   "tagless",
+			types:  []convert.NamedType{named("Schema", object(properties...))},
+			accept: []string{full, partial},
+			reject: []string{`{"-": 1}`, `{"a,b": "s"}`, `{"": 1}`, `[]`},
+		},
+		{
+			name:   "taglessextra",
+			types:  []convert.NamedType{named("Schema", openObject(model.NumberType, properties...))},
+			accept: []string{full, partial, `{"-": "d", "q'r": true, "ok": "o", "a": 2, "b": 3}`},
+			reject: []string{`{"-": 1}`, `{"a": "s"}`},
+		},
+	}
+}
+
 func allCases() []testCase {
-	return slices.Concat([]testCase{objectCase(), namedCase()}, tupleCases(), unionCases())
+	return slices.Concat([]testCase{objectCase(), namedCase()}, tupleCases(), unionCases(), untaggedCases())
 }
 
 // compile generates a case's types and type checks them.

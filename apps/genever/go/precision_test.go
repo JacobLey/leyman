@@ -302,6 +302,9 @@ var precision = map[string]map[string]string{
 	"tuple": {
 		"Schema": "{Item0 string; Item1 float64}",
 	},
+	"unusualKeys": {
+		"Schema": "{Field string; AB *float64; QR bool; Field2 Optional[*string]; XYZ *float64; AdditionalProperties map[string]json.RawMessage}",
+	},
 	"unevaluated": {
 		"Schema": "{A json.RawMessage}",
 	},

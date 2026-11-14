@@ -101,6 +101,17 @@ export const dependentSchemas = objectSchema({
     'card',
     objectSchema({ properties: { cvv: numberSchema() }, required: ['cvv'] })
 );
+// Keys a Go struct tag can't name
+export const unusualKeys = objectSchema({
+    properties: {
+        '-': stringSchema(),
+        'a,b': numberSchema(),
+        "q'r": booleanSchema(),
+        '': stringSchema().nullable(),
+        'x"y`z\\': numberSchema(),
+    },
+    required: ['-', "q'r"],
+});
 export const unevaluated = objectSchema({ properties: { a: true } }).unevaluatedProperties(false);
 export const annotated = objectSchema({
     title: 'Annotated',

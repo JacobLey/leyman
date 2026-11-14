@@ -12,7 +12,9 @@ import (
 	"go/token"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/model"
@@ -634,61 +636,136 @@ func (g *generator) declareObject(name string, doc *model.Doc, properties []mode
 
 	for _, result := range fields {
 		decl.WriteString(indent(docComment(result.doc)))
-
-		options := ""
-		if result.omit != "" {
-			options = "," + result.omit
-		}
-
-		fmt.Fprintf(&decl, "\t%s %s `json:%q`\n", result.name, result.goType, result.jsonKey+options)
+		fmt.Fprintf(&decl, "\t%s %s `json:%q`\n", result.name, result.goType, result.tag())
 	}
 
+	extraType := ""
 	if hasExtra {
-		extraType := g.goType(extra, name+"Value")
+		extraType = g.goType(extra, name+"Value")
 
 		decl.WriteString("\t// AdditionalProperties are the properties no field declares.\n")
-		fmt.Fprintf(&decl, "\tAdditionalProperties map[string]%s `json:\"-\"`\n}\n\n", extraType)
-		decl.WriteString(g.extraMethods(name, extraType, fields))
-	} else {
-		decl.WriteString("}")
+		fmt.Fprintf(&decl, "\tAdditionalProperties map[string]%s `json:\"-\"`\n", extraType)
+	}
+
+	decl.WriteString("}")
+
+	if hasExtra || slices.ContainsFunc(fields, func(result field) bool { return !taggable(result.jsonKey) }) {
+		decl.WriteString("\n\n" + g.objectMethods(name, extraType, fields))
 	}
 
 	write(decl.String())
 }
 
-func (g *generator) extraMethods(name, extraType string, fields []field) string {
-	known := make([]string, len(fields))
-	for i, result := range fields {
-		known[i] = fmt.Sprintf("%q", result.jsonKey)
+// tag is the field's json struct tag: its key and option, or "-" when the struct's methods read and write it instead,
+// as a tag can't name its key.
+func (f field) tag() string {
+	if !taggable(f.jsonKey) {
+		return "-"
 	}
 
-	encoding := g.json()
+	if f.omit == "" {
+		return f.jsonKey
+	}
 
-	return fmt.Sprintf(`// MarshalJSON writes the fields, then the additional properties.
+	return f.jsonKey + "," + f.omit
+}
+
+// taggable reports whether encoding/json reads a struct tag naming a key as that key. It ignores a field tagged "-",
+// cuts a name at its first comma, and uses the field's name instead of a name isValidTag rejects, such as "" or one
+// with a quote (https://github.com/golang/go/blob/go1.24.0/src/encoding/json/encode.go#L1135-L1141 and #L927-L942),
+// which this repeats. A name it accepts has no comma, backslash or quote, so the encoding/json of GOEXPERIMENT=jsonv2
+// reads it as that key too.
+func taggable(key string) bool {
+	if key == "" || key == "-" {
+		return false
+	}
+
+	for _, char := range key {
+		if !strings.ContainsRune("!#$%&()*+-./:;<=>?@[]^_{|}~ ", char) && !unicode.IsLetter(char) && !unicode.IsDigit(char) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// objectMethods writes MarshalJSON and UnmarshalJSON of a struct encoding/json can't handle alone: one with additional
+// properties of extraType (unless empty), or with fields of keys a struct tag can't name. They handle the tagged fields,
+// then the fields of those keys, then the additional properties.
+func (g *generator) objectMethods(name, extraType string, fields []field) string {
+	encoding := g.json()
+	marshal, unmarshal, written := g.untaggedMethods(fields)
+
+	if extraType != "" {
+		known := make([]string, len(fields))
+		for i, result := range fields {
+			known[i] = strconv.Quote(result.jsonKey)
+		}
+
+		if written != "data" {
+			marshal += "\tdata, err = " + written + "\n\tif err != nil {\n\t\treturn nil, err\n\t}\n"
+		}
+
+		written = g.use(helperWith) + "(data, s.AdditionalProperties)"
+		unmarshal += fmt.Sprintf("\textra, err := %s[%s](data%s)\n\tif err != nil {\n\t\treturn err\n\t}\n"+
+			"\tvalue.AdditionalProperties = extra\n", g.use(helperExtra), extraType, joinPrefixed(known))
+	}
+
+	return fmt.Sprintf(`// MarshalJSON writes the fields, then any of keys a struct tag can't name, then any additional properties.
 func (s %[1]s) MarshalJSON() ([]byte, error) {
 	type plain %[1]s
 	data, err := %[2]s.Marshal(plain(s))
 	if err != nil {
 		return nil, err
 	}
-	return %[3]s(data, s.AdditionalProperties)
+%[3]s	return %[4]s
 }
 
-// UnmarshalJSON reads the fields, and the other properties as additional properties.
+// UnmarshalJSON reads the fields, then any of keys a struct tag can't name, then any other properties as additional
+// properties.
 func (s *%[1]s) UnmarshalJSON(data []byte) error {
 	type plain %[1]s
 	var value plain
 	if err := %[2]s.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	extra, err := %[4]s[%[5]s](data%[6]s)
-	if err != nil {
-		return err
-	}
-	value.AdditionalProperties = extra
-	*s = %[1]s(value)
+%[5]s	*s = %[1]s(value)
 	return nil
-}`, name, encoding, g.use(helperWith), g.use(helperExtra), extraType, joinPrefixed(known))
+}`, name, encoding, marshal, written, unmarshal)
+}
+
+// untaggedMethods writes the parts of MarshalJSON and UnmarshalJSON that handle the fields of keys a struct tag can't
+// name, and the expression of the JSON MarshalJSON has written once they are added.
+func (g *generator) untaggedMethods(fields []field) (string, string, string) {
+	var (
+		marshal       strings.Builder
+		keys, targets []string
+	)
+
+	for _, result := range fields {
+		if taggable(result.jsonKey) {
+			continue
+		}
+
+		keys = append(keys, strconv.Quote(result.jsonKey))
+		targets = append(targets, "&value."+result.name)
+
+		assign := fmt.Sprintf("untagged[%q] = s.%s\n", result.jsonKey, result.name)
+		if result.presence == "" {
+			marshal.WriteString("\t" + assign)
+		} else {
+			fmt.Fprintf(&marshal, "\tif %s {\n\t\t%s\t}\n", result.presence, assign)
+		}
+	}
+
+	if len(keys) == 0 {
+		return "", "", "data"
+	}
+
+	unmarshal := fmt.Sprintf("\tif err := %s(data, []string{%s}, %s); err != nil {\n\t\treturn err\n\t}\n",
+		g.use(helperReadKeys), strings.Join(keys, ", "), strings.Join(targets, ", "))
+
+	return "\tuntagged := map[string]any{}\n" + marshal.String(), unmarshal, g.use(helperWith) + "(data, untagged)"
 }
 
 // hold returns the type of a required field of struct owner, as a placeholder breakCycles replaces when the type is

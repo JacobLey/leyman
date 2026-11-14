@@ -145,6 +145,9 @@
     "fixtures/unevaluated.json": {
       "hash": "v1:d111da9625ee3a8f4a025bd691c009b6"
     },
+    "fixtures/unusualKeys.json": {
+      "hash": "v1:e66ae675e94354069a7485281bf4f2eb"
+    },
     "openapi/3.0.3.json": {
       "hash": "v1:95a9d6146f14096c182fb929f9e15ef2"
     },

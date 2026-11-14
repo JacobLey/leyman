@@ -23,6 +23,7 @@ const (
 	helperKind     = "geneverKind"
 	helperExtra    = "geneverExtra"
 	helperWith     = "geneverWithExtra"
+	helperReadKeys = "geneverReadKeys"
 	helperPick     = "geneverPick"
 	helperTuple    = "geneverTuple"
 	helperNoMatch  = "geneverNoMatch"
@@ -157,6 +158,25 @@ func geneverWithExtra[V any](object []byte, extra map[string]V) ([]byte, error) 
 		return more, nil
 	}
 	return append(append(object[:len(object)-1:len(object)-1], ','), more[1:]...), nil
+}`,
+	},
+	helperReadKeys: {
+		imports: []string{importJSON},
+		code: `// geneverReadKeys reads the values of an object's keys into targets, one per key, in order. A target is left as it
+// is when its key is absent.
+func geneverReadKeys(data []byte, keys []string, targets ...any) error {
+	var all map[string]json.RawMessage
+	if err := json.Unmarshal(data, &all); err != nil {
+		return err
+	}
+	for i, key := range keys {
+		if raw, ok := all[key]; ok {
+			if err := json.Unmarshal(raw, targets[i]); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }`,
 	},
 	helperPick: {
