@@ -60,6 +60,28 @@ suite('cli', () => {
         );
 
         withWorkspace.test(
+            'Prints that a package without entry points was checked as files only',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    'pkg/package.json': JSON.stringify({
+                        name: 'configs-package',
+                        version: '1.0.0',
+                        type: 'module',
+                        license: 'MIT',
+                        files: ['tsconfig.base.json'],
+                    }),
+                    'pkg/tsconfig.base.json': '{}',
+                });
+
+                const result = await execFileAsync('./bin.mjs', ['--cwd', cwd]);
+
+                expect(result.stdout).to.equal(
+                    'pkg: has no entry point, and publint, the floor and the published files found no problems\n'
+                );
+            }
+        );
+
+        withWorkspace.test(
             'Packs with npm for an npm lockfile',
             async ({ cwd, resolve, writeFiles, writeScript }) => {
                 await writeFiles({ ...goodPackage(), 'package-lock.json': '{}' });

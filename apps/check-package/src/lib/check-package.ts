@@ -68,7 +68,38 @@ export interface CheckPackageResult {
      * Publint's suggestions, which are worth reading but don't fail anything.
      */
     readonly suggestions: readonly string[];
+    /**
+     * Whether the package has no entry point, so only its published files and publint were checked.
+     */
+    readonly filesOnly: boolean;
 }
+
+/**
+ * The `package.json` fields that give a package code to load: an import or `require`, a command, or types.
+ */
+const entryPointFields = ['bin', 'exports', 'main', 'module', 'types', 'typings'] as const;
+
+/**
+ * What Node.js loads for `require('<package>')` when there is no `main` or `exports`.
+ * See {@link https://nodejs.org/api/modules.html#all-together LOAD_INDEX}.
+ */
+const defaultIndexFiles = new Set(['index.js', 'index.json', 'index.node']);
+
+/**
+ * Whether the package has an entry point: one of {@link entryPointFields}, or an index file Node.js loads in place of
+ * `main`. A package without one publishes only files read by path (configs, schemas), so there is nothing to
+ * resolve types for, no declarations to compile against, and no Node.js that runs it.
+ *
+ * @param packageJson - its `entryPointFields`
+ * @param files - the paths in the tarball
+ * @returns whether it has an entry point
+ */
+const hasEntryPoint = (
+    packageJson: Readonly<Partial<Record<(typeof entryPointFields)[number], unknown>>>,
+    files: readonly string[]
+): boolean =>
+    entryPointFields.some(field => packageJson[field] !== undefined) ||
+    files.some(file => defaultIndexFiles.has(file));
 
 const toPath = (path: string | URL): string =>
     path instanceof URL ? fileURLToPath(path) : Path.resolve(path);
@@ -78,6 +109,9 @@ const toPath = (path: string | URL): string =>
  * then runs publint and Are The Types Wrong on the tarball, type checks its published declarations
  * strictly, checks its support floor against `@types/node` and its runtime dependencies, and checks
  * every top-level path is either published or known not to be.
+ *
+ * A package with no entry point (no `main`, `exports`, `bin` or types) is checked as files only:
+ * publint and the published files, plus its runtime dependencies against `engines.node` if it has one.
  *
  * @param options - the package, and how to check it
  * @returns the problems found, and publint's suggestions
@@ -95,23 +129,32 @@ export const checkPackage = async (
     });
     const packageJson = JSON.parse(
         await readFile(Path.join(cwd, 'package.json'), 'utf8')
-    ) as FloorPackageJson;
+    ) as FloorPackageJson & Partial<Record<(typeof entryPointFields)[number], unknown>>;
     const notPublished = new Set([...defaultNotPublished, ...(options.notPublished ?? [])]);
 
     const packDir = await mkdtemp(Path.join(tmpdir(), 'check-package-'));
     try {
         const { files, tarball } = await pack({ cwd, packDir, packWith });
         const tarballData = new Uint8Array(tarball);
+        const isFilesOnly = !hasEntryPoint(packageJson, files);
         const [floor, published, lint, typesResolution, declarations] = await Promise.all([
-            floorProblems({ floorTsconfig: options.floorTsconfig, cwd, packageJson, root }),
+            floorProblems({
+                floorTsconfig: options.floorTsconfig,
+                filesOnly: isFilesOnly,
+                cwd,
+                packageJson,
+                root,
+            }),
             publishedFilesProblems({ cwd, files, notPublished, root }),
             lintProblems(tarballData),
-            typesResolutionProblems(tarballData, options.profile ?? 'strict'),
-            declarationProblems({
-                cwd,
-                files,
-                tsc: options.tsc === undefined ? null : toPath(options.tsc),
-            }),
+            isFilesOnly ? [] : typesResolutionProblems(tarballData, options.profile ?? 'strict'),
+            isFilesOnly
+                ? []
+                : declarationProblems({
+                      cwd,
+                      files,
+                      tsc: options.tsc === undefined ? null : toPath(options.tsc),
+                  }),
         ]);
         return {
             problems: [
@@ -122,6 +165,7 @@ export const checkPackage = async (
                 ...declarations,
             ],
             suggestions: lint.suggestions,
+            filesOnly: isFilesOnly,
         };
     } finally {
         await rm(packDir, { force: true, recursive: true });

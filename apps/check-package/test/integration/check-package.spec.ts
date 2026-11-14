@@ -23,6 +23,7 @@ suite('checkPackage', () => {
         expect(await checkPackage({ profile: 'esm-only', cwd, tsc })).to.deep.equal({
             problems: [],
             suggestions: [],
+            filesOnly: false,
         });
     });
 
@@ -205,6 +206,101 @@ suite('checkPackage', () => {
         withWorkspace.test('Lists what is never published by default', () => {
             expect(defaultNotPublished).to.include.members(['src', 'test', 'tsconfig.json']);
         });
+    });
+
+    suite('Files only', () => {
+        const configsPackage = (
+            overrides: Record<string, unknown> = {}
+        ): Record<string, string> => ({
+            'pkg/package.json': JSON.stringify({
+                name: 'configs-package',
+                version: '1.0.0',
+                type: 'module',
+                license: 'MIT',
+                files: ['tsconfig.base.json'],
+                ...overrides,
+            }),
+            'pkg/tsconfig.base.json': '{}',
+        });
+
+        withWorkspace.test(
+            'Checks a package without entry points as files only',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...configsPackage(),
+                    'node_modules/@types/node/package.json': JSON.stringify({
+                        name: '@types/node',
+                        version: '24.1.0',
+                    }),
+                });
+
+                expect(await checkPackage({ cwd })).to.deep.equal({
+                    problems: [],
+                    suggestions: [],
+                    filesOnly: true,
+                });
+            }
+        );
+
+        withWorkspace.test(
+            'Still checks the published files of a files-only package',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({ ...configsPackage(), 'pkg/data/a.json': '{}' });
+
+                const { problems } = await checkPackage({ cwd });
+
+                expect(problems).to.have.length(1);
+                expect(problems[0]).to.match(/^files: "data" is not published\./v);
+            }
+        );
+
+        withWorkspace.test(
+            "Still checks a files-only package's dependencies against the floor it names",
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...configsPackage({
+                        engines: { node: '>=22' },
+                        dependencies: { newer: '^1' },
+                    }),
+                    'node_modules/newer/package.json': JSON.stringify({
+                        engines: { node: '>=24' },
+                    }),
+                });
+
+                const { problems } = await checkPackage({ cwd });
+
+                expect(problems).to.deep.equal([
+                    `engines.node: ">=22" allows Node.js 22.0.0, which newer doesn't support (">=24"). Raise the floor to match.`,
+                ]);
+            }
+        );
+
+        withWorkspace.test(
+            'Treats a published index.js as an entry point',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...configsPackage({ files: ['index.js'] }),
+                    'pkg/index.js': 'export {};\n',
+                });
+
+                const { filesOnly, problems } = await checkPackage({ cwd, tsc });
+
+                expect(filesOnly).to.equal(false);
+                expect(problems).to.include(
+                    'engines.node: missing. Add ">=<version>", the oldest Node.js the package supports.'
+                );
+            }
+        );
+
+        for (const field of ['bin', 'exports', 'main', 'module', 'types', 'typings']) {
+            withWorkspace.test(`Treats ${field} as an entry point`, async ({ cwd, writeFiles }) => {
+                await writeFiles(configsPackage({ [field]: './tsconfig.base.json' }));
+
+                const { filesOnly } = await checkPackage({ cwd, tsc });
+
+                expect(filesOnly).to.equal(false);
+            });
+        }
     });
 
     suite('Support floor', () => {

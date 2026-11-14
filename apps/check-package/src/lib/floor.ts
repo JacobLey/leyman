@@ -103,8 +103,13 @@ const dependencyProblem = async (
  * the installed `@types/node` matches it, optionally that `tsconfig.json` extends the floor's config,
  * and that every runtime dependency supports the oldest Node.js the package's `engines.node` allows.
  *
+ * A files-only package has no code for Node.js to run, so it needs no floor, and has no source for
+ * `@types/node` or `tsconfig.json` to compile. Its dependencies are still installed beside it, so
+ * when it does name a floor, they must support it.
+ *
  * @param params - the package, its `package.json`, the workspace root and the config template
  * @param params.cwd - the package directory
+ * @param params.filesOnly - whether the package has no entry point
  * @param params.floorTsconfig - the config `tsconfig.json` must extend, with `{major}` for the floor: a package
  * specifier, or a path relative to `root` starting with `./` or `../`
  * @param params.packageJson - the `engines` and dependencies, from `package.json`
@@ -113,17 +118,22 @@ const dependencyProblem = async (
  */
 export const floorProblems = async ({
     cwd,
+    filesOnly,
     floorTsconfig,
     packageJson,
     root,
 }: {
     cwd: string;
+    filesOnly: boolean;
     floorTsconfig: string | undefined;
     packageJson: FloorPackageJson;
     root: string;
 }): Promise<string[]> => {
     const engine = packageJson.engines?.node;
     if (engine === undefined) {
+        if (filesOnly) {
+            return [];
+        }
         return [
             'engines.node: missing. Add ">=<version>", the oldest Node.js the package supports.',
         ];
@@ -144,10 +154,10 @@ export const floorProblems = async ({
         ),
     ].toSorted((a, b) => Number(a > b) - Number(a < b));
     const problems = await Promise.all([
-        floorTsconfig === undefined
+        filesOnly || floorTsconfig === undefined
             ? null
             : tsconfigProblem({ cwd, engine, floor, floorTsconfig, root }),
-        typesProblem(cwd, engine, floor),
+        filesOnly ? null : typesProblem(cwd, engine, floor),
         ...runtimeDependencies.map(async name => dependencyProblem(cwd, engine, name)),
     ]);
     return problems.filter(problem => problem !== null);

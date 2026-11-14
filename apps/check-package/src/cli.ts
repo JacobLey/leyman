@@ -82,7 +82,7 @@ export default class Cli extends EntryScript {
                         })
                         .strict(),
                 async options => {
-                    const { problems, suggestions } = await checkPackage({
+                    const { filesOnly, problems, suggestions } = await checkPackage({
                         cwd: options.cwd,
                         ...(options.root !== undefined && { root: options.root }),
                         ...(options.packWith !== undefined && { packWith: options.packWith }),
@@ -100,8 +100,11 @@ export default class Cli extends EntryScript {
                         console.error(problems.join('\n'));
                         process.exitCode = 1;
                     } else {
+                        const name = Path.basename(Path.resolve(options.cwd));
                         console.log(
-                            `${Path.basename(Path.resolve(options.cwd))}: publint, attw, the floor, the published files and tsc found no problems`
+                            filesOnly
+                                ? `${name}: has no entry point, and publint, the floor and the published files found no problems`
+                                : `${name}: publint, attw, the floor, the published files and tsc found no problems`
                         );
                     }
                 }

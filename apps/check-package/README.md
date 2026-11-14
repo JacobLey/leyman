@@ -66,6 +66,8 @@ What it checks, in order of what it prints:
 | Are The Types Wrong | An entry point has a problem under a resolution of the profile, or the package has no types.                                                                                                                                                                                                                                                        |
 | Declarations        | `tsc --strict --skipLibCheck false` reports an error in one of the package's published `.d.ts` files (errors in dependencies' are not the package's to fix), or about the check itself.                                                                                                                                                             |
 
+A package with no entry point (none of `main`, `exports`, `bin`, `module`, `types` or `typings`, and no root `index.js`, `index.json` or `index.node`, which Node.js loads without a `main`) publishes only files read by path, like a package of shared configs. It is checked as files only: the published files and publint. There are no types for Are The Types Wrong to resolve, no declarations to compile, and no code for Node.js to run, so it needs no `engines.node`, and `@types/node` and `--floor-tsconfig` aren't checked. If it does name a floor, its runtime dependencies must support it.
+
 Paths never published, by default: `.gitignore`, `.npmignore`, `CHANGELOG.md`, `biome.json`, `eslint.config.js`, `project.json`, `src`, `test`, `tsconfig.json` and `types.d.ts`. Add others with `--not-published`.
 
 ## CLI
@@ -106,7 +108,7 @@ const { problems, suggestions } = await checkPackage({ cwd: 'packages/my-package
 | `floorTsconfig` | `string`                             | —                                     | As `--floor-tsconfig`.                                |
 | `tsc`           | `string \| URL`                      | the nearest installed                 | As `--tsc`.                                           |
 
-**Returns** `Promise<{ problems: readonly string[]; suggestions: readonly string[] }>`: each problem as the CLI prints it, and publint's suggestions.
+**Returns** `Promise<{ problems: readonly string[]; suggestions: readonly string[]; filesOnly: boolean }>`: each problem as the CLI prints it, publint's suggestions, and whether the package has no entry point, so was checked as files only.
 
 **Rejects** with a `CheckPackageError` when the check itself can't run: `CheckPackageRootError` when no lockfile is found, the package isn't inside `root`, or the package manager can't be told; `CheckPackageTscError` when the package publishes declarations and no `tsc` is found, or `tsc` can't be run (it isn't at the path given, prints no version, or fails without reporting errors, as when it crashes or is killed). Problems with the package are returned in `problems` instead of thrown.
 
