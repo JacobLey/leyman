@@ -344,6 +344,33 @@ suite('Tools', () => {
             }
         );
 
+        withAgent.test(
+            "Doesn't ask again when the API fails, as it would only answer the same",
+            async ({ agent, api, apiFetch, db, errors }) => {
+                // The API's own 500, which it stores under the key and replays to a retry
+                await db.execute(sql`
+                    CREATE FUNCTION refuse_note() RETURNS trigger LANGUAGE plpgsql AS $$
+                    BEGIN RAISE EXCEPTION 'refused'; END $$;
+                    CREATE TRIGGER refuse_note BEFORE INSERT ON notes
+                    FOR EACH ROW EXECUTE FUNCTION refuse_note();
+                `);
+                const keys = intercept(api, apiFetch, async (_nth, pass) => pass());
+
+                const result = await agent.authorized(async () =>
+                    agent.client.callTool({
+                        name: 'add_note',
+                        arguments: { title: 'Dolly', body: '' },
+                    })
+                );
+
+                expect(textOf(result)).to.equal('The notes service failed. Try again later.');
+                // The API's failure, then the MCP server's
+                expect(errors).to.have.length(2);
+                expect(errors[1]).to.include({ operationId: 'createNote', status: 500 });
+                expect(keys).to.have.length(1);
+            }
+        );
+
         withAgent.test('Sends a new key for each note', async ({ agent, api, apiFetch }) => {
             const keys = intercept(api, apiFetch, async (_nth, pass) => pass());
 
