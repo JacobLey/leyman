@@ -90,12 +90,35 @@ suite('serve', () => {
             {
                 jsonrpc: '2.0',
                 id: 6,
-                result: {
-                    text: genever(parseYaml(schema)),
-                    extension: '.ts',
-                    mappings: [],
-                    diagnostics: [],
+                error: { code: -32_602, message: 'Unknown projectHandle: "a"' },
+            },
+        ]);
+    });
+
+    test('a project that was never opened', async () => {
+        expect(
+            await exchange([
+                {
+                    id: 1,
+                    method: 'transform',
+                    params: { fileName: '/project/a.yaml', content: schema, projectHandle: 7 },
                 },
+                {
+                    id: 2,
+                    method: 'transform',
+                    params: { fileName: '/project/a.yaml', content: schema },
+                },
+            ])
+        ).to.deep.equal([
+            {
+                jsonrpc: '2.0',
+                id: 1,
+                error: { code: -32_602, message: 'Unknown projectHandle: 7' },
+            },
+            {
+                jsonrpc: '2.0',
+                id: 2,
+                error: { code: -32_602, message: 'Unknown projectHandle: undefined' },
             },
         ]);
     });
@@ -127,9 +150,10 @@ suite('serve', () => {
     });
 
     test('diagnostics in the document', async () => {
-        const [response] = await exchange([
+        const [, response] = await exchange([
+            { id: 1, method: 'openProject', params: { projectHandle: 'a' } },
             {
-                id: 1,
+                id: 2,
                 method: 'transform',
                 params: { fileName: '/project/a.yaml', content: 'a: [\n', projectHandle: 'a' },
             },
@@ -139,6 +163,24 @@ suite('serve', () => {
         expect(response)
             .to.have.nested.property('result.diagnostics[0].code')
             .that.equals(diagnosticCodes.syntax);
+    });
+
+    test('rejects when a handler fails other than on a bad request', async () => {
+        await expect(
+            exchange([
+                { id: 1, method: 'openProject', params: { projectHandle: 'a' } },
+                {
+                    id: 2,
+                    method: 'transform',
+                    // Not a primitive, so it can't be read as the document's text
+                    params: {
+                        fileName: '/project/a.yaml',
+                        content: { toString: 1 },
+                        projectHandle: 'a',
+                    },
+                },
+            ])
+        ).to.be.rejectedWith(TypeError);
     });
 
     test('an unknown method, and notifications', async () => {
