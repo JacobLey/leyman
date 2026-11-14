@@ -53,6 +53,18 @@ export interface LoadOptions {
 }
 
 /**
+ * A schema to embed in the input.
+ */
+interface Embedded {
+    /**
+     * Whether it only gives another URI to a loaded resource (`{ $id, $ref }`), which references see
+     * through, rather than a type of its own.
+     */
+    readonly isAlias: boolean;
+    readonly schema: SchemaObject;
+}
+
+/**
  * A schema loaded from another file or URL, to embed in the input.
  */
 interface LoadedResource {
@@ -64,7 +76,7 @@ interface LoadedResource {
      * Schemas to embed: the schema, with an absolute `$id`, and if its `$id` is not the URI it was
      * loaded from, an alias at that URI.
      */
-    readonly schemas: readonly SchemaObject[];
+    readonly schemas: readonly Embedded[];
 }
 
 /**
@@ -129,6 +141,13 @@ export interface Bundle {
      * OpenAPI documents, and files of OpenAPI objects, the input references, keyed by URI.
      */
     readonly files: ReadonlyMap<string, OpenApiFile>;
+    /**
+     * JSON Pointers of the aliases embedded in the input: schemas that only give another URI to a loaded
+     * resource (`{ $id, $ref }`), e.g. the URL a file was loaded from when its own `$id` is another.
+     * They are not types of their own, and references see through them. A schema the input itself
+     * wrote with only `$id` and `$ref` is not one of them, and is a type like any other.
+     */
+    readonly aliases: ReadonlySet<string>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- the HTTP statuses that redirect
@@ -241,6 +260,18 @@ const readResource = async (
 };
 
 /**
+ * An alias, to embed: a schema at one URI that is the schema at another.
+ *
+ * @param uri - URI references may use, e.g. the one a file was loaded from
+ * @param target - absolute `$id` of the resource it stands for
+ * @returns `{ $id: uri, $ref: target }`, marked as an alias
+ */
+const aliasOf = (uri: string, target: string): Embedded => ({
+    isAlias: true,
+    schema: { $id: uri, $ref: target },
+});
+
+/**
  * Make a loaded schema a resource, and index it.
  *
  * Its `$id`, if any, is its base URI. Otherwise the URI it was read from, after redirects, is
@@ -281,7 +312,10 @@ const schemaResource = (
     const id = index.baseUris.get('#')!;
     return {
         index,
-        schemas: [{ ...schema, $id: id }, ...(id === uri ? [] : [{ $id: uri, $ref: id }])],
+        schemas: [
+            { isAlias: false, schema: { ...schema, $id: id } },
+            ...(id === uri ? [] : [aliasOf(uri, id)]),
+        ],
     };
 };
 
@@ -314,27 +348,35 @@ const resourceName = (resource: SchemaObject, taken: ReadonlySet<string>): strin
  * @param input - JSON Schema, or OpenAPI document
  * @param resources - schemas with absolute `$id`s
  * @param isDocument - whether the input is an OpenAPI document
- * @returns a copy of the input, with the resources
+ * @returns a copy of the input, with the resources, and the JSON Pointers of the aliases among them
  */
 const embed = (
     input: SchemaObject,
-    resources: readonly SchemaObject[],
+    resources: readonly Embedded[],
     isDocument: boolean
-): SchemaObject => {
+): { input: SchemaObject; aliases: ReadonlySet<string> } => {
     // A document without components is given them, as only its components can hold schemas
     const components = (isDocument ? (input.components ?? {}) : null) as SchemaObject | null;
     const container = ((components ? components.schemas : input.$defs) ?? {}) as SchemaObject;
+    const containerPointer = components ? '#/components/schemas' : '#/$defs';
     const taken = new Set(Object.keys(container));
     const added: Record<string, SchemaObject> = {};
-    for (const resource of resources) {
-        const name = resourceName(resource, taken);
+    const aliases = new Set<string>();
+    for (const { isAlias, schema } of resources) {
+        const name = resourceName(schema, taken);
         taken.add(name);
-        added[name] = resource;
+        added[name] = schema;
+        if (isAlias) {
+            aliases.add(childPointer(containerPointer, name));
+        }
     }
     const merged = { ...container, ...added };
-    return components
-        ? { ...input, components: { ...components, schemas: merged } }
-        : { ...input, $defs: merged };
+    return {
+        aliases,
+        input: components
+            ? { ...input, components: { ...components, schemas: merged } }
+            : { ...input, $defs: merged },
+    };
 };
 
 /**
@@ -360,7 +402,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
         !options.isDocument && isSchemaObject(input) && declaresDraft04(input) === true;
     const known = new Set<string>();
     const attempted = new Set<string>();
-    const resources: SchemaObject[] = [];
+    const resources: Embedded[] = [];
     const files = new Map<string, LoadingFile>();
     const failures: Failure[] = [];
     /**
@@ -488,10 +530,14 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
             fail(loaded);
             return;
         }
-        const [{ $id: id }] = loaded.schemas as [SchemaObject];
+        const [
+            {
+                schema: { $id: id },
+            },
+        ] = loaded.schemas as [Embedded];
         if (known.has(id as string)) {
             // Already loaded, by a URI that redirects to the same place, or declared by another schema's `$id`
-            resources.push({ $id: uri, $ref: id });
+            resources.push(aliasOf(uri, id as string));
             known.add(uri);
             return;
         }
@@ -533,7 +579,12 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
             referencedFrom,
         });
     }
+    const embedded =
+        resources.length === 0
+            ? { aliases: new Set<string>(), input }
+            : embed(input as SchemaObject, resources, options.isDocument);
     return {
+        ...embedded,
         files: new Map(
             files
                 .entries()
@@ -542,9 +593,5 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
                     { dialect, document, schemas },
                 ])
         ),
-        input:
-            resources.length === 0
-                ? input
-                : embed(input as SchemaObject, resources, options.isDocument),
     };
 };

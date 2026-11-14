@@ -75,13 +75,14 @@ func TestDocumentComponents(t *testing.T) {
 		},
 		"Address": {"type": "object", "properties": {"city": {"type": "string"}}},
 		"Group": {"$defs": {"A": true}},
-		"Alias": {"$id": "https://example.com/a", "$ref": "#/components/schemas/Address"}
-	}`, `"paths": {}`), []string{"Address", "User"}, map[string]*model.Type{
+		"Alias": {"$id": "https://example.com/a", "$ref": "`+convert.DefaultBaseURI+`#/components/schemas/Address"}
+	}`, `"paths": {}`), []string{"Address", "Alias", "User"}, map[string]*model.Type{
 		"User": open(
 			property("name", false, model.Union(model.StringType, model.NullType)),
 			property("address", true, model.Reference("Address")),
 		),
 		"Address": open(property("city", true, model.StringType)),
+		"Alias":   model.Reference("Address"),
 	})
 
 	expectDocumentTypes(t, document("3.0.3", `{"Name": {"type": "string", "nullable": true, "example": "Ada"}}`, ""),

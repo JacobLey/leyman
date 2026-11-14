@@ -115,7 +115,7 @@ func GenerateSource(schema []byte, options Options) (Source, error) {
 		return Source{Text: nil, Names: nil}, err //nolint:wrapcheck // ErrSyntax is the error, saying what is wrong
 	}
 
-	output, err := generate(root, options, nil)
+	output, err := generate(convert.Bundle{Input: root, Files: nil, Aliases: nil}, options)
 	if err != nil {
 		return Source{Text: nil, Names: nil}, err
 	}
@@ -129,7 +129,9 @@ func GenerateSource(schema []byte, options Options) (Source, error) {
 }
 
 // generate generates Go types from a schema or OpenAPI document, with the files it refers to, as Load returns them.
-func generate(root jsonv.Value, options Options, files map[string]convert.OpenAPIFile) (golang.Output, error) {
+func generate(bundle convert.Bundle, options Options) (golang.Output, error) {
+	root := bundle.Input
+
 	name := options.Name
 	if name == "" {
 		name = "Schema"
@@ -160,7 +162,7 @@ func generate(root jsonv.Value, options Options, files map[string]convert.OpenAP
 	}
 
 	convertOptions := convert.Options{
-		BaseURI: baseURI, Dialect: dialect, Files: files, Strict: !options.NoStrict,
+		BaseURI: baseURI, Dialect: dialect, Files: bundle.Files, Aliases: bundle.Aliases, Strict: !options.NoStrict,
 		ParameterDefaults: options.ParameterDefaults,
 	}
 

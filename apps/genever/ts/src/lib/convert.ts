@@ -57,6 +57,11 @@ export const defaultTypedMinItems = 3;
 
 export interface ConvertOptions {
     /**
+     * JSON Pointers of the aliases the loader embedded (`{ $id, $ref }` giving another URI to a loaded
+     * resource). They are not types of their own, and references see through them.
+     */
+    readonly aliases: ReadonlySet<string>;
+    /**
      * URI the document was read from, which relative `$id`s and `$ref`s resolve against.
      */
     readonly baseUri: string;
@@ -377,19 +382,6 @@ const isDefinitionGroup = (schema: unknown): boolean =>
     Object.keys(schema).every(keyword => groupKeywords.has(keyword));
 
 /**
- * Whether a schema only gives another URI to a resource, with an `$id` and a `$ref` (e.g. a file whose own
- * `$id` is not where it was loaded from). References see through it, so it is not a type of its own.
- *
- * @param schema - a schema
- * @returns true if the schema has only `$id` and `$ref`
- */
-const isResourceAlias = (schema: unknown): schema is SchemaObject & { $ref: string } =>
-    isSchemaObject(schema) &&
-    typeof schema.$id === 'string' &&
-    typeof schema.$ref === 'string' &&
-    Object.keys(schema).length === 2;
-
-/**
  * Converts a JSON Schema document to types.
  *
  * The root schema, every definition (`$defs`/`definitions`) at the root of the document,
@@ -536,8 +528,9 @@ export class Converter {
         }
         for (const name of visitOrder(container)) {
             const schema = container[name];
-            if (!isDefinitionGroup(schema) && !isResourceAlias(schema)) {
-                this.#register(childPointer(containerPointer, name), name, schema);
+            const pointer = childPointer(containerPointer, name);
+            if (!isDefinitionGroup(schema) && !this.#options.aliases.has(pointer)) {
+                this.#register(pointer, name, schema);
             }
         }
     }
@@ -554,12 +547,12 @@ export class Converter {
     }
 
     /**
-     * Resolve a `$ref`, seeing through resource aliases.
+     * Resolve a `$ref`, seeing through the aliases the loader embedded.
      *
      * @param ref - value of the `$ref` keyword
      * @param refPointer - JSON Pointer to the `$ref` keyword
      * @returns the schema it refers to
-     * @throws {GeneverInvalidSchemaError} if the `$ref` is invalid, or only refers to itself
+     * @throws {GeneverInvalidSchemaError} if the `$ref` is invalid
      * @throws {GeneverUnsupportedError} if the `$ref` is to another document
      */
     #resolve(ref: unknown, refPointer: string): Target {
@@ -568,15 +561,14 @@ export class Converter {
         }
         const schemaPointer = refPointer.slice(0, refPointer.lastIndexOf('/'));
         let target = resolveReference(this.#index!, ref, schemaPointer);
-        const aliases = new Set<string>();
-        while (isResourceAlias(target.schema)) {
-            if (aliases.has(target.pointer)) {
-                throw new GeneverInvalidSchemaError(`$ref "${ref}" only refers to itself`, {
-                    pointer: refPointer,
-                });
-            }
-            aliases.add(target.pointer);
-            target = resolveReference(this.#index!, target.schema.$ref, target.pointer);
+        // The loader only aliases a URI it already knows, so following aliases ends at a schema that is not one
+        while (this.#options.aliases.has(target.pointer)) {
+            // The loader writes each alias as `{ $id, $ref }`, with an absolute URI
+            target = resolveReference(
+                this.#index!,
+                (target.schema as { $ref: string }).$ref,
+                target.pointer
+            );
         }
         return target;
     }

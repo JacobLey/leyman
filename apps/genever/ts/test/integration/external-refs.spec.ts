@@ -397,7 +397,7 @@ suite('external references', () => {
             try {
                 expectTypes(
                     await generateFor(ctx, 'https://example.test/v1/a.json', ['example.test']),
-                    { Schema: '{ a?: B }', B: 'string' }
+                    { Schema: '{ a?: A }', A: 'B', B: 'string' }
                 );
             } finally {
                 fake.restore();
@@ -424,10 +424,14 @@ suite('external references', () => {
                     output: ctx.resolve('input.ts'),
                     fetch: ['example.test'],
                 });
-                expectTypes(await ctx.read('input.ts'), {
-                    Schema: '{ a?: B; moved?: B }',
+                // A type for a.json, though it only refers to b.json, but not for moved.json, which only redirects to it
+                const source = await ctx.read('input.ts');
+                expectTypes(source, {
+                    Schema: '{ a?: A; moved?: B }',
+                    A: 'B',
                     B: 'string',
                 });
+                expect(source).not.to.contain('Moved');
             } finally {
                 fake.restore();
             }

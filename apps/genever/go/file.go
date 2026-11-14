@@ -300,7 +300,7 @@ func generateFromFile(ctx context.Context, inputPath string, options FileOptions
 	generateOptions := options.Options
 	generateOptions.BaseURI = baseURI
 
-	output, err := generate(bundle.Input, generateOptions, bundle.Files)
+	output, err := generate(bundle, generateOptions)
 	if err != nil {
 		return nil, nil, err
 	}

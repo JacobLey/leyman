@@ -84,11 +84,7 @@ func TestInvalidReferences(t *testing.T) {
 		"$ref is not encoded":                         `{ "$ref": "#/%E0%A4%A" }`,
 		"$ref is not a URI":                           `{ "$ref": "https://[" }`,
 		"$ref names a missing anchor":                 `{ "$ref": "#missing" }`,
-		"$ref through aliases to itself": `{
-			"$ref": "a.json",
-			"$defs": { "A": { "$id": "a.json", "$ref": "b.json" }, "B": { "$id": "b.json", "$ref": "a.json" } }
-		}`,
-		"$ref through an alias that does not resolve": `{
+		"$ref through a definition of only $id and $ref that does not resolve": `{
 			"$ref": "a.json", "$defs": { "A": { "$id": "a.json", "$ref": "#/missing" } }
 		}`,
 		"$id is not a string":               `{ "$id": 1 }`,
@@ -105,6 +101,20 @@ func TestInvalidReferences(t *testing.T) {
 		"referenced schema is not a schema": `{ "$ref": "#/$defs/A/const", "$defs": { "A": { "const": 1 } } }`,
 		"root $id is not a URI":             `{ "$id": "%zz" }`,
 	})
+}
+
+// TestAliasDoesNotResolve checks an alias in Options.Aliases is resolved like any `$ref`, failing if it doesn't
+// resolve, though Load only aliases a resource it embeds.
+func TestAliasDoesNotResolve(t *testing.T) {
+	t.Parallel()
+
+	options := strict()
+	options.Aliases = map[string]bool{"#/$defs/A": true}
+
+	err := convertError(t, `{ "$ref": "a.json", "$defs": { "A": { "$id": "a.json", "$ref": "#/missing" } } }`, options)
+	if !errors.Is(err, gerr.ErrInvalidSchema) || err.Pointer != "#/$defs/A/$ref" {
+		t.Errorf("got %v at %q", err, err.Pointer)
+	}
 }
 
 func runInvalid(t *testing.T, invalid map[string]string) {

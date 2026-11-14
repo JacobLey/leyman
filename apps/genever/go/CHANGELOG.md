@@ -1,5 +1,9 @@
 # genever-go
 
+## 0.2.1
+
+- A definition with only `$id` and `$ref` that the schema itself declares is a type like any other, and its `$ref` is checked, so one to a document that isn't loaded fails with ErrUnsupported instead of being dropped. Only the aliases GenerateFile adds itself, when a file's `$id` isn't the URL it was loaded from, are still seen through. So a referenced file that only holds a `$ref` is a type named after it, and two such definitions referring to each other are a strict mode error, like any other `$ref` back to the same value.
+
 ## 0.2.0
 
 - Pointers, of errors and of `GenerateSource` names, are percent-encoded as URI fragments (RFC 6901 §6), so each is also a `$ref` to the same place: the property `a b` is `#/properties/a%20b`. The `$ref` a YAML recursive alias becomes is encoded the same way, so a key with `#` no longer breaks it.

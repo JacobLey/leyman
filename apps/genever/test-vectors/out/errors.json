@@ -145,22 +145,6 @@
       },
       "pointer": "#/$ref"
     },
-    "$ref through aliases to itself": {
-      "schema": {
-        "$ref": "a.json",
-        "$defs": {
-          "A": {
-            "$id": "a.json",
-            "$ref": "b.json"
-          },
-          "B": {
-            "$id": "b.json",
-            "$ref": "a.json"
-          }
-        }
-      },
-      "pointer": "#/$ref"
-    },
     "$id is not a string": {
       "schema": {
         "$id": 1
@@ -942,6 +926,22 @@
       },
       "pointer": "#/foo"
     },
+    "$ref through definitions of only $id and $ref back to itself": {
+      "schema": {
+        "$ref": "a.json",
+        "$defs": {
+          "A": {
+            "$id": "a.json",
+            "$ref": "b.json"
+          },
+          "B": {
+            "$id": "b.json",
+            "$ref": "a.json"
+          }
+        }
+      },
+      "pointer": "#/$defs/B/$ref"
+    },
     "unknown keywords in code unit order": {
       "schema": {
         "type": "string",
@@ -1194,6 +1194,17 @@
         "$ref": "other.json#/$defs/A"
       },
       "pointer": "#/$ref"
+    },
+    "$ref to another document in a definition of only $id and $ref": {
+      "schema": {
+        "$defs": {
+          "B": {
+            "$id": "https://example.test/b",
+            "$ref": "other.json"
+          }
+        }
+      },
+      "pointer": "#/$defs/B/$ref"
     },
     "$dynamicRef": {
       "options": {

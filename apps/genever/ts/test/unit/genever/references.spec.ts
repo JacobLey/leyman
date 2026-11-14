@@ -282,7 +282,7 @@ suite('references', () => {
             );
         });
 
-        test('an alias of a resource is not a type', () => {
+        test('a definition of only $id and $ref is a type', () => {
             expectGenerated(
                 {
                     type: 'object',
@@ -292,7 +292,20 @@ suite('references', () => {
                         Real: { $id: 'real.json', type: 'string' },
                     },
                 },
-                { Schema: '{ a?: Real }', Real: 'string' }
+                { Schema: '{ a?: Alias }', Alias: 'Real', Real: 'string' }
+            );
+        });
+
+        test('an unreferenced definition of only $id and $ref is a type', () => {
+            expectGenerated(
+                {
+                    $id: 'https://example.test/root',
+                    $defs: {
+                        A: { type: 'string' },
+                        B: { $id: 'https://example.test/b', $ref: 'root#/$defs/A' },
+                    },
+                },
+                { Schema: 'unknown', A: 'string', B: 'A' }
             );
         });
 

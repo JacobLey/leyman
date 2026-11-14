@@ -72,13 +72,6 @@ export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
     '$ref is not encoded': { schema: { $ref: '#/%E0%A4%A' }, pointer: '#/$ref' },
     '$ref is not a URI': { schema: { $ref: 'https://[' }, pointer: '#/$ref' },
     '$ref names a missing anchor': { schema: { $ref: '#missing' }, pointer: '#/$ref' },
-    '$ref through aliases to itself': {
-        schema: {
-            $ref: 'a.json',
-            $defs: { A: { $id: 'a.json', $ref: 'b.json' }, B: { $id: 'b.json', $ref: 'a.json' } },
-        },
-        pointer: '#/$ref',
-    },
     '$id is not a string': { schema: { $id: 1 }, pointer: '#/$id' },
     '$id has a fragment': {
         schema: { $defs: { A: { $id: 'a.json#b' } } },
@@ -325,6 +318,13 @@ export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
  */
 export const strictSchemas: Readonly<Record<string, ErrorCase>> = {
     'unknown keyword': { schema: { type: 'string', foo: 1 }, pointer: '#/foo' },
+    '$ref through definitions of only $id and $ref back to itself': {
+        schema: {
+            $ref: 'a.json',
+            $defs: { A: { $id: 'a.json', $ref: 'b.json' }, B: { $id: 'b.json', $ref: 'a.json' } },
+        },
+        pointer: '#/$defs/B/$ref',
+    },
     'unknown keywords in code unit order': {
         schema: { type: 'string', foo: 1, bar: 1 },
         pointer: '#/bar',
@@ -429,6 +429,10 @@ export const strictSchemas: Readonly<Record<string, ErrorCase>> = {
  */
 export const unsupportedSchemas: Readonly<Record<string, ErrorCase>> = {
     '$ref to another document': { schema: { $ref: 'other.json#/$defs/A' }, pointer: '#/$ref' },
+    '$ref to another document in a definition of only $id and $ref': {
+        schema: { $defs: { B: { $id: 'https://example.test/b', $ref: 'other.json' } } },
+        pointer: '#/$defs/B/$ref',
+    },
     $dynamicRef: {
         options: { strict: false },
         schema: { $dynamicRef: '#node' },

@@ -72,17 +72,18 @@ func noLoading() convert.LoadOptions {
 func loadTypes(t *testing.T, input, baseURI string, options convert.LoadOptions) map[string]string {
 	t.Helper()
 
-	bundled, err := load(t, input, baseURI, options)
+	bundle, err := loadBundle(t, mustParse(t, input), baseURI, options)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	converted := lax()
 	converted.BaseURI = baseURI
+	converted.Aliases = bundle.Aliases
 
-	types, err := convert.Convert(bundled, rootName, converted)
+	types, err := convert.Convert(bundle.Input, rootName, converted)
 	if err != nil {
-		t.Fatalf("%v\n%s", err, jsonv.Stringify(bundled))
+		t.Fatalf("%v\n%s", err, jsonv.Stringify(bundle.Input))
 	}
 
 	result := map[string]string{}
@@ -519,10 +520,10 @@ func TestLoadServer(t *testing.T) {
 	options := noLoading()
 	options.FetchHosts = []string{strings.TrimPrefix(server.URL, "http://")}
 
-	// a.json only refers to b.yml, so is an alias of it, not a type
+	// a.json is a type, though it only refers to b.yml, while moved.json only redirects to b.yml, so is not
 	types := loadTypes(t, `{"properties": {"a": {"$ref": "`+server.URL+`/a.json"}, "m": {"$ref": "`+server.URL+
 		`/moved.json"}}}`, "file:///root.json", options)
-	expectTypeNames(t, types, "Schema", "B")
+	expectTypeNames(t, types, "Schema", "A", "B")
 
 	server.Close()
 
@@ -567,6 +568,7 @@ func loadAndConvert(t *testing.T, input, baseURI string) map[string]string {
 	options.BaseURI = baseURI
 	options.Dialect = dialect
 	options.Files = bundle.Files
+	options.Aliases = bundle.Aliases
 
 	var types []convert.NamedType
 	if isDocument {
@@ -704,6 +706,7 @@ func TestLoadDocumentFailures(t *testing.T) {
 	options := strict()
 	options.BaseURI = base + "api.json"
 	options.Files = bundle.Files
+	options.Aliases = bundle.Aliases
 
 	if _, err := convert.Convert(bundle.Input, rootName, options); !errors.Is(err, gerr.ErrInvalidSchema) {
 		t.Errorf("got %v", err)

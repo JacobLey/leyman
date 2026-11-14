@@ -200,21 +200,16 @@ func isDefinitionGroup(value jsonv.Value) bool {
 	})
 }
 
-// resourceAlias returns the `$ref` of a schema that only gives another URI to a resource, with an `$id` and a `$ref`
-// (e.g. a file whose own `$id` is not where it was loaded from). References see through it, so it is not a type of
-// its own.
-func resourceAlias(value jsonv.Value) (string, bool) {
-	schema, ok := value.(*jsonv.Object)
-	if !ok || schema.Len() != 2 {
+// loadedAlias returns the `$ref` of a schema Load embedded as an alias (Options.Aliases), which references see through.
+// Load writes each as `{ $id, $ref }`, with an absolute URI.
+func (c *converter) loadedAlias(found target) (string, bool) {
+	if !c.options.Aliases[found.pointer] {
 		return "", false
 	}
 
-	id, _ := schema.Get("$id")
-	ref, _ := schema.Get("$ref")
-	_, isID := id.(string)
-	refString, isRef := ref.(string)
+	ref, _ := found.schema.(*jsonv.Object).Get("$ref") //nolint:forcetypeassert // Load writes each alias as an object
 
-	return refString, isID && isRef
+	return ref.(string), true //nolint:forcetypeassert // Load writes each alias's `$ref` as a string
 }
 
 // registerContainer names every schema of a container at the root of the document, such as `$defs`, so each is
@@ -239,8 +234,8 @@ func (c *converter) registerSchemas(parent *jsonv.Object, parentPointer, key str
 
 	for _, name := range container.SortedKeys() {
 		schema, _ := container.Get(name)
-		if _, isAlias := resourceAlias(schema); !isDefinitionGroup(schema) && !isAlias {
-			c.register(childPointer(pointer, name), name, schema)
+		if schemaPointer := childPointer(pointer, name); !isDefinitionGroup(schema) && !c.options.Aliases[schemaPointer] {
+			c.register(schemaPointer, name, schema)
 		}
 	}
 

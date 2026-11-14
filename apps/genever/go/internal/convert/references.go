@@ -19,7 +19,7 @@ var (
 	sameValueCollectionKeywords = []string{keywordAllOf, keywordAnyOf, keywordOneOf, keywordDependentSchemas, keywordDependencies}
 )
 
-// resolve resolves a `$ref`, seeing through resource aliases.
+// resolve resolves a `$ref`, seeing through the aliases Load embedded.
 func (c *converter) resolve(ref jsonv.Value, refPointer string) (target, error) {
 	refString, ok := ref.(string)
 	if !ok {
@@ -31,15 +31,8 @@ func (c *converter) resolve(ref jsonv.Value, refPointer string) (target, error) 
 		return resolved, err
 	}
 
-	aliases := map[string]bool{}
-
-	for aliasRef, isAlias := resourceAlias(resolved.schema); isAlias; aliasRef, isAlias = resourceAlias(resolved.schema) {
-		if aliases[resolved.pointer] {
-			return resolved, gerr.Invalid("$ref "+quote(refString)+" only refers to itself", refPointer)
-		}
-
-		aliases[resolved.pointer] = true
-
+	// Load only aliases a URI it already knows, so following aliases ends at a schema that is not one
+	for aliasRef, isAlias := c.loadedAlias(resolved); isAlias; aliasRef, isAlias = c.loadedAlias(resolved) {
 		resolved, err = c.index.resolveReference(aliasRef, resolved.pointer)
 		if err != nil {
 			return resolved, err

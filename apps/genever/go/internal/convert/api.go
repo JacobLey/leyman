@@ -33,6 +33,9 @@ type Options struct {
 	// Files are the OpenAPI documents, and files of OpenAPI objects, the document refers to, by URI, as Load returns
 	// them. Their schemas are in their own dialect.
 	Files map[string]OpenAPIFile
+	// Aliases are the JSON Pointers of the aliases Load embedded (`{ $id, $ref }` giving another URI to a loaded
+	// resource), as Bundle.Aliases. They are not types of their own, and references see through them. Nil is none.
+	Aliases map[string]bool
 	// Strict fails on schemas that are valid but likely mistakes.
 	Strict bool
 	// ParameterDefaults also generates each operation's `<Id>Request`, whose parameters with a default are always set.

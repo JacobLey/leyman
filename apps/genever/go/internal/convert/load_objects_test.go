@@ -108,6 +108,7 @@ func convertLoaded(t *testing.T, input, baseURI string) *gerr.Error {
 	options.BaseURI = baseURI
 	options.Dialect = dialect
 	options.Files = bundle.Files
+	options.Aliases = bundle.Aliases
 
 	if _, err := convert.Document(bundle.Input, options); err != nil {
 		return asGeneverError(t, err)

@@ -128,9 +128,13 @@ func TestResources(t *testing.T) {
 			map[string]*model.Type{rootName: open(property("home", true, ref("Address")), property("self", true, ref(rootName))), "Address": model.StringType},
 			`{ "$id": "https://example.test/schemas/user.json", "type": "object", "properties": { "home": { "$ref": "address.json" }, "self": { "$ref": "user.json" } }, "$defs": { "Address": { "$id": "https://example.test/schemas/address.json", "type": "string" } } }`,
 		},
-		"alias": {
-			map[string]*model.Type{rootName: open(property("a", true, ref("Real"))), "Real": model.StringType},
+		"only $id and $ref": {
+			map[string]*model.Type{rootName: open(property("a", true, ref("Alias"))), "Alias": ref("Real"), "Real": model.StringType},
 			`{ "type": "object", "properties": { "a": { "$ref": "alias.json" } }, "$defs": { "Alias": { "$id": "alias.json", "$ref": "real.json" }, "Real": { "$id": "real.json", "type": "string" } } }`,
+		},
+		"unreferenced, only $id and $ref": {
+			map[string]*model.Type{rootName: model.UnknownType, "A": model.StringType, "B": ref("A")},
+			`{ "$id": "https://example.test/root", "$defs": { "A": { "type": "string" }, "B": { "$id": "https://example.test/b", "$ref": "root#/$defs/A" } } }`,
 		},
 	}, lax())
 }

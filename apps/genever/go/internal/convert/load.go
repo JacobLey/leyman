@@ -74,7 +74,7 @@ type loader struct {
 	// attempted are the URIs loaded, or that failed to.
 	attempted map[string]bool
 	// resources are the loaded schemas, to embed.
-	resources []*jsonv.Object
+	resources []embedded
 	failures  []loadFailure
 	// files are the OpenAPI documents loaded, by the URI they were referenced by.
 	files map[string]*loadingFile
@@ -84,6 +84,14 @@ type loader struct {
 	// inputDialect is the input's dialect, which a file of OpenAPI objects it references has.
 	inputDialect   Dialect
 	isInputDraft04 bool
+}
+
+// An embedded is a schema to embed in the input.
+type embedded struct {
+	schema *jsonv.Object
+	// isAlias is a schema that only gives another URI to a loaded resource (`{ $id, $ref }`), which references see
+	// through, rather than a type of its own.
+	isAlias bool
 }
 
 // A loadingFile is an OpenAPI document being loaded.
@@ -106,6 +114,10 @@ type Bundle struct {
 	Input jsonv.Value
 	// Files are the OpenAPI documents the input references, by URI, for Options.Files.
 	Files map[string]OpenAPIFile
+	// Aliases are the JSON Pointers of the aliases embedded in the input, for Options.Aliases: schemas that only give
+	// another URI to a loaded resource (`{ $id, $ref }`), e.g. the URL a file was loaded from when its own `$id` is
+	// another. A schema the input itself wrote with only `$id` and `$ref` is not one of them.
+	Aliases map[string]bool
 }
 
 // Load loads every file and URL an input references, and everything they reference in turn. The input is a schema, or
@@ -123,7 +135,7 @@ type Bundle struct {
 // loaded schema that isn't valid fails as the input would, with a pointer into that schema. An allowed host that is
 // not a host fails with ErrHost.
 func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, error) {
-	none := Bundle{Input: nil, Files: nil}
+	none := Bundle{Input: nil, Files: nil, Aliases: nil}
 
 	isAllowed, err := fetchFilter(options.Fetch, options.FetchHosts)
 	if err != nil {
@@ -172,10 +184,12 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 	}
 
 	if len(load.resources) == 0 {
-		return Bundle{Input: input, Files: files}, nil
+		return Bundle{Input: input, Files: files, Aliases: map[string]bool{}}, nil
 	}
 
-	return Bundle{Input: embed(schema, load.resources, isDocument), Files: files}, nil
+	bundled, aliases := embed(schema, load.resources, isDocument)
+
+	return Bundle{Input: bundled, Files: files, Aliases: aliases}, nil
 }
 
 // noRedirects is a client that doesn't follow redirects.
@@ -337,7 +351,7 @@ func (l *loader) load(reference pendingReference) error {
 	}
 
 	resource.Set("$id", resourceURI)
-	l.resources = append(l.resources, resource)
+	l.resources = append(l.resources, embedded{schema: resource, isAlias: false})
 
 	if resourceURI != reference.uri {
 		l.resources = append(l.resources, aliasOf(reference.uri, resourceURI))
@@ -577,13 +591,14 @@ func schemaResource(parsed jsonv.Value, readURI string, isInputDraft04 bool) (*j
 	return resource, nil
 }
 
-// aliasOf is a schema at uri that is the schema at target.
-func aliasOf(uri, target string) *jsonv.Object {
+// aliasOf is a schema at uri, a URI references may use (e.g. the one a file was loaded from), that is the resource
+// whose absolute `$id` is target.
+func aliasOf(uri, target string) embedded {
 	alias := jsonv.NewObject()
 	alias.Set("$id", uri)
 	alias.Set("$ref", target)
 
-	return alias
+	return embedded{schema: alias, isAlias: true}
 }
 
 func cloneObject(object *jsonv.Object) *jsonv.Object {
@@ -598,12 +613,12 @@ func cloneObject(object *jsonv.Object) *jsonv.Object {
 }
 
 // embed returns a copy of the input with the resources added to its `$defs`, or an OpenAPI document's
-// `components.schemas`.
-func embed(input *jsonv.Object, resources []*jsonv.Object, isDocument bool) *jsonv.Object {
-	parent, key := input, keywordDefs
+// `components.schemas`, and the JSON Pointers of the aliases among them.
+func embed(input *jsonv.Object, resources []embedded, isDocument bool) (*jsonv.Object, map[string]bool) {
+	parent, key, containerPointer := input, keywordDefs, "#/"+keywordDefs
 
 	if isDocument {
-		parent, key = jsonv.NewObject(), "schemas"
+		parent, key, containerPointer = jsonv.NewObject(), "schemas", "#/components/schemas"
 
 		if components, ok := input.Get("components"); ok {
 			// Load checked its components are an object
@@ -623,22 +638,28 @@ func embed(input *jsonv.Object, resources []*jsonv.Object, isDocument bool) *jso
 		taken[key] = true
 	}
 
+	aliases := map[string]bool{}
+
 	for _, resource := range resources {
-		name := resourceName(resource, taken)
+		name := resourceName(resource.schema, taken)
 		taken[name] = true
-		container.Set(name, resource)
+		container.Set(name, resource.schema)
+
+		if resource.isAlias {
+			aliases[childPointer(containerPointer, name)] = true
+		}
 	}
 
 	parent.Set(key, container)
 
 	if !isDocument {
-		return parent
+		return parent, aliases
 	}
 
 	bundled := cloneObject(input)
 	bundled.Set("components", parent)
 
-	return bundled
+	return bundled, aliases
 }
 
 // resourceName names an embedded resource, which names its type: its `title`, else its file name, unique among taken.

@@ -127,10 +127,9 @@ export const geneverFile = async (
             sources.set(uri, text);
         },
     });
-    const content = await formatText(
-        generate(bundled.input, { ...options, baseUri }, bundled.files).text,
-        { ext: '.ts' }
-    );
+    const content = await formatText(generate(bundled, { ...options, baseUri }).text, {
+        ext: '.ts',
+    });
 
     const manifestInputs =
         manifestPath === null
