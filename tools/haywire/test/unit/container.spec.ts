@@ -3380,6 +3380,67 @@ suite('container', () => {
                 const result = await container.getAsync(strListId);
                 expect(result).to.deep.equal(['sync', 'async']);
             });
+
+            test('Async element beside an instance', async () => {
+                const strListId = identifier<string>().list();
+
+                const container = createContainer(
+                    createModule(bind(strListId).withAsyncFactory(async () => 'b')).addBinding(
+                        bind(strListId).withInstance('a')
+                    )
+                );
+
+                expect(await container.getAsync(strListId)).to.deep.equal(['b', 'a']);
+                expect(await container.getAsync(strListId)).to.deep.equal(['b', 'a']);
+            });
+
+            test('Async element beside an eager singleton', async () => {
+                const strListId = identifier<string>().list();
+
+                const container = createContainer(
+                    createModule(bind(strListId).withAsyncFactory(async () => 'b')).addBinding(
+                        bind(strListId)
+                            .withFactory(() => 'a')
+                            .scoped(eagerSingletonScope)
+                    )
+                );
+
+                expect(await container.getAsync(strListId)).to.deep.equal(['b', 'a']);
+            });
+
+            test('Async element beside an instance bound to a factory', async () => {
+                const strListId = identifier<string>().list();
+
+                const container = createContainerFactory(
+                    createModule(bind(strListId).withAsyncFactory(async () => 'b'))
+                )
+                    .bindInstance(strListId, 'a')
+                    .toContainer();
+
+                expect(await container.getAsync(strListId)).to.deep.equal(['b', 'a']);
+            });
+
+            test('Async element beside a singleton first created for a dependent', async () => {
+                const strListId = identifier<string>().list();
+                const dependentId = identifier<string[]>().named('dependent');
+
+                const container = createContainer(
+                    createModule(bind(strListId).withAsyncFactory(async () => 'b'))
+                        .addBinding(
+                            bind(strListId)
+                                .withFactory(() => 'a')
+                                .scoped(singletonScope)
+                        )
+                        .addBinding(
+                            bind(dependentId)
+                                .withDependencies([strListId])
+                                .withProvider(list => list)
+                        )
+                );
+                expect(await container.getAsync(dependentId)).to.deep.equal(['b', 'a']);
+
+                expect(await container.getAsync(strListId)).to.deep.equal(['b', 'a']);
+            });
         });
 
         suite('No provider exists', () => {
