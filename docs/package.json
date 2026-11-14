@@ -68,6 +68,7 @@
     "vitepress": "catalog:",
     "vitest": "catalog:",
     "vitest-chain": "workspace:^",
+    "vue": "catalog:",
     "xenever": "workspace:^"
   }
 }
