@@ -27,8 +27,8 @@ import { mergeAllOf } from '#internal/lib/utils.js';
 export type KnownFormat =
     | 'binary'
     | 'byte'
-    | 'date-time'
     | 'date'
+    | 'date-time'
     | 'duration'
     | 'email'
     | 'hostname'
@@ -36,16 +36,16 @@ export type KnownFormat =
     | 'idn-hostname'
     | 'ipv4'
     | 'ipv6'
-    | 'iri-reference'
     | 'iri'
+    | 'iri-reference'
     | 'json-pointer'
     | 'password'
     | 'regex'
     | 'relative-json-pointer'
     | 'time'
+    | 'uri'
     | 'uri-reference'
     | 'uri-template'
-    | 'uri'
     | 'uuid';
 
 // `string & {}` keeps autocomplete for known formats, while accepting any string

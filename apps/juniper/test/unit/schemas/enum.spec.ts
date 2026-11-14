@@ -19,7 +19,7 @@ suite('EnumSchema', () => {
                 enum: [1, 'a', [false], 5, null, 'z'],
             });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                'a' | 'z' | 1 | 5 | readonly [false] | null
+                1 | 5 | 'a' | 'z' | readonly [false] | null
             >();
             const validator = compile(schema);
             expect(validator([false])).to.equal(true);

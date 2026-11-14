@@ -455,7 +455,6 @@ suite('define', () => {
             defineRecursive<TreeNode>('TreeNode', self => {
                 expect(self).to.be.an.instanceOf(RecursiveSchema);
                 expectTypeOf<AvailableProperties<typeof self>>().toEqualTypeOf<
-                    | '~standard'
                     | 'cast'
                     | 'default'
                     | 'deprecated'
@@ -467,6 +466,7 @@ suite('define', () => {
                     | 'title'
                     | 'toJSON'
                     | 'writeOnly'
+                    | '~standard'
                 >();
                 return tree;
             });

@@ -11,7 +11,7 @@ suite('types', () => {
     });
 
     test('SchemaType', () => {
-        expectTypeOf<SchemaType<Schema<'a' | 1>>>().toEqualTypeOf<'a' | 1>();
+        expectTypeOf<SchemaType<Schema<1 | 'a'>>>().toEqualTypeOf<1 | 'a'>();
 
         expectTypeOf<SchemaType<JsonSchema<boolean>>>().toEqualTypeOf<boolean>();
 
@@ -279,7 +279,7 @@ suite('types', () => {
     suite('ToBaseType', () => {
         test('literals', () => {
             expectTypeOf<ToBaseType<never>>().toEqualTypeOf<never>();
-            expectTypeOf<ToBaseType<'a' & 1>>().toEqualTypeOf<never>();
+            expectTypeOf<ToBaseType<1 & 'a'>>().toEqualTypeOf<never>();
             expectTypeOf<ToBaseType<boolean>>().toEqualTypeOf<boolean>();
             expectTypeOf<ToBaseType<true>>().toEqualTypeOf<boolean>();
             expectTypeOf<ToBaseType<number>>().toEqualTypeOf<number>();
@@ -295,7 +295,7 @@ suite('types', () => {
         });
 
         test('unions', () => {
-            expectTypeOf<ToBaseType<'abc' | 123 | true>>().toEqualTypeOf<
+            expectTypeOf<ToBaseType<123 | 'abc' | true>>().toEqualTypeOf<
                 boolean | number | string
             >();
             type Arr = [12, null, { z: 1 }];

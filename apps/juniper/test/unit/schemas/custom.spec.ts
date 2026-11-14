@@ -44,7 +44,7 @@ suite('CustomSchema', () => {
             const schema = customSchema();
 
             expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<
-                '~standard' | 'cast' | 'toJSON'
+                'cast' | 'toJSON' | '~standard'
             >();
         });
     });
