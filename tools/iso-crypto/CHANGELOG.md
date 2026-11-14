@@ -1,5 +1,11 @@
 # iso-crypto
 
+## 3.1.4
+
+### Patch Changes
+
+- a10759a: `decode` converts base64 and base64url text to bytes about 10 times faster on large inputs.
+
 ## 3.1.3
 
 ### Patch Changes
