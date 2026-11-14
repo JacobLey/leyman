@@ -36,6 +36,7 @@ export const nullValue = nullSchema();
 export const never = neverSchema();
 export const enumValues = enumSchema().enums(['a', 'b', 1, true, null] as const);
 export const singleEnum = enumSchema().enum('only' as const);
+export const numberEnum = enumSchema().enums([2, 3.5] as const);
 export const anything = mergeSchema().description('Anything');
 
 // Arrays

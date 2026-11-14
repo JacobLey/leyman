@@ -49,11 +49,12 @@ func members(typ *model.Type) []*model.Type {
 
 // declareUnion writes a union as a struct holding one of its variants, behind an interface only they implement, and
 // reads its JSON into the variant whose class it is: an object into the variant its discriminator names, or else the
-// one whose required properties it has. A union of only strings is an enum: a string type with a constant for each.
+// one whose required properties it has. A union of only literals of one class is a type of that class instead, as
+// literalVariant declares them: an enum of strings or numbers, or a boolean.
 func (g *generator) declareUnion(name string, doc *model.Doc, typ *model.Type) {
 	all := members(typ)
-	if !slices.ContainsFunc(all, func(member *model.Type) bool { return !isEnum(member) }) {
-		g.declareEnum(name, doc, "string", all)
+	if class, ok := literalClass(all); ok {
+		g.declareLiterals(name, doc, class, all)
 
 		return
 	}
@@ -225,27 +226,51 @@ func (g *generator) memberClass(member *model.Type) model.Class {
 	return resolved.Class()
 }
 
-// literalVariant makes a variant of the literals of a class: an enum of strings or numbers, or a boolean.
+// literalClass is the class of a union's members, if every one is a literal of that class.
+func literalClass(all []*model.Type) (model.Class, bool) {
+	for _, member := range all {
+		if member.Kind != model.KindLiteral || member.Class() != all[0].Class() {
+			return model.ClassNone, false
+		}
+	}
+
+	return all[0].Class(), true
+}
+
+// literalVariant makes a variant of the literals of a class.
 func (g *generator) literalVariant(union, marker string, class model.Class, literals []*model.Type) string {
-	var name string
+	var suffix string
 
 	switch class {
 	case model.ClassString:
-		name = g.names.reserve(union + "String")
-		g.declareEnum(name, nil, goString, literals)
+		suffix = "String"
 	case model.ClassNumber:
-		name = g.names.reserve(union + "Number")
-		g.declareEnum(name, nil, goFloat, literals)
+		suffix = "Number"
 	// Literals are strings, numbers or booleans
 	case model.ClassBoolean, model.ClassNone, model.ClassNull, model.ClassArray, model.ClassObject:
-		name = g.names.reserve(union + "Boolean")
-		g.defined[name] = true
-		g.decls = append(g.decls, fmt.Sprintf("type %s %s", name, goBool))
+		suffix = "Boolean"
 	}
 
+	name := g.names.reserve(union + suffix)
+	g.declareLiterals(name, nil, class, literals)
 	g.markers[name] = append(g.markers[name], marker)
 
 	return name
+}
+
+// declareLiterals writes the literals of a class as a type: an enum of strings or numbers, with a constant for each, or
+// a boolean, as Go has true and false already.
+func (g *generator) declareLiterals(name string, doc *model.Doc, class model.Class, literals []*model.Type) {
+	switch class {
+	case model.ClassString:
+		g.declareEnum(name, doc, goString, literals)
+	case model.ClassNumber:
+		g.declareEnum(name, doc, goFloat, literals)
+	// Literals are strings, numbers or booleans
+	case model.ClassBoolean, model.ClassNone, model.ClassNull, model.ClassArray, model.ClassObject:
+		g.defined[name] = true
+		g.decls = append(g.decls, docComment(doc)+fmt.Sprintf("type %s %s", name, goBool))
+	}
 }
 
 // declareEnum writes a type with a constant for each literal.

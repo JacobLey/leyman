@@ -230,6 +230,11 @@ var precision = map[string]map[string]string{
 	"number": {
 		"Schema": "float64",
 	},
+	"numberEnum": {
+		"Schema":        "float64",
+		"Schema2":       "const Schema 2",
+		"Schema3Point5": "const Schema 7/2",
+	},
 	"object": {
 		"Schema": "{ID string; Name Optional[*string]; Age float64}",
 	},

@@ -201,6 +201,18 @@ func objectUnionCases() []testCase {
 			accept: []string{`"a"`, `""`},
 			reject: []string{`1`},
 		},
+		{
+			name:   "numberenums",
+			types:  []convert.NamedType{named("Schema", model.Union(lit(2.0), lit(-0.5)))},
+			accept: []string{`2`, `-0.5`},
+			reject: []string{`"2"`, `true`},
+		},
+		{
+			name:   "booleans",
+			types:  []convert.NamedType{named("Schema", model.Union(lit(true), lit(false)))},
+			accept: []string{`true`, `false`},
+			reject: []string{`1`, `"true"`},
+		},
 	}
 }
 
@@ -481,10 +493,13 @@ func TestUnionConstants(t *testing.T) {
 
 	literals, _ := compile(t, cases["literals"].types)
 	enums, _ := compile(t, cases["enums"].types)
+	numbers, _ := compile(t, cases["numberenums"].types)
+	booleans, _ := compile(t, cases["booleans"].types)
 
 	for pkg, constants := range map[*types.Package][]string{
 		literals: {"SchemaStringX", "SchemaStringY", "SchemaNumber1", "SchemaNumberMinus1Point5", "SchemaNumber1E21"},
 		enums:    {"SchemaA", "SchemaB", "SchemaEmpty"},
+		numbers:  {"Schema2", "SchemaMinus0Point5"},
 	} {
 		for _, name := range constants {
 			if _, ok := pkg.Scope().Lookup(name).(*types.Const); !ok {
@@ -493,8 +508,16 @@ func TestUnionConstants(t *testing.T) {
 		}
 	}
 
-	if got := typeString(literals, lookup(t, literals, "SchemaBoolean").Type().Underlying()); got != "bool" {
-		t.Errorf("SchemaBoolean is %s", got)
+	for pkg, underlying := range map[*types.Package]map[string]string{
+		literals: {"SchemaBoolean": "bool"},
+		numbers:  {"Schema": "float64"},
+		booleans: {"Schema": "bool"},
+	} {
+		for name, expected := range underlying {
+			if got := typeString(pkg, lookup(t, pkg, name).Type().Underlying()); got != expected {
+				t.Errorf("%s is %s, expected %s", name, got, expected)
+			}
+		}
 	}
 }
 

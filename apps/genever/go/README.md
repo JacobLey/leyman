@@ -84,7 +84,7 @@ The root schema is a type named `--name`, and each definition in its `$defs` (or
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `string`, `boolean`, `integer`, `number`                       | `string`, `bool`, `int64`, `float64`                                                                                                |
 | `null`                                                         | `Null`                                                                                                                              |
-| string `enum` or `const`                                       | a string type, with a constant per value                                                                                            |
+| string or number `enum`, string `const`                        | a `string` or `float64` type, with a constant per value                                                                             |
 | object with `properties`                                       | a struct; a required property is a field, an optional one a pointer, or `Optional[T]` where a pointer can't tell absent from `null` |
 | other properties (`additionalProperties`, `patternProperties`) | an `AdditionalProperties` map on the struct                                                                                         |
 | array                                                          | a slice; a tuple (`prefixItems`) is a struct written as a JSON array                                                                |

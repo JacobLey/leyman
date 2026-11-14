@@ -85,6 +85,9 @@
     "fixtures/number.json": {
       "hash": "v1:7d5087e68af26b03fcb4828dc038ebe3"
     },
+    "fixtures/numberEnum.json": {
+      "hash": "v1:cd13887e16c3d19d82282748fffe2afb"
+    },
     "fixtures/object.json": {
       "hash": "v1:d0ef6d065b6cb9ae6ac83b6dfd165cbb"
     },

@@ -40,7 +40,7 @@ Every type holds every value the schema accepts, and can tell apart the values t
 | Schema                                      | Go                                                                                                          |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `string`, `boolean`, `integer`, `number`    | `string`, `bool`, `int64`, `float64`                                                                        |
-| string `enum` or `const`                    | a string type, with a constant per value                                                                    |
+| string or number `enum`, string `const`     | a `string` or `float64` type, with a constant per value                                                     |
 | object with `properties`                    | a struct; an optional property is a pointer, or `Optional[T]` where a pointer can't tell absent from `null` |
 | `additionalProperties`, `patternProperties` | an `AdditionalProperties` map on the struct                                                                 |
 | array, tuple (`prefixItems`)                | a slice; a struct written as a JSON array                                                                   |
