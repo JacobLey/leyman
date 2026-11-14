@@ -103,6 +103,8 @@ Anything in `project.json` is merged over the inferred target, key by key, so a 
 | `leyman-biome-format`    | Formats with Biome; only checks in CI.                                                                                                |
 | `leyman-sync-injected`   | Mirrors the package into its injected copies, and writes the fields of `package.json` that dependents hash.                           |
 
+Each prints its usage with `--help`, and fails without doing anything on an argument it doesn't take.
+
 The targets also define the named inputs `dependency-files`, `package-files`, `eslint-input`, `ts-source`, `dependency-builds` and `test-source` on each project.
 
 ## Options

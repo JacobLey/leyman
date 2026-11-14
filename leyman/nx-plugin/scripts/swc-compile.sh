@@ -10,6 +10,28 @@
 
 set -e
 
+usage='Usage: leyman-swc-compile <source> <output> <swcrc>
+
+Compiles the TypeScript in <source> into <output> with the SWC config <swcrc>, targeting the oldest Node.js
+in engines.node of ./package.json.'
+
+for arg in "$@"; do
+    case "$arg" in
+        -h | --help)
+            echo "$usage"
+            exit 0
+            ;;
+        -*)
+            printf 'leyman-swc-compile: unknown option "%s"\n\n%s\n' "$arg" "$usage" >&2
+            exit 2
+            ;;
+    esac
+done
+if [ $# -ne 3 ]; then
+    printf 'leyman-swc-compile: expected 3 arguments, got %d\n\n%s\n' $# "$usage" >&2
+    exit 2
+fi
+
 source_dir=$1
 output_dir=$2
 config_file=$3

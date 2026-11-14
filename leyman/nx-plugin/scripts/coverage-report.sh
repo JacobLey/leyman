@@ -4,6 +4,26 @@
 
 set -e
 
+usage='Usage: leyman-coverage-report <c8rc> [c8 options...]
+
+Checks the coverage the test targets of $NX_TASK_TARGET_PROJECT wrote against the c8 config <c8rc>.
+Further options go to `c8 report`.'
+
+for arg in "$@"; do
+    case "$arg" in
+        -h | --help)
+            echo "$usage"
+            exit 0
+            ;;
+    esac
+done
+case "${1:-}" in
+    "" | -*)
+        printf 'leyman-coverage-report: the first argument must be the c8 config\n\n%s\n' "$usage" >&2
+        exit 2
+        ;;
+esac
+
 config_file=$1
 shift
 

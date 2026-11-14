@@ -26,6 +26,26 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 
+const usage = `Usage: leyman-sync-injected
+
+Mirrors the package in the current directory into the copies pnpm injected into its dependents,
+and writes the fields of its package.json that dependents hash.`;
+
+// Takes no arguments: anything else is a mistake, and must not go on to rewrite the injected copies.
+const args = process.argv.slice(2);
+if (args.length > 0) {
+    if (args.some(arg => arg === '-h' || arg === '--help')) {
+        process.stdout.write(`${usage}\n`);
+    } else {
+        process.stderr.write(
+            `leyman-sync-injected: unexpected argument "${args[0]}"\n\n${usage}\n`
+        );
+        process.exitCode = 2;
+    }
+    // eslint-disable-next-line n/no-process-exit -- Stop before mirroring anything
+    process.exit();
+}
+
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
 const projectRoot = process.cwd();
 

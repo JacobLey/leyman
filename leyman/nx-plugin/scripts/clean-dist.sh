@@ -7,6 +7,23 @@
 
 set -e
 
+usage='Usage: leyman-clean-dist
+
+Clears ./dist, keeping the tsc build info and declarations while they are exactly those of the sources in ./src.'
+
+for arg in "$@"; do
+    case "$arg" in
+        -h | --help)
+            echo "$usage"
+            exit 0
+            ;;
+    esac
+done
+if [ $# -gt 0 ]; then
+    printf 'leyman-clean-dist: unexpected argument "%s"\n\n%s\n' "$1" "$usage" >&2
+    exit 2
+fi
+
 if [ ! -d dist ]; then
     exit 0
 fi
