@@ -871,11 +871,13 @@ export default async function makeEslintConfigForPackage({
             },
         },
         {
-            // Disable rules that expect ESM syntax
+            // CommonJS files (`.cjs`, `.cts`) load modules with `require`, and can't use top-level `await`
             files: ['**/*.c{j,t}s{x,}'],
             rules: {
                 '@typescript-eslint/no-require-imports': 'off',
-                '@typescript-eslint/no-var-requires': 'off',
+                'import-x/no-commonjs': 'off',
+                'n/prefer-process-get-builtin-module': 'off',
+                'sonarjs/no-require-or-define': 'off',
                 'unicorn/prefer-top-level-await': 'off',
             },
         },

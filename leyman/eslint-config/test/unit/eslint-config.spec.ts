@@ -233,4 +233,8 @@ suite('configGenerator per file', function (this: Suite) {
     test('Lints JavaScript outside the package root and tsconfig.json', async () => {
         expect(await eslint.reported('src/b.js')).to.deep.equal([]);
     });
+
+    test('Allows require in CommonJS', async () => {
+        expect(await eslint.reported('src/c.cjs')).to.deep.equal([]);
+    });
 });
