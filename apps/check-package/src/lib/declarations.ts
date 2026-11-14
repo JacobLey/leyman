@@ -13,19 +13,44 @@ const declarationFile = /\.d\.[cm]?ts$/v;
 const ignoreConfigSince = 6;
 
 /**
- * Runs `tsc`, which exits non-zero when it reports errors, with them on stdout.
+ * Runs `tsc`, which exits non-zero when it reports errors, with them on stdout. Any other failure
+ * (no `tsc` at the path, a crash with nothing on stdout, a signal) would read as no errors at all,
+ * so it is thrown instead.
  *
  * @param tsc - path of `tsc`
  * @param args - arguments
  * @param cwd - directory to run in
  * @returns what `tsc` printed
+ * @rejects {CheckPackageTscError} when `tsc` can't be run, or fails without reporting errors
  */
 const runTsc = async (tsc: string, args: readonly string[], cwd: string): Promise<string> => {
     try {
         const { stdout } = await execFileAsync(tsc, args, { cwd });
         return stdout;
     } catch (error) {
-        return (error as { stdout: string }).stdout;
+        // `execFile` sets `stdout` and `stderr` on every error it rejects with
+        const { code, signal, stderr, stdout } = error as {
+            code: number | string | null;
+            signal: string;
+            stderr: string;
+            stdout: string;
+        };
+        // An exit code (rather than a string `code` such as `ENOENT`, or a signal) means `tsc` ran
+        if (typeof code === 'number' && stdout.trim() !== '') {
+            return stdout;
+        }
+        // Without an exit code, a signal ended it
+        let reason = `signal ${signal}`;
+        if (typeof code === 'string') {
+            reason = code;
+        } else if (typeof code === 'number') {
+            reason = `exit code ${code}`;
+        }
+        const detail = stderr.trim() === '' ? '' : `: ${stderr.trim()}`;
+        throw new CheckPackageTscError(
+            `tsc ${args.join(' ')} failed (${reason}) without reporting errors, with ${tsc}${detail}`,
+            { cause: error }
+        );
     }
 };
 
@@ -40,7 +65,8 @@ const runTsc = async (tsc: string, args: readonly string[], cwd: string): Promis
  * @param params.files - the paths in the tarball
  * @param params.tsc - path of `tsc`, or `null` to find the nearest installed one
  * @returns each problem found
- * @rejects {CheckPackageTscError} when the package publishes declarations and no `tsc` is found
+ * @rejects {CheckPackageTscError} when the package publishes declarations and no `tsc` is found,
+ * or it can't be run, or fails without reporting errors
  */
 export const declarationProblems = async ({
     cwd,
@@ -65,11 +91,16 @@ export const declarationProblems = async ({
         runTsc(tscPath, ['--version'], cwd),
         findInstalled(cwd, '@types/node/package.json'),
     ]);
-    const major = Number(/^Version (?<major>\d+)/v.exec(version)?.groups?.major);
+    const major = /^Version (?<major>\d+)/v.exec(version)?.groups?.major;
+    if (major === undefined) {
+        throw new CheckPackageTscError(
+            `Can't tell the version of ${tscPath}: tsc --version printed "${version.trim()}".`
+        );
+    }
     const output = await runTsc(
         tscPath,
         [
-            ...(major >= ignoreConfigSince ? ['--ignoreConfig'] : []),
+            ...(Number(major) >= ignoreConfigSince ? ['--ignoreConfig'] : []),
             '--noEmit',
             '--pretty',
             'false',

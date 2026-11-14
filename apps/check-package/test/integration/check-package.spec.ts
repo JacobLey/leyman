@@ -439,6 +439,71 @@ suite('checkPackage', () => {
         );
     });
 
+    suite('Declarations failures', () => {
+        withWorkspace.test(
+            'Throws for a tsc that is not at the path given',
+            async ({ cwd, resolve, writeFiles }) => {
+                await writeFiles(goodPackage());
+
+                await expect(
+                    checkPackage({ cwd, profile: 'esm-only', tsc: resolve('missing/tsc') })
+                ).to.be.rejectedWith(CheckPackageTscError, 'ENOENT');
+            }
+        );
+
+        withWorkspace.test(
+            'Throws for a tsc that fails without reporting errors',
+            async ({ cwd, writeFiles, writeScript }) => {
+                await writeFiles(goodPackage());
+                const crashingTsc = await writeScript(
+                    'bin/tsc',
+                    [
+                        '#!/bin/sh',
+                        'if [ "$1" = "--version" ]; then echo "Version 6.0.0"; exit 0; fi',
+                        'echo "out of memory" >&2',
+                        'exit 134',
+                    ].join('\n')
+                );
+
+                await expect(
+                    checkPackage({ cwd, profile: 'esm-only', tsc: crashingTsc })
+                ).to.be.rejectedWith(CheckPackageTscError, 'exit code 134');
+            }
+        );
+
+        withWorkspace.test(
+            'Throws for a tsc killed by a signal',
+            async ({ cwd, writeFiles, writeScript }) => {
+                await writeFiles(goodPackage());
+                const killedTsc = await writeScript(
+                    'bin/tsc',
+                    [
+                        '#!/bin/sh',
+                        'if [ "$1" = "--version" ]; then echo "Version 6.0.0"; exit 0; fi',
+                        'echo "error TS0: partial"',
+                        'kill -KILL $$',
+                    ].join('\n')
+                );
+
+                await expect(
+                    checkPackage({ cwd, profile: 'esm-only', tsc: killedTsc })
+                ).to.be.rejectedWith(CheckPackageTscError, 'signal SIGKILL');
+            }
+        );
+
+        withWorkspace.test(
+            'Throws for a tsc whose version is unreadable',
+            async ({ cwd, writeFiles, writeScript }) => {
+                await writeFiles(goodPackage());
+                const oddTsc = await writeScript('bin/tsc', '#!/bin/sh\necho "nonsense"\n');
+
+                await expect(
+                    checkPackage({ cwd, profile: 'esm-only', tsc: oddTsc })
+                ).to.be.rejectedWith(CheckPackageTscError, "Can't tell the version");
+            }
+        );
+    });
+
     suite('Root and package manager', () => {
         withWorkspace.test('Takes the root as a URL', async ({ cwd, resolve, writeFiles }) => {
             await writeFiles(goodPackage());

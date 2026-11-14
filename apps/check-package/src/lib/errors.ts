@@ -15,11 +15,12 @@ export class CheckPackageRootError extends CheckPackageError {
 }
 
 /**
- * The package publishes declarations, but no `tsc` is installed to check them.
+ * The package publishes declarations, but no `tsc` is installed to check them, or it can't be run
+ * (it isn't at the path given, prints no version, or fails without reporting errors).
  */
 export class CheckPackageTscError extends CheckPackageError {
-    public constructor(message: string) {
-        super(message);
+    public constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
         this.name = 'CheckPackageTscError';
     }
 }

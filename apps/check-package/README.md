@@ -108,7 +108,7 @@ const { problems, suggestions } = await checkPackage({ cwd: 'packages/my-package
 
 **Returns** `Promise<{ problems: readonly string[]; suggestions: readonly string[] }>`: each problem as the CLI prints it, and publint's suggestions.
 
-**Rejects** with a `CheckPackageError` when the check itself can't run: `CheckPackageRootError` when no lockfile is found, the package isn't inside `root`, or the package manager can't be told; `CheckPackageTscError` when the package publishes declarations and no `tsc` is found. Problems with the package are returned in `problems` instead of thrown.
+**Rejects** with a `CheckPackageError` when the check itself can't run: `CheckPackageRootError` when no lockfile is found, the package isn't inside `root`, or the package manager can't be told; `CheckPackageTscError` when the package publishes declarations and no `tsc` is found, or `tsc` can't be run (it isn't at the path given, prints no version, or fails without reporting errors, as when it crashes or is killed). Problems with the package are returned in `problems` instead of thrown.
 
 ### Also exported
 
