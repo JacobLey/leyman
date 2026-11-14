@@ -1,11 +1,13 @@
-// Package jsonv decodes JSON into values that keep the order of object keys, as JavaScript's JSON.parse does.
+// Package jsonv decodes JSON into values that keep the order of object keys that JavaScript's JSON.parse does.
 //
-// genever generates fields and types in the order a schema writes them, which a map would lose. It visits them, which
-// decides which of several mistakes is reported, in the order of SortedKeys instead.
+// genever generates fields and types in the order of Keys, as the TypeScript genever generates them in its objects'
+// order, which a map would lose. It visits them, which decides which of several mistakes is reported, in the order of
+// SortedKeys instead.
 package jsonv
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,24 +22,56 @@ import (
 // A Value is a decoded JSON value: nil, bool, float64, string, []Value or *Object.
 type Value = any
 
-// An Object is a JSON object, with its keys in the order they were first written.
+// An Object is a JSON object, with its keys in the order a JavaScript object keeps them (ECMA-262's
+// OrdinaryOwnPropertyKeys, https://tc39.es/ecma262/#sec-ordinaryownpropertykeys): array indices, such as "0" and "12"
+// but not "012", first in ascending numeric order, then the other keys in the order they were first written.
 type Object struct {
 	values map[string]Value
 	keys   []string
+	// indices is how many of the first keys are array indices.
+	indices int
 }
 
 // NewObject returns an empty object.
 func NewObject() *Object {
-	return &Object{values: map[string]Value{}, keys: nil}
+	return &Object{values: map[string]Value{}, keys: nil, indices: 0}
 }
 
-// Set sets a key's value. A new key goes last, and an existing one keeps its place, as in JavaScript.
+// Set sets a key's value. A new key goes in its place in the object's order, and an existing one keeps its place, as in
+// JavaScript.
 func (o *Object) Set(key string, value Value) {
 	if _, ok := o.values[key]; !ok {
-		o.keys = append(o.keys, key)
+		if index, isIndex := arrayIndex(key); isIndex {
+			position, _ := slices.BinarySearchFunc(o.keys[:o.indices], index, func(other string, target uint64) int {
+				otherIndex, _ := arrayIndex(other)
+
+				return cmp.Compare(otherIndex, target)
+			})
+			o.keys = slices.Insert(o.keys, position, key)
+			o.indices++
+		} else {
+			o.keys = append(o.keys, key)
+		}
 	}
 
 	o.values[key] = value
+}
+
+// maxArrayIndex is the largest array index, 2^32 - 2 (https://tc39.es/ecma262/#array-index).
+const maxArrayIndex = math.MaxUint32 - 1
+
+// arrayIndex returns the number a key is the canonical decimal form of, if it is an array index.
+func arrayIndex(key string) (uint64, bool) {
+	if key == "" || (key[0] == '0' && key != "0") || strings.ContainsFunc(key, func(r rune) bool { return r < '0' || r > '9' }) {
+		return 0, false
+	}
+
+	index, err := strconv.ParseUint(key, 10, 64)
+	if err != nil || index > maxArrayIndex {
+		return 0, false
+	}
+
+	return index, true
 }
 
 // Get returns a key's value, and whether the object has the key.
@@ -47,7 +81,7 @@ func (o *Object) Get(key string) (any, bool) {
 	return value, ok
 }
 
-// Keys returns the object's keys, in order.
+// Keys returns the object's keys, in order: array indices first, as JavaScript's Object.keys returns them.
 func (o *Object) Keys() []string {
 	return o.keys
 }

@@ -23,8 +23,27 @@ func TestSortedKeys(t *testing.T) {
 		t.Errorf("got %q, expected %q", keys, expected)
 	}
 
-	if keys := value.(*jsonv.Object).Keys(); keys[0] != "b" { //nolint:forcetypeassert // An object
+	if keys := value.(*jsonv.Object).Keys(); keys[0] != "1" { //nolint:forcetypeassert // An object
 		t.Errorf("got %q", keys)
+	}
+}
+
+// Keys are in the order of JavaScript's Object.keys: array indices (canonical, up to 2^32 - 2) first by value, then the
+// others as first written.
+func TestKeysInJavaScriptOrder(t *testing.T) {
+	t.Parallel()
+
+	value, err := jsonv.Parse([]byte(`{"b": 1, "2": 1, "": 1, "01": 1, "1": 1, "4294967295": 1, "4294967294": 1,
+		"99999999999999999999": 1, "-1": 1, "1.0": 1, "a": 1, "0": 1, "2": 2}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []string{
+		"0", "1", "2", "4294967294", "b", "", "01", "4294967295", "99999999999999999999", "-1", "1.0", "a",
+	}
+	if keys := value.(*jsonv.Object).Keys(); !slices.Equal(keys, expected) { //nolint:forcetypeassert // An object
+		t.Errorf("got %q, expected %q", keys, expected)
 	}
 }
 

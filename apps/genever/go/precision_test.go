@@ -398,3 +398,22 @@ func TestOperationPrecision(t *testing.T) {
 		t.Errorf("got %v", got)
 	}
 }
+
+// Fields are in the order the TypeScript genever writes them, its object's: array indices first, by value, then the
+// rest as written. A shared vector can't hold another order, as JSON.stringify writes the vectors in that one.
+func TestFieldOrder(t *testing.T) {
+	t.Parallel()
+
+	source, err := genever.Generate([]byte(`{"type": "object", "properties": {"b": {"type": "string"},
+		"2": {"type": "number"}, "a": {"type": "boolean"}, "1": {"type": "null"}}, "required": ["b", "2", "a", "1"],
+		"additionalProperties": false}`), genever.Options{
+		Name: "", Package: "schema", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got := declarations(checkSource(t, source))["Schema"]; got != "{F1 Null; F2 float64; B string; A bool}" {
+		t.Errorf("got %s", got)
+	}
+}
