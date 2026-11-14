@@ -30,9 +30,6 @@ const (
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
 	// node:26.13.0-trixie-slim.
 	nodeImage = "node:26.13.0-trixie-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39"
-	// golang:1.24.13-trixie, the oldest Go a released Go module may support (see `goFloorTest`). Only its Go
-	// toolchain is used.
-	go124Image = "golang:1.24.13-trixie@sha256:5835f052b784aa39f2fe9070def3568605c8bc3fcd810f10402066348b61e716"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
 	pnpmVersion = "12.15.0"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
@@ -84,6 +81,17 @@ func nodeFloorImages() []struct{ version, image string } {
 		{"24.0.0", "node:24.0.0-bookworm-slim@sha256:7b0f9cbb3f88da0e67873be5efcf38ce79ea25cfbb4986fad55a446af484e7c9"},
 		{"24.15.0", "node:24.15.0-trixie-slim@sha256:291be77873bc04731968cacf82f0fcef17cee8cf200c6b6951e2bcab41560eb7"},
 		{"24.22.1", "node:24.22.1-trixie-slim@sha256:89c5244bc22a9bc3287d89ebc7e49b9cb5bb84cd40e6175ac3421d5a9f68b95a"},
+	}
+}
+
+// One image per Go support floor: the Go minor a released Go module's `go` directive names, at that minor's newest
+// patch release (patch releases only fix bugs and security issues, so the minor sets which APIs a module may use). Must
+// cover every minor a released module's directive names, or `goFloorTest` fails naming the module that has none. Only
+// each image's Go toolchain is used.
+func goFloorImages() []struct{ version, image string } {
+	return []struct{ version, image string }{
+		{"1.24", "golang:1.24.13-trixie@sha256:5835f052b784aa39f2fe9070def3568605c8bc3fcd810f10402066348b61e716"},
+		{"1.25", "golang:1.25.14-trixie@sha256:2c4c60ef415fbfa5e90300722293bef36c5e63fae17570ce18f580af933dbd73"},
 	}
 }
 
@@ -267,10 +275,10 @@ func (m *Ci) Floors(
 		return err
 	})
 	group.Go(func() error {
-		// Tests each released Go module on Go 1.24, the oldest its `go` directive allows. Everything else stays on the
-		// toolchain's Go.
-		_, err := built.
-			WithDirectory("/opt/go-1.24", dag.Container().From(go124Image).Directory(goRoot)).
+		// Tests each released Go module on the oldest Go its `go` directive allows. Everything else stays on the
+		// toolchain's Go. Some modules' tests run against Valkey, as in `Test` (Postgres is already bound)
+		_, err := withGoFloors(built).
+			WithServiceBinding("valkey", valkeyService()).
 			WithExec([]string{"sh", "-c", goFloorTest}).
 			Sync(ctx)
 
@@ -293,15 +301,36 @@ func withNodeFloors(ctr *dagger.Container) *dagger.Container {
 	return ctr.WithEnvVariable("NODE_FLOORS", "/opt/node-floors")
 }
 
-// goFloorTest runs the tests of each released Go module (one with a VERSION) whose `go` directive is 1.24 with Go
-// 1.24, since vetting with a newer Go doesn't catch a newer standard library's APIs and behaviour.
+// Adds the Go toolchain of each support floor in `goFloorImages` at `/opt/go-floors/<minor>`, and that directory at
+// `GO_FLOORS`.
+func withGoFloors(ctr *dagger.Container) *dagger.Container {
+	for _, floor := range goFloorImages() {
+		ctr = ctr.WithDirectory("/opt/go-floors/"+floor.version, dag.Container().From(floor.image).Directory(goRoot))
+	}
+
+	return ctr.WithEnvVariable("GO_FLOORS", "/opt/go-floors")
+}
+
+// goFloorTest runs the tests of each released Go module (one with a VERSION) with the Go minor its `go` directive
+// names, since vetting with a newer Go doesn't catch a newer standard library's APIs and behaviour. A module whose
+// minor has no toolchain in `goFloorImages` fails, rather than going untested.
 const goFloorTest = `set -e
-for version in $(find . -name VERSION -not -path '*/node_modules/*'); do
+for version in $(find . -name VERSION -not -path '*/node_modules/*' | sort); do
 	directory=$(dirname "$version")
-	if [ -f "$directory/go.mod" ] && grep -qx 'go 1.24' "$directory/go.mod"; then
-		echo "Testing $directory on Go 1.24"
-		(cd "$directory" && /opt/go-1.24/bin/go test ./...)
+	if [ ! -f "$directory/go.mod" ]; then
+		continue
 	fi
+	floor=$(sed -n 's/^go \([0-9]*\.[0-9]*\).*$/\1/p' "$directory/go.mod")
+	if [ -z "$floor" ]; then
+		echo "$directory/go.mod has no go directive" >&2
+		exit 1
+	fi
+	if [ ! -x "$GO_FLOORS/$floor/bin/go" ]; then
+		echo "No Go $floor toolchain for $directory: add an image to goFloorImages in dagger/main.go" >&2
+		exit 1
+	fi
+	echo "Testing $directory on Go $floor"
+	(cd "$directory" && "$GO_FLOORS/$floor/bin/go" test ./...)
 done`
 
 // Build the documentation site (`docs/`), type-checking every example, ready to deploy as static files.
