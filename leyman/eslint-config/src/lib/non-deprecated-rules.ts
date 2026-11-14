@@ -17,20 +17,13 @@ interface PluginRules {
  *
  * @param name - the plugin's prefix, e.g. `import-x`
  * @param plugin - its rules
- * @param skip - rules left unset, so off. For a rule only some versions of the plugin define, as ESLint rejects a
- * setting for a rule the installed version doesn't have.
  * @returns each rule, as `error`
  */
-export const nonDeprecatedRules = (
-    name: string,
-    plugin: PluginRules,
-    skip: readonly string[] = []
-): Linter.RulesRecord => {
+export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
         if (
             typeof rule === 'object' &&
-            !skip.includes(ruleName) &&
             (rule.meta?.deprecated ?? false) === false &&
             isForJavaScript(rule)
         ) {

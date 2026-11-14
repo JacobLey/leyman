@@ -96,20 +96,15 @@ suite('configGenerator React', () => {
 suite('nonDeprecatedRules', () => {
     const rule = { create: () => ({}) };
 
-    test('Turns on each rule, except deprecated, non-JavaScript and skipped ones', () => {
+    test('Turns on each rule, except deprecated, and non-JavaScript ones', () => {
         expect(
-            nonDeprecatedRules(
-                'plugin',
-                {
-                    rules: {
-                        kept: rule,
-                        deprecated: { ...rule, meta: { deprecated: true } },
-                        css: { ...rule, meta: { languages: ['css/css'] } },
-                        skipped: rule,
-                    },
+            nonDeprecatedRules('plugin', {
+                rules: {
+                    kept: rule,
+                    deprecated: { ...rule, meta: { deprecated: true } },
+                    css: { ...rule, meta: { languages: ['css/css'] } },
                 },
-                ['skipped', 'not-defined']
-            )
+            })
         ).to.deep.equal({ 'plugin/kept': 'error' });
     });
 });

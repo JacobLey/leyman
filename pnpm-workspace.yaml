@@ -116,8 +116,9 @@ overrides:
   # 14.0.2. They only call APIs both majors share. Remove each once none of them allows a version below its fix.
   minimatch@>=7 <11.0.1: ^11.0.1
   glob@>=9 <14.0.2: ^14.0.2
-  # eslint-plugin-import-x 4.17 imports `makeRe`, which minimatch 11 removed, so it keeps minimatch 10 (it only
-  # compiles patterns from the config, never untrusted input). Remove when the catalog moves to 4.18, which takes 11.
+  # eslint-plugin-import-x 4.17 imports `makeRe`, which minimatch 11 removed. The published @leyman/eslint-config 0.4.0
+  # pins import-x ~4.17.1, and a fork takes these overrides with it, so this keeps that pair on minimatch 10 (import-x
+  # only compiles patterns from the config, never untrusted input). Remove once an eslint-config on ~4.18 is on npm.
   eslint-plugin-import-x>minimatch: ^10.2.6
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
@@ -263,7 +264,7 @@ catalogs:
     '@typescript-eslint/eslint-plugin': ~8.72.1
     '@typescript-eslint/parser': ~8.72.1
     '@typescript-eslint/utils': ~8.72.1
-    eslint-plugin-import-x: ~4.17.1
+    eslint-plugin-import-x: ~4.18.0
     eslint-plugin-jsdoc: ~65.4.2
     'eslint-plugin-jsx-a11y': ~6.10.2
     eslint-plugin-n: ~18.5.0

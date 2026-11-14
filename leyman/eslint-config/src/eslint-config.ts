@@ -518,16 +518,14 @@ export default async function makeEslintConfigForPackage({
                 '@typescript-eslint/require-await': 'off',
 
                 // Import
-                // Added in eslint-plugin-import-x 4.18, so skipped rather than set off:
-                ...nonDeprecatedRules('import-x', importPlugin, [
-                    // Namespace imports (`import * as`) are allowed, as `import-x/no-namespace` is off
-                    'avoid-namespace-import',
-                    // A package's entry point is a barrel of its API (as barrelify writes), which dependents import
-                    'avoid-barrel-files',
-                    'avoid-importing-barrel-files',
-                    // Barrelify writes `export * from` barrels
-                    'avoid-re-export-all',
-                ]),
+                ...nonDeprecatedRules('import-x', importPlugin),
+                // A package's entry point is a barrel of its API (as barrelify writes), which dependents import
+                'import-x/avoid-barrel-files': 'off',
+                'import-x/avoid-importing-barrel-files': 'off',
+                // Namespace imports (`import * as`) are allowed, as `import-x/no-namespace` is off
+                'import-x/avoid-namespace-import': 'off',
+                // Barrelify writes `export * from` barrels
+                'import-x/avoid-re-export-all': 'off',
                 'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
                 // No bundler here reads webpack chunk names
                 'import-x/dynamic-import-chunkname': 'off',
