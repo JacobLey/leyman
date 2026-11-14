@@ -2,6 +2,7 @@ import type { ChildProcess } from 'node:child_process';
 import type { Context } from 'mocha';
 import { execFile, spawn } from 'node:child_process';
 import { once } from 'node:events';
+import path from 'node:path';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -12,10 +13,14 @@ export type Language = 'go' | 'ts';
 /**
  * The Go server, built by the tests rather than an Nx target: no lifecycle stage builds Go binaries, and the test
  * target already hashes the Go sources (`^goSource`), so a change to them reruns it. Go's build cache keeps a
- * rebuild to about a second.
+ * rebuild to about a second. Joined onto the package's root, which always exists, so lint doesn't depend on whether a
+ * build left the binary on disk.
  */
-// eslint-disable-next-line unicorn/no-missing-local-resource -- Built by the tests below, so absent from a clean checkout
-const goBinary = fileURLToPath(new URL('../../bin/idempotency-keys-interop-go', import.meta.url));
+const goBinary = path.join(
+    fileURLToPath(new URL('../..', import.meta.url)),
+    'bin',
+    'idempotency-keys-interop-go'
+);
 const goProject = fileURLToPath(new URL('../../../idempotency-keys-interop-go', import.meta.url));
 // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `server.ts`, beside this module
 const tsServer = fileURLToPath(new URL('../server/server.js', import.meta.url));
