@@ -52,7 +52,8 @@ export type PopulateFile = (
  * @rejects {PopulateFilesCheckError} `File <path> not up to date. Reason: <reason>` with `check`, joined with `, ` per
  *   file
  * @rejects {PopulateFilesOwnershipError} as for {@link PopulateFile}
- * @rejects {TypeError} if two files resolve to the same path, or `signed` content isn't a string
+ * @rejects {TypeError} if two files resolve to the same path, `signed` content isn't a string, or `clean` has no
+ *   `manifest` (unless `unsafeCleanUnlisted`)
  */
 export type PopulateFiles = (
     params: readonly PopulateFileParams[],
@@ -115,9 +116,9 @@ const readdirIfExists = async (dir: string): Promise<Dirent[]> => {
 };
 
 /**
- * Files to remove with `clean`: without a manifest, every file in the target directory that
- * this run didn't write. With one, only files the previous manifest lists, which are known to be
- * generated, so `clean` is safe in a directory that also holds other files.
+ * Files to remove with `clean`: only files the previous manifest lists, which are known to be
+ * generated, so `clean` is safe in a directory that also holds other files. Without a manifest
+ * (only with `unsafeCleanUnlisted`), every file in the target directory that this run didn't write.
  *
  * Stale files are sorted by path (see {@link comparePaths}), and ownership is checked in that
  * order, so the reported files and the first refusal don't depend on the order the file system

@@ -104,21 +104,22 @@ Writes the provided content to the file at `params.filePath`.
 
 Typed as `PopulateOptions`.
 
-| Property    | Type            | Default                    | Description                                                                                                                                                                                                                                                   |
-| ----------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `check`     | `boolean`       | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment.                                                                                                |
-| `dryRun`    | `boolean`       | `false`                    | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`.                                                                                                                                                                |
-| `cwd`       | `string \| URL` | `process.cwd()`            | Used as the current working directory when `params.filePath` is a relative path. A path must be an existing directory.                                                                                                                                        |
-| `targetDir` | `string`        | `'.'`                      | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`.                                                                                                                                                                         |
-| `clean`     | `boolean`       | `false`                    | Only applies to `populateFiles`. If `true`, removes files in `targetDir` that are not in the provided params. In `check` mode, fails instead of removing.                                                                                                     |
-| `force`     | `boolean`       | `false`                    | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited (outside manual sections), are not signed or not listed, or are malformed, and drops orphaned manual sections. Use it once when starting to sign an existing file. |
-| `manifest`  | `string`        | —                          | Path of a manifest file (relative to `cwd`) recording the generated files. See [Manifest](#manifest).                                                                                                                                                         |
+| Property              | Type            | Default                    | Description                                                                                                                                                                                                                                                                                      |
+| --------------------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `check`               | `boolean`       | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment.                                                                                                                                   |
+| `dryRun`              | `boolean`       | `false`                    | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`.                                                                                                                                                                                                   |
+| `cwd`                 | `string \| URL` | `process.cwd()`            | Used as the current working directory when `params.filePath` is a relative path. A path must be an existing directory.                                                                                                                                                                           |
+| `targetDir`           | `string`        | `'.'`                      | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`.                                                                                                                                                                                                            |
+| `clean`               | `boolean`       | `false`                    | Only applies to `populateFiles`. If `true`, removes the files the previous `manifest` lists that are not in the provided params (see [Manifest](#manifest)). In `check` mode, fails instead of removing. Without a `manifest`, throws a `TypeError` unless `unsafeCleanUnlisted`.                |
+| `unsafeCleanUnlisted` | `boolean`       | `false`                    | Only applies to `populateFiles`, with `clean` and no `manifest`. If `true`, `clean` removes every file in `targetDir` that is not in the provided params, hand-written or not, so only use it on a directory that holds nothing else. Throws a `TypeError` without `clean` or with a `manifest`. |
+| `force`               | `boolean`       | `false`                    | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited (outside manual sections), are not signed or not listed, or are malformed, and drops orphaned manual sections. Use it once when starting to sign an existing file.                                    |
+| `manifest`            | `string`        | —                          | Path of a manifest file (relative to `cwd`) recording the generated files. See [Manifest](#manifest).                                                                                                                                                                                            |
 
 ---
 
 ### `populateFiles(params, options?)`
 
-Writes multiple files in parallel. Each `filePath` must be unique: two that resolve to the same path reject with a `TypeError`.
+Writes multiple files in parallel. Each `filePath` must be unique: two that resolve to the same path reject with a `TypeError`. So does `clean` without a `manifest` (unless `unsafeCleanUnlisted`).
 
 **Parameters**
 
@@ -194,6 +195,10 @@ await populateFiles(
 - The manifest is a generated file too, and it lists exactly this run's files. `check` fails if it would change, and `dryRun` doesn't write it. `populateFile` updates only its own file's entry, keeping the others. Calls writing the same manifest must not run concurrently, so write those files in one `populateFiles` call instead.
 - Paths are recorded exactly as given, relative to the manifest, with no Unicode normalization. Files named with a decomposed `é` and a precomposed `é` are two files on Linux, so they get two entries. Git on macOS commits names precomposed anyway, and normalizing would rewrite manifests that are already written. A manifest that lists one file by two paths, like `a.json` and `./a.json`, can only come from a hand edit, so it throws `GeneratedSignatureManifestError` naming both.
 - `manifestInputs` on a file records hashes of what produced it (such as source files and the generator's version), so a generator can tell its output is up to date without regenerating.
+
+### Migrating from `clean` without a manifest
+
+Before 2.0, `clean` without a `manifest` removed every file in `targetDir` that a run didn't write, which with the default `targetDir` of `.` meant the whole project. It now throws a `TypeError`. Add a `manifest` so `clean` only removes files it wrote (the first run adopts the files that are already up to date, without `force`), or pass `unsafeCleanUnlisted: true` to keep the old behaviour on a directory that holds nothing but generated files.
 
 ## Also See
 

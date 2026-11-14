@@ -48,6 +48,11 @@ export interface PopulateOptions {
     cwd?: Directory | null | undefined;
     targetDir?: string | null | undefined;
     clean?: boolean | null | undefined;
+    /**
+     * With `clean` and no `manifest`, remove every file in `targetDir` that this call doesn't write,
+     * hand-written or not. `clean` otherwise needs a `manifest`.
+     */
+    unsafeCleanUnlisted?: boolean | null | undefined;
     force?: boolean | null | undefined;
     manifest?: string | null | undefined;
 }

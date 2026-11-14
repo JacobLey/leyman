@@ -14,7 +14,8 @@ func stalePlan(path string) plan {
 }
 
 // findStale lists the files to remove when cleaning: with a manifest, the files it listed that are no longer
-// generated, which must still be owned unless forced; without one, every other file in the target directory.
+// generated, which must still be owned unless forced; without one (only with UnsafeCleanUnlisted), every other file in
+// the target directory.
 func findStale(targets []normalized, resolved paths, manifest *lookup, force bool) ([]plan, error) {
 	generated := map[string]bool{resolved.manifest: true}
 	for _, target := range targets {

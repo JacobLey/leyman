@@ -69,6 +69,7 @@ suite('normalize', () => {
                         dryRun: true,
                         check: false,
                         clean: true,
+                        unsafeCleanUnlisted: true,
                         targetDir: 'target',
                         cwd,
                     }

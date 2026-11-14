@@ -375,7 +375,48 @@ suite('Integration test', () => {
             );
         });
 
-        withTmpFiles.test('--clean deletes stale files', async ctx => {
+        withTmpFiles.test('--clean without a manifest fails', async ctx => {
+            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+            await writeFile(stalePath, 'I am stale');
+
+            await expect(
+                populateFiles([], { check: false, clean: true, targetDir: ctx.tmpDir.path })
+            ).to.be.rejectedWith(
+                TypeError,
+                '`clean` needs a `manifest`, to only remove the files it lists. Pass `unsafeCleanUnlisted: true` to remove every file in `targetDir` that is not written instead'
+            );
+            expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
+        });
+
+        withTmpFiles.test('unsafeCleanUnlisted without --clean fails', async ctx => {
+            await expect(
+                populateFiles([], {
+                    check: false,
+                    unsafeCleanUnlisted: true,
+                    targetDir: ctx.tmpDir.path,
+                })
+            ).to.be.rejectedWith(
+                TypeError,
+                '`unsafeCleanUnlisted` only applies with `clean: true`'
+            );
+        });
+
+        withTmpFiles.test('unsafeCleanUnlisted with a manifest fails', async ctx => {
+            await expect(
+                populateFiles([], {
+                    check: false,
+                    clean: true,
+                    unsafeCleanUnlisted: true,
+                    manifest: 'manifest.json',
+                    cwd: ctx.tmpDir.path,
+                })
+            ).to.be.rejectedWith(
+                TypeError,
+                '`unsafeCleanUnlisted` does not apply with a `manifest`, which limits `clean` to the files it lists'
+            );
+        });
+
+        withTmpFiles.test('unsafeCleanUnlisted deletes stale files', async ctx => {
             const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
             const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
 
@@ -384,6 +425,7 @@ suite('Integration test', () => {
             const results = await populateFiles([{ filePath: generatedPath, content: 'hello' }], {
                 check: false,
                 clean: true,
+                unsafeCleanUnlisted: true,
                 targetDir: ctx.tmpDir.path,
             });
 
@@ -397,52 +439,63 @@ suite('Integration test', () => {
             expect(thrown).to.have.property('message').that.includes('ENOENT');
         });
 
-        withTmpFiles.test('--clean with --dry-run does not delete stale files', async ctx => {
-            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
-            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+        withTmpFiles.test(
+            'unsafeCleanUnlisted with --dry-run does not delete stale files',
+            async ctx => {
+                const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+                const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
 
-            await writeFile(stalePath, 'I am stale');
+                await writeFile(stalePath, 'I am stale');
 
-            const results = await populateFiles([{ filePath: generatedPath, content: 'hello' }], {
-                check: false,
-                dryRun: true,
-                clean: true,
-                targetDir: ctx.tmpDir.path,
-            });
+                const results = await populateFiles(
+                    [{ filePath: generatedPath, content: 'hello' }],
+                    {
+                        check: false,
+                        dryRun: true,
+                        clean: true,
+                        unsafeCleanUnlisted: true,
+                        targetDir: ctx.tmpDir.path,
+                    }
+                );
 
-            expect(results).to.deep.equal([
-                { updated: true, reason: 'file-not-exist', filePath: generatedPath },
-                { updated: true, reason: 'stale-file', filePath: stalePath },
-            ]);
+                expect(results).to.deep.equal([
+                    { updated: true, reason: 'file-not-exist', filePath: generatedPath },
+                    { updated: true, reason: 'stale-file', filePath: stalePath },
+                ]);
 
-            expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
-        });
+                expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
+            }
+        );
 
-        withTmpFiles.test('--clean with --ci fails when stale files exist', async ctx => {
-            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
-            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
-            const content = 'hello';
+        withTmpFiles.test(
+            'unsafeCleanUnlisted with --ci fails when stale files exist',
+            async ctx => {
+                const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+                const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+                const content = 'hello';
 
-            await Promise.all([
-                writeFile(stalePath, 'I am stale'),
-                writeFile(generatedPath, content),
-            ]);
+                await Promise.all([
+                    writeFile(stalePath, 'I am stale'),
+                    writeFile(generatedPath, content),
+                ]);
 
-            const thrown: unknown = await expect(
-                populateFiles([{ filePath: generatedPath, content }], {
-                    check: true,
-                    clean: true,
-                    targetDir: ctx.tmpDir.path,
-                })
-            ).to.be.rejectedWith(PopulateFilesCheckError);
-            expect(thrown)
-                .to.have.property('message')
-                .that.includes(`File ${stalePath} not up to date. Reason: stale-file`);
+                const thrown: unknown = await expect(
+                    populateFiles([{ filePath: generatedPath, content }], {
+                        check: true,
+                        clean: true,
+                        unsafeCleanUnlisted: true,
+                        targetDir: ctx.tmpDir.path,
+                    })
+                ).to.be.rejectedWith(PopulateFilesCheckError);
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes(`File ${stalePath} not up to date. Reason: stale-file`);
 
-            expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
-        });
+                expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
+            }
+        );
 
-        withTmpFiles.test('--clean with no stale files passes cleanly', async ctx => {
+        withTmpFiles.test('unsafeCleanUnlisted with no stale files passes cleanly', async ctx => {
             const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
             const content = 'hello';
 
@@ -451,29 +504,35 @@ suite('Integration test', () => {
             const results = await populateFiles([{ filePath: generatedPath, content }], {
                 check: true,
                 clean: true,
+                unsafeCleanUnlisted: true,
                 targetDir: ctx.tmpDir.path,
             });
 
             expect(results).to.deep.equal([{ updated: false, filePath: generatedPath }]);
         });
 
-        withTmpFiles.test('--clean with 0 inputs to non-existent directory succeeds', async ctx => {
-            const nonExistentDir = Path.join(ctx.tmpDir.path, 'does-not-exist');
+        withTmpFiles.test(
+            'unsafeCleanUnlisted with 0 inputs to non-existent directory succeeds',
+            async ctx => {
+                const nonExistentDir = Path.join(ctx.tmpDir.path, 'does-not-exist');
 
-            const results = await populateFiles([], {
-                check: false,
-                clean: true,
-                targetDir: nonExistentDir,
-            });
+                const results = await populateFiles([], {
+                    check: false,
+                    clean: true,
+                    unsafeCleanUnlisted: true,
+                    targetDir: nonExistentDir,
+                });
 
-            expect(results).to.deep.equal([]);
-        });
+                expect(results).to.deep.equal([]);
+            }
+        );
 
-        withTmpFiles.test('--clean propagates unknown readdir errors', async ctx => {
+        withTmpFiles.test('unsafeCleanUnlisted propagates unknown readdir errors', async ctx => {
             const thrown: unknown = await expect(
                 populateFiles([], {
                     check: false,
                     clean: true,
+                    unsafeCleanUnlisted: true,
                     targetDir: ctx.tmpTxtFile.path,
                 })
             ).to.be.rejectedWith(Error);

@@ -87,17 +87,50 @@ export const normalizeFileParams = async (
 };
 
 /**
+ * Whether `clean` removes every file in the target directory that isn't written. Without a
+ * manifest nothing tells a generated file from a hand-written one (or `.git`), so that only
+ * happens when asked for by name.
+ *
+ * @param options - raw user options
+ * @returns whether to clean, and what
+ * @throws {TypeError} if `clean` has no `manifest` and no `unsafeCleanUnlisted`, or
+ *   `unsafeCleanUnlisted` is passed without `clean` or with a `manifest`
+ */
+const shouldClean = ({ clean, unsafeCleanUnlisted, manifest }: PopulateOptions): boolean => {
+    const hasManifest = manifest !== undefined && manifest !== null;
+    if (unsafeCleanUnlisted === true) {
+        if (clean !== true) {
+            throw new TypeError('`unsafeCleanUnlisted` only applies with `clean: true`');
+        }
+        if (hasManifest) {
+            throw new TypeError(
+                '`unsafeCleanUnlisted` does not apply with a `manifest`, which limits `clean` to the files it lists'
+            );
+        }
+        return true;
+    }
+    if (clean === true && !hasManifest) {
+        throw new TypeError(
+            '`clean` needs a `manifest`, to only remove the files it lists. Pass `unsafeCleanUnlisted: true` to remove every file in `targetDir` that is not written instead'
+        );
+    }
+    return clean ?? false;
+};
+
+/**
  * Normalize and standardize user input for populating multiple files.
  *
  * @param params - list of file paths and (possibly async) contents
  * @param options - raw user options
  * @returns resolved file paths, content bytes, target dir, and flags
- * @rejects {TypeError} if signed content isn't a string, or a file is populated more than once
+ * @rejects {TypeError} if signed content isn't a string, a file is populated more than once, or
+ *   the `clean` options don't fit together (see {@link shouldClean})
  */
 export const normalizeFilesParams = async (
     params: readonly PopulateFileParams[],
     options: PopulateOptions = {}
 ): Promise<NormalizedFilesParams> => {
+    const isClean = shouldClean(options);
     const targetDirPromise = resolveTargetDir(options);
     const [targetDir, files, manifestPath] = await Promise.all([
         targetDirPromise,
@@ -121,6 +154,6 @@ export const normalizeFilesParams = async (
         check: shouldCheck(options.check),
         dryRun: isDryRun(options.dryRun),
         force: options.force ?? false,
-        clean: options.clean ?? false,
+        clean: isClean,
     };
 };

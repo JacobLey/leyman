@@ -22,6 +22,7 @@ func newFile(path, content string, signed bool) populatefiles.File {
 func newOptions(cwd, manifest string) populatefiles.Options {
 	return populatefiles.Options{
 		Cwd: cwd, TargetDir: "", Manifest: manifest, Check: false, DryRun: false, Force: false, Clean: false,
+		UnsafeCleanUnlisted: false,
 	}
 }
 
@@ -195,6 +196,7 @@ func TestCleanErrors(t *testing.T) {
 		options := newOptions(dir, manifest)
 		options.TargetDir = targetDir
 		options.Clean = true
+		options.UnsafeCleanUnlisted = manifest == ""
 
 		return options
 	}

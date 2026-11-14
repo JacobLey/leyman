@@ -71,7 +71,13 @@ export default class Cli extends EntryScript {
                             },
                             clean: {
                                 describe:
-                                    'Remove files in --target-dir that were not generated. In --ci mode, fail instead of removing.',
+                                    'Remove files the --manifest listed that are no longer generated, which it requires. In --ci mode, fail instead of removing.',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            unsafeCleanUnlisted: {
+                                describe:
+                                    'With --clean and no --manifest, remove every file in --target-dir that is not generated, hand-written or not',
                                 type: 'boolean',
                                 default: false,
                             },
@@ -99,6 +105,7 @@ export default class Cli extends EntryScript {
                             check: options.ci,
                             dryRun: options.dryRun,
                             clean: options.clean,
+                            unsafeCleanUnlisted: options.unsafeCleanUnlisted,
                             force: options.force,
                             manifest: options.manifest,
                         }

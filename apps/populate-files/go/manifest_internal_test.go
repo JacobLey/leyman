@@ -38,6 +38,7 @@ func TestRemoveError(t *testing.T) {
 
 	_, err := PopulateFiles(nil, Options{
 		Cwd: dir, TargetDir: "", Manifest: "", Check: false, DryRun: false, Force: false, Clean: true,
+		UnsafeCleanUnlisted: true,
 	})
 	if !errors.Is(err, errRemove) {
 		t.Errorf("got %v", err)

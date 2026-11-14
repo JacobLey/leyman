@@ -18,12 +18,14 @@ results, err := populatefiles.PopulateFiles([]populatefiles.File{
 }, populatefiles.Options{TargetDir: "gen", Manifest: "gen/manifest.json", Clean: true})
 ```
 
-`PopulateFile` writes one file, keeping the manifest's other entries. `PopulateFiles` writes a set of files, and its manifest lists exactly those. Errors match with `errors.Is`: `ErrCheck` (a `*CheckError` listing the outdated files), `ErrOwnership` (an `*OwnershipError` with its `Reason`) and `ErrDuplicateFile`, plus generatedsignature's errors for malformed content or manifests.
+`PopulateFile` writes one file, keeping the manifest's other entries. `PopulateFiles` writes a set of files, and its manifest lists exactly those. Errors match with `errors.Is`: `ErrCheck` (a `*CheckError` listing the outdated files), `ErrOwnership` (an `*OwnershipError` with its `Reason`), `ErrDuplicateFile` and `ErrInvalidOptions` (such as `Clean` without a `Manifest`), plus generatedsignature's errors for malformed content or manifests.
 
 Compared to the TypeScript package:
 
 - Content is bytes, and nothing is formatted. The caller writes JSON content as it should appear, and manifests are written as `generatedsignature.SerializeManifest` writes them, so a project that formats its manifest with Biome or Prettier sees a different layout (the same entries).
 - `Check` is a plain option, where the TypeScript package defaults it to whether it runs in CI.
+
+`Clean` needs a `Manifest`, so it only removes files that an earlier run wrote. Before 0.2.0 it removed every other file in the target directory without one; `UnsafeCleanUnlisted: true` still does that, for a directory that holds nothing but generated files.
 
 ## Development
 

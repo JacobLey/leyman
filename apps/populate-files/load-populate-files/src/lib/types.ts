@@ -10,6 +10,7 @@ export interface RawOptions {
     check?: boolean | null | undefined;
     dryRun?: boolean | null | undefined;
     clean?: boolean | null | undefined;
+    unsafeCleanUnlisted?: boolean | null | undefined;
     force?: boolean | null | undefined;
     manifest?: string | null | undefined;
 }
@@ -22,6 +23,7 @@ export interface NormalizedParams {
         check?: boolean | null | undefined;
         dryRun?: boolean | null | undefined;
         clean?: boolean | null | undefined;
+        unsafeCleanUnlisted?: boolean | null | undefined;
         force?: boolean | null | undefined;
         manifest?: string | null | undefined;
     };

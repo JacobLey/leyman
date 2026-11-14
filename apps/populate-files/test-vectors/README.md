@@ -37,7 +37,7 @@ A scenario runs in an empty directory, which is the `cwd` of every call:
 3. Each of `edits`: replace the first `from` in a file with `to`.
 4. The `call` (`populateFile` with its one file, or `populateFiles`), with `check: false` unless `options` say otherwise.
 
-The call then either gives `results` or fails with an `error`. Paths are relative to the directory, with `/`. An `error` has a `kind`: `check` (with the outdated `files` and their reasons), `ownership` (with its `filePath` and `reason`), `manifest` or `duplicate-file`.
+The call then either gives `results` or fails with an `error`. Paths are relative to the directory, with `/`. An `error` has a `kind`: `check` (with the outdated `files` and their reasons), `ownership` (with its `filePath` and `reason`), `manifest`, `duplicate-file` or `invalid-options` (`clean` without a `manifest` or `unsafeCleanUnlisted`, or `unsafeCleanUnlisted` without `clean` or with a `manifest`).
 
 After the call, whether it succeeds or fails (a failed call writes nothing), `after` is every file in the directory except manifests. When the call has a manifest, `manifest` is its parsed `files`, or `null` when it isn't written. Manifests are compared parsed, as their layout is up to a formatter: the TypeScript package formats them with Biome or Prettier when the project has one.
 

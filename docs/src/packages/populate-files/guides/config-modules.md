@@ -67,7 +67,7 @@ import { loadAndPopulateFiles } from 'load-populate-files';
 
 const results = await loadAndPopulateFiles(
     { filePath: './dist/file-content.js' },
-    { targetDir: './generated', clean: true }
+    { targetDir: './generated', manifest: './generated/.generated.json', clean: true }
 );
 ```
 

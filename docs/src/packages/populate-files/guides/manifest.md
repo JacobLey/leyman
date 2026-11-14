@@ -60,7 +60,11 @@ The last row means adding a manifest to existing output needs no `force`: run on
 
 With a manifest, `clean` removes the files the _previous_ manifest lists that this run doesn't write, and nothing else. A listed file that was edited since fails with `'edited'` instead of being removed, unless `force`. Stale files are checked, removed and reported sorted by path, so the first refusal is always the same file.
 
-Without a manifest, `clean` removes every file in `targetDir` that this run didn't write.
+Without a manifest, `clean` throws a `TypeError`. `unsafeCleanUnlisted: true` (`--unsafe-clean-unlisted`) makes it remove every file in `targetDir` that this run didn't write instead, hand-written or not, so only use it on a directory that holds nothing but generated files.
+
+### Migrating from `clean` without a manifest
+
+Before populate-files 2.0 (load-populate-files 2.0, and 0.2.0 of the Go module), `clean` without a manifest removed every other file in `targetDir`, which with the default `targetDir` of `.` meant the whole project. Add a `manifest`: the first run adopts every file that is already up to date, with no `force`, and from then on `clean` only removes files it wrote. Or pass `unsafeCleanUnlisted: true` to keep the old behaviour.
 
 ## The manifest is generated too
 

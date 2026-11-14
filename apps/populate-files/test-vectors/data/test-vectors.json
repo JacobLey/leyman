@@ -1350,7 +1350,7 @@
       "after": {}
     },
     {
-      "description": "Clean removes stale files",
+      "description": "Unsafe clean removes stale files",
       "writes": {
         "out/stale.txt": "old\n"
       },
@@ -1363,7 +1363,8 @@
       ],
       "options": {
         "targetDir": "out",
-        "clean": true
+        "clean": true,
+        "unsafeCleanUnlisted": true
       },
       "results": [
         {
@@ -1382,7 +1383,7 @@
       }
     },
     {
-      "description": "Clean removes nested stale files",
+      "description": "Unsafe clean removes nested stale files",
       "writes": {
         "out/deep/er/stale.txt": "old\n"
       },
@@ -1395,7 +1396,8 @@
       ],
       "options": {
         "targetDir": "out",
-        "clean": true
+        "clean": true,
+        "unsafeCleanUnlisted": true
       },
       "results": [
         {
@@ -1414,7 +1416,7 @@
       }
     },
     {
-      "description": "Clean keeps files outside the target directory",
+      "description": "Unsafe clean keeps files outside the target directory",
       "writes": {
         "other.txt": "mine\n"
       },
@@ -1427,7 +1429,8 @@
       ],
       "options": {
         "targetDir": "out",
-        "clean": true
+        "clean": true,
+        "unsafeCleanUnlisted": true
       },
       "results": [
         {
@@ -1442,7 +1445,7 @@
       }
     },
     {
-      "description": "Clean dry run keeps stale files",
+      "description": "Unsafe clean dry run keeps stale files",
       "writes": {
         "out/stale.txt": "old\n"
       },
@@ -1456,6 +1459,7 @@
       "options": {
         "targetDir": "out",
         "clean": true,
+        "unsafeCleanUnlisted": true,
         "dryRun": true
       },
       "results": [
@@ -1475,7 +1479,7 @@
       }
     },
     {
-      "description": "Clean check fails on a stale file",
+      "description": "Unsafe clean check fails on a stale file",
       "setup": [
         {
           "call": "populateFiles",
@@ -1503,6 +1507,7 @@
       "options": {
         "targetDir": "out",
         "clean": true,
+        "unsafeCleanUnlisted": true,
         "check": true
       },
       "error": {
@@ -1520,18 +1525,19 @@
       }
     },
     {
-      "description": "Clean with no target directory",
+      "description": "Unsafe clean with no target directory",
       "call": "populateFiles",
       "files": [],
       "options": {
         "targetDir": "out",
-        "clean": true
+        "clean": true,
+        "unsafeCleanUnlisted": true
       },
       "results": [],
       "after": {}
     },
     {
-      "description": "Clean with nothing stale",
+      "description": "Unsafe clean with nothing stale",
       "setup": [
         {
           "call": "populateFiles",
@@ -1556,6 +1562,7 @@
       "options": {
         "targetDir": "out",
         "clean": true,
+        "unsafeCleanUnlisted": true,
         "check": true
       },
       "results": [
@@ -1569,7 +1576,7 @@
       }
     },
     {
-      "description": "Clean removes stale files in path order",
+      "description": "Unsafe clean removes stale files in path order",
       "writes": {
         "out/a/x.txt": "old\n",
         "out/a.txt": "old\n",
@@ -1580,7 +1587,8 @@
       "files": [],
       "options": {
         "targetDir": "out",
-        "clean": true
+        "clean": true,
+        "unsafeCleanUnlisted": true
       },
       "results": [
         {
@@ -1604,6 +1612,67 @@
           "reason": "stale-file"
         }
       ],
+      "after": {}
+    },
+    {
+      "description": "Clean without a manifest fails",
+      "writes": {
+        "out/stale.txt": "mine\n"
+      },
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "clean": true
+      },
+      "error": {
+        "kind": "invalid-options"
+      },
+      "after": {
+        "out/stale.txt": "mine\n"
+      }
+    },
+    {
+      "description": "Unsafe clean without clean fails",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "unsafeCleanUnlisted": true
+      },
+      "error": {
+        "kind": "invalid-options"
+      },
+      "after": {}
+    },
+    {
+      "description": "Unsafe clean with a manifest fails",
+      "call": "populateFiles",
+      "files": [
+        {
+          "filePath": "a.json",
+          "content": "{\"a\":1}\n"
+        }
+      ],
+      "options": {
+        "targetDir": "out",
+        "manifest": "manifest.json",
+        "clean": true,
+        "unsafeCleanUnlisted": true
+      },
+      "error": {
+        "kind": "invalid-options"
+      },
       "after": {}
     },
     {

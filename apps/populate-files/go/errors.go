@@ -14,6 +14,8 @@ var (
 	ErrOwnership = errors.New("file not owned")
 	// ErrDuplicateFile is the same path populated twice in one call.
 	ErrDuplicateFile = errors.New("file is populated more than once")
+	// ErrInvalidOptions is options that don't fit together, such as Clean without a Manifest.
+	ErrInvalidOptions = errors.New("invalid options")
 )
 
 // A Reason is why a file is (or would be) written or removed.

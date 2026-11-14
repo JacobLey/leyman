@@ -82,6 +82,9 @@ const errorOf = (cwd: string, err: unknown): unknown => {
     if (err instanceof TypeError && err.message.includes('more than once')) {
         return { kind: 'duplicate-file' };
     }
+    if (err instanceof TypeError && err.message.includes('`clean')) {
+        return { kind: 'invalid-options' };
+    }
     throw err;
 };
 

@@ -30,6 +30,8 @@ type options struct {
 	DryRun    bool   `json:"dryRun"`
 	Force     bool   `json:"force"`
 	Clean     bool   `json:"clean"`
+	// UnsafeCleanUnlisted is named as in the TypeScript package
+	UnsafeCleanUnlisted bool `json:"unsafeCleanUnlisted"`
 }
 
 type step struct {
@@ -111,6 +113,8 @@ func run(cwd string, call step) ([]populatefiles.Result, error) {
 		DryRun:    call.Options.DryRun,
 		Force:     call.Options.Force,
 		Clean:     call.Options.Clean,
+
+		UnsafeCleanUnlisted: call.Options.UnsafeCleanUnlisted,
 	}
 
 	if call.Call == "populateFile" {
@@ -199,6 +203,15 @@ func expectCheckError(t *testing.T, cwd string, vector scenario, err error) {
 	}
 }
 
+// sentinels are the errors of the vector error kinds that have nothing more to check.
+//
+//nolint:gochecknoglobals // Never changed
+var sentinels = map[string]error{
+	"duplicate-file":  populatefiles.ErrDuplicateFile,
+	"invalid-options": populatefiles.ErrInvalidOptions,
+	"manifest":        generatedsignature.ErrManifest,
+}
+
 // expectError checks an error is the vector's kind, with its files or reason.
 func expectError(t *testing.T, cwd string, vector scenario, err error) {
 	t.Helper()
@@ -213,12 +226,8 @@ func expectError(t *testing.T, cwd string, vector scenario, err error) {
 			string(ownershipError.Reason) != vector.Error.Reason {
 			t.Errorf("%s: got %v", vector.Description, err)
 		}
-	case "manifest":
-		if !errors.Is(err, generatedsignature.ErrManifest) {
-			t.Errorf("%s: got %v", vector.Description, err)
-		}
 	default:
-		if !errors.Is(err, populatefiles.ErrDuplicateFile) {
+		if !errors.Is(err, sentinels[vector.Error.Kind]) {
 			t.Errorf("%s: got %v", vector.Description, err)
 		}
 	}

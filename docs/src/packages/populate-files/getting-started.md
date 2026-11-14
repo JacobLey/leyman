@@ -60,9 +60,9 @@ PopulateFilesCheckError: File /repo/generated/config.json not up to date. Reason
 
 ## Remove files that are no longer generated
 
-With `clean: true`, `populateFiles` also removes every file in `targetDir` that it didn't write, so renaming or dropping a file doesn't leave the old one behind. Removed files are reported after the written ones, sorted by path. In `check` mode, a file it would remove fails the check (`Reason: stale-file`).
+With `clean: true` and a [manifest](/packages/populate-files/guides/manifest), `populateFiles` also removes the files a previous run wrote that this one doesn't, so renaming or dropping a file doesn't leave the old one behind. Removed files are reported after the written ones, sorted by path. In `check` mode, a file it would remove fails the check (`Reason: stale-file`).
 
-Without a manifest, that is _every_ other file in `targetDir`, so only use it on a directory that holds nothing but generated files. With a [manifest](/packages/populate-files/guides/manifest), `clean` only removes files a previous run wrote.
+`clean` without a `manifest` throws a `TypeError`, since nothing would tell generated files from the rest of `targetDir`. On a directory that holds nothing but generated files, `unsafeCleanUnlisted: true` removes every file in it that the run didn't write instead.
 
 ## Next steps
 

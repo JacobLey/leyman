@@ -48,8 +48,12 @@ type Options struct {
 	DryRun bool
 	// Force overwrites and removes files that aren't owned.
 	Force bool
-	// Clean removes the target directory's other files, or only the manifest's previous files with a manifest.
+	// Clean removes the files the manifest listed before that are no longer generated. It needs a Manifest, unless
+	// UnsafeCleanUnlisted.
 	Clean bool
+	// UnsafeCleanUnlisted, with Clean and no Manifest, removes every file in the target directory that isn't
+	// generated, hand-written or not.
+	UnsafeCleanUnlisted bool
 }
 
 // A Result is a file that was (or would be) written or removed, or was already up to date.
@@ -256,6 +260,10 @@ func PopulateFile(file File, options Options) (Result, error) {
 // PopulateFiles writes each file whose content changed, then the manifest, which lists exactly these files, and
 // removes stale files when cleaning. Results are in that order: files, the manifest, then stale files.
 func PopulateFiles(files []File, options Options) ([]Result, error) {
+	if err := checkClean(options); err != nil {
+		return nil, err
+	}
+
 	resolved, manifest, err := start(options)
 	if err != nil {
 		return nil, err
@@ -288,6 +296,33 @@ func PopulateFiles(files []File, options Options) ([]Result, error) {
 	}
 
 	return results, nil
+}
+
+// checkClean fails unless Clean has a Manifest, or UnsafeCleanUnlisted asks to clean without one: without a manifest
+// nothing tells a generated file from a hand-written one (or .git).
+func checkClean(options Options) error {
+	if options.UnsafeCleanUnlisted {
+		if !options.Clean {
+			return fmt.Errorf("%w: `unsafeCleanUnlisted` only applies with `clean: true`", ErrInvalidOptions)
+		}
+
+		if options.Manifest != "" {
+			return fmt.Errorf(
+				"%w: `unsafeCleanUnlisted` does not apply with a `manifest`, which limits `clean` to the files it lists",
+				ErrInvalidOptions,
+			)
+		}
+
+		return nil
+	}
+
+	if options.Clean && options.Manifest == "" {
+		return fmt.Errorf("%w: `clean` needs a `manifest`, to only remove the files it lists. "+
+			"Pass `unsafeCleanUnlisted: true` to remove every file in `targetDir` that is not written instead",
+			ErrInvalidOptions)
+	}
+
+	return nil
 }
 
 // planFiles decides the writes of files, their manifest, and the removal of stale files.

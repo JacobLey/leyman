@@ -52,19 +52,20 @@ const file = {
 
 ### `options`
 
-| Option      | Type            | Default                    | Description                                                                                                                                                                                                      |
-| ----------- | --------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `check`     | `boolean`       | `true` in CI, else `false` | Don't write. Throw if any file would be created, changed or removed.                                                                                                                                             |
-| `dryRun`    | `boolean`       | `false`                    | Don't write, but return what would change. Still throws with `check`.                                                                                                                                            |
-| `cwd`       | `string \| URL` | the current directory      | Directory that `targetDir` and `manifest` are resolved from.                                                                                                                                                     |
-| `targetDir` | `string`        | `'.'`                      | Directory that `filePath`s are resolved from, relative to `cwd`.                                                                                                                                                 |
-| `clean`     | `boolean`       | `false`                    | `populateFiles` only. Remove files no longer generated: every other file in `targetDir`, or with `manifest` only files the previous manifest lists. See [Clean](/packages/populate-files/guides/manifest#clean). |
-| `force`     | `boolean`       | `false`                    | Overwrite or remove files despite an [ownership error](#errors), and drop orphaned manual sections.                                                                                                              |
-| `manifest`  | `string`        | —                          | Path of a [manifest](/packages/populate-files/guides/manifest) recording the generated files, relative to `cwd`.                                                                                                 |
+| Option                | Type            | Default                    | Description                                                                                                                                                                                                                              |
+| --------------------- | --------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check`               | `boolean`       | `true` in CI, else `false` | Don't write. Throw if any file would be created, changed or removed.                                                                                                                                                                     |
+| `dryRun`              | `boolean`       | `false`                    | Don't write, but return what would change. Still throws with `check`.                                                                                                                                                                    |
+| `cwd`                 | `string \| URL` | the current directory      | Directory that `targetDir` and `manifest` are resolved from.                                                                                                                                                                             |
+| `targetDir`           | `string`        | `'.'`                      | Directory that `filePath`s are resolved from, relative to `cwd`.                                                                                                                                                                         |
+| `clean`               | `boolean`       | `false`                    | `populateFiles` only. Remove the files the previous `manifest` lists that are no longer generated. Throws a `TypeError` without a `manifest`, unless `unsafeCleanUnlisted`. See [Clean](/packages/populate-files/guides/manifest#clean). |
+| `unsafeCleanUnlisted` | `boolean`       | `false`                    | `populateFiles` only, with `clean` and no `manifest`. Remove every other file in `targetDir`, hand-written or not. Throws a `TypeError` without `clean` or with a `manifest`.                                                            |
+| `force`               | `boolean`       | `false`                    | Overwrite or remove files despite an [ownership error](#errors), and drop orphaned manual sections.                                                                                                                                      |
+| `manifest`            | `string`        | —                          | Path of a [manifest](/packages/populate-files/guides/manifest) recording the generated files, relative to `cwd`.                                                                                                                         |
 
 ## `populateFiles(params, options?)`
 
-Writes several files in parallel, from `populate-files`. `params` is an array of [`populateFile` params](#params), with unique `filePath`s (it rejects with a `TypeError` if two resolve to the same path), and `options` are the [same](#options).
+Writes several files in parallel, from `populate-files`. `params` is an array of [`populateFile` params](#params), with unique `filePath`s (it rejects with a `TypeError` if two resolve to the same path, or `clean` has no `manifest`), and `options` are the [same](#options).
 
 ```ts
 import { populateFiles } from 'populate-files';
@@ -74,7 +75,7 @@ const results = await populateFiles(
         { filePath: 'a.json', content: { a: 1 } },
         { filePath: 'b.txt', content: 'b\n' },
     ],
-    { targetDir: './out', clean: true }
+    { targetDir: './out', manifest: './out/.generated.json', clean: true }
 );
 ```
 

@@ -1,7 +1,8 @@
 # populate-files-go
 
-## 0.1.2
+## 0.2.0
 
+- **Breaking:** `Clean` without a `Manifest` fails with `ErrInvalidOptions`, rather than removing every file in the target directory that isn't generated (with an empty `TargetDir`, the whole working directory). Add a `Manifest`, so `Clean` only removes files an earlier run wrote, or set `UnsafeCleanUnlisted: true` to keep the old behaviour. `UnsafeCleanUnlisted` without `Clean`, or with a `Manifest`, also fails with `ErrInvalidOptions`.
 - The `OwnershipNotOwned` error message fits both of its causes: `File <path> exists but is not marked as generated (not signed)` for a signed file, and `(not listed in the manifest)` for an unsigned file with a manifest. It read "exists but is not signed, so it may not be generated" for both.
 
 ## 0.1.1
