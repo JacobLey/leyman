@@ -106,6 +106,19 @@ suite('checkPackage', () => {
             }
         );
 
+        withWorkspace.test('Reports paths in code-unit order', async ({ cwd, writeFiles }) => {
+            await writeFiles({ ...goodPackage(), 'pkg/Zeta.txt': '', 'pkg/alpha.txt': '' });
+
+            const { problems } = await checkPackage({ profile: 'esm-only', cwd, tsc });
+
+            expect(problems).to.deep.equal(
+                ['Zeta.txt', 'alpha.txt'].map(
+                    name =>
+                        `files: "${name}" is not published. Add it to "files" in package.json, or if it should never be published, to the paths not published (--not-published).`
+                )
+            );
+        });
+
         withWorkspace.test(
             'Accepts a path known not to be published',
             async ({ cwd, writeFiles }) => {
@@ -230,6 +243,23 @@ suite('checkPackage', () => {
 
                 expect(problems).to.deep.equal([
                     "engines.node: missing is not installed, so its engines can't be checked.",
+                ]);
+            }
+        );
+
+        withWorkspace.test(
+            'Reports dependencies in code-unit order',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles(
+                    goodPackage({ optionalDependencies: { a_b: '^1', 'a-b': '^1', b: '^1' } })
+                );
+
+                const { problems } = await checkPackage({ profile: 'esm-only', cwd, tsc });
+
+                expect(problems).to.deep.equal([
+                    "engines.node: a-b is not installed, so its engines can't be checked.",
+                    "engines.node: a_b is not installed, so its engines can't be checked.",
+                    "engines.node: b is not installed, so its engines can't be checked.",
                 ]);
             }
         );

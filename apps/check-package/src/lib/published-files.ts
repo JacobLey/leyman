@@ -104,5 +104,6 @@ export const publishedFilesProblems = async ({
             );
         }
     }
-    return problems.toSorted((a, b) => a.localeCompare(b, 'en'));
+    // By UTF-16 code unit, so the order doesn't depend on the locale
+    return problems.toSorted((a, b) => Number(a > b) - Number(a < b));
 };

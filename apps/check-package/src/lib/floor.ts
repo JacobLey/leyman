@@ -133,6 +133,7 @@ export const floorProblems = async ({
         return [`engines.node: "${engine}" names no floor. Use ">=<version>".`];
     }
 
+    // By UTF-16 code unit, so the order doesn't depend on the locale
     const runtimeDependencies = [
         ...new Set(
             [
@@ -141,7 +142,7 @@ export const floorProblems = async ({
                 packageJson.optionalDependencies,
             ].flatMap(dependencies => Object.keys(dependencies ?? {}))
         ),
-    ].toSorted((a, b) => a.localeCompare(b, 'en'));
+    ].toSorted((a, b) => Number(a > b) - Number(a < b));
     const problems = await Promise.all([
         floorTsconfig === undefined
             ? null
