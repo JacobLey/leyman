@@ -163,6 +163,11 @@
       "why": "the CI workflow"
     },
     {
+      "path": ".github/workflows/test-uncached.yml",
+      "when": "ci",
+      "why": "the weekly CI run with no Nx cache, which catches inputs Nx doesn't hash"
+    },
+    {
       "path": ".vscode/settings.json",
       "why": "points the editor at the tools in leyman/main"
     },

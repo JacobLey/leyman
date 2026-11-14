@@ -15,6 +15,7 @@ const dockerfile = '.devcontainer/Dockerfile';
 const compose = '.devcontainer/docker-compose.yml';
 const workflow = '.github/workflows/ci.yml';
 const reportWorkflow = '.github/workflows/comparison-report.yml';
+const uncachedWorkflow = '.github/workflows/test-uncached.yml';
 const wrangler = 'infra/nx-cache/worker/wrangler.jsonc';
 
 // `BASE_IMAGE` names the Debian release by number, every other image by codename
@@ -95,6 +96,7 @@ const checks = () => ({
             'DAGGER_VERSION'
         ),
         workflowEnv('DAGGER_VERSION', reportWorkflow),
+        workflowEnv('DAGGER_VERSION', uncachedWorkflow),
     ],
     Debian: [
         mapped(dockerArg('BASE_IMAGE'), image =>

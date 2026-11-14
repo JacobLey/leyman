@@ -14,10 +14,8 @@ on:
   schedule:
     # Nightly `test` and `floors` of main: catches what changes outside the repository, and writes like a push, so the
     # hosted Nx cache stays warm through a week without pushes. `test` also runs published packages' suites on their
-    # oldest Node.js. Keep in sync with `test`'s args
+    # oldest Node.js. Keep in sync with `test`'s args. The weekly run with no cache is `test-uncached.yml`
     - cron: '17 9 * * *'
-    # Weekly `test-uncached`. Keep in sync with the `if` of it, `test` and `floors`
-    - cron: '47 9 * * 0'
 
 permissions:
   contents: read
@@ -41,7 +39,6 @@ env:
 
 jobs:
   test:
-    if: ${{ github.event.schedule != '47 9 * * 0' }}
     runs-on: ubuntu-latest
     # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
     timeout-minutes: 30
@@ -114,7 +111,6 @@ jobs:
   # The support floor and generated config checks, on their own runner: `floor-types` runs a `tsc` per CPU for
   # minutes, which on `test`'s runner slowed tests past their timeouts. Gates the same jobs `test` does
   floors:
-    if: ${{ github.event.schedule != '47 9 * * 0' }}
     runs-on: ubuntu-latest
     # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
     timeout-minutes: 30
@@ -163,36 +159,6 @@ jobs:
       - name: Show Nx cache server log
         if: ${{ !cancelled() }}
         run: cat "$RUNNER_TEMP/nx-cache-server.log"
-
-  # Weekly, every task with no Nx cache at all, reading or writing. A task that fails here but passes from the cache
-  # all week depends on something its inputs don't hash: add the input, rather than re-running.
-  # `test` and `floors` on separate runners, as in the jobs of those names
-  test-uncached:
-    if: ${{ github.event.schedule == '47 9 * * 0' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        pipeline: [test, floors]
-    runs-on: ubuntu-latest
-    # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Run ${{ matrix.pipeline }}
-        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
-        with:
-          version: ${{ env.DAGGER_VERSION }}
-          verb: call
-          module: ./dagger
-          # Only for Dagger Cloud traces, as in `test`
-          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: ${{ matrix.pipeline }}
 
   # Opens (or updates) a "Version Packages" PR applying pending changesets
   version:

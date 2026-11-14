@@ -114,6 +114,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 |------|-----|
 | `.github/pull_request_template.md` | the PR checklist |
 | `.github/workflows/ci.yml` | the CI workflow |
+| `.github/workflows/test-uncached.yml` | the weekly CI run with no Nx cache, which catches inputs Nx doesn't hash |
 
 ### `cli`: has packages with a command line interface
 

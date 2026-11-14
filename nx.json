@@ -426,6 +426,7 @@
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/.github/workflows/adoption-audits.yml",
         "{workspaceRoot}/.github/workflows/comparison-report.yml",
+        "{workspaceRoot}/.github/workflows/test-uncached.yml",
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/Cargo.toml",
         "{workspaceRoot}/dagger/dagger.json",

@@ -1,0 +1,43 @@
+name: Test uncached
+
+# Every task with no Nx cache at all, reading or writing. A task that fails here but passes from the cache all week
+# depends on something its inputs don't hash: add the input, rather than re-running. Never on a pull request or a push,
+# which `ci.yml` covers from the cache
+on:
+  schedule:
+    # Weekly, off the top of the hour, when GitHub delays and drops scheduled runs
+    - cron: '47 9 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
+  DAGGER_VERSION: 0.21.11
+
+jobs:
+  # `test` and `floors` on separate runners, as in the jobs of those names in `ci.yml`
+  test-uncached:
+    strategy:
+      fail-fast: false
+      matrix:
+        pipeline: [test, floors]
+    runs-on: ubuntu-latest
+    # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run ${{ matrix.pipeline }}
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          # Only for Dagger Cloud traces, as in `ci.yml`
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: ${{ matrix.pipeline }}
