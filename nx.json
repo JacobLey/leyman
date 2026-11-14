@@ -46,6 +46,7 @@
       "{projectRoot}/executors.json",
       "{projectRoot}/*.(c|m)?js",
       "{projectRoot}/*.d.(c|m)?ts",
+      "{projectRoot}/*.sql",
       "{projectRoot}/data/**/*",
       "{projectRoot}/out/**/*"
     ],
