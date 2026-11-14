@@ -1,11 +1,12 @@
 import type { Linter } from 'eslint';
 import type { Suite } from 'mocha';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect } from 'chai';
 import { ESLint } from 'eslint';
-import { before, suite, test } from 'mocha';
+import { after, before, suite, test } from 'mocha';
 import configGenerator, { nonDeprecatedRules } from '#internal/eslint-config.js';
 import { importPlugin } from '#internal/lib/plugins.js';
 
@@ -145,5 +146,91 @@ suite('configGenerator import resolution', () => {
         expect(
             results.flatMap(result => result.messages.map(message => message.ruleId))
         ).to.deep.equal(['import-x/no-cycle']);
+    });
+});
+
+/**
+ * Writes `files` to a new package directory, with the generated config for it.
+ *
+ * @param files - Contents, by path in the package
+ * @param packageJson - Extra `package.json` fields
+ * @returns ESLint for the package, and a function removing it
+ */
+const packageEslint = async (files: Readonly<Record<string, string>>, packageJson: object = {}) => {
+    const directory = await mkdtemp(Path.join(tmpdir(), 'eslint-config-'));
+    for (const [file, contents] of Object.entries(files)) {
+        await mkdir(Path.dirname(Path.join(directory, file)), { recursive: true });
+        await writeFile(Path.join(directory, file), contents);
+    }
+    const config = await configGenerator({
+        configUrl: pathToFileURL(Path.join(directory, 'eslint.config.js')).href,
+        packageJson: { name: 'fake', version: '1.0.0', ...packageJson },
+    });
+    const eslint = new ESLint({ cwd: directory, overrideConfigFile: true, overrideConfig: config });
+    return {
+        // Each rule as ESLint resolves it: `[severity, ...options]`, with the rule's defaults filled in
+        rulesFor: async (file: string) =>
+            ((await eslint.calculateConfigForFile(file)) as Linter.Config).rules as Record<
+                string,
+                [number, ...unknown[]]
+            >,
+        reported: async (file: string) => {
+            const [result] = await eslint.lintFiles([file]);
+            return result!.messages.map(message => message.ruleId);
+        },
+        remove: async () => rm(directory, { recursive: true }),
+    };
+};
+
+suite('configGenerator per file', function (this: Suite) {
+    this.timeout(30_000);
+
+    let eslint: Awaited<ReturnType<typeof packageEslint>>;
+    before(async () => {
+        eslint = await packageEslint(
+            {
+                'tsconfig.json': JSON.stringify({ include: ['src'] }),
+                'src/a.ts': 'export const a = 1;\n',
+                'src/b.js':
+                    '/**\n * An example function.\n *\n * @returns the number one\n */\nexport const b = () => 1;\n',
+                'src/e.tsx': 'export const e = <br />;\n',
+                'src/c.cjs':
+                    "'use strict';\n\nconst path = require('node:path');\n\nmodule.exports = path.sep;\n",
+                'src/d.js':
+                    '// biome-ignore lint/suspicious/noDebugger: example\n// biome-ignore-all format: example\nexport const d = 1;\n',
+            },
+            { dependencies: { react: '^19' } }
+        );
+    });
+    after(async () => {
+        await eslint.remove();
+    });
+
+    test('Gives core rules the setting of the type-aware rules replacing them in JavaScript', async () => {
+        const rules = await eslint.rulesFor('src/b.js');
+        expect(rules['@typescript-eslint/require-await']?.[0]).to.equal(0);
+        expect(rules['require-await']?.[0]).to.equal(0);
+        expect(rules['prefer-destructuring']).to.deep.include.members([
+            2,
+            { AssignmentExpression: { array: false, object: true } },
+        ]);
+        expect(rules['consistent-return']?.[0]).to.equal(2);
+    });
+
+    test('Keeps the replaced core rules off in TypeScript', async () => {
+        const rules = await eslint.rulesFor('src/a.ts');
+        expect(rules['prefer-destructuring']?.[0]).to.equal(0);
+        expect(rules['consistent-return']?.[0]).to.equal(0);
+    });
+
+    test('Turns off types and accessibility in JavaScript', async () => {
+        const rules = await eslint.rulesFor('src/b.js');
+        expect(rules['@typescript-eslint/explicit-function-return-type']?.[0]).to.equal(0);
+        expect(rules['@typescript-eslint/explicit-module-boundary-types']?.[0]).to.equal(0);
+        expect(rules['@typescript-eslint/explicit-member-accessibility']?.[0]).to.equal(0);
+    });
+
+    test('Lints JavaScript outside the package root and tsconfig.json', async () => {
+        expect(await eslint.reported('src/b.js')).to.deep.equal([]);
     });
 });

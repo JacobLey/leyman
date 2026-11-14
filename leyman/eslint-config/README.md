@@ -55,13 +55,13 @@ The package is ESM only. The config returned is a flat config array, so you chan
 
 It expects this layout, per package:
 
-| Path                                                   | What the config does with it                                                                                                                         |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tsconfig.json`                                        | Found by typescript-eslint's project service from each file, for type-aware rules. Plain `.js` files outside it are linted without type information. |
-| `src/`                                                 | Published code: importing a `devDependency` is an error here. `src/cli.ts` and `src/commands/**` may use `console`.                                  |
-| `test/`                                                | Tests: Node.js globals, and rules that get in the way of tests (magic numbers, return types, `@ts-expect-error`...) are off.                         |
-| `**/eslint/**`                                         | ESLint plugin code: visitors named after AST nodes and kebab-case rule names are allowed.                                                            |
-| `coverage`, `dist`, `dist-test`, `out`, `node_modules` | Ignored.                                                                                                                                             |
+| Path                                                   | What the config does with it                                                                                                                                                                                                                             |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tsconfig.json`                                        | Found by typescript-eslint's project service from each TypeScript file, for type-aware rules. JavaScript files are linted without type information, so the type-aware rules are off for them, and each core rule one of them replaces takes its setting. |
+| `src/`                                                 | Published code: importing a `devDependency` is an error here. `src/cli.ts` and `src/commands/**` may use `console`.                                                                                                                                      |
+| `test/`                                                | Tests: Node.js globals, and rules that get in the way of tests (magic numbers, return types, `@ts-expect-error`...) are off.                                                                                                                             |
+| `**/eslint/**`                                         | ESLint plugin code: visitors named after AST nodes and kebab-case rule names are allowed.                                                                                                                                                                |
+| `coverage`, `dist`, `dist-test`, `out`, `node_modules` | Ignored.                                                                                                                                                                                                                                                 |
 
 `.tsx` files get the React, React Hooks and JSX accessibility rules, and the other files don't. CommonJS files (`.cjs`, `.cts`) may use `require`.
 
