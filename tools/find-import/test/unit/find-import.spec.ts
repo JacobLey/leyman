@@ -70,6 +70,15 @@ suite('findImport', () => {
             });
         });
 
+        test('cwd outside startAt finds nothing', async () => {
+            expect(
+                await FindImport.findImport(['root.js', 'sub.cjs'], {
+                    cwd: dataDir,
+                    startAt: Path.join(dataDir, 'sub'),
+                })
+            ).to.equal(null);
+        });
+
         context.test('directory', async ({ subJs }) => {
             const found = await FindImport.findImport([Path.join('sub', 'sub.cjs'), 'root.js'], {
                 cwd: Path.join(dataDir, 'sub'),

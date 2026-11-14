@@ -71,20 +71,23 @@ export const findImport = async (
 } | null> => {
     const fileNames = Array.isArray(fileName) ? fileName : [fileName];
 
-    let [directory, startAt] = await Promise.all([
+    const [cwd, startAt] = await Promise.all([
         parseCwd(options),
         // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- A missing or empty `startAt` searches up to the root
         options.startAt ? parseCwd(options.startAt) : '/',
     ]);
-    let parentDirectory = Path.dirname(directory);
 
-    const allDirectories = [directory];
+    // Every directory from `cwd` up to `startAt`, none when `cwd` is outside it
+    const allDirectories: string[] = [];
+    let directory = cwd;
+    while (isInside(startAt, directory)) {
+        allDirectories.push(directory);
 
-    while (directory !== parentDirectory && isInside(startAt, parentDirectory)) {
-        allDirectories.push(parentDirectory);
-
+        const parentDirectory = Path.dirname(directory);
+        if (parentDirectory === directory) {
+            break;
+        }
         directory = parentDirectory;
-        parentDirectory = Path.dirname(directory);
     }
 
     if (options.direction === 'down') {
