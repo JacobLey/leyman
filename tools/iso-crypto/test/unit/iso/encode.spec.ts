@@ -191,7 +191,10 @@ suite('Encode', () => {
         });
 
         test('base64 large input', () => {
-            const input = Uint8Array.from({ length: 1_000_000 }, (_, i) => i);
+            const input = new Uint8Array(1_000_000);
+            for (let i = 0; i < input.length; i++) {
+                input[i] = i;
+            }
             for (const encoding of ['base64', 'base64url'] as const) {
                 const encoded = Encode.encode(input, encoding);
                 expect(Encode.decode({ text: encoded, encoding })).to.deep.equal(input);
