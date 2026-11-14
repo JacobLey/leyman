@@ -50,6 +50,26 @@ suite('launch', () => {
             expect(fakeMain.calledWith(args)).to.equal(true);
         });
 
+        withFake.test('Options without an id', async ({ fakeMain }) => {
+            const disposer = fake();
+            class MyEntry extends EntryScript {
+                public override main = fakeMain;
+            }
+            const container = createContainer(
+                createModule(
+                    bind(EntryScript)
+                        .withAsyncFactory(() => new MyEntry())
+                        .scoped(singletonScope)
+                        .withDisposer(disposer)
+                )
+            );
+
+            await launch(container, undefined, { dispose: true }).main(['--foo']);
+
+            expect(fakeMain.calledWith(['--foo'])).to.equal(true);
+            expect(disposer.calledOnce).to.equal(true);
+        });
+
         withContainer.test('Fails to instantiate via id', async ({ container }) => {
             // @ts-expect-error
             const entry = launch(container, identifier<EntryScript>());

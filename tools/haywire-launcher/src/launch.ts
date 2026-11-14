@@ -61,7 +61,9 @@ type EntryContainerFailures<C extends GenericContainer> =
             : 'containerDoesNotOutputEntryScript'
         : 'notAContainer';
 type EntryLauncher = <C extends GenericContainer>(
-    container: C & Invalid<EntryContainerFailures<C>>
+    container: C & Invalid<EntryContainerFailures<C>>,
+    id?: undefined,
+    options?: LaunchOptions
 ) => WrapperMain;
 
 /**
