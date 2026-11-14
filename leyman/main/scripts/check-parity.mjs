@@ -63,6 +63,11 @@ const checks = () => ({
         composeImage('dagger-nx-cache'),
         read('demos/local-ingress/run', /^image='(?<value>.+)'$/mv, 'image'),
     ],
+    'Node version': [
+        imageVersion(daggerConst('nodeImage')),
+        workflowEnv('NODE_VERSION'),
+        workflowEnv('NODE_VERSION', reportWorkflow),
+    ],
     pnpm: [dockerArg('PNPM_VERSION'), daggerConst('pnpmVersion')],
     'Go image': [dockerArg('GO_IMAGE'), daggerConst('goImage')],
     'golangci-lint': [dockerArg('GOLANGCI_LINT_VERSION'), daggerConst('golangciLintVersion')],

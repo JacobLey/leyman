@@ -14,6 +14,8 @@ permissions:
 env:
   # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
   DAGGER_VERSION: 0.21.11
+  # Keep in sync with `ci.yml`
+  NODE_VERSION: 26.13.0
   NX_CACHE_DIR: /tmp/nx-cache
   # Keep in sync with `ci.yml`
   NX_CACHE_MAX_AGE_DAYS: 7
@@ -29,6 +31,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       # Reads what `test` built from the hosted cache, and never writes to it
       - name: Start Nx cache server

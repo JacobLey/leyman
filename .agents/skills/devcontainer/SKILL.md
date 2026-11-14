@@ -80,7 +80,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 
 | Runtime | DevContainer | Dagger |
 |---------|-------------|--------|
-| Node.js | `ARG NODE_IMAGE` in `.devcontainer/Dockerfile`, the `nx-cache` and `dagger-nx-cache` images in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go` |
+| Node.js | `ARG NODE_IMAGE` in `.devcontainer/Dockerfile`, the `nx-cache` and `dagger-nx-cache` images in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go`, and its version as `NODE_VERSION` in `.github/workflows/ci.yml` and `comparison-report.yml`, for the scripts their jobs run on the runner (`actions/setup-node`) |
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_IMAGE` in `.devcontainer/Dockerfile` | `goImage` in `dagger/main.go`. The same image, pinned by digest, at the Go minor of the pinned Dagger engine: check it when bumping Dagger |
 | golangci-lint | `ARG GOLANGCI_LINT_VERSION` in `.devcontainer/Dockerfile` | `golangciLintVersion` in `dagger/main.go`, with the checksums below it. The release must be built with a Go at least the `go` directive of every `go.mod` |

@@ -28,6 +28,9 @@ concurrency:
 env:
   # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
   DAGGER_VERSION: 0.21.11
+  # For the scripts jobs run from the checkout around Dagger (some need Node.js 22 or later), rather than whichever
+  # Node.js the runner image has. The version of `nodeImage` in `dagger/main.go`, which `check-parity` checks
+  NODE_VERSION: 26.13.0
   # The cache server's local directory, empty at the start of every run: earlier results come from the hosted cache.
   # Outside the checkout, so it is never part of the source Dagger tests
   NX_CACHE_DIR: /tmp/nx-cache
@@ -52,6 +55,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       # Here, because the source Dagger tests leaves out the devcontainer and this workflow
       - name: Check version parity
@@ -127,6 +135,12 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # As in `test`
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       # As in `test`
       - name: Start Nx cache server
@@ -383,6 +397,12 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Set up Node.js
+        if: ${{ steps.tip.outputs.current == 'true' }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       # Reads `test`'s results for this commit from the hosted cache, and never writes to it
       - name: Start Nx cache server
