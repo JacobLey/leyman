@@ -19,24 +19,34 @@ const apiRules: Readonly<Record<string, number | null>> = {
 };
 
 /**
- * The oldest Node.js major version a package supports: the major version of `engines.node` (`>=22`, `>=24.1.0`...),
- * or the running version's when there is none, as private packages run on the toolchain only.
+ * The Node.js versions a package supports: its `engines.node`, or from the running version on when there is none, as
+ * private packages run on the toolchain only. Both the rules below and eslint-plugin-n (`settings.n.version`) read it,
+ * so they agree on the floor.
+ *
+ * @param packageJson - Loaded `package.json` file
+ * @returns A semver range starting with `>=`
+ * @throws {Error} when `engines.node` doesn't start with `>=`
+ */
+export const getNodeRange = (packageJson: PackageJson): string => {
+    const range = packageJson.engines?.node;
+    if (range === undefined) {
+        return `>=${process.versions.node}`;
+    }
+    if (!/^>=\s*\d/v.test(range)) {
+        throw new Error(`engines.node must be ">=<version>" to name a floor, not "${range}"`);
+    }
+    return range;
+};
+
+/**
+ * The oldest Node.js major version a package supports: the major version of its range (`>=22`, `>=24.1.0`...).
  *
  * @param packageJson - Loaded `package.json` file
  * @returns Node.js major version
  * @throws {Error} when `engines.node` doesn't start with `>=`
  */
-export const getNodeFloor = (packageJson: PackageJson): number => {
-    const range = packageJson.engines?.node;
-    if (range === undefined) {
-        return Number(process.versions.node.split('.', 1)[0]);
-    }
-    const major = /^>=\s*(?<major>\d+)/v.exec(range)?.groups?.major;
-    if (major === undefined) {
-        throw new Error(`engines.node must be ">=<version>" to name a floor, not "${range}"`);
-    }
-    return Number(major);
-};
+export const getNodeFloor = (packageJson: PackageJson): number =>
+    Number(/^>=\s*(?<major>\d+)/v.exec(getNodeRange(packageJson))!.groups!.major);
 
 /**
  * Turns off each rule that suggests an API the package's oldest supported Node.js doesn't have.

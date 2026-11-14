@@ -255,4 +255,11 @@ suite('configGenerator per file', function (this: Suite) {
         expect(rules['unicorn/template-indent']?.[1]).to.include({ indent: 4 });
         expect(rules['unicorn/number-literal-case']?.[0]).to.equal(0);
     });
+
+    test('Gives eslint-plugin-n the same Node.js floor', async () => {
+        const config = await configOf({});
+        expect(
+            config.map(block => block.settings?.n).find(settings => settings !== undefined)
+        ).to.deep.equal({ version: `>=${process.versions.node}` });
+    });
 });

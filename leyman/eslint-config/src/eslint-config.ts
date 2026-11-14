@@ -8,7 +8,7 @@ import typescriptParser from '@typescript-eslint/parser';
 import { createNodeResolver } from 'eslint-plugin-import-x';
 import globals from 'globals';
 import { getInternalRegex } from './lib/internal-regex.js';
-import { nodeFloorRules } from './lib/node-floor.js';
+import { getNodeRange, nodeFloorRules } from './lib/node-floor.js';
 import { nonDeprecatedRules } from './lib/non-deprecated-rules.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import { packagePluginConfig } from './lib/package-plugins.js';
@@ -862,6 +862,8 @@ export default async function makeEslintConfigForPackage({
                 'import-x/internal-regex': getInternalRegex(packageJson),
                 'import-x/extensions': importExtensions,
                 'import-x/resolver-next': [importResolver],
+                // The same floor `nodeFloorRules` reads, where eslint-plugin-n would fall back to Node.js 16 without `engines`
+                n: { version: getNodeRange(packageJson) },
                 react: {
                     // The installed React, resolved from each linted file. A package without React has no
                     // JSX for the version to matter to, and `999.999.999` is eslint-plugin-react's own
