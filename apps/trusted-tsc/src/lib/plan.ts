@@ -188,8 +188,9 @@ export const planTsc = async (
     }
     const sandbox = [
         '--permission',
+        // By UTF-16 code unit, so the order doesn't depend on the locale
         ...[...grants]
-            .toSorted((a, b) => a.localeCompare(b))
+            .toSorted((a, b) => Number(a > b) - Number(a < b))
             .map(grant => `--allow-fs-read=${JSON.stringify(grant)}`),
     ];
     return {

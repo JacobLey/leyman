@@ -50,6 +50,29 @@ suite('planTsc', () => {
         });
     });
 
+    withProject.test('grants in code-unit order', async ({ fixture }) => {
+        const root = await realpath(fixture.tmpDir.path);
+        await fixture.write({
+            'node_modules/mapper/package.json': {
+                ...mapper(),
+                dependencies: { a_b: '^1', 'a-b': '^1' },
+            },
+            'node_modules/a_b/package.json': { name: 'a_b' },
+            'node_modules/a-b/package.json': { name: 'a-b' },
+        });
+
+        const { env } = await planTsc([], fixture.tmpDir.path, {});
+
+        expect(env.NODE_OPTIONS).to.equal(
+            [
+                '--permission',
+                ...['a-b', 'a_b', 'mapper'].map(
+                    name => `--allow-fs-read="${root}/node_modules/${name}"`
+                ),
+            ].join(' ')
+        );
+    });
+
     withProject.test('keeps other NODE_OPTIONS', async ({ fixture }) => {
         // Without a version
         await fixture.write({
