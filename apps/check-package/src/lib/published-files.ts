@@ -53,6 +53,34 @@ const gitignores = async (
 };
 
 /**
+ * Whether Git ignores a path. As in Git, the deepest `.gitignore` with a rule that matches it
+ * decides, so a nested `.gitignore` can re-include (`!keep`) what one above ignores
+ * (https://git-scm.com/docs/gitignore#_pattern_format).
+ *
+ * @param files - `.gitignore` files, shallowest first
+ * @param path - absolute path inside each of their directories
+ * @param isDirectory - directory patterns (`dist/`) only match directories
+ * @returns true if ignored
+ */
+const isIgnored = (
+    files: readonly { directory: string; rules: Ignore }[],
+    path: string,
+    isDirectory: boolean
+): boolean => {
+    let isIgnoredPath = false;
+    for (const { directory, rules } of files) {
+        const relative = Path.relative(directory, path).replaceAll(Path.sep, '/');
+        const result = rules.test(isDirectory ? `${relative}/` : relative);
+        if (result.ignored) {
+            isIgnoredPath = true;
+        } else if (result.unignored) {
+            isIgnoredPath = false;
+        }
+    }
+    return isIgnoredPath;
+};
+
+/**
  * Checks every top-level path of the package that Git doesn't ignore is either published or known
  * not to be, so a new one (like `data/`) can't be left out of `files` by accident, and nothing known
  * not to be published is.
@@ -83,15 +111,7 @@ export const publishedFilesProblems = async ({
     const problems: string[] = [];
     for (const entry of entries) {
         const path = Path.join(cwd, entry.name);
-        const suffix = entry.isDirectory() ? '/' : '';
-        if (
-            entry.name === '.git' ||
-            rules.some(({ directory, rules: ignored }) =>
-                ignored.ignores(
-                    `${Path.relative(directory, path).replaceAll(Path.sep, '/')}${suffix}`
-                )
-            )
-        ) {
+        if (entry.name === '.git' || isIgnored(rules, path, entry.isDirectory())) {
             continue;
         }
         if (published.has(entry.name) && notPublished.has(entry.name)) {

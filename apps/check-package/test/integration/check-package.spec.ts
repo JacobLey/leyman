@@ -173,6 +173,25 @@ suite('checkPackage', () => {
         );
 
         withWorkspace.test(
+            'Reports a path the package .gitignore re-includes',
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...goodPackage(),
+                    '.gitignore': '*.txt\n',
+                    'pkg/.gitignore': '!keep.txt\n',
+                    'pkg/keep.txt': '',
+                    'pkg/skip.txt': '',
+                });
+
+                const { problems } = await checkPackage({ profile: 'esm-only', cwd, tsc });
+
+                expect(problems).to.deep.equal([
+                    'files: "keep.txt" is not published. Add it to "files" in package.json, or if it should never be published, to the paths not published (--not-published).',
+                ]);
+            }
+        );
+
+        withWorkspace.test(
             'Skips .git, for a package that is its own repository',
             async ({ cwd, writeFiles }) => {
                 await writeFiles({ ...goodPackage(), 'pkg/.git/HEAD': 'ref: refs/heads/main\n' });
