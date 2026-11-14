@@ -57,6 +57,25 @@ suite('barrel', () => {
             );
         });
 
+        test('Sorts by code unit', () => {
+            expect(
+                generateBarrelFile({
+                    files: ['alpha.ts', 'a_b.ts', 'Zeta.ts', 'a-b.ts'],
+                    types: new Set(),
+                })
+            ).to.equal(
+                dedent`
+                    // AUTO-BARREL
+
+                    export * from './Zeta.js';
+                    export * from './a-b.js';
+                    export * from './a_b.js';
+                    export * from './alpha.js';
+
+                `
+            );
+        });
+
         test('subdirectories', () => {
             expect(
                 generateBarrelFile({

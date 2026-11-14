@@ -41,7 +41,8 @@ export const generateBarrelFile = ({
                 })
             ),
         ]
-            .toSorted((a, b) => a.localeCompare(b, 'en'))
+            // By UTF-16 code unit, so the order doesn't depend on the locale
+            .toSorted((a, b) => Number(a > b) - Number(a < b))
             .map(filename => `export ${types.has(filename) ? 'type ' : ''}* from './${filename}';`),
         '',
     ].join('\n');
@@ -126,7 +127,7 @@ const didUpdateBarrelFile = async ({
  *
  * Optionally ignore some files, and skip writes ("dry run").
  *
- * Returns list of all files that got updated.
+ * Returns list of all files that got updated, in code-unit order.
  *
  * @param param - params
  * @param param.cwd - directory to search/update index files
@@ -156,5 +157,8 @@ export const barrelFiles = async ({
         })
     );
 
-    return updated.filter(filePath => filePath !== null);
+    // By UTF-16 code unit, rather than the order the filesystem lists files in
+    return updated
+        .filter(filePath => filePath !== null)
+        .toSorted((a, b) => Number(a > b) - Number(a < b));
 };

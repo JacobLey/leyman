@@ -163,6 +163,22 @@ suite('barrelify', () => {
             expect(await ctx.read('index.ts')).to.equal(content);
         });
 
+        withTmpDir.test('Reports changed files in code-unit order', async ctx => {
+            await ctx.writeFiles({
+                'index.ts': HEADER,
+                'a/index.ts': HEADER,
+                'B/index.ts': HEADER,
+                'a/b/index.ts': HEADER,
+            });
+
+            expect(await barrelify({ cwd: ctx.tmpDir.path, dryRun: true })).to.deep.equal([
+                ctx.resolve('B/index.ts'),
+                ctx.resolve('a/b/index.ts'),
+                ctx.resolve('a/index.ts'),
+                ctx.resolve('index.ts'),
+            ]);
+        });
+
         withTmpDir.test('Ignores index files without header', async ctx => {
             const content = `// Not a barrel\n${HEADER}\n`;
             await ctx.writeFiles({ 'a.ts': '', 'index.ts': content });

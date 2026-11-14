@@ -43,7 +43,7 @@ Barrelify is ESM only. From CommonJS, load it with a dynamic import: `const { ba
 | `dryRun` | `boolean`           | `false`         | Compute every barrel, but don't write any.        |
 | `ignore` | `readonly string[]` | `[]`            | Globs of index files to skip, relative to `cwd`.  |
 
-**Returns** `Promise<string[]>`: the absolute paths of the barrels that changed, or would change with `dryRun`.
+**Returns** `Promise<string[]>`: the absolute paths of the barrels that changed, or would change with `dryRun`, sorted by UTF-16 code unit.
 
 ```ts
 import { barrelify } from 'barrelify';

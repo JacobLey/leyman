@@ -43,7 +43,7 @@ Any `index.ts`, `index.tsx`, `index.cts` or `index.mts` can be a barrel. Index f
 npx barrelify
 ```
 
-Barrelify searches the current directory and everything below it for marked index files, and rewrites each one to re-export its sibling files, sorted by name:
+Barrelify searches the current directory and everything below it for marked index files, and rewrites each one to re-export its sibling files, sorted by name (by UTF-16 code unit, so `Zeta.ts` before `alpha.ts`):
 
 ```
 src/components/
