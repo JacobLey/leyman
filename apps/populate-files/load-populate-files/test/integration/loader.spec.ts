@@ -36,4 +36,17 @@ suite('Loader', () => {
             },
         ]);
     });
+
+    withDir.test('Reports a missing import of an existing file as itself', async ctx => {
+        const filePath = Path.join(ctx.tmpDir.path, 'config.mjs');
+        await writeFile(filePath, `export { default } from 'populate-files-missing-package';`);
+
+        const thrown: unknown = await expect(
+            loadAndPopulateFiles({ filePath }, { check: false, dryRun: true })
+        ).to.be.rejectedWith(Error);
+        expect(thrown).to.have.property('code', 'ERR_MODULE_NOT_FOUND');
+        expect(thrown)
+            .to.have.property('message')
+            .that.includes("Cannot find package 'populate-files-missing-package'");
+    });
 });

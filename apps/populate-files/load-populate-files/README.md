@@ -81,7 +81,7 @@ Loads the config exported at `params.filePath` and passes it to [`populateFiles(
 
 **Returns** `Promise<PopulationResponse[]>`, from `populateFiles()`.
 
-**Throws** (rejects) `Error` with `JS file not found: <path>` if the module doesn't exist, or with `File content does not fulfill populate-file input at: <path>` followed by a line per problem (e.g. `- 0.filePath: must have required property 'filePath'`) if the default export isn't a valid config. Errors from `populateFiles()` (such as a `PopulateFilesCheckError` with `check`) pass through. The CLI prints the error and exits with code 1.
+**Throws** (rejects) `Error` with `JS file not found: <path>` if the module doesn't exist (a module it imports not being found rejects with Node's own `ERR_MODULE_NOT_FOUND` error instead), or with `File content does not fulfill populate-file input at: <path>` followed by a line per problem (e.g. `- 0.filePath: must have required property 'filePath'`) if the default export isn't a valid config. Errors from `populateFiles()` (such as a `PopulateFilesCheckError` with `check`) pass through. The CLI prints the error and exits with code 1.
 
 #### `options`
 

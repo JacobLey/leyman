@@ -1,4 +1,5 @@
 import type { PopulateFileParams } from 'populate-files';
+import { access } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { defaultImport } from 'default-import';
 import { hasCode } from 'unknown-error';
@@ -19,11 +20,26 @@ const formatIssue = ({ path, message }: Issue): string => {
 };
 
 /**
+ * Whether a file can be found at the path.
+ *
+ * @param filePath - absolute path
+ * @returns true when it exists
+ */
+const doesFileExist = async (filePath: string): Promise<boolean> => {
+    try {
+        await access(filePath);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+/**
  * Dynamically import a JS file and validate its default export as populate-files input.
  *
  * @param filePath - absolute path to JS file
  * @returns list of populate-files params exported by the file
- * @rejects {Error} if the file doesn't exist, fails to load, or doesn't export populate-files params
+ * @rejects {Error} if the file doesn't exist, fails to load (including a module it imports not being found), or doesn't export populate-files params
  */
 export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> => {
     let mod: unknown;
@@ -32,7 +48,8 @@ export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> 
         // and `#` or `%` change which file it names.
         mod = await import(pathToFileURL(filePath).href);
     } catch (err) {
-        if (hasCode(err, 'ERR_MODULE_NOT_FOUND')) {
+        // The same code covers a module the file imports, so only blame the file when it is missing
+        if (hasCode(err, 'ERR_MODULE_NOT_FOUND') && !(await doesFileExist(filePath))) {
             throw new Error(`JS file not found: ${filePath}`, { cause: err });
         }
         throw err;
