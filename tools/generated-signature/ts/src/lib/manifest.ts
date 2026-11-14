@@ -21,16 +21,16 @@ export type ManifestInputs = Readonly<Record<string, string>>;
 export type ManifestEntry =
     | {
           /**
-           * {@link contentHash} of the file.
+           * The file carries its own signature token, which is checked instead of a hash.
            */
-          readonly hash: string;
+          readonly signature: 'inline';
           readonly inputs?: ManifestInputs;
       }
     | {
           /**
-           * The file carries its own signature token, which is checked instead of a hash.
+           * {@link contentHash} of the file.
            */
-          readonly signature: 'inline';
+          readonly hash: string;
           readonly inputs?: ManifestInputs;
       };
 
