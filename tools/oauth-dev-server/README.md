@@ -16,7 +16,7 @@ It supports the grants a native app or a service uses: authorization code with P
 
 It can play the user too. `userTokens` signs a user in and returns their tokens in one call, while `followAuthorization` and `approveDevice` act as the browser for a client under test, signing in as any account. For MCP, `oauth-dev-server/mcp` has an `OAuthClientProvider` that does the same for the SDK's client.
 
-Since it approves every login, it refuses to serve anywhere but this machine unless told otherwise.
+Since it approves every login, `listenDevAuthorizationServer` refuses to listen anywhere but this machine unless told otherwise.
 
 It is private for now, so depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). It works with any test runner, since it is plain functions and a server to close.
 
@@ -113,6 +113,8 @@ Those of [`createDevAuthorizationServer`](#createdevauthorizationserveroptions) 
 ### `createDevAuthorizationServer(options)`
 
 Builds the server as a `node:http` listener, for a server you already have.
+
+It checks only that the issuer names this machine, not where your server listens: that's up to you, and a bare `server.listen(port)` binds every interface, where other machines can reach it and get tokens. Prefer `listenDevAuthorizationServer`, which refuses to listen anywhere but this machine.
 
 **Returns** `Promise<DevAuthorizationServer>`: `{ issuer, listener }`.
 

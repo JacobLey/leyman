@@ -260,8 +260,11 @@ const approve = async (
  * exchange (RFC 8693) grants, resource
  * indicators (RFC 8707), `iss` in authorization responses (RFC 9207), revocation (RFC 7009), and access tokens as JWTs
  * (RFC 9068) signed with a key generated at startup.
- * Only the login is fake: it approves as the account asked for, with no page and no password. It refuses to serve anywhere but
- * this machine, unless `dangerouslyAllowNonLocal` is set.
+ * Only the login is fake: it approves as the account asked for, with no page and no password.
+ *
+ * It refuses an issuer that isn't this machine, unless `dangerouslyAllowNonLocal` is set, but it can't see where the
+ * listener is served: a bare `server.listen(port)` binds every interface, where other machines could get tokens. Prefer
+ * `listenDevAuthorizationServer`, which refuses to listen anywhere but this machine.
  *
  * @param options - Issuer, resources, clients and the dev account
  * @returns The server's listener
