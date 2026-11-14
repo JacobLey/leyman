@@ -541,6 +541,28 @@ suite('checkPackage', () => {
         );
 
         withWorkspace.test(
+            'Accepts a package in a directory whose name starts with ..',
+            async ({ resolve, writeFiles }) => {
+                const files = Object.fromEntries(
+                    Object.entries(goodPackage()).map(([path, content]) => [
+                        path.replace(/^pkg\//v, '..pkg/'),
+                        content,
+                    ])
+                );
+                await writeFiles(files);
+
+                const { problems } = await checkPackage({
+                    profile: 'esm-only',
+                    root: resolve('.'),
+                    cwd: resolve('..pkg'),
+                    tsc,
+                });
+
+                expect(problems).to.deep.equal([]);
+            }
+        );
+
+        withWorkspace.test(
             "Throws when the lockfile doesn't tell the package manager",
             async ({ cwd, resolve, writeFiles }) => {
                 await writeFiles({ ...goodPackage(), 'yarn.lock': '' });

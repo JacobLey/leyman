@@ -66,7 +66,9 @@ export const resolveRoot = async ({
             `No lockfile found in ${cwd} or above it. Pass the workspace root (--root) and the package manager (--pack-with).`
         );
     }
-    if (Path.relative(resolvedRoot, cwd).startsWith('..')) {
+    const relative = Path.relative(resolvedRoot, cwd);
+    // `..` as a whole segment, not a name that starts with it (`..data`); absolute on another drive
+    if (relative === '..' || relative.startsWith(`..${Path.sep}`) || Path.isAbsolute(relative)) {
         throw new CheckPackageRootError(`${cwd} is not inside the workspace root ${resolvedRoot}.`);
     }
     const resolvedPackWith = packWith ?? (await lockfileIn(resolvedRoot));
