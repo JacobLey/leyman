@@ -275,7 +275,12 @@ suite('punycode', () => {
         });
 
         test('Throws RangeError: Illegal input >= 0x80 (not a basic code point)', () => {
-            expect(() => Punycode.decode('\u0081-')).to.throw(RangeError);
+            for (const input of ['\u0081-', '\u00F1-abc']) {
+                expect(() => Punycode.decode(input)).to.throw(
+                    RangeError,
+                    'Illegal input >= 0x80 (not a basic code point)'
+                );
+            }
         });
         test('Throws RangeError: Invalid input', () => {
             expect(() => Punycode.decode('\u0081')).to.throw(RangeError, 'Invalid input');
@@ -352,6 +357,9 @@ suite('punycode', () => {
                     expect(Punycode.toASCII(decoded)).to.equal(encoded);
                 });
             }
+        });
+        test('Keeps everything after the first @ as the domain, where punycode.js drops it', () => {
+            expect(Punycode.toASCII('a@b@c.\u00F1')).to.equal('a@b@c.xn--ida');
         });
     });
 });

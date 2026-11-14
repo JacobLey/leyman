@@ -9,7 +9,7 @@ ESM and TypeScript port of the punycode.js library.
 
 </div>
 
-[punycode.js](https://github.com/mathiasbynens/punycode.js) by Mathias Bynens converts Unicode domain names to and from Punycode (`mañana.com` and `xn--maana-pta.com`). Native ESM projects and TypeScript with `moduleResolution: nodenext` can have trouble importing it, so `punycode-esm` is a port of it written in TypeScript and published as ESM. The logic is the same as punycode.js (currently in sync with v2.3.1).
+[punycode.js](https://github.com/mathiasbynens/punycode.js) by Mathias Bynens converts Unicode domain names to and from Punycode (`mañana.com` and `xn--maana-pta.com`). Native ESM projects and TypeScript with `moduleResolution: nodenext` can have trouble importing it, so `punycode-esm` is a port of it written in TypeScript and published as ESM. The logic is the same as punycode.js (currently in sync with v2.3.1), except for an email address with more than one `@` (see [Usage](#usage)).
 
 ## Contents
 
@@ -49,7 +49,13 @@ toUnicode('xn----dqo34k.com');  // '☃-⌘.com'
 
 `punycode-esm` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { encode } = await import('punycode-esm')`.
 
-Functions throw `RangeError` for malformed Punycode: `decode` and `toUnicode` for input that is not ASCII (`Invalid input`), is not valid Punycode, or needs wider integers than JavaScript numbers hold (`Overflow: input needs wider integers to process`); `encode` and `toASCII` for the overflow case only. `toASCII` and `toUnicode` only convert labels, and do none of the other IDNA processing: no case folding, no Unicode normalization and no length checks. They split on `.` and the other full-stop characters `。`, `．` and `｡` (all written as `.` in the result), and only recognize the lowercase `xn--` prefix.
+Functions throw `RangeError` for malformed Punycode: `decode` and `toUnicode` for input that is not ASCII (`Illegal input >= 0x80 (not a basic code point)` before the last `-`, `Invalid input` after it), is not valid Punycode (`Invalid input`), or needs wider integers than JavaScript numbers hold (`Overflow: input needs wider integers to process`); `encode` and `toASCII` for the overflow case only. `toASCII` and `toUnicode` only convert labels, and do none of the other IDNA processing: no case folding, no Unicode normalization and no length checks. They split on `.` and the other full-stop characters `。`, `．` and `｡` (all written as `.` in the result), and only recognize the lowercase `xn--` prefix.
+
+In an email address, everything up to the first `@` is the local part, left as it is, and the rest is the domain. That differs from punycode.js when there's more than one `@`: it keeps only what's between the first and second `@` as the domain, and drops the rest.
+
+```ts
+toASCII('a@b@c.ñ'); // 'a@b@c.xn--ida', where punycode.js returns 'a@b'
+```
 
 ## API
 
@@ -169,7 +175,7 @@ ucs2Encode([0x1D306]);          // '\uD834\uDF06'
 
 ## Credit
 
-This is a direct ESM/TypeScript port of [punycode.js](https://github.com/mathiasbynens/punycode.js) by [Mathias Bynens](https://mathiasbynens.be/). The logic is identical; this package exists for compatibility with TypeScript `moduleResolution: nodenext` and pure-ESM projects. Logic is in sync with `punycode` v2.3.1.
+This is a direct ESM/TypeScript port of [punycode.js](https://github.com/mathiasbynens/punycode.js) by [Mathias Bynens](https://mathiasbynens.be/). The logic is identical, but for email addresses with more than one `@` ([Usage](#usage)); this package exists for compatibility with TypeScript `moduleResolution: nodenext` and pure-ESM projects. Logic is in sync with `punycode` v2.3.1.
 
 - Original npm package: [`punycode`](https://www.npmjs.com/package/punycode)
 - Original GitHub repository: [mathiasbynens/punycode.js](https://github.com/mathiasbynens/punycode.js)

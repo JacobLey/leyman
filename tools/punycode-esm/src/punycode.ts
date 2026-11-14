@@ -36,7 +36,8 @@ const regexSeparators = /[\u{2E}\u{3002}\u{FF0E}\u{FF61}]/v; // RFC 3490 separat
  */
 const mapDomain = (domain: string, callback: (input: string) => string): string => {
     // In email addresses, only the domain name should be punycoded. Leave
-    // the local part (i.e. everything up to `@`) intact.
+    // the local part (i.e. everything up to the first `@`) intact. Unlike
+    // punycode.js, which drops everything from a second `@` on, nothing is lost.
     const domainStart = domain.indexOf('@') + 1;
     const labels = domain.slice(domainStart).split(regexSeparators);
     const encoded = labels.map(x => callback(x)).join('.');
@@ -113,12 +114,10 @@ const basicToDigit = (codePoint: number): number => {
 /**
  * Converts a digit/integer into a basic code point.
  *
- * @param digit - The numeric value of a basic code point.
+ * @param digit - The numeric value of a basic code point, in the range
+ * `0` to `base - 1`.
  * @returns The basic code point whose value (when used for
- * representing integers) is `digit`, which needs to be in the range
- * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
- * used; else, the lowercase form is used. The behavior is undefined
- * if `flag` is non-zero and `digit` has no uppercase form.
+ * representing integers) is `digit`: a lowercase letter or a digit.
  */
 const digitToBasic = (digit: number): number => {
     const plus22 = digit + 22;
