@@ -894,7 +894,7 @@ console.log(container.toMermaid());
 
 `container.describe()` returns the same information as data: each binding's `outputId`, `scope`, `async`, and `dependencies` (each with its declared `id` and the `providers` bound for it). Neither method checks the container, so both work on one that fails `check()`.
 
-A [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has both methods too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound`, and drawn with a dashed border labeled `bindInstance()`.
+A [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has both methods too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound`, and drawn with a dashed border labeled `bindInstance()`. Binding one keeps its place in the description.
 
 ### Scope Gotchas
 

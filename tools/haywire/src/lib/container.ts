@@ -322,6 +322,26 @@ const disposeInstance = async (binding: GenericBinding, instance: unknown): Prom
 };
 
 /**
+ * Replace a binding in a set, keeping its position, so `describe()` and `toMermaid()` list a bound instance where
+ * its placeholder was.
+ *
+ * @param bindings - set to update
+ * @param existing - binding to replace
+ * @param replacement - binding that takes its place
+ */
+const replaceInPlace = (
+    bindings: Set<GenericBinding>,
+    existing: GenericBinding,
+    replacement: GenericBinding
+): void => {
+    const ordered = [...bindings];
+    bindings.clear();
+    for (const binding of ordered) {
+        bindings.add(binding === existing ? replacement : binding);
+    }
+};
+
+/**
  * Options for a container created from a module.
  */
 export interface ContainerOptions {
@@ -659,7 +679,7 @@ export class Container<Outputs extends [Extendable]> {
                 )?.[0];
                 if (existingListBinding) {
                     if (existingListBinding instanceof TempBinding) {
-                        cloned.#bindings.delete(existingListBinding);
+                        replaceInPlace(cloned.#bindings, existingListBinding, binding);
 
                         if (cloned.#wired) {
                             cloned.#singletonMap.delete(existingListBinding);
@@ -718,7 +738,7 @@ export class Container<Outputs extends [Extendable]> {
                 const existingBinding = cloned.#baseIdToBinding.get(binding.outputId.baseId());
                 if (existingBinding) {
                     if (existingBinding instanceof TempBinding) {
-                        cloned.#bindings.delete(existingBinding);
+                        replaceInPlace(cloned.#bindings, existingBinding, binding);
 
                         if (cloned.#wired) {
                             cloned.#singletonMap.delete(existingBinding);
@@ -774,6 +794,7 @@ export class Container<Outputs extends [Extendable]> {
                 }
             }
 
+            // Appends a binding that replaced no placeholder; one that did keeps its place
             cloned.#bindings.add(binding);
 
             if (!container.#wired) {
@@ -868,7 +889,9 @@ export class Container<Outputs extends [Extendable]> {
      *
      * Does not check the container, so a dependency with no binding is described (with no providers) rather than thrown.
      *
-     * @returns every binding, in the order they were added to the module (list elements after the rest)
+     * @returns every binding, in the order they were added to the module (list elements after the rest). In a container
+     * factory's, an instance bound for an id the module depends on takes the place of its placeholder, and other bound
+     * instances follow in the order they were bound.
      */
     public describe(): ContainerDescription {
         return {

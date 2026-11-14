@@ -109,7 +109,7 @@ Each binding has its `outputId`, `scope`, whether it is `async`, and its `depend
 
 ### Container factories
 
-A [container factory](/packages/haywire/guides/runtime-values) has `describe()` and `toMermaid()` too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound` (and `scope` and `async` don't apply to them), and `toMermaid()` draws them with a dashed border:
+A [container factory](/packages/haywire/guides/runtime-values) has `describe()` and `toMermaid()` too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound` (and `scope` and `async` don't apply to them), and `toMermaid()` draws them with a dashed border. Binding one keeps its place in the description:
 
 ```ts
 import { bind, createContainerFactory, createModule, identifier } from 'haywire';

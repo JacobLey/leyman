@@ -431,11 +431,27 @@ suite('factory', () => {
                     outputId: 'Handler',
                     providers: [['Request'], ['User(nullable)'], ['plugin(list)']],
                 },
+                // A bound instance takes its placeholder's place
+                { unbound: false, outputId: 'Request', providers: [] },
                 // Placeholders for the ids still to be bound
                 { unbound: true, outputId: 'User(nullable)', providers: [] },
                 { unbound: true, outputId: 'plugin(list)', providers: [] },
-                // Bound instances follow the module's bindings
-                { unbound: false, outputId: 'Request', providers: [] },
+            ]);
+        });
+
+        test('Binding keeps the order', () => {
+            const { bindings } = partial
+                .bindInstance(pluginId, 'a')
+                .bindInstance(pluginId, 'b')
+                .bindInstance(userId, { id: 'user' })
+                .describe();
+
+            expect(bindings.map(({ outputId }) => outputId.toString())).to.deep.equal([
+                'Handler',
+                'Request',
+                'User',
+                'plugin(list)',
+                'plugin(list)',
             ]);
         });
 
@@ -444,12 +460,12 @@ suite('factory', () => {
                 [
                     'flowchart LR',
                     '    b0["Handler<br/>transient"]',
-                    '    b1["User(nullable)<br/>bindInstance()"]:::unbound',
-                    '    b2["plugin(list)<br/>bindInstance()"]:::unbound',
-                    '    b3["Request<br/>eager-singleton"]',
-                    '    b0 --> b3',
+                    '    b1["Request<br/>eager-singleton"]',
+                    '    b2["User(nullable)<br/>bindInstance()"]:::unbound',
+                    '    b3["plugin(list)<br/>bindInstance()"]:::unbound',
                     '    b0 --> b1',
                     '    b0 --> b2',
+                    '    b0 --> b3',
                     '    classDef unbound stroke-dasharray:4',
                 ].join('\n')
             );
