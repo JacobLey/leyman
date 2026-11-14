@@ -73,7 +73,7 @@ if (result.issues) {
 
 Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValidator`. The returned validator implements the [StandardSchema v1](https://standardschema.dev/) interface, making it compatible with any library that accepts standard validators (e.g. form libraries, OpenAPI tooling).
 
-Ajv is used internally to compile and run validation. The `strict` option is always `true`. Keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`). Pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
+Ajv is used internally to compile and run validation. The `strict` option is always `true`. Keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. That needs the Juniper `Schema` instance: in a plain JSON Schema object, such as `schema.toJSON()` saved to a file, metadata can't be told apart from a misspelled keyword, so strict mode rejects it (`strict mode: unknown keyword: "x-owner"`). Register those keys with Ajv's `keywords` option: `makeValidator(json, { keywords: ['x-owner'] })`. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`). Pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
 
 Ajv stops at the first failure within a schema, so `validate` reports one issue for an object missing two properties unless you pass `allErrors: true`.
 

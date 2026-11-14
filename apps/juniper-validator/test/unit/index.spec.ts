@@ -210,6 +210,13 @@ suite('juniper-validator', () => {
                 'strict mode: unknown keyword: "x-raw"'
             );
         });
+
+        test('Metadata in JSON schemas is registered with the keywords option', () => {
+            const json = numberSchema().metadata('x-raw', 1).toJSON();
+            const withKeywords = makeValidator(json, { keywords: ['x-raw'] });
+            expect(withKeywords.is(1)).to.equal(true);
+            expect(withKeywords.is('1')).to.equal(false);
+        });
     });
 
     suite('JSON schema', () => {
