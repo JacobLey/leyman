@@ -61,4 +61,4 @@ Resolves a path or URL to an absolute directory path and validates that it exist
 
 **Returns** `Promise<string>` — the absolute path to the resolved directory.
 
-**Rejects** `Error` (`Directory not found: <absolute path>`) — if the resolved path does not exist on the filesystem. The function is async, so it never throws synchronously.
+**Rejects** `Error` (`Directory not found: <absolute path>`, with the `stat` error as its `cause`) — if the resolved path does not exist on the filesystem (`ENOENT`, or `ENOTDIR` when part of the path is a file). Any other `stat` failure, such as permission denied, rejects with that error unchanged. The function is async, so it never throws synchronously.

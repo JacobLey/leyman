@@ -58,6 +58,24 @@ suite('parseCwd', () => {
             expect(thrown).to.include({
                 message: 'Directory not found: /not/found',
             });
+            expect(thrown).to.have.nested.property('cause.code', 'ENOENT');
+        });
+
+        test('Throws not found under a file', async () => {
+            const underFile = Path.join(import.meta.filename, 'child');
+            const thrown: unknown = await expect(ParseCwd.parseCwd(underFile)).to.be.rejectedWith(
+                Error,
+                `Directory not found: ${underFile}`
+            );
+            expect(thrown).to.have.nested.property('cause.code', 'ENOTDIR');
+        });
+
+        test('Rethrows other errors', async () => {
+            const tooLong = Path.join(import.meta.dirname, 'a'.repeat(1000));
+            const thrown: unknown = await expect(ParseCwd.parseCwd(tooLong)).to.be.rejectedWith(
+                Error
+            );
+            expect(thrown).to.have.property('code', 'ENAMETOOLONG');
         });
     });
 });

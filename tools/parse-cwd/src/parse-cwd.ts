@@ -15,6 +15,7 @@ export type ParseCwd = (cwd?: Directory | { cwd?: Directory }) => Promise<string
  * @param cwd - path to resolve to cwd, optionally as an object { cwd: '/path...' }
  * @returns full path to cwd
  * @rejects {Error} if the directory doesn't exist
+ * @rejects {Error} the error from `stat` for any other failure, such as permission denied
  */
 export const parseCwd: ParseCwd = async (
     cwd?: Directory | { cwd?: Directory }
@@ -39,7 +40,16 @@ export const parseCwd: ParseCwd = async (
     try {
         const stats = await stat(directory);
         return stats.isDirectory() ? directory : Path.dirname(directory);
-    } catch {
-        throw new Error(`Directory not found: ${directory}`);
+    } catch (err) {
+        // ENOTDIR: a parent in the path is a file, so the path can't exist either
+        if (
+            err instanceof Error &&
+            'code' in err &&
+            (err.code === 'ENOENT' || err.code === 'ENOTDIR')
+        ) {
+            throw new Error(`Directory not found: ${directory}`, { cause: err });
+        }
+        // Anything else (e.g. permission denied) says nothing about whether it exists
+        throw err;
     }
 };
