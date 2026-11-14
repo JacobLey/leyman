@@ -189,6 +189,21 @@ suite('makeArbitrary', () => {
             'large integers': numberSchema()
                 .type('integer')
                 .minimum(2 ** 40),
+            'integers past the safe ones': numberSchema()
+                .type('integer')
+                .minimum(2 ** 60),
+            'negative integers past the safe ones': numberSchema()
+                .type('integer')
+                .exclusiveMaximum(-(2 ** 60)),
+            'multiples past the safe integers': numberSchema().multipleOf(1e20).minimum(1e20),
+            'odd multiples past the safe integers': numberSchema()
+                .multipleOf(3)
+                .minimum(2 ** 60),
+            'tiny upper bound next to the step': numberSchema().multipleOf(1e20).maximum(-5e-324),
+            'tiny lower bound next to the step': numberSchema().multipleOf(1e20).minimum(5e-324),
+            'multipliers past the safe integers': numberSchema()
+                .multipleOf(0.5)
+                .minimum(2 ** 60),
             'multiple of': numberSchema().multipleOf(7).minimum(-100).maximum(100),
             'fractional multiple of': numberSchema().multipleOf(0.1).minimum(0).maximum(5),
             'several multiples': numberSchema().multipleOf(0.5).multipleOf(0.25),
@@ -517,6 +532,36 @@ suite('makeArbitrary', () => {
         test('format email past its longest local part', () => {
             expectAllValid(stringSchema().format('email').minLength(300));
         });
+
+        test('numbers at any magnitude', () => {
+            fc.assert(
+                fc.property(
+                    fc.double({ min: -1e30, max: 1e30, noNaN: true }),
+                    fc.constantFrom(null, 1, 3, 0.5, 1e20),
+                    fc.boolean(),
+                    (minimum, multipleOf, isInteger) => {
+                        let schema = numberSchema().minimum(minimum);
+                        if (multipleOf !== null) {
+                            schema = schema.multipleOf(multipleOf);
+                        }
+                        if (isInteger) {
+                            schema = schema.type('integer');
+                        }
+                        // Ajv reads a quotient of 1e21 or more as not an integer
+                        if (multipleOf !== null && minimum / multipleOf >= 1e21) {
+                            expect(() => makeArbitrary(schema)).to.throw(UnsatisfiableSchemaError);
+                            return;
+                        }
+                        const validate = compile(schema);
+                        const values = fc.sample(makeArbitrary(schema), 20);
+                        for (const value of values) {
+                            expect(validate(value), JSON.stringify(value)).to.equal(true);
+                        }
+                    }
+                ),
+                { numRuns: 100, seed: 42 }
+            );
+        });
     });
 
     suite('Aims true without the validator', () => {
@@ -528,6 +573,12 @@ suite('makeArbitrary', () => {
             'number bounds': numberSchema().exclusiveMinimum(0).maximum(2),
             integer: numberSchema().type('integer').minimum(-3.5).maximum(3.5),
             'multiple of': numberSchema().multipleOf(7).minimum(-100).maximum(100),
+            'integers past the safe ones': numberSchema()
+                .type('integer')
+                .exclusiveMinimum(2 ** 60),
+            'multiples of one past the safe integers': numberSchema()
+                .multipleOf(1)
+                .minimum(2 ** 60),
             'array lengths': arraySchema(stringSchema()).minItems(2).maxItems(3),
             'unique items': arraySchema(numberSchema().type('integer').minimum(0).maximum(9))
                 .uniqueItems(true)
@@ -884,6 +935,19 @@ suite('makeArbitrary', () => {
                 .maximum(0.75),
             'equal bounds excluded': numberSchema().exclusiveMinimum(1).maximum(1),
             'upper bound excluded': numberSchema().minimum(1).exclusiveMaximum(1),
+            'equal bounds past the safe integers excluded': numberSchema()
+                .type('integer')
+                .exclusiveMinimum(2 ** 60)
+                .maximum(2 ** 60),
+            'equal bounds past the safe integers with the upper excluded': numberSchema()
+                .type('integer')
+                .minimum(2 ** 60)
+                .exclusiveMaximum(2 ** 60),
+            'contradictory bounds past the safe integers': numberSchema()
+                .type('integer')
+                .minimum(2 ** 61)
+                .maximum(2 ** 60),
+            'quotient too large for ajv': numberSchema().multipleOf(1).minimum(1e21),
             'contradictory types': mergeSchema().allOf(stringSchema()).allOf(numberSchema()),
             'contradictory lengths': stringSchema().minLength(5).maxLength(1),
             'contradictory items': arraySchema(numberSchema()).minItems(5).maxItems(1),
