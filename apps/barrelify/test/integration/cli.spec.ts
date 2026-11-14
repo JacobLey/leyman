@@ -49,6 +49,13 @@ suite('cli', () => {
                 expect(result.stderr).to.equal('');
             });
 
+            test('--check is an alias of --ci', async () => {
+                const result = await execAsync('./bin.mjs --check --ignore=**/wrong/**');
+
+                expect(result.stdout).to.equal('');
+                expect(result.stderr).to.equal('');
+            });
+
             test('failure', async () => {
                 const thrown: unknown = await expect(
                     execAsync('./bin.mjs barrel --ci')

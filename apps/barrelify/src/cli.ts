@@ -53,6 +53,7 @@ export default class Cli extends EntryScript {
                     command
                         .options({
                             ci: {
+                                alias: 'check',
                                 describe: 'Fail if files are not up to date. Implies --dry-run',
                                 type: 'boolean',
                                 default: isCI,

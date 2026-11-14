@@ -22,7 +22,7 @@ barrel [options]
 | `--help`    |            |                                 | Print usage.                                                                                        |
 | `--version` |            |                                 | Print the installed version.                                                                        |
 
-Pass `--no-ci` to write barrels in CI.
+`--check` is an alias of `--ci`. Pass `--no-ci` to write barrels in CI.
 
 ```sh
 barrelify --ci                       # fail if any barrel is out of date
