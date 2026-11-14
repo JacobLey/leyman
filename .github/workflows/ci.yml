@@ -61,6 +61,10 @@ jobs:
       - name: Check fork manifest
         run: node leyman/main/scripts/check-fork-manifest.mjs
 
+      # Here for the same reasons: it lists the skills packages ship with git, and the links it checks are in `.agents`
+      - name: Check skill links
+        run: node leyman/main/scripts/link-skills.mjs --check
+
       # Here because it reads the released modules' tags with git: a pull request fails when it changes a released Go
       # module's code without bumping its VERSION
       - name: Check Go releases

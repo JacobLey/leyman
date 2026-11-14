@@ -385,7 +385,9 @@ ${yamlManual('rest')}
 
 /**
  * Paths Dagger leaves out of CI's source (`New` in `dagger/main.go`). A file under one that is
- * absent is skipped rather than reported missing; any full checkout still generates and checks it.
+ * absent is skipped rather than reported missing, so `build` passes there. CI's `Floors` checks
+ * them instead, adding back only the files generated here (its `generated` argument), as does any
+ * full checkout.
  */
 const ciExcluded = ['.agents', '.claude', '.github', 'README.md'];
 const excludedHere = filePath =>

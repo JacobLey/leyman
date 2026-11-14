@@ -121,7 +121,8 @@ func New(
 			// Version controlled, but irrelevant to CI. Excluding them keeps unrelated edits from invalidating the cache.
 			// The docs build skips its existence check for registry paths in these directories (`ciExcluded` in
 			// `docs/.vitepress/config.ts`), and `docs/scripts/populate-docs.mjs` skips the generated files in them
-			// (its own `ciExcluded`), so keep the lists in step.
+			// (its own `ciExcluded`), which `Floors` checks from its `generated` argument instead, so keep the lists and
+			// that argument in step.
 			Exclude: []string{
 				".git",
 				".agents",
@@ -217,8 +218,9 @@ func (m *Ci) Test(
 }
 
 // Check the support floors and generated config: install, build, then in parallel verify generated lifecycle config
-// is up to date, check published entry points import on their oldest supported Node.js and their types check on the
-// oldest supported TypeScript, and test released Go modules on their oldest supported Go.
+// and the generated files `New` leaves out of the source are up to date, check published entry points import on their
+// oldest supported Node.js and their types check on the oldest supported TypeScript, and test released Go modules on
+// their oldest supported Go.
 //
 // Separate from `Test` so CI runs it on its own runner: `floor-types` runs a `tsc` per CPU for minutes, which next
 // to `test-ci` slowed tests past their timeouts.
@@ -228,12 +230,28 @@ func (m *Ci) Floors(
 	// Omitted, every task runs.
 	// +optional
 	nxCache *dagger.Service,
+	// The files `docs/scripts/populate-docs.mjs` generates in the paths `New` leaves out of the source (its
+	// `ciExcluded`), and only those, so editing anything else there never invalidates this call. A file it generates
+	// there that is missing from this list fails the check as out of date, so the list can't fall behind silently.
+	// +defaultPath="/"
+	// +ignore=["*", "!README.md", "!.agents/skills/projects/SKILL.md", "!.agents/skills/docs-site/SKILL.md", "!.claude/rules/docs-site-sync.md", "!.github/ISSUE_TEMPLATE/bug_report.yml", "!.github/ISSUE_TEMPLATE/feature_request.yml"]
+	generated *dagger.Directory,
 ) error {
 	built := m.built(nxCache)
 
 	group, ctx := errgroup.WithContext(ctx)
 	group.Go(func() error {
 		_, err := built.WithExec([]string{"nx", "run", "@leyman/main:lifecycle"}).Sync(ctx)
+
+		return err
+	})
+	group.Go(func() error {
+		// `build` already ran it on the rest. With these files present, it checks them too (`CI` is set, so a file that
+		// would change fails it). On the built workspace: it needs `populate-files`, `generated-signature` and Biome
+		_, err := built.
+			WithDirectory(workdir, generated).
+			WithExec([]string{"node", "docs/scripts/populate-docs.mjs"}).
+			Sync(ctx)
 
 		return err
 	})
