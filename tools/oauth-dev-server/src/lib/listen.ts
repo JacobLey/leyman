@@ -14,6 +14,8 @@ export interface ListenOptions extends Omit<DevAuthorizationServerOptions, 'issu
      */
     readonly port?: number | undefined;
     /**
+     * Where to listen, as in a URL: an IPv6 address in brackets (`[::1]`), which it's also accepted without.
+     *
      * @default '127.0.0.1'
      */
     readonly hostname?: string | undefined;
@@ -38,15 +40,18 @@ export const listenDevAuthorizationServer = async (
     options: ListenOptions
 ): Promise<ListeningAuthorizationServer> => {
     const { port = 0, hostname = '127.0.0.1', ...rest } = options;
+    // `listen` takes an IPv6 address bare, while a URL needs it in brackets (RFC 3986 §3.2.2)
+    const address = /^\[(?<bare>.*)\]$/v.exec(hostname)?.groups?.bare ?? hostname;
+    const host = address.includes(':') ? `[${address}]` : address;
     // Before listening, so a server that shouldn't listen never starts
-    assertLocal(hostname, rest.dangerouslyAllowNonLocal);
+    assertLocal(host, rest.dangerouslyAllowNonLocal);
     const server = createServer();
-    server.listen(port, hostname);
+    server.listen(port, address);
     await once(server, 'listening');
-    const address = server.address() as AddressInfo;
+    const { port: listening } = server.address() as AddressInfo;
     const { issuer, listener } = await createDevAuthorizationServer({
         ...rest,
-        issuer: `http://${hostname}:${address.port}`,
+        issuer: `http://${host}:${listening}`,
     });
     server.on('request', listener);
     return {

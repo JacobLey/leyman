@@ -105,10 +105,10 @@ Starts a server on `node:http`, its issuer being wherever it listens.
 
 Those of [`createDevAuthorizationServer`](#createdevauthorizationserveroptions) but `issuer`, plus:
 
-| Option     | Type     | Default       | Description                                                                              |
-| ---------- | -------- | ------------- | ---------------------------------------------------------------------------------------- |
-| `port`     | `number` | `0`           | Port to listen on. `0` is any free port.                                                 |
-| `hostname` | `string` | `'127.0.0.1'` | Where to listen: `127.0.0.1`, `[::1]` or `localhost`, unless `dangerouslyAllowNonLocal`. |
+| Option     | Type     | Default       | Description                                                                                                                                                             |
+| ---------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `port`     | `number` | `0`           | Port to listen on. `0` is any free port.                                                                                                                                |
+| `hostname` | `string` | `'127.0.0.1'` | Where to listen: `127.0.0.1`, `[::1]` or `localhost`, unless `dangerouslyAllowNonLocal`. An IPv6 address may be given without brackets; the issuer has them either way. |
 
 ### `createDevAuthorizationServer(options)`
 

@@ -840,6 +840,28 @@ suite('Dev authorization server', () => {
             );
         });
 
+        for (const hostname of ['[::1]', '::1']) {
+            test(`Listens at IPv6's loopback, given as ${hostname}`, async () => {
+                const server = await listenDevAuthorizationServer({
+                    hostname,
+                    resources: [],
+                    clients: [],
+                    services: [],
+                    accountId: 'dev-user',
+                });
+                try {
+                    expect(server.issuer).to.match(/^http:\/\/\[::1\]:\d+$/v);
+                    const response = await fetch(
+                        `${server.issuer}/.well-known/oauth-authorization-server`
+                    );
+                    const metadata = (await response.json()) as Metadata;
+                    expect(metadata.issuer).to.equal(server.issuer);
+                } finally {
+                    await server.close();
+                }
+            });
+        }
+
         test('Refuses an issuer that is not this machine', async () => {
             await expect(
                 createDevAuthorizationServer({
