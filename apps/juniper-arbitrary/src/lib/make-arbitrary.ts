@@ -15,6 +15,13 @@ const addFormats = defaultImport(ajvFormats);
 const rootPath = '#';
 
 /**
+ * Checks schemas against the draft 2020-12 meta-schemas. An Ajv instance compiles those on its first
+ * check, which costs far more than compiling a typical schema, so one instance holding nothing else
+ * checks every schema, and each call's own instance skips the check.
+ */
+const metaSchemaAjv = new Ajv2020({ logger: false, strict: false });
+
+/**
  * Whether a schema only refers to the root's `$defs`, which stay reachable when a part of it is
  * validated on its own beside them. Other pointers (`#/properties/a`) only mean something from the
  * root, and an `$id` or anchor changes what a `$ref` resolves against.
@@ -52,9 +59,15 @@ export const makeArbitrary = <T>(schema: Schema<T>): Arbitrary<T> => {
     const root = JSON.parse(JSON.stringify(schema.toJSON())) as SchemaObject;
 
     // Not strict: this checks values, and has no opinion on how a schema is written
-    const ajv = addFormats(new Ajv2020({ discriminator: true, logger: false, strict: false }));
+    const ajv = addFormats(
+        new Ajv2020({ discriminator: true, logger: false, strict: false, validateSchema: false })
+    );
     let rootValidator: ValidateFunction;
     try {
+        // Fails as `compile` would with its own check. Only an async meta-schema returns a promise.
+        if (metaSchemaAjv.validateSchema(root) !== true) {
+            throw new Error(`schema is invalid: ${metaSchemaAjv.errorsText(metaSchemaAjv.errors)}`);
+        }
         rootValidator = ajv.compile(root);
     } catch (error) {
         throw new UnsupportedSchemaError(

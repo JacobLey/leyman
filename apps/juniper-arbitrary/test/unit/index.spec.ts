@@ -38,10 +38,11 @@ const sample = <T>(schema: Schema<T>): T[] =>
 
 const addFormats = defaultImport(ajvFormats);
 
-// Not strict, since these test what a schema means rather than how it is written
+// Not strict, since these test what a schema means rather than how it is written. Skipping the
+// meta-schema check, which `makeArbitrary` makes, saves compiling the meta-schemas on every call.
 const compile = (schema: Schema<unknown>): ((value: unknown) => boolean) => {
     const validate = addFormats(
-        new Ajv2020({ discriminator: true, logger: false, strict: false })
+        new Ajv2020({ discriminator: true, logger: false, strict: false, validateSchema: false })
     ).compile(schema.toJSON());
     return value => validate(value);
 };
@@ -1072,6 +1073,13 @@ suite('makeArbitrary', () => {
         test('a reference outside the schema', () => {
             expect(() => makeArbitrary(stringSchema().ref('other.json#/a'))).to.throw(
                 UnsupportedSchemaError
+            );
+        });
+
+        test('a schema the meta-schema rejects', () => {
+            expect(() => makeArbitrary(customSchema({ minLength: -1 }))).to.throw(
+                UnsupportedSchemaError,
+                'Schema does not compile: schema is invalid: data/minLength must be >= 0'
             );
         });
 
