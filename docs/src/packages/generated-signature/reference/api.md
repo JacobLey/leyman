@@ -114,7 +114,7 @@ Helpers for the [manifest format](/packages/generated-signature/reference/format
 | `contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** left out.                                  |
 | `verifyManifestEntry(content, entry): VerifyResult`  | `'valid'` or `'invalid'` for a `hash` entry, and [`verify()`](#verify-text)'s result for an `inline` entry. `content` is a `string` or `Uint8Array`. |
 | `parseManifest(text): Manifest`                      | Parses and validates a manifest. Throws `GeneratedSignatureManifestError` if it isn't one.                                                           |
-| `serializeManifest(files): string`                   | Manifest text for a `Record<string, ManifestEntry>`, with paths and inputs sorted so the output doesn't depend on write order.                       |
+| `serializeManifest(files): string`                   | Manifest text for a `Record<string, ManifestEntry>`, with paths and inputs sorted by UTF-16 code unit, so the output doesn't depend on write order.  |
 
 ```ts
 // @filename: node.d.ts

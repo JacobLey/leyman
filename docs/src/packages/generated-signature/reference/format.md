@@ -61,7 +61,8 @@ A JSON file recording generated files, for files that can't carry a token, like 
 }
 ```
 
-- `files` keys are paths relative to the manifest's directory, with `/` separators, sorted.
+- `files` keys are paths relative to the manifest's directory, with `/` separators. They're kept exactly as given, with no Unicode normalization: Linux treats a decomposed `é` and a precomposed `é` as two different names, Git on macOS already commits names precomposed, and normalizing would rewrite manifests that are already written.
+- `files` keys and `inputs` keys are written in UTF-16 code unit order, the order JavaScript's `<` compares strings in (and [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3) sorts keys in), so `10` comes before `9`. Each entry has its `hash` or `signature` first, then its `inputs`.
 - `hash` is the file's [`contentHash`](/packages/generated-signature/reference/api#manifest): `v1:` and the first 128 bits of the SHA-256 of its content, with `\r\n` normalized to `\n`. Manual sections are _not_ left out, so a file with manual sections must be signed inline.
 - `signature: "inline"` means the file carries its own token, which is checked instead.
 - `inputs` is optional and up to the generator, usually hashes of what produced the file. This package doesn't interpret it.

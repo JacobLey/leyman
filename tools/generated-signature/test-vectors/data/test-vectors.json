@@ -1204,6 +1204,18 @@
       "files": {}
     },
     {
+      "description": "Keeps a decomposed (NFD) and a precomposed (NFC) é as two paths",
+      "text": "{\"version\": 1, \"files\": {\"é\": {\"hash\": \"nfd\"}, \"é\": {\"hash\": \"nfc\"}}}",
+      "files": {
+        "é": {
+          "hash": "nfd"
+        },
+        "é": {
+          "hash": "nfc"
+        }
+      }
+    },
+    {
       "description": "Not JSON",
       "text": "{",
       "error": {
@@ -1431,6 +1443,64 @@
         }
       },
       "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"Z\": {\n      \"hash\": \"h\"\n    },\n    \"a\": {\n      \"hash\": \"h\"\n    },\n    \"é\": {\n      \"hash\": \"h\"\n    },\n    \"😀\": {\n      \"hash\": \"h\"\n    },\n    \"￿\": {\n      \"hash\": \"h\"\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Sorts integer-like paths and inputs by code unit, not numerically",
+      "files": {
+        "a": {
+          "hash": "h",
+          "inputs": {
+            "a": "3",
+            "10": "2",
+            "9": "1"
+          }
+        },
+        "10": {
+          "hash": "h",
+          "inputs": {
+            "a": "3",
+            "10": "2",
+            "9": "1"
+          }
+        },
+        "9": {
+          "hash": "h",
+          "inputs": {
+            "a": "3",
+            "10": "2",
+            "9": "1"
+          }
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"10\": {\n      \"hash\": \"h\",\n      \"inputs\": {\n        \"10\": \"2\",\n        \"9\": \"1\",\n        \"a\": \"3\"\n      }\n    },\n    \"9\": {\n      \"hash\": \"h\",\n      \"inputs\": {\n        \"10\": \"2\",\n        \"9\": \"1\",\n        \"a\": \"3\"\n      }\n    },\n    \"a\": {\n      \"hash\": \"h\",\n      \"inputs\": {\n        \"10\": \"2\",\n        \"9\": \"1\",\n        \"a\": \"3\"\n      }\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Keeps a decomposed (NFD) and a precomposed (NFC) é as two paths, unnormalized",
+      "files": {
+        "é": {
+          "hash": "nfc",
+          "inputs": {
+            "é": "nfc",
+            "é": "nfd"
+          }
+        },
+        "é": {
+          "hash": "nfd"
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"é\": {\n      \"hash\": \"nfd\"\n    },\n    \"é\": {\n      \"hash\": \"nfc\",\n      \"inputs\": {\n        \"é\": \"nfd\",\n        \"é\": \"nfc\"\n      }\n    }\n  }\n}\n"
+    },
+    {
+      "description": "Writes the hash before the inputs",
+      "files": {
+        "a": {
+          "inputs": {
+            "b": "1"
+          },
+          "hash": "h"
+        }
+      },
+      "text": "{\n  \"version\": 1,\n  \"files\": {\n    \"a\": {\n      \"hash\": \"h\",\n      \"inputs\": {\n        \"b\": \"1\"\n      }\n    }\n  }\n}\n"
     },
     {
       "description": "Escapes",

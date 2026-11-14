@@ -10,6 +10,7 @@ const CR = 0x0d;
 const LF = 0x0a;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+const INDENT = '  ';
 
 /**
  * Hashes of what produced a file, e.g. `{ "generator": "genever@1.0.0", "./user.json": "v1:…" }`.
@@ -143,23 +144,71 @@ export const parseManifest = (text: string): Manifest => {
     return { version, files: entries };
 };
 
-const sortKeys = <T>(record: Readonly<Record<string, T>>): Record<string, T> =>
-    Object.fromEntries(Object.entries(record).toSorted(([a], [b]) => (a < b ? -1 : 1)));
+/**
+ * A record's entries by key in UTF-16 code unit order, the order of
+ * [RFC 8785 §3.2.3](https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3) and of JavaScript's `<`.
+ * Keys are distinct, so none compare equal.
+ *
+ * @param record - to sort
+ * @returns its entries, sorted
+ */
+const sortedEntries = <T>(record: Readonly<Record<string, T>>): [string, T][] =>
+    Object.entries(record).toSorted(([a], [b]) => (a < b ? -1 : 1));
 
 /**
- * Serialize a manifest deterministically: file paths and inputs are sorted, so regenerating in
- * a different order produces the same text.
+ * Write an object from members in the given order, as `JSON.stringify(value, null, 2)` lays it
+ * out. An object can't hold its keys in that order itself: integer-like keys always come first,
+ * in numeric order.
+ *
+ * @param members - each key with its value's JSON text
+ * @param indent - the indent of the line the object starts on
+ * @returns JSON text
+ */
+const objectText = (members: readonly (readonly [string, string])[], indent: string): string => {
+    if (members.length === 0) {
+        return '{}';
+    }
+    const lines = members.map(
+        ([key, value]) => `${indent}${INDENT}${JSON.stringify(key)}: ${value}`
+    );
+    return `{\n${lines.join(',\n')}\n${indent}}`;
+};
+
+const entryText = (entry: ManifestEntry, indent: string): string => {
+    const members: [string, string][] = [
+        'signature' in entry
+            ? ['signature', JSON.stringify(entry.signature)]
+            : ['hash', JSON.stringify(entry.hash)],
+    ];
+    if (entry.inputs) {
+        const inputs = sortedEntries(entry.inputs).map(([key, value]): [string, string] => [
+            key,
+            JSON.stringify(value),
+        ]);
+        members.push(['inputs', objectText(inputs, indent + INDENT)]);
+    }
+    return objectText(members, indent);
+};
+
+/**
+ * Serialize a manifest deterministically: file paths and inputs are sorted by UTF-16 code unit,
+ * so regenerating in a different order produces the same text. Each entry is written as its
+ * `hash` or `signature`, then its `inputs`.
  *
  * @param files - entries by path relative to the manifest's directory
  * @returns manifest file content
  */
 export const serializeManifest = (files: Readonly<Record<string, ManifestEntry>>): string => {
-    const sortedFiles = Object.fromEntries(
-        Object.entries(sortKeys(files)).map(([path, entry]) => [
-            path,
-            entry.inputs ? { ...entry, inputs: sortKeys(entry.inputs) } : entry,
-        ])
+    const entries = sortedEntries(files).map(([path, entry]): [string, string] => [
+        path,
+        entryText(entry, INDENT + INDENT),
+    ]);
+    const manifest = objectText(
+        [
+            ['version', JSON.stringify(VERSION)],
+            ['files', objectText(entries, INDENT)],
+        ],
+        ''
     );
-    const manifest = { version: VERSION, files: sortedFiles } satisfies Manifest;
-    return `${JSON.stringify(manifest, null, 2)}\n`;
+    return `${manifest}\n`;
 };

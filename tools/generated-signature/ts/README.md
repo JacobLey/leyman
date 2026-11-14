@@ -215,7 +215,8 @@ A manifest is a JSON file recording generated files that don't carry their own t
 }
 ```
 
-- Paths are relative to the manifest's directory, with `/` separators.
+- Paths are relative to the manifest's directory, with `/` separators. They're kept exactly as given, with no Unicode normalization: Linux treats a decomposed `é` and a precomposed `é` as two different names, Git on macOS already commits names precomposed, and normalizing would rewrite manifests that are already written.
+- Paths and inputs are written in UTF-16 code unit order, the order JavaScript's `<` compares strings in (and [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3) sorts keys in), so `10` comes before `9`.
 - `hash` is the [`contentHash`](#contenthashcontent) of the file. `signature: "inline"` means the file carries its own token, which is checked instead.
 - `inputs` is optional, and holds hashes of what produced the file, written and checked by the generator. This package doesn't interpret it.
 
@@ -224,7 +225,7 @@ A manifest is a JSON file recording generated files that don't carry their own t
 | <a id="contenthashcontent"></a>`contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** excluded, so a file with manual sections should be signed inline. |
 | `verifyManifestEntry(content: string \| Uint8Array, entry): VerifyResult`           | `valid` or `invalid` for a `hash` entry; [`verify()`](#verifytext)'s result for an `inline` entry.                                                                          |
 | `parseManifest(text): Manifest`                                                     | Parses and validates. Throws `GeneratedSignatureManifestError` if the text is not a valid manifest.                                                                         |
-| `serializeManifest(files): string`                                                  | Manifest text, with paths and inputs sorted so the output doesn't depend on write order.                                                                                    |
+| `serializeManifest(files): string`                                                  | Manifest text, with paths and inputs sorted by UTF-16 code unit, so the output doesn't depend on write order.                                                               |
 
 ---
 
