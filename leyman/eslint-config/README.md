@@ -63,7 +63,7 @@ It expects this layout, per package:
 | `**/eslint/**`                                         | ESLint plugin code: visitors named after AST nodes and kebab-case rule names are allowed.                                                                                                                                                                |
 | `coverage`, `dist`, `dist-test`, `out`, `node_modules` | Ignored.                                                                                                                                                                                                                                                 |
 
-`.tsx` files get the React, React Hooks and JSX accessibility rules, and the other files don't. CommonJS files (`.cjs`, `.cts`) may use `require`.
+`.tsx` files get the React, React Hooks and JSX accessibility rules, and the other files (`.ts` and `.js`) don't. CommonJS files (`.cjs`, `.cts`) may use `require`.
 
 A disable comment needs a description (`// eslint-disable-next-line rule -- why`), and one that no longer suppresses anything is reported.
 

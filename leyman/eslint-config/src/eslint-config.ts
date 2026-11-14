@@ -895,7 +895,7 @@ export default async function makeEslintConfigForPackage({
             ? [
                   {
                       // Disable JSX rules for non-JSX files
-                      files: ['**/*.{c,m,}ts'],
+                      files: ['**/*.{c,m,}{j,t}s'],
                       rules: react.offOutsideJsx,
                   },
               ]

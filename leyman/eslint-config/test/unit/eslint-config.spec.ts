@@ -237,4 +237,13 @@ suite('configGenerator per file', function (this: Suite) {
     test('Allows require in CommonJS', async () => {
         expect(await eslint.reported('src/c.cjs')).to.deep.equal([]);
     });
+
+    test('Turns off the React rules in JavaScript', async () => {
+        const [js, ts, tsx] = await Promise.all(
+            ['src/b.js', 'src/a.ts', 'src/e.tsx'].map(async file => eslint.rulesFor(file))
+        );
+        expect(js!['react/jsx-key']?.[0]).to.equal(0);
+        expect(ts!['react/jsx-key']?.[0]).to.equal(0);
+        expect(tsx!['react/jsx-key']?.[0]).to.equal(2);
+    });
 });
