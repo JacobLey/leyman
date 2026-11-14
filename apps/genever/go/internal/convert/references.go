@@ -222,13 +222,13 @@ func (c *converter) checkMapping(value jsonv.Value, pointer string) error {
 		return err
 	}
 
-	for _, key := range mapping.Keys() {
+	for _, key := range mapping.SortedKeys() {
 		targetPointer := childPointer(pointer, key)
 		ref, _ := mapping.Get(key)
 
 		// A mapping value is a reference, or the name of a schema in the document's components
 		if name, ok := ref.(string); ok && !strings.Contains(name, "/") {
-			ref = "#/components/schemas/" + name
+			ref = childPointer("#/components/schemas", name)
 		}
 
 		if _, err := c.resolve(ref, childPointer(targetPointer, "$ref")); err != nil {

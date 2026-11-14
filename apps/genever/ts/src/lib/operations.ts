@@ -6,6 +6,7 @@ import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
 import { readObject } from './read-keyword.js';
 import { docText, neverType, stringType, unknownType } from './ts-type.js';
+import { visitEntries } from './visit-order.js';
 
 /**
  * What building operation types needs from the converter.
@@ -148,9 +149,21 @@ class OperationBuilder {
      */
     public build(paths: unknown): OperationTypes {
         const pathsPointer = childPointer('#', 'paths');
-        const pathTypes = Object.entries(readObject(paths, pathsPointer)).map(([path, raw]) => {
+        // Each path's operations are visited in visit order, and listed in the order of `paths`
+        const visited = visitEntries(readObject(paths, pathsPointer), (path, raw) => {
+            const operationsStart = this.#operations.length;
+            const parametersStart = this.#requestParameters.length;
             const item = this.#deref(raw, childPointer(pathsPointer, path));
-            return property(path, this.#pathItem(item));
+            return {
+                type: this.#pathItem(item),
+                operations: this.#operations.splice(operationsStart),
+                requestParameters: this.#requestParameters.splice(parametersStart),
+            };
+        });
+        const pathTypes = visited.map(([path, { type, operations, requestParameters }]) => {
+            this.#operations.push(...operations);
+            this.#requestParameters.push(...requestParameters);
+            return property(path, type);
         });
         return {
             paths: objectType(pathTypes),
@@ -212,10 +225,9 @@ class OperationBuilder {
             return absent('content');
         }
         const contentPointer = childPointer(pointer, 'content');
-        const media = Object.entries(readObject(value.content, contentPointer)).map(
-            ([mediaType, entry]) =>
-                property(mediaType, this.#media(entry, childPointer(contentPointer, mediaType)))
-        );
+        const media = visitEntries(readObject(value.content, contentPointer), (mediaType, entry) =>
+            this.#media(entry, childPointer(contentPointer, mediaType))
+        ).map(([mediaType, type]) => property(mediaType, type));
         return property('content', objectType(media));
     }
 
@@ -327,9 +339,9 @@ class OperationBuilder {
         const headers =
             response.value.headers === undefined
                 ? []
-                : Object.entries(readObject(response.value.headers, headersPointer)).map(
-                      ([name, header]) => this.#header(name, header, headersPointer)
-                  );
+                : visitEntries(readObject(response.value.headers, headersPointer), (name, header) =>
+                      this.#header(name, header, headersPointer)
+                  ).map(([, header]) => header);
         // Any other header may be sent too
         const headersType = objectType(headers, [{ key: stringType, value: unknownType }]);
         return property(
@@ -345,9 +357,9 @@ class OperationBuilder {
         const responses =
             value.responses === undefined
                 ? []
-                : Object.entries(readObject(value.responses, responsesPointer)).map(
-                      ([status, response]) => this.#response(status, response, responsesPointer)
-                  );
+                : visitEntries(readObject(value.responses, responsesPointer), (status, response) =>
+                      this.#response(status, response, responsesPointer)
+                  ).map(([, response]) => response);
         return objectType([
             property('parameters', parametersType(parameters)),
             this.#requestBody(operation),

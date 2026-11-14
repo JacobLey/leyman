@@ -237,9 +237,10 @@ func TestLoadEmbeds(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Loaded in the order the properties are visited: by key
 	expected := []string{
-		"item", "item 2", "item 3", "yes", "no", "noextension", "Named", "declared", "elsewhere", "relative",
-		"relative 2", "anchor", "back", "declares", "usesmissing",
+		"item", "item 2", "back", "item 3", "declares", "declared", "elsewhere", "usesmissing", "noextension", "no",
+		"anchor", "relative", "relative 2", "Named", "yes",
 	}
 
 	if got := defsKeys(t, bundled); !slices.Equal(got, expected) {

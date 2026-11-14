@@ -23,7 +23,7 @@ func (c *converter) propertyTypes(schema *jsonv.Object, pointer string) (map[str
 
 	types := make(map[string]*model.Type, properties.Len())
 
-	for _, name := range properties.Keys() {
+	for _, name := range properties.SortedKeys() {
 		propertySchema, _ := properties.Get(name)
 
 		types[name], err = c.convert(propertySchema, childPointer(propertiesPointer, name), emptyScope())
@@ -294,22 +294,30 @@ func (c *converter) patternProperties(
 		return nil, nil, err
 	}
 
-	var index []model.Index
+	// Visited in the order of SortedKeys, and added in the schema's order
+	values := make(map[string]*model.Type, patterns.Len())
 
-	for _, pattern := range patterns.Keys() {
+	for _, pattern := range patterns.SortedKeys() {
 		keyPointer := childPointer(patternPointer, pattern)
 
 		if _, err := readPattern(pattern, keyPointer); err != nil {
 			return nil, nil, err
 		}
 
-		key := patternType(pattern)
 		patternSchema, _ := patterns.Get(pattern)
 
-		propertyValue, err := c.convert(patternSchema, keyPointer, emptyScope())
+		values[pattern], err = c.convert(patternSchema, keyPointer, emptyScope())
 		if err != nil {
 			return nil, nil, err
 		}
+	}
+
+	var index []model.Index
+
+	for _, pattern := range patterns.Keys() {
+		keyPointer := childPointer(patternPointer, pattern)
+		key := patternType(pattern)
+		propertyValue := values[pattern]
 
 		if key.Kind == model.KindLiteral {
 			name, _ := key.Literal.(string)
@@ -344,14 +352,20 @@ func (c *converter) dependents(schema *jsonv.Object, pointer string, sub scope) 
 			return nil, err
 		}
 
-		for _, name := range entries.Keys() {
+		// Visited in the order of SortedKeys, and added in the schema's order
+		presents := make(map[string]*model.Type, entries.Len())
+
+		for _, name := range entries.SortedKeys() {
 			dependent, _ := entries.Get(name)
 
-			present, err := c.dependent(keyword, dependent, childPointer(keywordPointer, name), sub, objectScope)
+			presents[name], err = c.dependent(keyword, dependent, childPointer(keywordPointer, name), sub, objectScope)
 			if err != nil {
 				return nil, err
 			}
+		}
 
+		for _, name := range entries.Keys() {
+			present := presents[name]
 			absent := model.Object([]model.Property{{
 				Doc: nil, Name: name, Optional: true, Pointer: "", Type: model.NeverType,
 			}}, nil)

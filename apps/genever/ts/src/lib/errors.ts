@@ -12,9 +12,15 @@ const withPointer = (message: string, pointer: string): string => `${message} (a
  */
 export abstract class GeneverError extends Error {
     /**
-     * JSON Pointer to the schema (or keyword) that caused the error, e.g. `#/properties/foo`.
-     * In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI,
+     * JSON Pointer to the schema (or keyword) that caused the error, as a URI fragment, e.g. `#/properties/foo`.
+     * Each key has `~` escaped as `~0` and `/` as `~1`, then is percent-encoded (RFC 6901 §6,
+     * https://www.rfc-editor.org/rfc/rfc6901#section-6), so the property `a/b c` is `#/properties/a~1b%20c`, which
+     * is also a `$ref` to it. In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI,
      * e.g. `file:///api/common.yaml#/components/schemas/Error`.
+     *
+     * Of several errors, the one reported is the first found: keywords are checked in a fixed order, and the members
+     * of an object (properties, definitions, paths...) in the UTF-16 code unit order of their keys (RFC 8785 §3.2.3,
+     * https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3), not the order they are written in.
      */
     public readonly pointer: string;
 

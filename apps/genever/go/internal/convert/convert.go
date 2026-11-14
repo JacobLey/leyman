@@ -237,7 +237,7 @@ func (c *converter) registerSchemas(parent *jsonv.Object, parentPointer, key str
 
 	pointer := childPointer(parentPointer, key)
 
-	for _, name := range container.Keys() {
+	for _, name := range container.SortedKeys() {
 		schema, _ := container.Get(name)
 		if _, isAlias := resourceAlias(schema); !isDefinitionGroup(schema) && !isAlias {
 			c.register(childPointer(pointer, name), name, schema)
@@ -288,7 +288,7 @@ func referenceName(pointer string) string {
 
 	segments := strings.Split(pointer[start:], "/")
 	for i, segment := range segments {
-		segments[i] = unescapeSegment(segment)
+		segments[i] = decodeSegment(segment)
 	}
 
 	return strings.Join(segments, " ")

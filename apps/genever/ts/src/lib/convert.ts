@@ -18,7 +18,7 @@ import { TypeNames } from './names.js';
 import { operationHelpers } from './operation-helpers.js';
 import { operationTypes } from './operations.js';
 import { patternType } from './pattern.js';
-import { childPointer } from './pointer.js';
+import { childPointer, decodeSegment } from './pointer.js';
 import {
     isSchemaObject,
     jsonLiteral,
@@ -44,6 +44,7 @@ import {
     union,
     unknownType,
 } from './ts-type.js';
+import { visitEntries, visitOrder } from './visit-order.js';
 
 /**
  * @import { GeneverError } from './errors.js'
@@ -158,7 +159,7 @@ const referenceName = (pointer: string): string => {
     const segments = pointer
         .slice(isDefinition ? parent.length + 1 : pointer.indexOf('#') + 2)
         .split('/')
-        .map(segment => segment.replaceAll('~1', '/').replaceAll('~0', '~'));
+        .map(segment => decodeSegment(segment));
     return segments.join(' ');
 };
 
@@ -533,7 +534,8 @@ export class Converter {
             containerPointer = childPointer(containerPointer, key);
             container = readObject(container[key], containerPointer);
         }
-        for (const [name, schema] of Object.entries(container)) {
+        for (const name of visitOrder(container)) {
+            const schema = container[name];
             if (!isDefinitionGroup(schema) && !isResourceAlias(schema)) {
                 this.#register(childPointer(containerPointer, name), name, schema);
             }
@@ -702,12 +704,13 @@ export class Converter {
 
         const mappingPointer = childPointer(discriminatorPointer, 'mapping');
         const targets = mapping === undefined ? {} : readObject(mapping, mappingPointer);
-        for (const [value, target] of Object.entries(targets)) {
+        for (const value of visitOrder(targets)) {
+            const target = targets[value];
             const targetPointer = childPointer(mappingPointer, value);
             // A mapping value is a reference, or the name of a schema in the document's components
             const ref =
                 typeof target === 'string' && !target.includes('/')
-                    ? `#/components/schemas/${target}`
+                    ? childPointer('#/components/schemas', target)
                     : target;
             try {
                 this.#resolve(ref, childPointer(targetPointer, '$ref'));
@@ -789,7 +792,7 @@ export class Converter {
         const types = readTypes(schema.type, pointer) ?? scope.types;
         const families = new Set<'array' | 'number' | 'object' | 'string'>();
 
-        for (const keyword of Object.keys(schema)) {
+        for (const keyword of visitOrder(schema)) {
             const keywordPointer = childPointer(pointer, keyword);
             if (unsupportedKeywords.has(keyword)) {
                 throw new GeneverUnsupportedError(`"${keyword}" is not supported`, {
@@ -1178,12 +1181,10 @@ export class Converter {
             return new Map();
         }
         const propertiesPointer = childPointer(pointer, 'properties');
-        const entries = Object.entries(readObject(schema.properties, propertiesPointer));
         return new Map(
-            entries.map(([name, propertySchema]) => [
-                name,
-                this.#convert(propertySchema, childPointer(propertiesPointer, name), emptyScope),
-            ])
+            visitEntries(readObject(schema.properties, propertiesPointer), (name, propertySchema) =>
+                this.#convert(propertySchema, childPointer(propertiesPointer, name), emptyScope)
+            )
         );
     }
 
@@ -1322,11 +1323,19 @@ export class Converter {
         }
         const index: TsIndex[] = [];
         const patternPointer = childPointer(pointer, 'patternProperties');
-        const entries = Object.entries(readObject(schema.patternProperties, patternPointer));
-        for (const [pattern, patternSchema] of entries) {
-            const keyPointer = childPointer(patternPointer, pattern);
-            const key = patternType(readPattern(pattern, keyPointer));
-            const value = this.#convert(patternSchema, keyPointer, emptyScope);
+        const entries = visitEntries(
+            readObject(schema.patternProperties, patternPointer),
+            (pattern, patternSchema) => {
+                const keyPointer = childPointer(patternPointer, pattern);
+                const key = patternType(readPattern(pattern, keyPointer));
+                return {
+                    key,
+                    keyPointer,
+                    value: this.#convert(patternSchema, keyPointer, emptyScope),
+                };
+            }
+        );
+        for (const [, { key, keyPointer, value }] of entries) {
             if (key.kind === 'literal') {
                 properties.push({
                     name: key.value as string,
@@ -1359,31 +1368,35 @@ export class Converter {
                 continue;
             }
             const keywordPointer = childPointer(pointer, keyword);
-            const entries = Object.entries(readObject(schema[keyword], keywordPointer));
-            for (const [name, dependent] of entries) {
-                const dependentPointer = childPointer(keywordPointer, name);
+            const entries = visitEntries(
+                readObject(schema[keyword], keywordPointer),
+                (name, dependent): TsType => {
+                    const dependentPointer = childPointer(keywordPointer, name);
+                    const isSchema =
+                        keyword === 'dependentSchemas' ||
+                        (keyword === 'dependencies' && !Array.isArray(dependent));
+                    return isSchema
+                        ? this.#convert(dependent, dependentPointer, objectScope)
+                        : {
+                              kind: 'object',
+                              properties: readPropertyNames(dependent, dependentPointer).map(
+                                  required => ({
+                                      name: required,
+                                      doc: null,
+                                      optional: false,
+                                      type: scope.properties.get(required) ?? unknownType,
+                                  })
+                              ),
+                              index: [],
+                          };
+                }
+            );
+            for (const [name, present] of entries) {
                 const absent: TsType = {
                     kind: 'object',
                     properties: [{ name, doc: null, optional: true, type: neverType }],
                     index: [],
                 };
-                const isSchema =
-                    keyword === 'dependentSchemas' ||
-                    (keyword === 'dependencies' && !Array.isArray(dependent));
-                const present: TsType = isSchema
-                    ? this.#convert(dependent, dependentPointer, objectScope)
-                    : {
-                          kind: 'object',
-                          properties: readPropertyNames(dependent, dependentPointer).map(
-                              required => ({
-                                  name: required,
-                                  doc: null,
-                                  optional: false,
-                                  type: scope.properties.get(required) ?? unknownType,
-                              })
-                          ),
-                          index: [],
-                      };
                 dependents.push(union([absent, present]));
             }
         }

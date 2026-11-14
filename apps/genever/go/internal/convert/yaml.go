@@ -258,25 +258,10 @@ func aliasReference(target, where location) (any, error) {
 	}
 
 	ref := jsonv.NewObject()
-	ref.Set("$ref", "#"+encodeURI(strings.TrimPrefix(target.pointer, target.resource)))
+	// Pointers are already in their URI fragment form
+	ref.Set("$ref", "#"+strings.TrimPrefix(target.pointer, target.resource))
 
 	return ref, nil
-}
-
-// encodeURI percent-encodes text as JavaScript's encodeURI does: all but letters, digits and `;,/?:@&=+$-_.!~*'()#`.
-func encodeURI(text string) string {
-	var encoded strings.Builder
-
-	for _, char := range []byte(text) {
-		if char < 0x80 && (char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z' || char >= '0' && char <= '9' ||
-			strings.IndexByte(";,/?:@&=+$-_.!~*'()#", char) >= 0) {
-			encoded.WriteByte(char)
-		} else {
-			fmt.Fprintf(&encoded, "%%%02X", char)
-		}
-	}
-
-	return encoded.String()
 }
 
 func (t *yamlTree) copyMapping(node *yaml.Node, where location) (any, error) {
@@ -289,25 +274,88 @@ func (t *yamlTree) copyMapping(node *yaml.Node, where location) (any, error) {
 	t.ancestors[node] = where
 	defer delete(t.ancestors, node)
 
-	object := jsonv.NewObject()
+	return t.copyEntries(mappingEntries(node), func(key string, value *yaml.Node) (any, error) {
+		return t.copyEntry(key, value, where)
+	})
+}
+
+// A mappingEntry is a key of a map, and its value.
+type mappingEntry struct {
+	value *yaml.Node
+	key   string
+}
+
+// mappingEntries are the keys of a map and their values, in order, with its merge keys merged: a merged key the map
+// doesn't have yet is added, the first map's first, and a key of the map's own replaces a merged one's value.
+func mappingEntries(node *yaml.Node) []mappingEntry {
+	var entries []mappingEntry
+
+	positions := map[string]int{}
+	add := func(key string, value *yaml.Node, replaces bool) {
+		if position, ok := positions[key]; ok {
+			if replaces {
+				entries[position].value = value
+			}
+
+			return
+		}
+
+		positions[key] = len(entries)
+		entries = append(entries, mappingEntry{value: value, key: key})
+	}
 
 	for i := 0; i < len(node.Content); i += 2 {
 		key, value := node.Content[i], node.Content[i+1]
 
-		if key.Tag == tagMerge {
-			if err := t.merge(object, value, where); err != nil {
-				return nil, err
-			}
+		if key.Tag != tagMerge {
+			add(key.Value, value, true)
 
 			continue
 		}
 
-		copied, err := t.copyEntry(key.Value, value, where)
+		sources := []*yaml.Node{resolveAlias(value)}
+		if sources[0].Kind == yaml.SequenceNode {
+			sources = sources[0].Content
+		}
+
+		for _, source := range sources {
+			resolved := resolveAlias(source)
+			for j := 0; j < len(resolved.Content); j += 2 {
+				add(resolved.Content[j].Value, resolved.Content[j+1], false)
+			}
+		}
+	}
+
+	return entries
+}
+
+// copyEntries copies the values of a map's entries in the order of SortedKeys, which decides which of several
+// mistakes is reported, into an object with the keys in the map's order.
+func (t *yamlTree) copyEntries(
+	entries []mappingEntry, copyValue func(string, *yaml.Node) (any, error),
+) (*jsonv.Object, error) {
+	keys := make([]string, len(entries))
+	values := make(map[string]*yaml.Node, len(entries))
+
+	for i, entry := range entries {
+		keys[i] = entry.key
+		values[entry.key] = entry.value
+	}
+
+	copied := make(map[string]any, len(entries))
+
+	for _, key := range slices.SortedFunc(slices.Values(keys), jsonv.CompareCodeUnits) {
+		value, err := copyValue(key, values[key])
 		if err != nil {
 			return nil, err
 		}
 
-		object.Set(key.Value, copied)
+		copied[key] = value
+	}
+
+	object := jsonv.NewObject()
+	for _, key := range keys {
+		object.Set(key, copied[key])
 	}
 
 	return object, nil
@@ -358,48 +406,14 @@ func (t *yamlTree) copyCollection(node *yaml.Node, where location) (any, error) 
 		return items, nil
 	}
 
-	object := jsonv.NewObject()
-
+	var entries []mappingEntry
 	for i := 0; i < len(resolved.Content); i += 2 {
-		key, value := resolved.Content[i], resolved.Content[i+1]
-
-		copied, err := t.copy(value, where.child(key.Value, true))
-		if err != nil {
-			return nil, err
-		}
-
-		object.Set(key.Value, copied)
+		entries = append(entries, mappingEntry{value: resolved.Content[i+1], key: resolved.Content[i].Value})
 	}
 
-	return object, nil
-}
-
-// merge adds the keys of a merge key's maps the object doesn't have yet, the first map's first.
-func (t *yamlTree) merge(object *jsonv.Object, value *yaml.Node, where location) error {
-	sources := []*yaml.Node{resolveAlias(value)}
-	if sources[0].Kind == yaml.SequenceNode {
-		sources = sources[0].Content
-	}
-
-	for _, source := range sources {
-		resolved := resolveAlias(source)
-
-		for i := 0; i < len(resolved.Content); i += 2 {
-			key, member := resolved.Content[i], resolved.Content[i+1]
-			if _, ok := object.Get(key.Value); ok {
-				continue
-			}
-
-			copied, err := t.copyEntry(key.Value, member, where)
-			if err != nil {
-				return err
-			}
-
-			object.Set(key.Value, copied)
-		}
-	}
-
-	return nil
+	return t.copyEntries(entries, func(key string, value *yaml.Node) (any, error) {
+		return t.copy(value, where.child(key, true))
+	})
 }
 
 func resolveAlias(node *yaml.Node) *yaml.Node {

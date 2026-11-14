@@ -69,7 +69,7 @@ export interface GeneratedName {
     /**
      * JSON Pointer to what the name is generated from in the document: a type's schema (e.g. `#/$defs/Note`),
      * or an OpenAPI document's `paths` for `Paths`, and a property's schema under `properties`
-     * (`#/$defs/Note/properties/body`). The same form as a {@link GeneverError}'s `pointer`.
+     * (`#/$defs/Note/properties/body`). The same form as a {@link GeneverError}'s `pointer`, percent-encoded.
      */
     readonly pointer: string;
     /**

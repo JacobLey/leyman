@@ -308,7 +308,7 @@ func (c *converter) types(schema *jsonv.Object, pointer string, inherited scope)
 
 	hasFamily := false
 
-	for _, keyword := range schema.Keys() {
+	for _, keyword := range schema.SortedKeys() {
 		keywordPointer := childPointer(pointer, keyword)
 		if unsupportedKeywords[keyword] {
 			return nil, gerr.Unsupported(quote(keyword)+" is not supported", keywordPointer)

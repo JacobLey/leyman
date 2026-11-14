@@ -47,8 +47,12 @@ type Options struct {
 
 // An Error is a problem with a schema, at a JSON Pointer. Match its Kind with errors.Is: ErrInvalidSchema,
 // ErrStrictMode, ErrUnsupported or ErrLoad. Its Message says what is wrong, Pointer where (in another file, starting
-// with that file's URI), Cause is the underlying error if there is one, such as the file system's, and ReferencedFrom
+// with that file's URI, and percent-encoded as a URI fragment), Cause is the underlying error if there is one, such as the file system's, and ReferencedFrom
 // is the file or URL whose `$ref` needed a file that failed to load.
+//
+// Of several mistakes, the one reported is the first found: keywords are checked in a fixed order, and the members of
+// an object (properties, definitions, paths...) in the UTF-16 code unit order of their keys (RFC 8785 §3.2.3,
+// https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3), as the TypeScript genever does.
 type Error = gerr.Error
 
 // Kinds of Error.
@@ -85,7 +89,7 @@ type Name struct {
 	// Pointer is the JSON Pointer to what the name is generated from in the document: a type's schema (e.g.
 	// `#/$defs/Note`), an operation for its Input and Request (`#/paths/~1notes/post`), its request body or a
 	// response for their body's type (`#/paths/~1notes/post/requestBody`), and a field's schema under `properties`
-	// (`#/$defs/Note/properties/body`) or `patternProperties`. The same form as an Error's Pointer.
+	// (`#/$defs/Note/properties/body`) or `patternProperties`. The same form as an Error's Pointer, percent-encoded.
 	Pointer string
 	// Offset is the name's byte offset in the source, where the type or field is declared.
 	Offset int

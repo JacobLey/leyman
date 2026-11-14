@@ -1,7 +1,10 @@
 package genever_test
 
 import (
+	"encoding/json"
 	"errors"
+	"slices"
+	"strings"
 	"testing"
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
@@ -151,5 +154,44 @@ func expectNames(t *testing.T, source genever.Source, expected []genever.Name) {
 		if index > 0 && name.Offset <= source.Names[index-1].Offset {
 			t.Errorf("%s: before %s", name.Name, source.Names[index-1].Name)
 		}
+	}
+}
+
+// A pointer genever reports is in its URI fragment form, so used as a `$ref`, it resolves to the same schema, which is
+// then a named type at that pointer.
+func TestPointerIsReference(t *testing.T) {
+	t.Parallel()
+
+	for _, key := range []string{"a/b~c", "", `a b%é"#[]`, "\U0001F600", "-._~!$&'()*+,;=:@?"} {
+		t.Run(key, func(t *testing.T) {
+			t.Parallel()
+
+			quoted, _ := json.Marshal(key)
+			options := genever.Options{
+				Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
+			}
+
+			_, err := genever.Generate(
+				[]byte(`{"type": "object", "properties": {`+string(quoted)+`: {"type": "date"}}}`), options,
+			)
+
+			var geneverErr *genever.Error
+			if !errors.As(err, &geneverErr) || !strings.HasSuffix(geneverErr.Pointer, "/type") {
+				t.Fatalf("got %v", err)
+			}
+
+			pointer := strings.TrimSuffix(geneverErr.Pointer, "/type")
+			ref, _ := json.Marshal(pointer)
+
+			source, err := genever.GenerateSource([]byte(`{"type": "object", "properties": {`+string(quoted)+
+				`: {"type": "string"}, "r": {"$ref": `+string(ref)+`}}}`), options)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !slices.ContainsFunc(source.Names, func(name genever.Name) bool { return name.Pointer == pointer }) {
+				t.Errorf("got %+v, expected a name at %s", source.Names, pointer)
+			}
+		})
 	}
 }

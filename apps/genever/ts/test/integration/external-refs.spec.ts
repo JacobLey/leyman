@@ -41,10 +41,11 @@ suite('external references', () => {
     withTmpDir.test('bundles referenced files into one', async ctx => {
         const source = await generateTo(data('root.json'), ctx.resolve('root.ts'));
 
+        // Both files are titled Address: the first loaded, by `billing`, which sorts before `home`, keeps the name
         expectTypes(source, {
-            Schema: '{ home: Address; work?: Address; billing?: Address2; name?: Name; email?: Email; tree?: Tree; money?: Money }',
-            Address: '{ city: string; country?: Country }',
-            Address2: '{ line1: string }',
+            Schema: '{ home: Address2; work?: Address2; billing?: Address; name?: Name; email?: Email; tree?: Tree; money?: Money }',
+            Address: '{ line1: string }',
+            Address2: '{ city: string; country?: Country }',
             Country: '"US" | "FR"',
             Name: 'string',
             Email: 'string',

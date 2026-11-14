@@ -147,7 +147,7 @@ func TestOperationDocs(t *testing.T) {
 
 	input := types["GetUserInput"]
 	if !strings.HasPrefix(input.Doc.Title, `GetUserInput is what a call to operation "getUser" sends`) ||
-		input.Doc.Description != "Get a user\n\nBy id" || !input.Doc.Deprecated || input.Pointer != "#/paths/~1users~1{id}/get" {
+		input.Doc.Description != "Get a user\n\nBy id" || !input.Doc.Deprecated || input.Pointer != "#/paths/~1users~1%7Bid%7D/get" {
 		t.Errorf("got %+v at %s", input.Doc, input.Pointer)
 	}
 

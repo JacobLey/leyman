@@ -67,3 +67,18 @@ func expectRejected(t *testing.T, item errorCase, kind error, isStrictMode bool)
 		}
 	}
 }
+
+// A discriminator's mapping to a component name is a reference to it, escaped and encoded.
+func TestDiscriminatorMappingName(t *testing.T) {
+	t.Parallel()
+
+	pet := `{"type": "object", "properties": {"kind": {"type": "string"}}, "required": ["kind"]`
+	document := `{"openapi": "3.1.0", "info": {"title": "API", "version": "1.0.0"}, "components": {"schemas": {` +
+		`"a~0%b": ` + pet + `}, "Pet": ` + pet + `, "discriminator": {"propertyName": "kind", "mapping": {"a": "a~0%b"}}}}}}`
+
+	if _, err := genever.Generate([]byte(document), genever.Options{
+		Name: "", Package: "", BaseURI: "", OpenAPI30: false, NoStrict: false, ParameterDefaults: false,
+	}); err != nil {
+		t.Fatal(err)
+	}
+}

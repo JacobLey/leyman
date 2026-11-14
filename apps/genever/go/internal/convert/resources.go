@@ -263,7 +263,7 @@ func subschemas(schema *jsonv.Object, pointer string) []target {
 	for _, keyword := range schemaMapKeywords {
 		value, _ := schema.Get(keyword)
 		if object, ok := value.(*jsonv.Object); ok {
-			for _, key := range object.Keys() {
+			for _, key := range object.SortedKeys() {
 				member, _ := object.Get(key)
 				children = append(children, target{schema: member, pointer: childPointer(childPointer(pointer, keyword), key)})
 			}
@@ -386,7 +386,7 @@ func indexFiles(
 		}
 	}
 
-	for _, uri := range slices.Sorted(maps.Keys(files)) {
+	for _, uri := range slices.SortedFunc(maps.Keys(files), jsonv.CompareCodeUnits) {
 		if err := walker.visitFile(uri, files[uri]); err != nil {
 			return documentIndex{}, err //nolint:exhaustruct // Unused with an error
 		}

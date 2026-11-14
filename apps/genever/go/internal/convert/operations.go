@@ -123,14 +123,17 @@ type operationBuilder struct {
 	operations []operation
 }
 
-// build finds the operations of `paths`, in order, and fails if it, or anything in it, is invalid.
+// build finds the operations of `paths`, in order, and fails if it, or anything in it, is invalid. Paths are visited
+// in the order of SortedKeys, and their operations listed in the order of `paths`.
 func (b *operationBuilder) build(paths jsonv.Value) error {
 	pathsObject, err := readObject(paths, "#/paths")
 	if err != nil {
 		return err
 	}
 
-	for _, path := range pathsObject.Keys() {
+	byPath := make(map[string][]operation, pathsObject.Len())
+
+	for _, path := range pathsObject.SortedKeys() {
 		raw, _ := pathsObject.Get(path)
 
 		item, err := b.deref(raw, childPointer("#/paths", path))
@@ -138,9 +141,17 @@ func (b *operationBuilder) build(paths jsonv.Value) error {
 			return err
 		}
 
+		start := len(b.operations)
 		if err := b.pathItem(path, item); err != nil {
 			return err
 		}
+
+		byPath[path] = slices.Clone(b.operations[start:])
+		b.operations = b.operations[:start]
+	}
+
+	for _, path := range pathsObject.Keys() {
+		b.operations = append(b.operations, byPath[path]...)
 	}
 
 	return nil
@@ -213,7 +224,7 @@ func (b *operationBuilder) content(object located) (*model.Type, error) {
 
 	var jsonType *model.Type
 
-	for _, mediaType := range contentObject.Keys() {
+	for _, mediaType := range contentObject.SortedKeys() {
 		entry, _ := contentObject.Get(mediaType)
 
 		converted, err := b.media(entry, childPointer(contentPointer, mediaType))
@@ -394,7 +405,7 @@ func (b *operationBuilder) headers(found located) error {
 		return err
 	}
 
-	for _, name := range headersObject.Keys() {
+	for _, name := range headersObject.SortedKeys() {
 		raw, _ := headersObject.Get(name)
 
 		header, err := b.deref(raw, childPointer(headersPointer, name))
@@ -410,7 +421,7 @@ func (b *operationBuilder) headers(found located) error {
 	return nil
 }
 
-// responses reads the responses of an operation, by status, in order.
+// responses reads the responses of an operation, by status, in order. They are visited in the order of SortedKeys.
 func (b *operationBuilder) responses(object located) ([]response, error) {
 	raw, hasResponses := object.value.Get("responses")
 	if !hasResponses {
@@ -424,9 +435,9 @@ func (b *operationBuilder) responses(object located) ([]response, error) {
 		return nil, err
 	}
 
-	responses := make([]response, 0, responsesObject.Len())
+	byStatus := make(map[string]response, responsesObject.Len())
 
-	for _, status := range responsesObject.Keys() {
+	for _, status := range responsesObject.SortedKeys() {
 		item, _ := responsesObject.Get(status)
 
 		found, err := b.deref(item, childPointer(responsesPointer, status))
@@ -443,10 +454,15 @@ func (b *operationBuilder) responses(object located) ([]response, error) {
 			return nil, err
 		}
 
-		responses = append(responses, response{
+		byStatus[status] = response{
 			body:   body{doc: operationDoc(found.value), json: jsonType, pointer: found.pointer},
 			status: status,
-		})
+		}
+	}
+
+	responses := make([]response, 0, responsesObject.Len())
+	for _, status := range responsesObject.Keys() {
+		responses = append(responses, byStatus[status])
 	}
 
 	return responses, nil

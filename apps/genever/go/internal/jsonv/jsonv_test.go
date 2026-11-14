@@ -3,10 +3,30 @@ package jsonv_test
 import (
 	"errors"
 	"math"
+	"slices"
 	"testing"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
 )
+
+// SortedKeys sorts by UTF-16 code unit: not as written, nor by byte or code point, which put U+FF5E before U+1F600.
+func TestSortedKeys(t *testing.T) {
+	t.Parallel()
+
+	value, err := jsonv.Parse([]byte(`{"b": 1, "9": 1, "10": 1, "\uff5e": 1, "\ud83d\ude00": 1, "1": 1}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []string{"1", "10", "9", "b", "\U0001F600", "\uFF5E"}
+	if keys := value.(*jsonv.Object).SortedKeys(); !slices.Equal(keys, expected) { //nolint:forcetypeassert // An object
+		t.Errorf("got %q, expected %q", keys, expected)
+	}
+
+	if keys := value.(*jsonv.Object).Keys(); keys[0] != "b" { //nolint:forcetypeassert // An object
+		t.Errorf("got %q", keys)
+	}
+}
 
 func TestParseKeepsKeyOrder(t *testing.T) {
 	t.Parallel()

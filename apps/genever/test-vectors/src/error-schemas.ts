@@ -209,6 +209,98 @@ export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
         schema: openApiDocument({ '/a': { get: { responses: { 200: { headers: [] } } } } }),
         pointer: '#/paths/~1a/get/responses/200/headers',
     },
+    // Each key of a pointer has `~` and `/` escaped, then is percent-encoded as a URI fragment (RFC 6901 §6)
+    'property key with / and ~': {
+        schema: { type: 'object', properties: { 'a/b~c': { type: 'date' } } },
+        pointer: '#/properties/a~1b~0c/type',
+    },
+    'property key that is empty': {
+        schema: { type: 'object', properties: { '': { type: 'date' } } },
+        pointer: '#/properties//type',
+    },
+    'property key that is percent-encoded': {
+        schema: { type: 'object', properties: { 'a b%é"#[]': { type: 'date' } } },
+        pointer: '#/properties/a%20b%25%C3%A9%22%23%5B%5D/type',
+    },
+    'property key of characters a fragment holds': {
+        schema: { type: 'object', properties: { "-._~!$&'()*+,;=:@?": { type: 'date' } } },
+        pointer: "#/properties/-._~0!$&'()*+,;=:@?/type",
+    },
+    'path with characters to percent-encode': {
+        schema: openApiDocument({ '/a b/{id}': 1 }),
+        pointer: '#/paths/~1a%20b~1%7Bid%7D',
+    },
+    // Of several mistakes, the first in the UTF-16 code unit order of the keys is reported (RFC 8785 §3.2.3), not the
+    // first written, or the first in a JavaScript object, which puts integer-like keys first
+    'properties in code unit order': {
+        schema: { type: 'object', properties: { b: { type: 'date' }, a: { type: 'date' } } },
+        pointer: '#/properties/a/type',
+    },
+    'integer-like properties in code unit order': {
+        schema: {
+            type: 'object',
+            properties: {
+                b: { type: 'date' },
+                9: { type: 'date' },
+                10: { type: 'date' },
+                1: { type: 'string' },
+            },
+        },
+        pointer: '#/properties/10/type',
+    },
+    'astral property before U+FF5E, in code unit order': {
+        schema: {
+            type: 'object',
+            properties: { '\u{FF5E}': { type: 'date' }, '\u{1F600}': { type: 'date' } },
+        },
+        pointer: '#/properties/%F0%9F%98%80/type',
+    },
+    '$defs in code unit order': {
+        schema: { $defs: { b: { type: 'date' }, 10: { type: 'date' }, 9: { type: 'date' } } },
+        pointer: '#/$defs/10/type',
+    },
+    '$id declared twice, in code unit order': {
+        schema: { $defs: { B: { $id: 'a.json' }, A: { $id: 'a.json' } } },
+        pointer: '#/$defs/B/$id',
+    },
+    'patternProperties in code unit order': {
+        schema: { type: 'object', patternProperties: { 'b(': true, 'a(': true } },
+        pointer: '#/patternProperties/a(',
+    },
+    'dependentSchemas in code unit order': {
+        schema: {
+            type: 'object',
+            dependentSchemas: { b: { type: 'date' }, a: { type: 'date' } },
+        },
+        pointer: '#/dependentSchemas/a/type',
+    },
+    'paths in code unit order': {
+        schema: openApiDocument({ '/b': 1, '/a': 1 }),
+        pointer: '#/paths/~1a',
+    },
+    'operationId used twice, in code unit order': {
+        schema: openApiDocument({
+            '/b': { get: { operationId: 'x' } },
+            '/a': { get: { operationId: 'x' } },
+        }),
+        pointer: '#/paths/~1b/get/operationId',
+    },
+    'responses in code unit order': {
+        schema: openApiDocument({ '/a': { get: { responses: { default: 1, '4XX': 1 } } } }),
+        pointer: '#/paths/~1a/get/responses/4XX',
+    },
+    'content in code unit order': {
+        schema: openApiDocument({
+            '/a': {
+                post: { requestBody: { content: { 'text/plain': 1, 'application/json': 1 } } },
+            },
+        }),
+        pointer: '#/paths/~1a/post/requestBody/content/application~1json',
+    },
+    'component schemas in code unit order': {
+        schema: openApiDocument({}, { schemas: { B: { type: 'date' }, A: { type: 'date' } } }),
+        pointer: '#/components/schemas/A/type',
+    },
     // The reference of a parameter's schema is followed first, for its default, before the responses
     'parameter schema reference, before responses': {
         schema: openApiDocument(
@@ -233,6 +325,29 @@ export const invalidSchemas: Readonly<Record<string, ErrorCase>> = {
  */
 export const strictSchemas: Readonly<Record<string, ErrorCase>> = {
     'unknown keyword': { schema: { type: 'string', foo: 1 }, pointer: '#/foo' },
+    'unknown keywords in code unit order': {
+        schema: { type: 'string', foo: 1, bar: 1 },
+        pointer: '#/bar',
+    },
+    'discriminator mapping in code unit order': {
+        schema: openApiDocument(
+            {},
+            {
+                schemas: {
+                    Pet: {
+                        type: 'object',
+                        properties: { kind: { type: 'string' } },
+                        required: ['kind'],
+                        discriminator: {
+                            propertyName: 'kind',
+                            mapping: { b: 'Missing', a: 'Missing' },
+                        },
+                    },
+                },
+            }
+        ),
+        pointer: '#/components/schemas/Pet/discriminator/mapping/a',
+    },
     'OpenAPI 3.0 keyword': { schema: { type: 'string', nullable: true }, pointer: '#/nullable' },
     'type keyword without a type': { schema: { maxLength: 1 }, pointer: '#/maxLength' },
     'keyword for another type': {

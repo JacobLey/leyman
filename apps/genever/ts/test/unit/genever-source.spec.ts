@@ -54,7 +54,7 @@ suite('geneverSource', () => {
             })
         ).to.deep.equal([
             { name: 'Schema', pointer: '#', at: 'Schema' },
-            { name: '"a b"', pointer: '#/properties/a b', at: '"a b"' },
+            { name: '"a b"', pointer: '#/properties/a%20b', at: '"a b"' },
             { name: 'c', pointer: '#/properties/c', at: 'c' },
             { name: 'd', pointer: '#/properties/c/properties/d', at: 'd' },
         ]);
@@ -108,7 +108,7 @@ suite('geneverSource', () => {
         ).to.deep.equal([
             { name: 'Schema', pointer: '#', at: 'Schema' },
             { name: 'b', pointer: '#/properties/b', at: 'b' },
-            { name: 'a', pointer: '#/patternProperties/^a$', at: 'a' },
+            { name: 'a', pointer: '#/patternProperties/%5Ea$', at: 'a' },
         ]);
     });
 
@@ -128,7 +128,7 @@ suite('geneverSource', () => {
                 components: { schemas: { 'A note': { type: 'string' } } },
             })
         ).to.deep.equal([
-            { name: 'ANote', pointer: '#/components/schemas/A note', at: 'ANote' },
+            { name: 'ANote', pointer: '#/components/schemas/A%20note', at: 'ANote' },
             { name: 'Paths', pointer: '#/paths', at: 'Paths' },
         ]);
     });

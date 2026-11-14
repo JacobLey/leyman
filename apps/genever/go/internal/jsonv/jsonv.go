@@ -1,7 +1,7 @@
 // Package jsonv decodes JSON into values that keep the order of object keys, as JavaScript's JSON.parse does.
 //
-// genever reads keywords, properties and definitions in the order a schema writes them: it decides the order of
-// generated fields and types, and which of several mistakes is reported. A map would lose it.
+// genever generates fields and types in the order a schema writes them, which a map would lose. It visits them, which
+// decides which of several mistakes is reported, in the order of SortedKeys instead.
 package jsonv
 
 import (
@@ -11,8 +11,10 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 )
 
 // A Value is a decoded JSON value: nil, bool, float64, string, []Value or *Object.
@@ -48,6 +50,18 @@ func (o *Object) Get(key string) (any, bool) {
 // Keys returns the object's keys, in order.
 func (o *Object) Keys() []string {
 	return o.keys
+}
+
+// SortedKeys returns the object's keys in UTF-16 code unit order, as RFC 8785 §3.2.3 sorts them
+// (https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3) and JavaScript compares strings: the order genever visits
+// them in, so every implementation reports the same one of several mistakes.
+func (o *Object) SortedKeys() []string {
+	return slices.SortedFunc(slices.Values(o.keys), CompareCodeUnits)
+}
+
+// CompareCodeUnits compares strings by UTF-16 code unit, as JavaScript does.
+func CompareCodeUnits(a, b string) int {
+	return slices.Compare(utf16.Encode([]rune(a)), utf16.Encode([]rune(b)))
 }
 
 // Len returns the number of keys.

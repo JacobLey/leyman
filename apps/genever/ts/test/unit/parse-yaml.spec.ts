@@ -28,6 +28,12 @@ suite('parseYaml', () => {
         );
     });
 
+    test('a recursive alias becomes a $ref, percent-encoded', () => {
+        expect(parseYaml("$defs:\n  'a#%~': &n { items: *n }\n")).to.deep.equal({
+            $defs: { 'a#%~': { items: { $ref: '#/$defs/a%23%25~0' } } },
+        });
+    });
+
     test("rejects what JSON can't hold", () => {
         expect(() => parseYaml('a: 1\na: 2\n')).to.throw(YAMLError);
         expect(() => parseYaml('const: .inf\n')).to.throw(GeneverInvalidSchemaError);

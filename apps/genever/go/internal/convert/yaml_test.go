@@ -76,6 +76,7 @@ func TestYAMLAliases(t *testing.T) {
 	expectYAML(t, "&node\ntype: object\nproperties:\n  children: { type: array, items: *node }\n",
 		`{"type": "object", "properties": {"children": {"type": "array", "items": {"$ref": "#"}}}}`)
 	expectYAML(t, "$defs:\n  'a b': &n { items: *n }\n", `{"$defs": {"a b": {"items": {"$ref": "#/$defs/a%20b"}}}}`)
+	expectYAML(t, "$defs:\n  'a#%~': &n { items: *n }\n", `{"$defs": {"a#%~": {"items": {"$ref": "#/$defs/a%23%25~0"}}}}`)
 	expectYAML(t, "allOf: [&n { not: *n }]\n", `{"allOf": [{"not": {"$ref": "#/allOf/0"}}]}`)
 	expectYAML(t, "$defs:\n  a: &a\n    $id: a.json\n    items: *a\n", `{"$defs": {"a": {"$id": "a.json", "items": {"$ref": "#"}}}}`)
 	expectYAML(t, "$defs:\n  a: &a\n    $id: '#plain'\n    items: *a\n",

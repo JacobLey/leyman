@@ -43,13 +43,14 @@ func DocumentDialect(input jsonv.Value) (Dialect, bool, error) {
 	}
 }
 
-// members are the values of an object or array, with their JSON Pointers, or none for anything else.
+// members are the values of an object, in the order of SortedKeys, or of an array, in order, with their JSON Pointers,
+// or none for anything else.
 func members(value jsonv.Value, pointer string) []target {
 	switch collection := value.(type) {
 	case *jsonv.Object:
 		result := make([]target, 0, collection.Len())
 
-		for _, key := range collection.Keys() {
+		for _, key := range collection.SortedKeys() {
 			member, _ := collection.Get(key)
 			result = append(result, target{schema: member, pointer: childPointer(pointer, key)})
 		}

@@ -23,8 +23,10 @@ type Error struct {
 	Cause error
 	// Message says what is wrong, without the pointer.
 	Message string
-	// Pointer is the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. In another file, it
-	// starts with that file's URI.
+	// Pointer is the JSON Pointer to the schema or keyword at fault, as a URI fragment, e.g. `#/properties/a/type`:
+	// each key has `~` escaped as `~0` and `/` as `~1`, then is percent-encoded (RFC 6901 §6,
+	// https://www.rfc-editor.org/rfc/rfc6901#section-6), so it is also a `$ref` to it. In another file, it starts with
+	// that file's URI.
 	Pointer string
 	// ReferencedFrom is the file or URL whose `$ref` needed the file that failed to load, for ErrLoad.
 	ReferencedFrom string

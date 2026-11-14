@@ -20,6 +20,7 @@ import {
     schemaKeywords,
     schemaMapKeywords,
 } from './resources.js';
+import { visitEntries } from './visit-order.js';
 
 /**
  * @import { YAMLError } from 'yaml'
@@ -106,7 +107,8 @@ const aliasReference = (target: Location, location: Location): { $ref: string } 
             pointer: location.pointer,
         });
     }
-    return { $ref: `#${encodeURI(target.pointer.slice(target.resource.length))}` };
+    // Pointers are already in their URI fragment form
+    return { $ref: `#${target.pointer.slice(target.resource.length)}` };
 };
 
 /**
@@ -188,15 +190,12 @@ class JsonTree {
             ? subschemaKeywords(object)
             : new Map<string, boolean>();
         return Object.fromEntries(
-            Object.entries(object).map(([key, child]) => {
+            visitEntries(object, (key, child) => {
                 const isCollection = subschemas.get(key);
                 const keyLocation = childLocation(location, key, isCollection === false);
-                return [
-                    key,
-                    isCollection === true
-                        ? this.#copyCollection(child, keyLocation)
-                        : this.copy(child, keyLocation),
-                ];
+                return isCollection === true
+                    ? this.#copyCollection(child, keyLocation)
+                    : this.copy(child, keyLocation);
             })
         );
     }
@@ -214,13 +213,15 @@ class JsonTree {
             return this.copy(value, location);
         }
         this.#ancestors.set(value, location);
-        const entries = Object.entries(value).map(
-            ([key, member]) => [key, this.copy(member, childLocation(location, key, true))] as const
-        );
+        const copy = Array.isArray(value)
+            ? value.map((member: unknown, i) => this.copy(member, childLocation(location, i, true)))
+            : Object.fromEntries(
+                  visitEntries(value as Readonly<Record<string, unknown>>, (key, member) =>
+                      this.copy(member, childLocation(location, key, true))
+                  )
+              );
         this.#ancestors.delete(value);
-        return Array.isArray(value)
-            ? entries.map(([, member]) => member)
-            : Object.fromEntries(entries);
+        return copy;
     }
 }
 

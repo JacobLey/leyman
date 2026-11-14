@@ -3,6 +3,7 @@ import { GeneverInvalidSchemaError, GeneverUnsupportedError } from './errors.js'
 import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
 import { isSchemaObject } from './read-keyword.js';
+import { compareCodeUnits, visitOrder } from './visit-order.js';
 
 /**
  * Base URI of a document without its own `$id`, read from nowhere in particular. Only used to resolve
@@ -84,7 +85,8 @@ const anchorName = /^[A-Z_a-z][\w\-.]*$/v;
  */
 export interface Target {
     /**
-     * Canonical JSON Pointer to the schema, from the root of the document, e.g. `#/$defs/A`.
+     * Canonical JSON Pointer to the schema, from the root of the document, as a URI fragment (see
+     * {@link childPointer}), e.g. `#/$defs/A`.
      * In an {@link OpenApiFile}, it is preceded by the file's URI, e.g. `file:///api/common.yaml#/components/schemas/A`.
      */
     readonly pointer: string;
@@ -308,7 +310,8 @@ class Indexer {
                 continue;
             }
             const keywordPointer = childPointer(pointer, keyword);
-            for (const [key, member] of Object.entries(value)) {
+            for (const key of visitOrder(value)) {
+                const member = value[key];
                 if (isSchemaObject(member)) {
                     this.visit(member, childPointer(keywordPointer, key), baseUri, isDraft04);
                 }
@@ -422,8 +425,8 @@ export const indexDocument = (
     for (const { pointer, schema } of schemas) {
         indexer.visit(schema, pointer, documentUri, isDraft04);
     }
-    for (const [uri, file] of files) {
-        indexer.visitFile(uri, file);
+    for (const uri of files.keys().toArray().toSorted(compareCodeUnits)) {
+        indexer.visitFile(uri, files.get(uri)!);
     }
     return indexer.index;
 };
@@ -514,19 +517,26 @@ export const locate = (root: Target, fragment: string): Target | null => {
 };
 
 /**
- * Each member of an OpenAPI map or array, with its JSON Pointer.
+ * Each member of an OpenAPI map or array, with its JSON Pointer: a map's in {@link visitOrder}, an array's in order.
  *
  * @param value - map, or array
  * @param pointer - JSON Pointer to it
  * @returns members, or none if it is neither
  */
-const members = (value: unknown, pointer: string): Target[] =>
-    isSchemaObject(value) || Array.isArray(value)
-        ? Object.entries(value as Readonly<Record<string, unknown>>).map(([key, member]) => ({
+const members = (value: unknown, pointer: string): Target[] => {
+    if (Array.isArray(value)) {
+        return value.map((member: unknown, i) => ({
+            pointer: childPointer(pointer, i),
+            schema: member,
+        }));
+    }
+    return isSchemaObject(value)
+        ? visitOrder(value).map(key => ({
               pointer: childPointer(pointer, key),
-              schema: member,
+              schema: value[key],
           }))
         : [];
+};
 
 /**
  * What a reference object refers to: a path item, or another OpenAPI object with schemas (a parameter,

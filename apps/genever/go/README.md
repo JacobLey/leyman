@@ -74,6 +74,8 @@ source, err := genever.Generate(schema, genever.Options{Name: "Pet", Package: "a
 
 Errors match with `errors.Is`: `ErrInvalidSchema`, `ErrStrictMode`, `ErrUnsupported` and `ErrLoad`, each an `*Error` with the JSON Pointer of the problem, and `ErrSyntax` (input that isn't JSON) and `ErrYAML` (a `.yaml` or `.yml` input that isn't YAML JSON can hold), which have no pointer. `GenerateFile` also fails with [populate-files'](../../populate-files/go/) `ErrCheck` and `ErrOwnership`.
 
+A `Pointer`, of an error or a name, is in the same form as the TypeScript genever's ([Errors](../ts/README.md#errors)): a URI fragment, with each key's `~` and `/` escaped as `~0` and `~1` and then percent-encoded ([RFC 6901 §6](https://www.rfc-editor.org/rfc/rfc6901#section-6)), so it is also a `$ref` to the same place, e.g. `#/properties/50%25%20off` for the property `50% off`. Of several mistakes, the one reported is the same as there too: keywords are checked in a fixed order, and the members of every object (properties, definitions, paths and the rest) in the UTF-16 code unit order of their keys ([RFC 8785 §3.2.3](https://www.rfc-editor.org/rfc/rfc8785#section-3.2.3)), not the order they are written in. Generated code keeps the input's order.
+
 ## Types
 
 The root schema is a type named `--name`, and each definition in its `$defs` (or draft 7 `definitions`), or an OpenAPI document's `components.schemas`, is a type named after its key. An OpenAPI document's operations have [types of their own](#operations).
