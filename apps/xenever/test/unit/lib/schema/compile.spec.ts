@@ -319,6 +319,19 @@ suite('Schema checks', () => {
             expect(parse('<a><b>1</b></a>', a).children).to.deep.equal({ b: [1] });
         });
 
+        test('Accepts an element declared twice with properties in another order', () => {
+            const a = x.element(
+                'a',
+                x.complex({
+                    content: x.sequence([
+                        { kind: 'element', name: 'b', type: x.int(), default: '1' },
+                        { default: '1', type: x.int(), name: 'b', kind: 'element' },
+                    ] as x.Element[]),
+                })
+            );
+            expect(parse('<a><b/><b>2</b></a>', a).children).to.deep.equal({ b: [1, 2] });
+        });
+
         test('Rejects a key used by two elements', () => {
             expectInvalidSchema(
                 withContent(

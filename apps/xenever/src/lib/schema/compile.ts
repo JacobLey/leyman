@@ -672,16 +672,15 @@ const isSameDeclaration = (a: unknown, b: unknown, isOutermost = false): boolean
         return false;
     }
     const keys = (value: object): string[] =>
-        Object.keys(value)
-            .filter(key => !(isOutermost && occursProperties.has(key)))
-            .toSorted((keyA, keyB) => keyA.localeCompare(keyB));
+        Object.keys(value).filter(key => !(isOutermost && occursProperties.has(key)));
+    // Compared as sets, so the order properties were written in doesn't matter
     const keysA = keys(a);
-    const keysB = keys(b);
+    const keysB = new Set(keys(b));
     return (
-        keysA.length === keysB.length &&
+        keysA.length === keysB.size &&
         keysA.every(
-            (key, index) =>
-                key === keysB[index] &&
+            key =>
+                keysB.has(key) &&
                 isSameDeclaration(
                     (a as Readonly<Record<string, unknown>>)[key],
                     (b as Readonly<Record<string, unknown>>)[key]
