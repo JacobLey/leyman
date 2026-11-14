@@ -1,4 +1,4 @@
-import { chmod, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -35,13 +35,44 @@ suite('SessionStore', () => {
         withDirectory.test(
             'Takes over a lock left by a command that died',
             async ({ directory, store }) => {
-                const lock = Path.join(directory, 'session.lock');
-                await writeFile(lock, '');
+                const holder = Path.join(directory, 'session.lock', 'died');
+                await mkdir(Path.dirname(holder));
+                await writeFile(holder, '');
                 // In seconds
                 const minuteAgo = (Date.now() - 60_000) / 1000;
-                await utimes(lock, minuteAgo, minuteAgo);
+                await utimes(holder, minuteAgo, minuteAgo);
 
                 expect(await store.locked(async () => 'ran')).to.equal('ran');
+            }
+        );
+
+        withDirectory.test(
+            'Lets only one of the commands waiting on a dead lock take it over',
+            async ({ directory, store }) => {
+                const holder = Path.join(directory, 'session.lock', 'died');
+                let holding = 0;
+                let mostHolding = 0;
+                const take = async (): Promise<void> =>
+                    store.locked(async () => {
+                        holding++;
+                        mostHolding = Math.max(mostHolding, holding);
+                        await sleep(1);
+                        holding--;
+                    });
+
+                // The race depends on how the file system calls interleave, so it's run several times
+                for (let round = 0; round < 4; round++) {
+                    await mkdir(Path.dirname(holder));
+                    await writeFile(holder, '');
+                    // In seconds
+                    const minuteAgo = (Date.now() - 60_000) / 1000;
+                    await utimes(holder, minuteAgo, minuteAgo);
+
+                    await Promise.all(Array.from({ length: 5 }, take));
+                }
+
+                expect(mostHolding).to.equal(1);
+                expect(await readdir(directory)).to.deep.equal([]);
             }
         );
 
@@ -57,6 +88,16 @@ suite('SessionStore', () => {
 
             await expect(store.locked(async () => 'ran')).to.be.rejectedWith(/ENAMETOOLONG/v);
         });
+
+        withDirectory.test(
+            "Rejects when something that isn't a lock is in its place",
+            async ({ directory, store }) => {
+                await writeFile(Path.join(directory, 'session.lock'), '');
+
+                await expect(store.locked(async () => 'ran')).to.be.rejectedWith(/ENOTDIR/v);
+                expect(await readdir(directory)).to.deep.equal(['session.lock']);
+            }
+        );
 
         withDirectory.test('Makes the directory, owner-only', async ({ directory }) => {
             const made = Path.join(directory, 'notes');
