@@ -6,7 +6,7 @@ import type {
     MergeContext,
 } from 'test-chain-core';
 
-export type ValidDoneReturnTypes = '' | 0 | 0n | false | null | undefined | void;
+export type ValidDoneReturnTypes = 0 | 0n | '' | false | null | undefined | void;
 
 export interface GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
