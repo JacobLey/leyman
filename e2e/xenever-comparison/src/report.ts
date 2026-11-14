@@ -27,6 +27,7 @@ export interface ProbeResult {
  * Size of what a tool needs at runtime to parse a document, bundled and minified.
  */
 export type BundleResult =
+    | { readonly error: string }
     | {
           readonly minified: number;
           readonly gzip: number;
@@ -34,8 +35,7 @@ export type BundleResult =
            * Node.js built-in modules it imports, which a browser doesn't have.
            */
           readonly nodeBuiltins: readonly string[];
-      }
-    | { readonly error: string };
+      };
 
 /**
  * One tool's results.

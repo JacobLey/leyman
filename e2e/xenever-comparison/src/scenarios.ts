@@ -38,17 +38,17 @@ export type Probe = { readonly description: string } & (
       }
     | {
           /**
-           * The document throws, or is reported invalid.
-           */
-          readonly kind: 'rejects';
-          readonly document: string;
-      }
-    | {
-          /**
            * The documents parse to equal values.
            */
           readonly kind: 'same';
           readonly documents: readonly string[];
+      }
+    | {
+          /**
+           * The document throws, or is reported invalid.
+           */
+          readonly kind: 'rejects';
+          readonly document: string;
       }
     | {
           /**
