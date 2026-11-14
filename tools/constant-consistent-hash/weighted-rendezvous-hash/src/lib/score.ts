@@ -5,6 +5,11 @@ import type { KeyHash } from 'constant-consistent-hash';
 /**
  * 32 bit integer hash (lowbias32) of a seed offset by an index.
  *
+ * A copy of constant-consistent-hash's `mix32`, which that package doesn't export: exporting it would add it to the API
+ * of every implementation of its spec, for this one function. The spec and its test vectors pin the original:
+ * https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/ts/SPEC.md#mix32seed-index--u32
+ * and the test "Places keys the same way at every release" pins this copy.
+ *
  * @param seed - 32 bit integer
  * @param index - 32 bit integer
  * @returns unsigned 32 bit integer

@@ -44,6 +44,15 @@ suite('createRendezvousHash', () => {
         ).toEqualTypeOf<number>();
     });
 
+    test('Places keys the same way at every release', () => {
+        // Any change to how keys are drawn, such as to the copy of `mix32`, moves keys between nodes
+        const placements = [0, 1].map(seed => {
+            const hash = createRendezvousHash(nodes, { seed });
+            return Array.from({ length: 16 }, (_, i) => hash.get(`key-${i}`).name).join('');
+        });
+        expect(placements).to.deep.equal(['ccedddeaeedeedcd', 'cbbdbcdcedcebbed']);
+    });
+
     test('Returns the node objects given', () => {
         const hash = createRendezvousHash(nodes);
         expect(keys.every(key => nodes.includes(hash.get(key)))).to.equal(true);
