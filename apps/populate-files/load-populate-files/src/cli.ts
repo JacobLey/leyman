@@ -77,7 +77,7 @@ export default class Cli extends EntryScript {
                             },
                             force: {
                                 describe:
-                                    'Overwrite signed files even if they were edited, are not signed, or would lose manual sections',
+                                    'Overwrite (or with --clean, remove) signed files and files tracked by --manifest even if they were edited, are not signed or not listed, or are malformed, dropping orphaned manual sections',
                                 type: 'boolean',
                                 default: false,
                             },

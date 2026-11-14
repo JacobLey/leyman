@@ -73,7 +73,7 @@ func (*CheckError) Is(target error) bool {
 var ownershipMessages = map[OwnershipReason]string{
 	OwnershipEdited:          "was edited since it was generated",
 	OwnershipMalformed:       "has a malformed signature or manual sections",
-	OwnershipNotOwned:        "exists but is not signed, so it may not be generated",
+	OwnershipNotOwned:        "exists but is not marked as generated",
 	OwnershipOrphanedSection: "has manual sections with content that would be removed",
 }
 

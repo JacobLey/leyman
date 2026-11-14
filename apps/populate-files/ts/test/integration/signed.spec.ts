@@ -90,7 +90,10 @@ suite('Signed files', () => {
             )
         )
             .to.be.rejectedWith(PopulateFilesOwnershipError)
-            .and.eventually.include({ reason: 'not-owned' });
+            .and.eventually.include({
+                reason: 'not-owned',
+                message: `File ${ctx.filePath} exists but is not marked as generated (not signed). Pass \`force\` to overwrite it.`,
+            });
     });
 
     withFile.test('Refuses to overwrite a malformed file', async ctx => {

@@ -70,6 +70,33 @@ func TestErrorMessages(t *testing.T) {
 	}
 }
 
+// A file that exists but isn't marked as generated, by a signature or by the manifest.
+func TestNotOwnedMessages(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "a.ts"), []byte("handwritten\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, scenario := range []struct {
+		manifest string
+		detail   string
+		signed   bool
+	}{
+		{manifest: "", detail: "not signed", signed: true},
+		{manifest: "manifest.json", detail: "not listed in the manifest", signed: false},
+	} {
+		want := "File " + filepath.Join(dir, "a.ts") + " exists but is not marked as generated (" + scenario.detail +
+			"). Pass `force` to overwrite it."
+		for _, err := range populateBoth(t, newFile("a.ts", "a\n", scenario.signed), newOptions(dir, scenario.manifest)) {
+			if err == nil || err.Error() != want {
+				t.Errorf("got %v, want %s", err, want)
+			}
+		}
+	}
+}
+
 func TestAbsolutePaths(t *testing.T) {
 	t.Parallel()
 

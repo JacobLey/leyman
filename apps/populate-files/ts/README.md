@@ -139,14 +139,14 @@ Both errors are exported (`import { PopulateFilesCheckError, PopulateFilesOwners
 
 `PopulateFilesCheckError` is thrown with `check` when files are out of date. Its `files` property lists each one, with its `filePath` and a `reason`: `'file-not-exist'`, `'content-changed'` or `'stale-file'`.
 
-`PopulateFilesOwnershipError` is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
+`PopulateFilesOwnershipError` is thrown when an existing `signed` file, or with a `manifest` an unsigned one, can't be overwritten (or, with `clean`, removed) without `force`. Its `filePath` property is the file, and `reason` is one of:
 
-| `reason`             | Meaning                                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------------------- |
-| `'edited'`           | The file was edited outside its manual sections (or, with a `manifest`, doesn't match its hash).         |
-| `'not-owned'`        | The file exists but is not signed (or, with a `manifest`, not listed in it), so it may not be generated. |
-| `'malformed'`        | The file's signature or manual section markers can't be read.                                            |
-| `'orphaned-section'` | The file has a manual section with content that the new content no longer has.                           |
+| `reason`             | Meaning                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `'edited'`           | The file was edited outside its manual sections (or, with a `manifest`, doesn't match its hash).               |
+| `'not-owned'`        | The file exists but is not signed (or, with a `manifest`, not listed in it), so nothing marks it as generated. |
+| `'malformed'`        | The file's signature or manual section markers can't be read.                                                  |
+| `'orphaned-section'` | The file has a manual section with content that the new content no longer has.                                 |
 
 These are thrown with or without `check`, so CI also fails on hand-edited files. An existing file that can't be read for any reason other than not existing (e.g. `EACCES`) fails with the error from `node:fs`. An invalid manifest throws `GeneratedSignatureManifestError`, and a `signed` file with no known comment syntax (e.g. a new `.json` file) throws `GeneratedSignatureCommentStyleError`, both from [`generated-signature`](https://www.npmjs.com/package/generated-signature). Signed content that isn't a string rejects with a `TypeError` (a type error in TypeScript).
 
@@ -201,3 +201,4 @@ await populateFiles(
 - [`generated-signature`](https://www.npmjs.com/package/generated-signature) — the signature and manual section format used by `signed` files
 - [`format-file`](https://www.npmjs.com/package/format-file) — used internally to pretty-print stringified file content
 - [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) — used internally to interpret the `cwd` option
+  to interpret the `cwd` option

@@ -130,7 +130,10 @@ suite('Manifest', () => {
 
             await expect(populateFiles([...files], ctx.options))
                 .to.be.rejectedWith(PopulateFilesOwnershipError)
-                .and.eventually.include({ reason: 'not-owned' });
+                .and.eventually.include({
+                    reason: 'not-owned',
+                    message: `File ${ctx.resolve('out/a.json')} exists but is not marked as generated (not listed in the manifest). Pass \`force\` to overwrite it.`,
+                });
         });
 
         withDir.test('Adopts an unlisted file that is already up to date', async ctx => {

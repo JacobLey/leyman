@@ -11,7 +11,7 @@ const formatErrorMessage = ({ filePath, reason }: OutdatedFile): string =>
 const ownershipMessages = {
     edited: 'was edited since it was generated',
     malformed: 'has a malformed signature or manual sections',
-    'not-owned': 'exists but is not signed, so it may not be generated',
+    'not-owned': 'exists but is not marked as generated',
     'orphaned-section': 'has manual sections with content that would be removed',
 } as const satisfies Record<OwnershipReason, string>;
 
@@ -23,7 +23,9 @@ const ownershipMessages = {
 export abstract class PopulateFilesError extends Error {}
 
 /**
- * A signed file can't be overwritten without losing someone's edits.
+ * An existing file may not be overwritten (or, with `clean`, removed) without `force`: a signed
+ * file that isn't signed or doesn't verify, or an unsigned file that the `manifest` doesn't list
+ * or that changed since. Either way it may hold someone's edits. `reason` says which.
  */
 export class PopulateFilesOwnershipError extends PopulateFilesError {
     public readonly filePath: string;

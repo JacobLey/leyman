@@ -25,7 +25,7 @@ func assertOwned(path string, result generatedsignature.VerifyResult) error {
 		return &OwnershipError{Err: nil, Path: path, Reason: OwnershipEdited, Detail: "outside of manual sections"}
 	}
 
-	return &OwnershipError{Err: nil, Path: path, Reason: OwnershipNotOwned, Detail: ""}
+	return &OwnershipError{Err: nil, Path: path, Reason: OwnershipNotOwned, Detail: "not signed"}
 }
 
 // signContent signs generated text, with the manual sections of the existing file. Without force, the existing file

@@ -26,7 +26,7 @@ const assertOwned = (filePath: string, result: VerifyResult): void => {
     throw new PopulateFilesOwnershipError(
         result.status === 'invalid'
             ? { filePath, reason: 'edited', detail: 'outside of manual sections' }
-            : { filePath, reason: 'not-owned' }
+            : { filePath, reason: 'not-owned', detail: 'not signed' }
     );
 };
 
