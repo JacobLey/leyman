@@ -115,6 +115,8 @@ Packs the package with `pnpm pack`, exactly as it would be published, and checks
 - Support floor: `tsconfig.json` extends `@leyman/configs/tsconfig.node-<major>.json` and the installed `@types/node` has that major version (so `catalog:node-<major>`), for the major version of `engines.node` (see [Support floors](../typescript/SKILL.md#support-floors)). Every runtime dependency's `engines.node` must allow the oldest version the package's allows, so lowering a floor fails while a dependency still needs newer, and raising a dependency's fails until its dependents follow.
 - Published files: every top-level path not ignored by `.gitignore` is either published, or on check-package's list of paths never published (`src`, `test`, `project.json`, ...; more with `--not-published`), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
 
+Every package that isn't `private` gets it, built or not. One with no entry point (no `main`, `exports`, `bin` or types), like `@leyman/configs`, is checked as files only: publint and the published files, with no `engines.node` needed.
+
 It hashes everything in the project but `test/`, `CHANGELOG.md` and `eslint.config.js`, whose contents can't change the result, so a new top-level path still reruns it.
 
 `e2e/published-entrypoints` complements it at runtime, importing every entry point from the published files.

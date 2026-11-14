@@ -90,16 +90,23 @@ suite('inferTargets', () => {
             .and.not.include('vitest-unit-test');
     });
 
-    test('Checks no coverage, nor the package, without source', () => {
+    test('Checks no coverage without source', () => {
         expect(
             inferTargets(
                 project({
-                    packageJson: { devDependencies: { mocha: '*' } },
+                    packageJson: { private: true, devDependencies: { mocha: '*' } },
                     files: ['tsconfig.json', 'test/tsconfig.json', 'test/integration'],
                 }),
                 resolveOptions()
             )
         ).to.deep.equal(['biome', 'update-ts-references', 'tsc-test', 'mocha-integration-test']);
+    });
+
+    test('Checks a published package without source', () => {
+        expect(inferTargets(project({}), resolveOptions())).to.deep.equal([
+            'biome',
+            'check-package',
+        ]);
     });
 
     test('Runs no tests without a runner', () => {

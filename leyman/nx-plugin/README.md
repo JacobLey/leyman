@@ -83,7 +83,7 @@ Anything in `project.json` is merged over the inferred target, key by key, so a 
 | ------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `biome`                  | Always                                                          | `biome format --write .`, or only checks in CI. `-c check` only checks.                                           |
 | `eslint`                 | `eslint.config.js`                                              | `eslint` on the project. `-c fix` fixes.                                                                          |
-| `check-package`          | `tsc` is, and `package.json` isn't `private`                    | `check-package`, on the package as it would be published.                                                         |
+| `check-package`          | `package.json` isn't `private`                                  | `check-package`, on the package as it would be published.                                                         |
 | `update-ts-references`   | `tsconfig.json`                                                 | Nx's TypeScript sync generator, which keeps `references` in step with dependencies.                               |
 | `tsc`                    | `tsconfig.json` and `src/`                                      | Clears `dist/`, compiles `src/` with SWC, then `tsc` for types and declarations.                                  |
 | `tsc-test`               | `test/tsconfig.json`                                            | Compiles `test/` into `dist-test/` with SWC, then type-checks it with `tsc -p ./test`.                            |

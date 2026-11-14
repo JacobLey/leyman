@@ -82,13 +82,14 @@ const targetsFromFiles = ({ has, isDependency, packageJson }: ProjectFacts): Set
     if (has('eslint.config.js')) {
         targets.add('eslint');
     }
+    // Every published package, built or not: a package of config files still publishes files to check
+    if (packageJson.private !== true) {
+        targets.add('check-package');
+    }
     if (targets.has('tsc')) {
         const tested = ['mocha-unit-test', 'mocha-integration-test', 'vitest-unit-test'] as const;
         if (tested.some(target => targets.has(target))) {
             targets.add('coverage-report');
-        }
-        if (packageJson.private !== true) {
-            targets.add('check-package');
         }
     }
     return targets;

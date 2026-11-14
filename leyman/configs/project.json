@@ -3,6 +3,7 @@
   "name": "@leyman/configs",
   "targets": {
     "biome": {},
+    "check-package": {},
     "sync-injected": {},
     "install:_": {},
     "install": {},
