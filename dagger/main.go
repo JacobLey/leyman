@@ -239,10 +239,11 @@ func (m *Ci) Floors(
 	// +optional
 	nxCache *dagger.Service,
 	// The files `docs/scripts/populate-docs.mjs` generates in the paths `New` leaves out of the source (its
-	// `ciExcluded`), and only those, so editing anything else there never invalidates this call. A file it generates
-	// there that is missing from this list fails the check as out of date, so the list can't fall behind silently.
+	// `ciExcluded`), and the skills `AGENTS.md`'s table is generated from, and only those, so editing anything else
+	// there never invalidates this call. A file it generates there that is missing from this list fails the check as
+	// out of date, as does a missing skill, so the list can't fall behind silently.
 	// +defaultPath="/"
-	// +ignore=["*", "!README.md", "!.agents/skills/projects/SKILL.md", "!.agents/skills/docs-site/SKILL.md", "!.claude/rules/docs-site-sync.md", "!.github/ISSUE_TEMPLATE/bug_report.yml", "!.github/ISSUE_TEMPLATE/feature_request.yml"]
+	// +ignore=["*", "!AGENTS.md", "!README.md", "!.agents/skills/*/SKILL.md", "!.claude/rules/docs-site-sync.md", "!.github/ISSUE_TEMPLATE/bug_report.yml", "!.github/ISSUE_TEMPLATE/feature_request.yml"]
 	generated *dagger.Directory,
 ) error {
 	built := m.built(nxCache)

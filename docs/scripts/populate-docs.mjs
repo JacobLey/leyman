@@ -2,10 +2,11 @@
  * Generates the package lists that docs repeat: the README's package and demo tables, the
  * projects skill's tables, the docs-site skill's tables, `docs/README.md`'s list of documented
  * packages, the paths of the docs-site rule, and the package dropdowns of the issue templates.
- * Also the principles skill `@leyman/configs` ships, from the principles page.
+ * Also the principles skill `@leyman/configs` ships, from the principles page, and the skills
+ * table of `AGENTS.md`, from each skill's frontmatter.
  *
  * Data comes from each project's `package.json` (or `project.json` `metadata.description` for a
- * project with none) and from `docs/.vitepress/projects.ts`. Prose lives in manual sections, kept
+ * project with none), from `docs/.vitepress/projects.ts`, and from the skills' `SKILL.md` files. Prose lives in manual sections, kept
  * across runs. Files are signed, so an edit outside a manual section fails the next run; in CI
  * (`CI` set) a file that would change fails it. `--force` overwrites edited or unsigned files.
  */
@@ -389,7 +390,7 @@ ${yamlManual('rest')}
  * them instead, adding back only the files generated here (its `generated` argument), as does any
  * full checkout.
  */
-const ciExcluded = ['.agents', '.claude', '.github', 'README.md'];
+const ciExcluded = ['.agents', '.claude', '.github', 'AGENTS.md', 'README.md'];
 const excludedHere = filePath =>
     ciExcluded.some(
         excluded =>
@@ -413,7 +414,92 @@ ${header()}
 ${body}`;
 };
 
+/**
+ * A skill's `name` and `description`, from the frontmatter of its `SKILL.md`. Only plain one-line
+ * values are read, which every skill here uses; anything else fails, rather than being misread.
+ *
+ * @param filePath - the `SKILL.md`, from the root
+ * @returns its name and description
+ * @throws when either is missing or not a plain one-line value
+ */
+const readSkill = filePath => {
+    const frontmatter = /^---\n(?<yaml>.*?)\n---\n/sv.exec(
+        readFileSync(path.join(root, filePath), 'utf8')
+    )?.groups?.yaml;
+    const field = key => {
+        const value = new RegExp(`^${key}:(?<value>.*)$`, 'mv')
+            .exec(frontmatter ?? '')
+            ?.groups?.value.trim();
+        if (!value || /^["'\|>]/v.test(value)) {
+            throw new Error(`${filePath}: frontmatter needs a plain one-line ${key}`);
+        }
+        return value;
+    };
+    return { name: field('name'), description: field('description') };
+};
+
+const skillFiles = directory =>
+    existsSync(path.join(root, directory))
+        ? readdirSync(path.join(root, directory), { withFileTypes: true })
+              .filter(entry => entry.isDirectory())
+              .map(entry => path.posix.join(directory, entry.name, 'SKILL.md'))
+              .filter(filePath => existsSync(path.join(root, filePath)))
+        : [];
+
+/**
+ * Every skill an agent here can read: the repository's own (`.agents/skills`), those a package
+ * ships (`<package>/skills`, which `leyman/main/scripts/link-skills.mjs` links into
+ * `.agents/skills`), and those for working in one project (`<project>/.agents/skills`).
+ * The links themselves are skipped, since their targets are listed as shipped; so is a directory
+ * named as a shipped skill, which is what a link becomes in a copy that follows links.
+ */
+const skills = () => {
+    const shipped = projects.flatMap(project =>
+        skillFiles(`${project.directory}/skills`).map(filePath => ({
+            ...readSkill(filePath),
+            filePath,
+            source: `shipped by ${code(project.npmName ?? project.name)}`,
+        }))
+    );
+    const shippedNames = new Set(shipped.map(skill => skill.name));
+    const own = skillFiles('.agents/skills')
+        .filter(filePath => !shippedNames.has(path.basename(path.dirname(filePath))))
+        .map(filePath => ({ ...readSkill(filePath), filePath, source: 'this repository' }));
+    const scoped = projects.flatMap(project =>
+        skillFiles(`${project.directory}/.agents/skills`).map(filePath => ({
+            ...readSkill(filePath),
+            filePath,
+            source: `${code(project.directory)}'s own`,
+        }))
+    );
+    return [...own, ...shipped, ...scoped].toSorted(
+        (a, b) => byName(a.name, b.name) || byName(a.filePath, b.filePath)
+    );
+};
+
+const agentsGuide = () => {
+    const filePath = 'AGENTS.md';
+    return `${header()}
+
+${manual(filePath, 'intro')}
+
+## Skills
+
+${manual(filePath, 'skills')}
+
+${table(
+    ['Skill', 'What it covers', 'Source'],
+    skills().map(skill => [
+        `[${code(skill.name)}](./${skill.filePath})`,
+        skill.description,
+        skill.source,
+    ])
+)}
+`;
+};
+
 const files = [
+    { filePath: 'AGENTS.md', content: agentsGuide },
     { filePath: 'README.md', content: readme },
     { filePath: 'docs/README.md', content: docsReadme },
     { filePath: '.agents/skills/projects/SKILL.md', content: projectsSkill },
