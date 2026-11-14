@@ -1,4 +1,4 @@
-import type { ESLint } from 'eslint';
+import type { ESLint, Linter } from 'eslint';
 import rawCommentsPlugin from '@eslint-community/eslint-plugin-eslint-comments';
 import rawPrettierConfig from 'eslint-config-prettier';
 import rawImportPlugin from 'eslint-plugin-import-x';
@@ -12,7 +12,7 @@ export { default as eslintConfig } from '@eslint/js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- The plugins ship without types */
 export const commentsPlugin: ESLint.Plugin = rawCommentsPlugin;
-export const prettierConfig: ESLint.Plugin = rawPrettierConfig;
+export const prettierConfig: Linter.Config = rawPrettierConfig;
 export const importPlugin: ESLint.Plugin = rawImportPlugin;
 export const jsDocPlugin: ESLint.Plugin = rawJsDocPlugin;
 export const nodePlugin: ESLint.Plugin = rawNodePlugin;

@@ -88,6 +88,19 @@ const javaScriptRules = (rules: Linter.RulesRecord): Linter.RulesRecord => {
     return jsRules;
 };
 
+/**
+ * Rules eslint-config-prettier turns off that Biome's formatter can't fight, so they stay on as set above: it never
+ * adds or removes braces, never touches a template literal's contents, and ends every statement with a semicolon.
+ */
+const notFormatting = new Set(['curly', 'no-unexpected-multiline', 'unicorn/template-indent']);
+
+const formattingRulesOff = (): Linter.Config => ({
+    ...prettierConfig,
+    rules: Object.fromEntries(
+        Object.entries(prettierConfig.rules!).filter(([rule]) => !notFormatting.has(rule))
+    ),
+});
+
 // https://typescript-eslint.io/rules/naming-convention/
 export const baseNamingConvention = [
     {
@@ -264,6 +277,8 @@ export default async function makeEslintConfigForPackage({
         // Complexity and size are left to review, not capped
         complexity: 'off',
         'consistent-this': ['error', 'self'],
+        // eslint-config-prettier turns `curly` off, but its default `all` style is safe with a formatter
+        curly: ['error', 'all'],
         'func-names': ['error', 'never'],
         'func-style': ['error', 'expression', { allowArrowFunctions: true }],
         // Deprecated, and needs a list of names
@@ -976,7 +991,8 @@ export default async function makeEslintConfigForPackage({
         },
         // Not in tests, which build fixtures freely (e.g. a schema per test)
         ...plugins.map(plugin => packagePluginConfig(plugin, sourceFiles, ['test/**'])),
-        // Disable all formatting rules
-        prettierConfig as unknown as Linter.Config,
+        // Disable all formatting rules, but not the few rules eslint-config-prettier also turns off that Biome's
+        // formatter doesn't fight
+        formattingRulesOff(),
     ] satisfies Linter.Config[];
 }

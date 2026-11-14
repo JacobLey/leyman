@@ -13,7 +13,7 @@ An ESLint flat config for TypeScript ESM packages with nearly every rule on and 
 
 The config is generated from the package's `package.json`. Its workspace dependencies are treated as internal imports, rules that suggest APIs the package's oldest supported Node.js (`engines.node`) lacks are turned off, and the React rules depend on whether the package uses React. typescript-eslint's type-checked rules run through its project service, so there is no `parserOptions.project` to maintain.
 
-All formatting rules are off, so Biome or Prettier can handle formatting.
+All formatting rules are off, so Biome or Prettier can handle formatting. Three rules eslint-config-prettier also turns off stay on, since a formatter doesn't fight them: `curly` (in its `all` style), `no-unexpected-multiline` and `unicorn/template-indent`.
 
 It is the config of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be strict and to change (see [Versioning](#versioning)).
 

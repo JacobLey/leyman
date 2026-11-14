@@ -246,4 +246,13 @@ suite('configGenerator per file', function (this: Suite) {
         expect(ts!['react/jsx-key']?.[0]).to.equal(0);
         expect(tsx!['react/jsx-key']?.[0]).to.equal(2);
     });
+
+    test('Keeps on the rules eslint-config-prettier turns off that Biome does not fight', async () => {
+        const rules = await eslint.rulesFor('src/a.ts');
+        expect(rules.curly).to.deep.equal([2, 'all']);
+        expect(rules['no-unexpected-multiline']?.[0]).to.equal(2);
+        expect(rules['unicorn/template-indent']?.[0]).to.equal(2);
+        expect(rules['unicorn/template-indent']?.[1]).to.include({ indent: 4 });
+        expect(rules['unicorn/number-literal-case']?.[0]).to.equal(0);
+    });
 });
