@@ -8,7 +8,7 @@ import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
 import { generate } from './genever.js';
 import { readTypedMinItems } from './lib/convert.js';
-import { loadReferences } from './lib/load.js';
+import { fetchTimeout, loadReferences } from './lib/load.js';
 import { generatorIdentity, isUpToDate, recordInputs } from './lib/manifest-inputs.js';
 import { openApiDialect } from './lib/openapi.js';
 import { isYaml, parseText } from './lib/parse.js';
@@ -41,6 +41,8 @@ export interface GeneverFileOptions extends Omit<GeneverOptions, 'baseUri'> {
      * A list of hosts loads only URLs of those hosts, including where they redirect to.
      * A host matches on any port, unless it names one (`localhost:8080`), and `*.example.com`
      * matches subdomains of `example.com`, but not `example.com` itself.
+     *
+     * Each URL has 30 seconds to load, its redirects and body included, or it fails to load.
      *
      * @default true
      */
@@ -123,6 +125,7 @@ export const geneverFile = async (
     const documentDialect = openApiDialect(schema);
     const bundled = await loadReferences(schema, {
         baseUri,
+        fetchTimeout,
         dialect: documentDialect ?? (options.openApi30 === true ? 'openapi-3.0' : 'draft-2020-12'),
         fetch: options.fetch ?? true,
         isDocument: documentDialect !== null,

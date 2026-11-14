@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/gerr"
@@ -65,7 +66,7 @@ func loadBundle(t *testing.T, input jsonv.Value, baseURI string, options convert
 }
 
 func noLoading() convert.LoadOptions {
-	return convert.LoadOptions{OnRead: nil, Client: nil, BaseURI: "", FetchHosts: nil, Fetch: false}
+	return convert.LoadOptions{OnRead: nil, Client: nil, BaseURI: "", FetchHosts: nil, Fetch: false, FetchTimeout: 0}
 }
 
 // loadTypes loads what an input references, converts it, and returns its types' names and their keys.
@@ -718,5 +719,43 @@ func TestLoadDocumentFailures(t *testing.T) {
 	if _, err = load(t, `{"$ref": "twice.json#/components/schemas/A"}`, base+"api.json", noLoading()); !errors.Is(
 		err, gerr.ErrInvalidSchema) {
 		t.Errorf("got %v", err)
+	}
+}
+
+func TestLoadTimeout(t *testing.T) {
+	t.Parallel()
+
+	for name, respond := range map[string]func(http.ResponseWriter){
+		"never answers": func(http.ResponseWriter) {},
+		"body never ends": func(writer http.ResponseWriter) {
+			_, _ = io.WriteString(writer, "{")
+			writer.(http.Flusher).Flush() //nolint:forcetypeassert // httptest's writer flushes
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			stop := make(chan struct{})
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				respond(writer)
+
+				select {
+				case <-stop:
+				case <-request.Context().Done():
+				}
+			}))
+
+			t.Cleanup(func() {
+				close(stop)
+				server.Close()
+			})
+
+			options := noLoading()
+			options.Fetch = true
+			options.FetchTimeout = 50 * time.Millisecond
+
+			_, err := load(t, `{"$ref": "`+server.URL+`/a.json"}`, "file:///root.json", options)
+			expectLoadError(t, err, "#/$ref", "file:///root.json", "timed out after 50 ms")
+		})
 	}
 }

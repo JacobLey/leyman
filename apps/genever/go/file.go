@@ -31,7 +31,7 @@ type FileOptions struct {
 	Options
 
 	// Client fetches URLs. It must not follow redirects, which GenerateFile follows only to allowed hosts. Nil is a
-	// client that doesn't.
+	// client that doesn't. Each URL has 30 seconds to load, its redirects and body included, or it fails with ErrLoad.
 	Client *http.Client
 	// Cwd is the directory that the input, Output and Manifest are relative to, or the working directory when empty.
 	Cwd string
@@ -287,11 +287,12 @@ func generateFromFile(ctx context.Context, inputPath string, options FileOptions
 	}
 
 	bundle, err := convert.Load(ctx, root, convert.LoadOptions{
-		OnRead:     func(uri string, read []byte) { sources[uri] = read },
-		Client:     options.Client,
-		BaseURI:    baseURI,
-		FetchHosts: hosts,
-		Fetch:      !options.NoFetch,
+		OnRead:       func(uri string, read []byte) { sources[uri] = read },
+		Client:       options.Client,
+		BaseURI:      baseURI,
+		FetchHosts:   hosts,
+		Fetch:        !options.NoFetch,
+		FetchTimeout: convert.FetchTimeout,
 	})
 	if err != nil {
 		return nil, nil, err //nolint:wrapcheck // An Error, whose kind and pointer callers read

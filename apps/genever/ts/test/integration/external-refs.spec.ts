@@ -381,6 +381,7 @@ suite('external references', () => {
                     ]),
                     { Schema: '{ a?: A }', A: 'string' }
                 );
+                expect(fake.cancelled).to.deep.equal(['https://example.test/a.json']);
             } finally {
                 fake.restore();
             }

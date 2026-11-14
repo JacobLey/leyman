@@ -2,6 +2,7 @@ package convert
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/JacobLey/leyman/apps/genever/go/internal/gerr"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
@@ -30,7 +32,13 @@ type LoadOptions struct {
 	FetchHosts []string
 	// Fetch loads URLs from any host. Otherwise only files are loaded.
 	Fetch bool
+	// FetchTimeout is how long each URL has to load, its redirects and body included. Zero is FetchTimeout.
+	FetchTimeout time.Duration
 }
+
+// FetchTimeout is how long each URL has to load by default, its redirects and body included, before it fails to load.
+// The default client has no timeout of its own, so a server that never answers would hold `genever --ci` forever.
+const FetchTimeout = 30 * time.Second
 
 // maxRedirects is as many redirects as a browser's fetch follows.
 const maxRedirects = 20
@@ -174,7 +182,7 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, 
 
 	load.queue(index, references, options.BaseURI)
 
-	if err := load.run(); err != nil {
+	if err := load.run(); err != nil { //nolint:contextcheck // The loader holds ctx, for this one call
 		return none, err
 	}
 
@@ -476,20 +484,37 @@ func (l *loader) readText(uri string) ([]byte, string, bool, *unloadable) {
 			return nil, "", false, &unloadable{cause: nil, reason: "loading URLs is disabled"}
 		}
 
-		return l.fetch(parsed)
+		timeout := l.options.FetchTimeout
+		if timeout == 0 {
+			timeout = FetchTimeout
+		}
+
+		ctx, cancel := context.WithTimeoutCause(l.ctx, timeout, errFetchTimeout)
+		defer cancel()
+
+		text, readURI, isYAML, why := l.fetch(ctx, parsed)
+		if why != nil && errors.Is(context.Cause(ctx), errFetchTimeout) {
+			why = &unloadable{cause: why.cause, reason: fmt.Sprintf("timed out after %d ms", timeout.Milliseconds())}
+		}
+
+		return text, readURI, isYAML, why
 	default:
 		return nil, "", false, &unloadable{cause: nil, reason: parsed.Scheme + ": URIs can't be loaded"}
 	}
 }
 
-// fetch fetches a URL, following redirects only to hosts that are allowed.
-func (l *loader) fetch(target *url.URL) ([]byte, string, bool, *unloadable) {
+// errFetchTimeout is the cause of a URL's context ending when it took too long to load.
+var errFetchTimeout = errors.New("fetch timed out")
+
+// fetch fetches a URL, following redirects only to hosts that are allowed. The context bounds every request, and
+// reading the body.
+func (l *loader) fetch(ctx context.Context, target *url.URL) ([]byte, string, bool, *unloadable) {
 	for range maxRedirects + 1 {
 		if !l.isAllowed(target) {
 			return nil, "", false, &unloadable{cause: nil, reason: target.Host + " is not an allowed host"}
 		}
 
-		response, err := l.get(target)
+		response, err := l.get(ctx, target)
 		if err != nil {
 			return nil, "", false, &unloadable{cause: err, reason: err.Error()}
 		}
@@ -513,12 +538,12 @@ func (l *loader) fetch(target *url.URL) ([]byte, string, bool, *unloadable) {
 	return nil, "", false, &unloadable{cause: nil, reason: "too many redirects"}
 }
 
-func (l *loader) get(target *url.URL) (*http.Response, error) {
+func (l *loader) get(ctx context.Context, target *url.URL) (*http.Response, error) {
 	request := (&http.Request{ //nolint:exhaustruct_v5 // A GET without a body
 		Method: http.MethodGet,
 		URL:    target,
 		Header: http.Header{"Accept": {"application/schema+json, application/json, application/yaml;q=0.9"}},
-	}).WithContext(l.ctx)
+	}).WithContext(ctx)
 
 	response, err := l.client.Do(request)
 	if err != nil {

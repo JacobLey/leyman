@@ -43,6 +43,10 @@ export interface LoadOptions {
      */
     readonly fetch: boolean | readonly string[];
     /**
+     * Milliseconds each URL has to load, its redirects and body included: {@link fetchTimeout}, but for tests.
+     */
+    readonly fetchTimeout: number;
+    /**
      * Whether the input is an OpenAPI document.
      */
     readonly isDocument: boolean;
@@ -159,15 +163,23 @@ const redirectStatuses = new Set([301, 302, 303, 307, 308]);
 const maxRedirects = 20;
 
 /**
+ * Milliseconds each URL has to load, its redirects and body included, before it fails to load.
+ * `fetch` has no timeout of its own, so a server that never answers would hold `genever --ci` forever.
+ */
+export const fetchTimeout = 30_000;
+
+/**
  * Fetch a URL, following redirects only to hosts that are allowed.
  *
  * @param uri - absolute `http:` or `https:` URL
  * @param isAllowed - hosts that may be fetched
+ * @param signal - aborts every request, and the body of the response
  * @returns the response, and the URL it is from after redirects, or why it can't be fetched
  */
 const fetchAllowed = async (
     uri: string,
-    isAllowed: HostFilter
+    isAllowed: HostFilter,
+    signal: AbortSignal
 ): Promise<Unloadable | { response: Response; url: URL }> => {
     let url = new URL(uri);
     for (let redirects = 0; redirects <= maxRedirects; redirects++) {
@@ -179,11 +191,14 @@ const fetchAllowed = async (
                 accept: 'application/schema+json, application/json, application/yaml;q=0.9',
             },
             redirect: 'manual',
+            signal,
         });
         const location = response.headers.get('location');
         if (location === null || !redirectStatuses.has(response.status)) {
             return { response, url };
         }
+        // Not read, so cancelled, which frees the connection
+        await response.body?.cancel();
         url = new URL(location, url);
         if (url.protocol !== 'http:' && url.protocol !== 'https:') {
             return { reason: `redirected to a ${url.protocol} URI` };
@@ -197,13 +212,16 @@ const fetchAllowed = async (
  *
  * @param uri - absolute URI, without a fragment
  * @param isAllowed - hosts that may be fetched, or null to load only files
+ * @param timeout - milliseconds a URL has to load
  * @returns the text, the URI it is from after redirects, and whether it is YAML, or why it can't be read
  */
 const readText = async (
     uri: string,
-    isAllowed: HostFilter | null
+    isAllowed: HostFilter | null,
+    timeout: number
 ): Promise<Unloadable | { text: string; uri: string; yaml: boolean }> => {
     const { protocol } = new URL(uri);
+    let signal: AbortSignal | null = null;
     try {
         if (protocol === 'file:') {
             return { uri, text: await readFile(fileURLToPath(uri), 'utf8'), yaml: isYaml(uri) };
@@ -214,20 +232,26 @@ const readText = async (
         if (!isAllowed) {
             return { reason: 'loading URLs is disabled' };
         }
-        const fetched = await fetchAllowed(uri, isAllowed);
+        signal = AbortSignal.timeout(timeout);
+        const fetched = await fetchAllowed(uri, isAllowed, signal);
         if ('reason' in fetched) {
             return fetched;
         }
         const { response, url } = fetched;
-        return response.ok
-            ? {
-                  text: await response.text(),
-                  uri: url.href,
-                  yaml: isYaml(url.href, response.headers.get('content-type')),
-              }
-            : { reason: `HTTP ${response.status}` };
+        if (!response.ok) {
+            await response.body?.cancel();
+            return { reason: `HTTP ${response.status}` };
+        }
+        return {
+            text: await response.text(),
+            uri: url.href,
+            yaml: isYaml(url.href, response.headers.get('content-type')),
+        };
     } catch (error) {
-        return { cause: error, reason: String(error) };
+        return {
+            cause: error,
+            reason: signal?.aborted === true ? `timed out after ${timeout} ms` : String(error),
+        };
     }
 };
 
@@ -236,15 +260,15 @@ const readText = async (
  *
  * @param uri - absolute URI, without a fragment
  * @param isAllowed - hosts that may be fetched, or null to load only files
- * @param onRead - called with the text, once read
+ * @param options - how long a URL has to load, and what to call with the text, once read
  * @returns the parsed value, and the URI it is from after redirects, or why it can't be loaded
  */
 const readResource = async (
     uri: string,
     isAllowed: HostFilter | null,
-    onRead: LoadOptions['onRead']
+    { fetchTimeout: timeout, onRead }: Pick<LoadOptions, 'fetchTimeout' | 'onRead'>
 ): Promise<Unloadable | { parsed: unknown; uri: string }> => {
-    const read = await readText(uri, isAllowed);
+    const read = await readText(uri, isAllowed, timeout);
     if ('reason' in read) {
         return read;
     }
@@ -497,7 +521,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
         const fail = (unloadable: Unloadable): void => {
             failures.push({ ...unloadable, pointer, referencedFrom, uri });
         };
-        const read = await readResource(uri, isAllowed, options.onRead);
+        const read = await readResource(uri, isAllowed, options);
         if ('reason' in read) {
             fail(read);
             return;
