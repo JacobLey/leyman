@@ -347,7 +347,8 @@ const replaceInPlace = (
 export interface ContainerOptions {
     /**
      * Throw errors from providers as they are, rather than wrapped in a `HaywireProviderError` naming the request path.
-     * The behavior before Haywire 2. Defaults to `false`.
+     * Defaults to `false`. Unsafe, since a caught error no longer says which binding threw it, or the dependency chain
+     * that requested it.
      */
     unsafeRawProviderErrors?: boolean;
 }
