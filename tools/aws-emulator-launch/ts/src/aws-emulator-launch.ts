@@ -10,6 +10,8 @@ import {
 } from '#internal/lib/errors.js';
 import { parseIni, parseStartupLine } from '#internal/lib/startup.js';
 
+export type { AwsClientConfig, AwsEmulatorConnection } from '#internal/lib/client-config.js';
+export { awsClientConfig } from '#internal/lib/client-config.js';
 export {
     AwsEmulatorError,
     AwsEmulatorExitError,
@@ -63,7 +65,7 @@ export interface AwsEmulator {
         readonly secretAccessKey: string;
     };
     /**
-     * Its certificate authority, as PEM, for a client to trust (such as `new https.Agent({ ca })`).
+     * Its certificate authority, as PEM, for a client to trust. `awsClientConfig()` passes it to an AWS SDK client.
      */
     readonly ca: string;
     /**

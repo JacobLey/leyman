@@ -24,6 +24,6 @@ The two take the same options and return the same things, in each language's con
 | `launchAwsEmulator(options?)` | `Launch(ctx, Options)` |
 | `binary`, `idleTimeoutMs`, `startTimeoutMs` | `Binary`, `IdleTimeout`, `StartTimeout` |
 | `endpoint`, `region`, `credentials`, `ca`, `caFile` | `Endpoint`, `Region`, `Credentials`, `CA`, `CAFile` |
-| Pass `ca` to an `https.Agent` | `HTTPClient()` |
+| `awsClientConfig(emulator)`, a whole SDK client configuration | `HTTPClient()`, for an SDK client's `HTTPClient` |
 | `stop()`, or `await using` | `Stop()` |
 | `AwsEmulatorNotRunError`, `AwsEmulatorExitError`, `AwsEmulatorStartTimeoutError`, `AwsEmulatorFileError` | `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile` |

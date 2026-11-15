@@ -33,28 +33,13 @@ aws-emulator-launch is ESM only, and runs in Node.js 22.12 or later.
 Start it in a hook that runs once, and stop it in the matching hook. With [mocha-chain](/packages/mocha-chain/), a `before` at the top level of a module is a root hook, run once per process:
 
 ```ts
-// @filename: node.d.ts
-// Docs are type-checked without Node.js types
-declare module 'node:https' {
-    export class Agent {
-        constructor(options: { ca: string });
-    }
-}
-// @filename: index.ts
-// ---cut---
-import { Agent } from 'node:https';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, launchAwsEmulator } from 'aws-emulator-launch';
 import { before } from 'mocha-chain';
 
 export const withDynamoDb = before(async () => {
     const emulator = await launchAwsEmulator();
-    const dynamodb = new DynamoDB({
-        endpoint: emulator.endpoint,
-        region: emulator.region,
-        credentials: emulator.credentials,
-        requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-    });
+    const dynamodb = new DynamoDB(awsClientConfig(emulator));
     return { emulator, dynamodb };
 });
 withDynamoDb.after(async ({ emulator, dynamodb }) => {
@@ -62,6 +47,8 @@ withDynamoDb.after(async ({ emulator, dynamodb }) => {
     await emulator.stop();
 });
 ```
+
+`awsClientConfig()` gives the client the emulator's endpoint, region and keys, trusts only its certificate authority, and fixes every setting the SDK would otherwise read from your environment or `~/.aws/config`, such as `AWS_USE_FIPS_ENDPOINT`.
 
 The emulator starts empty, so tests create the tables and queues they use. Giving each a name of its own means they don't need to clean up after each other.
 

@@ -25,10 +25,34 @@ Telemetry is always off for the runs it starts, since `-t on` can't override `EM
 | `endpoint`                | `string`                           | Where it serves every AWS API, such as `https://127.0.0.1:43085`.                                                                                                                          |
 | `region`                  | `string`                           | The region of its config file (`us-east-1`).                                                                                                                                               |
 | `credentials`             | `{ accessKeyId, secretAccessKey }` | The run's keys. An AWS SDK client takes this object as its `credentials`.                                                                                                                  |
-| `ca`                      | `string`                           | Its certificate authority as PEM.                                                                                                                                                          |
+| `ca`                      | `string`                           | Its certificate authority as PEM. `awsClientConfig()` passes it to an SDK client.                                                                                                          |
 | `caFile`                  | `string`                           | The path of the same certificate authority, for a client that only takes a file. Deleted when the emulator stops.                                                                          |
 | `stop()`                  | `() => Promise<void>`              | Sends `SIGTERM`, which makes the emulator delete its files and exit, and resolves once it has exited. Calling it again, or after the emulator exited on its own, only waits for that exit. |
 | `[Symbol.asyncDispose]()` | `() => Promise<void>`              | The same as `stop()`, for `await using`.                                                                                                                                                   |
+
+## `awsClientConfig(emulator)`
+
+The configuration of an AWS SDK for JavaScript v3 client of the emulator. Without it, the SDK still reads every setting a client isn't given from the environment and `~/.aws/config`, so a developer's `AWS_USE_FIPS_ENDPOINT` (which the SDK refuses together with a custom endpoint) or `AWS_MAX_ATTEMPTS` would change the tests. It fixes all of them:
+
+| Property               | Value                                                                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`, `region`   | The emulator's.                                                                                                                                                  |
+| `credentials`          | The run's keys.                                                                                                                                                  |
+| `requestHandler`       | `{ httpsAgent: { ca } }`: the SDK's Node.js handler builds an `https.Agent` trusting only the emulator's certificate authority, and destroys it with the client. |
+| `useFipsEndpoint`      | `false`                                                                                                                                                          |
+| `useDualstackEndpoint` | `false`                                                                                                                                                          |
+| `maxAttempts`          | `3`, the SDK's default.                                                                                                                                          |
+| `retryMode`            | `'standard'`, the SDK's default.                                                                                                                                 |
+
+It takes an `AwsEmulator`, or the same `endpoint`, `region`, `credentials` and `ca` passed to another process, such as a server the tests start (typed `AwsEmulatorConnection`). It returns a new plain object each time, typed `AwsClientConfig`, so the package needs no SDK.
+
+```ts
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { awsClientConfig, launchAwsEmulator } from 'aws-emulator-launch';
+
+await using emulator = await launchAwsEmulator();
+const dynamodb = new DynamoDB(awsClientConfig(emulator));
+```
 
 ## Errors
 

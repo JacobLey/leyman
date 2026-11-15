@@ -3661,6 +3661,9 @@ importers:
 
   tools/aws-emulator-launch/ts:
     devDependencies:
+      '@aws-sdk/client-dynamodb':
+        specifier: 'catalog:'
+        version: 3.1164.0
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4

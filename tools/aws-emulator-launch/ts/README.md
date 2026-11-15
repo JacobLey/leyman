@@ -13,7 +13,7 @@ Starts AWS Emulator for tests, on a free port, and returns its endpoint, credent
 
 Ideally each test process starts an emulator of its own, on a port nothing else uses, and stops it at the end. The emulator keeps everything in memory and starts in about 150 ms, so that costs little, and parallel runs never see each other's tables or queues.
 
-`aws-emulator-launch` starts the emulator that way and waits until it serves requests. It returns the endpoint, the region, the run's keys and the certificate authority, which you pass to an AWS SDK client. Authentication stays on, as it is on AWS, and the emulator gets an idle timeout, so one left behind by a crashed test process exits on its own. It works with any test runner, since it is a plain async function with no dependencies.
+`aws-emulator-launch` starts the emulator that way and waits until it serves requests. It returns the endpoint, the region, the run's keys and the certificate authority, and `awsClientConfig()` turns them into an AWS SDK client's configuration that reads nothing from your environment or `~/.aws/config`. Authentication stays on, as it is on AWS, and the emulator gets an idle timeout, so one left behind by a crashed test process exits on its own. It works with any test runner, since it is a plain async function with no dependencies.
 
 It doesn't install the emulator: install it as AWS describes. It needs version 1.0.290 or later, since earlier releases log a different line once they start. For a local environment you keep running, start the emulator from its own command line instead.
 
@@ -38,18 +38,12 @@ npm i -D aws-emulator-launch
 ## Example
 
 ```ts
-import { Agent } from 'node:https';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, launchAwsEmulator } from 'aws-emulator-launch';
 
 await using emulator = await launchAwsEmulator();
 
-const dynamodb = new DynamoDB({
-    endpoint: emulator.endpoint,
-    region: emulator.region,
-    credentials: emulator.credentials,
-    requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-});
+const dynamodb = new DynamoDB(awsClientConfig(emulator));
 await dynamodb.listTables({});
 ```
 
@@ -77,6 +71,22 @@ Starts AWS Emulator on a free port (`-p 0`) of 127.0.0.1 (`-b 127.0.0.1`, the ad
 
 **Rejects** with one of the errors below. Whenever it rejects after the emulator started running, it has stopped the emulator first.
 
+### `awsClientConfig(emulator)`
+
+The configuration of an AWS SDK for JavaScript v3 client of the emulator, such as `new DynamoDB(awsClientConfig(emulator))`. Without it, the SDK still reads every setting a client isn't given from the environment and `~/.aws/config`, so a developer's `AWS_USE_FIPS_ENDPOINT` (which the SDK refuses together with a custom endpoint) or `AWS_MAX_ATTEMPTS` would change the tests. It fixes all of them:
+
+| Property               | Value                                                                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`, `region`   | The emulator's.                                                                                                                                                  |
+| `credentials`          | The run's keys.                                                                                                                                                  |
+| `requestHandler`       | `{ httpsAgent: { ca } }`: the SDK's Node.js handler builds an `https.Agent` trusting only the emulator's certificate authority, and destroys it with the client. |
+| `useFipsEndpoint`      | `false`                                                                                                                                                          |
+| `useDualstackEndpoint` | `false`                                                                                                                                                          |
+| `maxAttempts`          | `3`, the SDK's default.                                                                                                                                          |
+| `retryMode`            | `'standard'`, the SDK's default.                                                                                                                                 |
+
+It takes an `AwsEmulator`, or the same `endpoint`, `region`, `credentials` and `ca` passed to another process, such as a server the tests start. It returns a new plain object each time, so the package needs no SDK.
+
 ### `AwsEmulator`
 
 | Property                  | Type                               | Description                                                                                                                                                                                |
@@ -84,7 +94,7 @@ Starts AWS Emulator on a free port (`-p 0`) of 127.0.0.1 (`-b 127.0.0.1`, the ad
 | `endpoint`                | `string`                           | Where it serves every AWS API, such as `https://127.0.0.1:43085`.                                                                                                                          |
 | `region`                  | `string`                           | The region of its config file (`us-east-1`).                                                                                                                                               |
 | `credentials`             | `{ accessKeyId, secretAccessKey }` | The run's keys. An AWS SDK client takes this object as its `credentials`.                                                                                                                  |
-| `ca`                      | `string`                           | Its certificate authority as PEM, for `new https.Agent({ ca })` or any other client that takes one.                                                                                        |
+| `ca`                      | `string`                           | Its certificate authority as PEM. `awsClientConfig()` passes it to an SDK client; pass it yourself to any other client.                                                                    |
 | `caFile`                  | `string`                           | The path of the same certificate authority, for a client that only takes a file. The emulator deletes it when it stops.                                                                    |
 | `stop()`                  | `() => Promise<void>`              | Sends `SIGTERM`, which makes the emulator delete its files and exit, and resolves once it has exited. Calling it again, or after the emulator exited on its own, only waits for that exit. |
 | `[Symbol.asyncDispose]()` | `() => Promise<void>`              | The same as `stop()`, for `await using`.                                                                                                                                                   |

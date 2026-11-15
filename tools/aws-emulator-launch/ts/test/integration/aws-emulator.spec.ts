@@ -1,8 +1,9 @@
 import type { Context } from 'mocha';
 import { access } from 'node:fs/promises';
 import { request } from 'node:https';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { expect } from '@leyman/expect';
-import { launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, launchAwsEmulator } from 'aws-emulator-launch';
 import { before, suite, test } from 'mocha-chain';
 
 /**
@@ -56,6 +57,42 @@ suite('launchAwsEmulator with the installed emulator', () => {
             });
 
             expect(status).to.equal(403);
+        }
+    );
+
+    withEmulator.test(
+        'Serves an SDK client of awsClientConfig, whatever the environment says',
+        async ({ emulator }) => {
+            // Each would break the request, or change how it is retried, if the SDK read it
+            const hostile = {
+                AWS_USE_FIPS_ENDPOINT: 'true',
+                AWS_USE_DUALSTACK_ENDPOINT: 'true',
+                AWS_MAX_ATTEMPTS: '1',
+                AWS_RETRY_MODE: 'adaptive',
+                AWS_REGION: 'eu-central-1',
+                AWS_ACCESS_KEY_ID: 'WRONGKEY',
+                AWS_SECRET_ACCESS_KEY: 'WRONGSECRET',
+            };
+            const { env } = process;
+            const saved = Object.fromEntries(Object.keys(hostile).map(name => [name, env[name]]));
+            Object.assign(env, hostile);
+            const dynamodb = new DynamoDB(awsClientConfig(emulator));
+            try {
+                const { TableNames: tables } = await dynamodb.listTables({});
+                expect(tables).to.deep.equal([]);
+                expect(await dynamodb.config.maxAttempts()).to.equal(3);
+                expect(await dynamodb.config.retryStrategy()).to.include({ mode: 'standard' });
+            } finally {
+                dynamodb.destroy();
+                for (const [name, value] of Object.entries(saved)) {
+                    if (value === undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Restores the environment
+                        delete env[name];
+                    } else {
+                        env[name] = value;
+                    }
+                }
+            }
         }
     );
 
