@@ -66,9 +66,9 @@ export interface Server {
  * @returns The server, once listening
  */
 export const startServer = async (language: Language, config: ServerConfig): Promise<Server> => {
+    // Only the server's own configuration, none of this process's environment: neither binary is looked up on
+    // `PATH`, and nothing else (such as a developer's `AWS_PROFILE`) may change how a server connects
     const env = {
-        // eslint-disable-next-line n/no-process-env -- Inherited, for PATH and the rest
-        ...process.env,
         IK_STORE: config.store,
         IK_NOTIFIER: config.notifier,
         IK_TABLE: config.table,

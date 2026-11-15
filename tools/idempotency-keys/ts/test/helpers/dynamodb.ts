@@ -1,9 +1,8 @@
 import type { AwsEmulator } from 'aws-emulator-launch';
 import { randomUUID } from 'node:crypto';
-import { Agent } from 'node:https';
 import { setTimeout } from 'node:timers/promises';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { createTableInput } from 'idempotency-keys/dynamodb';
 import { before } from 'mocha-chain';
 
@@ -61,12 +60,7 @@ const shared: { context?: DynamoDbContext } = {};
 export const withDynamoDb = before(async () => {
     const emulator = await startEmulator();
     // Authentication stays on, as on AWS: requests are signed with this run's keys
-    const dynamodb = new DynamoDB({
-        endpoint: emulator.endpoint,
-        region: emulator.region,
-        credentials: emulator.credentials,
-        requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-    });
+    const dynamodb = new DynamoDB(awsClientConfig(emulator));
     const tableName = `idempotency_keys_${randomUUID()}`;
     // As on AWS, a new table takes a few seconds to be ready
     await createTable(dynamodb, tableName);

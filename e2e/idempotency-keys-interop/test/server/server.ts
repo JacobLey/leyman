@@ -12,11 +12,11 @@ import type { AddressInfo } from 'node:net';
 import type { IdempotencyNotifier, IdempotencyStore } from 'idempotency-keys';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { Agent } from 'node:https';
 import { setTimeout } from 'node:timers/promises';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { Redis } from 'ioredis';
 import { Client, Pool } from 'pg';
+import { awsClientConfig } from 'aws-emulator-launch';
 import { IdempotencyKeys } from 'idempotency-keys';
 import { DynamoDbStore } from 'idempotency-keys/dynamodb';
 import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
@@ -62,21 +62,24 @@ class Connections {
 }
 
 /**
- * A client of the emulator the driver started, read explicitly from the environment rather than left to the SDK's
- * own lookup, trusting only its certificate authority.
+ * A client of the emulator the driver started, from those variables alone: `awsClientConfig()` fixes every setting
+ * the SDK would otherwise read from the environment or a profile, and trusts only the emulator's certificate
+ * authority.
  *
  * @returns The client
  */
 const connectDynamoDb = async (): Promise<DynamoDB> =>
-    new DynamoDB({
-        endpoint: env('AWS_ENDPOINT_URL_DYNAMODB'),
-        region: env('AWS_REGION'),
-        credentials: {
-            accessKeyId: env('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: env('AWS_SECRET_ACCESS_KEY'),
-        },
-        requestHandler: { httpsAgent: new Agent({ ca: await readFile(env('AWS_CA_BUNDLE')) }) },
-    });
+    new DynamoDB(
+        awsClientConfig({
+            endpoint: env('AWS_ENDPOINT_URL_DYNAMODB'),
+            region: env('AWS_REGION'),
+            credentials: {
+                accessKeyId: env('AWS_ACCESS_KEY_ID'),
+                secretAccessKey: env('AWS_SECRET_ACCESS_KEY'),
+            },
+            ca: await readFile(env('AWS_CA_BUNDLE'), 'utf8'),
+        })
+    );
 
 const createStore = async (connections: Connections): Promise<IdempotencyStore> => {
     const kind = env('IK_STORE');

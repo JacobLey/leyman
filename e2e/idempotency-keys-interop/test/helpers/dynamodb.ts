@@ -1,10 +1,9 @@
 import type { Context } from 'mocha';
 import type { AwsEmulator } from 'aws-emulator-launch';
 import { randomUUID } from 'node:crypto';
-import { Agent } from 'node:https';
 import { setTimeout } from 'node:timers/promises';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { createTableInput } from 'idempotency-keys/dynamodb';
 import { withDolly } from '#test/helpers/database.js';
 
@@ -76,12 +75,7 @@ export const withDynamoDb = withDolly.before(async function (this: Context) {
         table: `idempotency_keys_${randomUUID()}`,
     };
     // Authentication stays on, as on AWS: requests are signed with this run's keys
-    const client = new DynamoDB({
-        endpoint: emulator.endpoint,
-        region: emulator.region,
-        credentials: emulator.credentials,
-        requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-    });
+    const client = new DynamoDB(awsClientConfig(emulator));
     await createTable(client, dynamoDbConfig.table);
     return { emulator, client, dynamoDb: dynamoDbConfig };
 });
