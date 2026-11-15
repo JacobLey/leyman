@@ -26,8 +26,8 @@ catalogs:
       specifier: ^21.0.4
       version: 21.0.4
     '@hono/node-server':
-      specifier: ^2.1.5
-      version: 2.1.5
+      specifier: ^2.1.6
+      version: 2.1.6
     '@modelcontextprotocol/client':
       specifier: ^2.4.0
       version: 2.4.0
@@ -188,8 +188,8 @@ catalogs:
       specifier: ^17.13.0
       version: 17.13.0
     hono:
-      specifier: ^4.13.14
-      version: 4.13.14
+      specifier: ^4.13.17
+      version: 4.13.17
     ignore:
       specifier: ^7.0.14
       version: 7.0.14
@@ -407,7 +407,6 @@ overrides:
   miniflare>sharp: 0.35.5
   minimatch@>=7 <11.0.1: ^11.0.1
   glob@>=9 <14.0.2: ^14.0.2
-  eslint-plugin-import-x>minimatch: ^10.2.6
   '@vueuse/integrations>axios': '-'
   drizzle-kit>@esbuild-kit/esm-loader: '-'
 
@@ -1460,7 +1459,7 @@ importers:
         version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.5(hono@4.13.14)
+        version: 2.1.6(hono@4.13.17)
       '@leyman/configs':
         specifier: workspace:^
         version: file:leyman/configs
@@ -1541,7 +1540,7 @@ importers:
         version: file:tools/haywire
       hono:
         specifier: 'catalog:'
-        version: 4.13.14
+        version: 4.13.17
       jose:
         specifier: 'catalog:'
         version: 6.2.14
@@ -1551,7 +1550,7 @@ importers:
         version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.5(hono@4.13.14)
+        version: 2.1.6(hono@4.13.17)
       '@leyman/configs':
         specifier: workspace:^
         version: file:leyman/configs
@@ -1873,7 +1872,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.5(hono@4.13.14)
+        version: 2.1.6(hono@4.13.17)
       '@leyman/demo-openapi-database':
         specifier: workspace:^
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
@@ -1897,7 +1896,7 @@ importers:
         version: file:tools/haywire
       hono:
         specifier: 'catalog:'
-        version: 4.13.14
+        version: 4.13.17
       idempotency-keys:
         specifier: workspace:^
         version: file:tools/idempotency-keys/ts
@@ -2125,7 +2124,7 @@ importers:
         version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.5(hono@4.13.14)
+        version: 2.1.6(hono@4.13.17)
       '@leyman/demo-agents-mcp':
         specifier: workspace:^
         version: file:demos/agents/mcp(eslint@10.14.0(supports-color@8.1.1))
@@ -2200,7 +2199,7 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       hono:
         specifier: 'catalog:'
-        version: 4.13.14
+        version: 4.13.17
       idempotency-keys:
         specifier: workspace:^
         version: file:tools/idempotency-keys/ts
@@ -6152,8 +6151,8 @@ packages:
     resolution: {integrity: sha512-Bbr0hW9hhDhBf3Jp0EyDlkCbFgbr0z2jd3BMKYOYW+fOkPM4Nx195GMXyCtRCGEgoNn6i09FabXrSkNFm2ONzg==}
     engines: {node: '>=20.0.0'}
 
-  '@hono/node-server@2.1.5':
-    resolution: {integrity: sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q==}
+  '@hono/node-server@2.1.6':
+    resolution: {integrity: sha512-p/KH9MnfNcsm3sR6x4lNgm5j+QN4Et8srKredl9DZfXiyZ1UQ3aQ2YVpFLbqktYN5JI+DB+VZFKM2PqE5hLKjQ==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4 || ^5.0.0-0
@@ -9490,8 +9489,8 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
-  hono@4.13.14:
-    resolution: {integrity: sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ==}
+  hono@4.13.17:
+    resolution: {integrity: sha512-vZIcbkvjOR5hHRWERbGkr8fGfF0GGM1ooYkuH448iO3b2AdVEr3AXZSw4Z3Kn+1L5z0CVoVeyV29VGYmFh05kQ==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -10273,10 +10272,6 @@ packages:
   miniflare@5.20261023.3-beta:
     resolution: {integrity: sha512-thdXzlktu5GE1o/BlmMAPeJ0Cu6Tu5LpMbRlyfRrpVvMRrhd6p52TMqcITCZZLVzt1UO92VGBkLDhLOpryUAyQ==}
     engines: {node: '>=22.0.0'}
-
-  minimatch@10.2.6:
-    resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
-    engines: {node: 18 || 20 || >=22}
 
   minimatch@11.0.3:
     resolution: {integrity: sha512-iny/40PEGkNJQ5/Pv6z3nm6FbRAby32GeZRjCUJk2WnNDbgPSTcdI+DDvLqsgBdD4cD5sMtMheqPPnehCCa8Nw==}
@@ -13981,9 +13976,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@hono/node-server@2.1.5(hono@4.13.14)':
+  '@hono/node-server@2.1.6(hono@4.13.17)':
     dependencies:
-      hono: 4.13.14
+      hono: 4.13.17
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -14216,7 +14211,7 @@ snapshots:
       '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.14.0(supports-color@8.1.1))
       '@modelcontextprotocol/server': 2.4.0
       haywire: file:tools/haywire
-      hono: 4.13.14
+      hono: 4.13.17
       jose: 6.2.14
     transitivePeerDependencies:
       - eslint
@@ -14266,7 +14261,7 @@ snapshots:
 
   '@leyman/demo-openapi-server@file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.14.0(supports-color@8.1.1))':
     dependencies:
-      '@hono/node-server': 2.1.5(hono@4.13.14)
+      '@hono/node-server': 2.1.6(hono@4.13.17)
       '@leyman/demo-openapi-database': file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
       '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.14.0(supports-color@8.1.1))
       ajv: 8.20.0
@@ -14274,7 +14269,7 @@ snapshots:
       default-import: file:tools/default-import
       drizzle-orm: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       haywire: file:tools/haywire
-      hono: 4.13.14
+      hono: 4.13.17
       idempotency-keys: file:tools/idempotency-keys/ts
       jose: 6.2.14
       pg: 8.23.1
@@ -17037,7 +17032,7 @@ snapshots:
       eslint: 10.14.0(supports-color@10.2.2)
       eslint-import-context: 0.1.9(unrs-resolver@1.12.2)
       is-glob: 4.0.3
-      minimatch: 10.2.6
+      minimatch: 11.0.3
       semver: 7.8.5
       stable-hash-x: 0.2.0
       unrs-resolver: 1.12.2
@@ -17057,7 +17052,7 @@ snapshots:
       eslint: 10.14.0(supports-color@8.1.1)
       eslint-import-context: 0.1.9(unrs-resolver@1.12.2)
       is-glob: 4.0.3
-      minimatch: 10.2.6
+      minimatch: 11.0.3
       semver: 7.8.5
       stable-hash-x: 0.2.0
       unrs-resolver: 1.12.2
@@ -17947,7 +17942,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hono@4.13.14: {}
+  hono@4.13.17: {}
 
   hookable@5.5.3: {}
 
@@ -18930,10 +18925,6 @@ snapshots:
       - '@types/node'
       - bufferutil
       - utf-8-validate
-
-  minimatch@10.2.6:
-    dependencies:
-      brace-expansion: 5.0.12
 
   minimatch@11.0.3:
     dependencies:

@@ -128,10 +128,6 @@ overrides:
   # 14.0.2. They only call APIs both majors share. Remove each once none of them allows a version below its fix.
   minimatch@>=7 <11.0.1: ^11.0.1
   glob@>=9 <14.0.2: ^14.0.2
-  # eslint-plugin-import-x 4.17 imports `makeRe`, which minimatch 11 removed. The published @leyman/eslint-config 0.4.0
-  # pins import-x ~4.17.1, and a fork takes these overrides with it, so this keeps that pair on minimatch 10 (import-x
-  # only compiles patterns from the config, never untrusted input). Remove once an eslint-config on ~4.18 is on npm.
-  eslint-plugin-import-x>minimatch: ^10.2.6
   # fork-manifest:when docs-site
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
@@ -150,7 +146,7 @@ catalog:
   '@biomejs/biome': ^2.6.4
   '@changesets/cli': ^3.0.3
   '@happy-dom/global-registrator': ^21.0.4
-  '@hono/node-server': ^2.1.5
+  '@hono/node-server': ^2.1.6
   json-schema-to-ts: ^3.1.1
   json-schema-to-typescript: ^16.0.0
   json-schema-to-zod: ^2.8.1
@@ -210,7 +206,7 @@ catalog:
   fastify: ^5.12.6
   find-up: ^8.0.0
   globals: ^17.13.0
-  hono: ^4.13.14
+  hono: ^4.13.17
   ignore: ^7.0.14
   inversify: ^8.2.3
   # bentocache's peer dependency allows ^5 only
