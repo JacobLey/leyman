@@ -35,7 +35,7 @@ container.get<Logger>('Logger');
 ```
 ````
 
-The comment opens with a line that is exactly `<!-- twoslash` and closes with one that is exactly `-->`. The generator fails on a malformed one, and on a `// ---cut---` or twoslash directive in the block itself, since that would show on GitHub. `// ^?` can't be hidden, so leave it out of WHY files.
+The comment opens with a line that is exactly `<!-- twoslash` and closes with one that is exactly `-->`, indented like the fence when it's in a list item. The generator fails on a malformed one, and on a `// ---cut---` or twoslash directive in the block itself, since that would show on GitHub. `// ^?` can't be hidden, so leave it out of WHY files.
 
 ## Spelling
 
@@ -242,3 +242,7 @@ Do NOT create a WHY file for:
 When the API changes, update the signature header, parameter table and examples in the same change. When restructuring an existing README, move motivation content into the WHY file first.
 
 If the package is on the [docs site](../docs-site/SKILL.md#documented-packages), update its pages in the same change too.
+
+## Demo READMEs
+
+A demo's README (and each README in its `readmes`) is the source of its [docs site page](../docs-site/SKILL.md#generated-pages), so it follows the WHY file rules above: no Contents list, `ts` blocks that compile with a twoslash comment, and a `// ^?` written as a type annotation instead (`const user: User | null = ...`). Demos aren't published, so links stay relative to the repo, and the generator turns them into site or GitHub links. Open with the problem and a diagram of the parts where there are several, as the [OpenAPI demo](../../../demos/openapi/README.md) does: the README is the page.

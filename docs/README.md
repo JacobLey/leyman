@@ -26,7 +26,7 @@ arraySchema().maxLength(10);
 
 - `// ^?` under an identifier renders its inferred type.
 - Lines above `// ---cut---` are compiled but not shown, for setup the reader doesn't need.
-- In a `WHY-<PACKAGE>.md`, which GitHub and npm show too, that setup and any directives go in a `<!-- twoslash ... -->` comment right above the fence instead: see [writing-readmes](../.agents/skills/writing-readmes/SKILL.md#readme-vs-why-file).
+- In a `WHY-<PACKAGE>.md` or a demo's README, which GitHub (and npm) show too, that setup and any directives go in a `<!-- twoslash ... -->` comment right above the fence instead: see [writing-readmes](../.agents/skills/writing-readmes/SKILL.md#readme-vs-why-file).
 - Compiler options are in [`tsconfig.twoslash.json`](./tsconfig.twoslash.json).
 
 Twoslash only checks types. Output shown in comments, like `// { type: 'string' }`, is not checked.
@@ -42,7 +42,7 @@ nx run @leyman/docs:build           # build into dist/, failing on any type erro
 
 A package's docs live in `src/packages/<package>/`, and a demo's in `src/demos/<demo>/`. Each has an entry in [`.vitepress/projects.ts`](./.vitepress/projects.ts), from which [`.vitepress/config.ts`](./.vitepress/config.ts) builds the nav, sidebars, redirects and `/llms.txt`, and the theme's components the home page, lists and cross-links. Pages are Markdown, with VitePress's [containers and code groups](https://vitepress.dev/guide/markdown). Document a package's types by adding it to `devDependencies` (`workspace:^`).
 
-The package lists in the root `README.md`, this file, the projects and docs-site skills, the issue templates' package dropdowns, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json`, the skills table of `AGENTS.md` from each skill's frontmatter, and each package's `why.md` from its `WHY-<PACKAGE>.md` (edit the WHY file, and only the page's `description` here), by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed, so edit them only inside their manual sections. CI fails when one is out of date.
+The package lists in the root `README.md`, this file, the projects and docs-site skills, the issue templates' package dropdowns, and the paths of `.claude/rules/docs-site-sync.md` are generated from `projects.ts` and each project's `package.json`, the skills table of `AGENTS.md` from each skill's frontmatter, each package's `why.md` from its `WHY-<PACKAGE>.md`, and each demo's page from its READMEs (edit those, and only the page's `description` here), by [`scripts/populate-docs.mjs`](./scripts/populate-docs.mjs), run by `nx run @leyman/docs:populate-files` (part of `build`). They're signed, so edit them only inside their manual sections. CI fails when one is out of date.
 
 VitePress 2 is in alpha, so its version is pinned exactly in the catalog. Bump it deliberately and check the build.
 <!-- @manual-end rest -->

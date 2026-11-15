@@ -1,12 +1,16 @@
 ---
+# @manual-start frontmatter
 description: The same Rust crate called from Go without cgo, built to bare WASM behind a C ABI, run by wazero, and measured against BLAKE3 in Go and native Rust to find where it pays off.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:cff4da0d6110b5e0c2ff0780be084ce2 Generated from demos/blake3-go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/blake3-go/README.md instead, and the description only here. -->
 
 # BLAKE3 from Go through WASM
 
 <ProjectHeader />
 
-This demo looks at how to call Rust from Go, and when it's worth doing. It builds the [BLAKE3](https://github.com/BLAKE3-team/BLAKE3) crate to WASM behind a C ABI, runs it in Go with [wazero](https://wazero.io), and measures it against BLAKE3 written in Go. It's the Go version of [BLAKE3 through WASM](../blake3-wasm/), which does the same for JavaScript.
+This demo looks at how to call Rust from Go, and when it's worth doing. It builds the [BLAKE3](https://github.com/BLAKE3-team/BLAKE3) crate to WASM behind a C ABI, runs it in Go with [wazero](https://wazero.io), and measures it against BLAKE3 written in Go. It's the Go version of [BLAKE3 through WASM](/demos/blake3-wasm/), which does the same for JavaScript.
 
 It's a worked example rather than a package, and nothing here is published.
 
@@ -64,7 +68,7 @@ Warm, time per call:
 |     1 Mi |    1.30 ms |    0.77 ms |    0.63 ms |          0.56 ms |
 |    16 Mi |    20.8 ms |    12.4 ms |     9.7 ms |           9.1 ms |
 
-The last column is [blake3-wasm's](../blake3-wasm/#what-was-measured) Node.js figures for the same crate, on the same machine.
+The last column is [blake3-wasm's](/demos/blake3-wasm/#what-was-measured) Node.js figures for the same crate, on the same machine.
 
 From nothing to a first hash of 64 bytes, in a running process:
 

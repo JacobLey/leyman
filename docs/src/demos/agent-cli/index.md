@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: A CLI that makes a REST API easy for AI agents with a shell. Each task is one short command, a person logs in once with OAuth (in a browser or with a device code), and the CLI handles tokens, refresh and errors.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:b74d8cf2cf17d8fb094a084e333ae653 Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
 
 # CLI for agents
 
@@ -117,7 +121,7 @@ Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is
 
 ## Testing
 
-Each test runs `./bin.mjs` as a separate process, the way anyone would, against a [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/tools/oauth-dev-server) and the [notes API](/demos/openapi/#the-server) on a database of its own. `$BROWSER` is a small script that plays the user. It signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can also come back with something else (a denial, or a forged `state`), and a test can open the printed URL itself, as a user without `$BROWSER` would.
+Each test runs `./bin.mjs` as a separate process, the way anyone would, against a [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/tools/oauth-dev-server) and the [notes API](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) on a database of its own. `$BROWSER` is a small script that plays the user. It signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can also come back with something else (a denial, or a forged `state`), and a test can open the printed URL itself, as a user without `$BROWSER` would.
 
 Expiry is tested by editing the saved session rather than by waiting. Logging out is tested by putting the session file back afterwards and checking it can't be refreshed. Running commands at the same time is tested by running four at once, and without the lock, three of them find the login revoked. Two users, each logged in from their own config directory (`$BROWSER` signs in as `BROWSER_USER`), see only their own notes.
 

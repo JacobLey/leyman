@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers, blocking or in a worker, measured against the fastest JavaScript to find where WASM pays off.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:af4882153d6c50106fb324386ae7e447 Generated from demos/blake3-wasm/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/blake3-wasm/README.md instead, and the description only here. -->
 
 # BLAKE3 through WASM
 

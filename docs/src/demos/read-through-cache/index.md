@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: A read-through cache on Valkey built from BentoCache and lease-cache, with a memory tier, stale-while-revalidate, one load per key across instances, resources keyed by input, per-value TTLs, and sharding.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:664e8c6281e790cc71cb1a0e97219ab6 Generated from demos/read-through-cache/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/read-through-cache/README.md instead, and the description only here. -->
 
 # Read-through cache
 
@@ -10,7 +14,8 @@ A read-through cache on Valkey built from BentoCache and lease-cache, with a mem
 
 This demo puts [BentoCache](https://bentocache.dev) together with Valkey to build a read-through cache that's fit for production, using [lease-cache](/packages/lease-cache/) where BentoCache falls short. Every feature sits behind its own option, so its effect (and its cost) can be tested on its own.
 
-It's a worked example rather than a package, and isn't published. The code itself is short, so most of this page explains why it's built this way, including what BentoCache doesn't do and what was learned while building it.
+It's a worked example rather than a package, and isn't published. The code itself is short, so most of what follows explains why it's built this way, including what BentoCache doesn't do and what was learned while building it.
+
 
 ## Example
 
@@ -43,8 +48,7 @@ const users = cache.resource({
     ttlMs: user => (user ? 60_000 : 5000),
 });
 
-const user = await users.get({ id });
-//    ^?
+const user: User | null = await users.get({ id });
 
 await users.invalidate({ id }); // after an update: next read loads
 await users.expire({ id }); // or: next read serves the old value while loading
@@ -147,7 +151,7 @@ The first is that every instance loads a shared miss. BentoCache's lock only wor
 
 The second is that a load that finishes after an invalidation caches what it read. Say a read misses and starts loading the row. Meanwhile, the row is updated and the key invalidated. The read then caches the old row until it expires. A test shows this happening with BentoCache's own tier, and not with lease-cache.
 
-`leases: { leaseMs, pollMs, waitMs }` (`leaseCacheTierBinding`) makes lease-cache the shared tier, in place of BentoCache's. The first reader to miss takes a lease in Valkey and loads the value, and the others wait for it. The value is only cached if the lease still holds the reader's token, and `invalidate` deletes the value and the lease together, so a load that started before the invalidation can't cache its result. [Why lease-cache](/packages/lease-cache/why) explains why that is enough, and what it relies on.
+`leases: { leaseMs, pollMs, waitMs }` (`leaseCacheTierBinding`) makes lease-cache the shared tier, in place of BentoCache's. The first reader to miss takes a lease in Valkey and loads the value, and the others wait for it. The value is only cached if the lease still holds the reader's token, and `invalidate` deletes the value and the lease together, so a load that started before the invalidation can't cache its result. [WHY-LEASE-CACHE.md](/packages/lease-cache/why) explains why that is enough, and what it relies on.
 
 BentoCache then only does what lease-cache doesn't, which is the memory tier, its sync, and grace periods. That has a few consequences:
 
@@ -178,11 +182,11 @@ What happens depends on the shared tier, and on whether there is a memory tier.
 - Invalidations don't reach other instances. `invalidate()` drops the key from this instance's LRU, then rejects, as lease-cache can't delete it. Every other instance serves its copy until `ttlMs` passes, which is why `ttlMs` should be short.
 - A value loaded just before Valkey failed is kept, rather than loaded again.
 
-Without `fallback`, the cache is exactly as available as Valkey, which is the right choice when serving data a few seconds old is worse than failing. lease-cache's own [`onUnavailable`](/packages/lease-cache/) sits in between, where reads keep working but nothing is cached.
+Without `fallback`, the cache is exactly as available as Valkey, which is the right choice when serving data a few seconds old is worse than failing. lease-cache's own [`onUnavailable`](https://github.com/JacobLey/leyman/tree/main/tools/lease-cache#when-valkey-is-down) sits in between, where reads keep working but nothing is cached.
 
 ### Sharding over several Valkey nodes
 
-BentoCache's Redis driver talks to one server, or to a Redis Cluster (Valkey cluster mode), which places keys by hash slot and needs every node configured as a cluster. [`ShardedValkeyDriver`](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache/src/lib/sharded-valkey-driver.ts) spreads keys over independent servers instead, as a custom BentoCache L2 driver. It picks each key's server with [`weighted-rendezvous-hash`](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/weighted-rendezvous-hash), then delegates to BentoCache's own Redis driver for that server, so values are stored exactly as BentoCache would store them. A single node is just a topology of one, through the same driver.
+BentoCache's Redis driver talks to one server, or to a Redis Cluster (Valkey cluster mode), which places keys by hash slot and needs every node configured as a cluster. [`ShardedValkeyDriver`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/sharded-valkey-driver.ts) spreads keys over independent servers instead, as a custom BentoCache L2 driver. It picks each key's server with [`weighted-rendezvous-hash`](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/weighted-rendezvous-hash), then delegates to BentoCache's own Redis driver for that server, so values are stored exactly as BentoCache would store them. A single node is just a topology of one, through the same driver.
 
 For a fixed set of nodes, pass the application's connections as `shards`:
 
@@ -303,9 +307,9 @@ await container[Symbol.asyncDispose]();
 | `memoryTierId`           | a feature       | `noMemoryTierBinding` · `memoryTierBinding({ maxItems })` · `syncedMemoryTierBinding({ maxItems })`                                                 |
 | `expiryPolicyId`         | a feature       | `waitForFreshBinding` · `staleWhileRevalidateBinding({ graceMs })`                                                                                  |
 
-A missing or doubled choice is a type error, and every combination works. Each feature is one small binding, so the code for, say, the memory tier is all in [`src/lib/memory-tier.ts`](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache/src/lib/memory-tier.ts).
+A missing or doubled choice is a type error, and every combination works. Each feature is one small binding, so the code for, say, the memory tier is all in [`src/lib/memory-tier.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/memory-tier.ts).
 
-`createReadThroughCache` itself ([`src/lib/create.ts`](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache/src/lib/create.ts)) starts with every feature off, and swaps in a binding for each option with `replaceBinding()`. A replacement keeps the module's type, so haywire still checks that the result is complete. (Adding a different binding in each branch of an `if` wouldn't, because each combination would be its own module type.)
+`createReadThroughCache` itself ([`src/lib/create.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/create.ts)) starts with every feature off, and swaps in a binding for each option with `replaceBinding()`. A replacement keeps the module's type, so haywire still checks that the result is complete. (Adding a different binding in each branch of an `if` wouldn't, because each combination would be its own module type.)
 
 Who closes what follows from how each value was bound. Every Valkey connection belongs to the application and is bound with `withInstance()`, and a container doesn't close those, so the cache can share a connection with anything else (a rate limiter, another cache). Disposing the container (or calling `close()`) only closes what BentoCache opened itself, which is the bus's pub/sub connections. The Valkey driver doesn't close connections.
 
@@ -323,5 +327,5 @@ The tests run against a real Valkey, which is a `valkey` sidecar in the devconta
 - Several logical databases stand in for several servers. Nodes in the tests are databases `1` to `4` of one server, which don't share keys, and that's all sharding needs.
 - Each test varies one feature. It starts from a baseline module (one node, BentoCache's own Valkey tier, no memory tier, no grace), and swaps in the feature it's about with `replaceBinding()`, which haywire type-checks like any other binding. `createReadThroughCache` has its own tests for each option.
 - Each container stands in for a process. Two containers in one test share no BentoCache, memory tier or locks, only Valkey, like two pods would. (They do share the application's connection, as a stand-in for Valkey itself.)
-- The tests order events rather than waiting on time. The test controls the loader ([`test/helpers/loader.ts`](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache/test/helpers/loader.ts)), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead.
+- The tests order events rather than waiting on time. The test controls the loader ([`test/helpers/loader.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/test/helpers/loader.ts)), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead.
 - Every test uses its own prefix, so tests don't need to clear the server, and don't see each other's keys.

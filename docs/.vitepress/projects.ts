@@ -71,6 +71,12 @@ export interface Demo {
      * Slugs of related demos. Declared on one side, shown on both.
      */
     readonly related?: readonly string[];
+    /**
+     * For a demo made of several packages, their READMEs, each a section of the page after the
+     * demo's own README, under `title`. A demo's page is generated from its READMEs by
+     * `docs/scripts/populate-docs.mjs`; an infrastructure entry's is written by hand, and has none.
+     */
+    readonly readmes?: readonly { readonly title: string; readonly path: string }[];
     readonly pages: readonly Page[];
 }
 
@@ -601,6 +607,12 @@ export const demos: readonly Demo[] = [
             },
             { label: 'Postgres sidecar', path: '.devcontainer/docker-compose.yml' },
             { label: 'Postgres in CI', path: 'dagger/main.go' },
+        ],
+        readmes: [
+            { title: 'The spec', path: 'demos/openapi/spec/README.md' },
+            { title: 'The client', path: 'demos/openapi/client/README.md' },
+            { title: 'The database', path: 'demos/openapi/database/README.md' },
+            { title: 'The server', path: 'demos/openapi/server/README.md' },
         ],
         uses: [
             'juniper',

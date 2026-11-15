@@ -4,7 +4,7 @@
  * packages, the paths of the docs-site rule, and the package dropdowns of the issue templates.
  * Also the principles skill `@leyman/configs` ships, from the principles page, and the skills
  * table of `AGENTS.md`, from each skill's frontmatter. And each documented package's `why` page,
- * from its `WHY-<PACKAGE>.md`.
+ * from its `WHY-<PACKAGE>.md`, and each demo's page, from its READMEs.
  *
  * Data comes from each project's `package.json` (or `project.json` `metadata.description` for a
  * project with none), from `docs/.vitepress/projects.ts`, and from the skills' `SKILL.md` files. Prose lives in manual sections, kept
@@ -420,7 +420,8 @@ const githubRepo = 'https://github.com/JacobLey/leyman';
 /**
  * The site page generated from each repo path, or standing for it: a documented package's
  * directory and README map to its overview, its WHY file to its `why` page, and a demo's or
- * infrastructure entry's directory and README to its page. Only a page generated from the file
+ * infrastructure entry's directory and README to its page (and a demo's other `readmes`). Only a
+ * page generated from the file
  * itself (`fromSource`) keeps a link's anchor, since only there do the headings match.
  */
 const sitePages = new Map([
@@ -434,12 +435,16 @@ const sitePages = new Map([
             ]),
         ])
     ),
-    ...[
-        ...demos.map(demo => ['demos', demo]),
-        ...infrastructure.map(entry => ['infrastructure', entry]),
-    ].flatMap(([kind, { slug, source }]) => [
-        [source, { page: `/${kind}/${slug}/` }],
-        [`${source}/README.md`, { page: `/${kind}/${slug}/` }],
+    ...demos.flatMap(({ slug, source, readmes = [] }) => [
+        [source, { page: `/demos/${slug}/` }],
+        ...[`${source}/README.md`, ...readmes.map(readme => readme.path)].map(readme => [
+            readme,
+            { page: `/demos/${slug}/`, fromSource: true },
+        ]),
+    ]),
+    ...infrastructure.flatMap(({ slug, source }) => [
+        [source, { page: `/infrastructure/${slug}/` }],
+        [`${source}/README.md`, { page: `/infrastructure/${slug}/` }],
     ]),
 ]);
 const npmPages = new Map(
@@ -487,17 +492,23 @@ const siteLink = (target, fromFile) => {
     if (github) {
         return target;
     }
-    if (!existsSync(path.join(root, repoPath))) {
-        throw new Error(`${fromFile}: link ${target} names a missing file`);
+    if (existsSync(path.join(root, repoPath))) {
+        const kind = statSync(path.join(root, repoPath)).isDirectory() ? 'tree' : 'blob';
+        return `${githubRepo}/${kind}/main/${repoPath}${anchor}`;
     }
-    const kind = statSync(path.join(root, repoPath)).isDirectory() ? 'tree' : 'blob';
-    return `${githubRepo}/${kind}/main/${repoPath}${anchor}`;
+    // Absent only because CI leaves its directory out: GitHub redirects a blob URL of a directory
+    if (excludedHere(repoPath)) {
+        return `${githubRepo}/blob/main/${repoPath}${anchor}`;
+    }
+    throw new Error(`${fromFile}: link ${target} names a missing file`);
 };
 
 /**
- * Turns a repo Markdown file (a WHY file) into the body of its site page: links are rewritten by
- * `siteLink`, and a twoslash comment, hidden on GitHub and npm, becomes the setup of the code
- * block under it. A twoslash comment is exactly these lines, right above a `ts` fence:
+ * Turns a repo Markdown file (a WHY file or a demo's README) into the body of its site page: links
+ * are rewritten by `siteLink`, headings are moved `shift` levels down, and a twoslash comment,
+ * hidden on GitHub and npm, becomes the setup of the code block under it. A twoslash comment is
+ * exactly these lines, above a `ts` fence (blank lines between are fine), and indented like it
+ * (in a list item, say):
  *
  * ```md
  * <!-- twoslash
@@ -511,10 +522,12 @@ const siteLink = (target, fromFile) => {
  * GitHub, a cut or a directive in it fails, as does any malformed twoslash comment.
  *
  * @param filePath - the file, from the root
+ * @param shift - how many levels to move each heading down, for a file that is a section of a page
  * @returns the page's body
- * @throws on a malformed twoslash comment, or a twoslash directive in a shown block
+ * @throws on a malformed twoslash comment, a twoslash directive in a shown block, or a heading
+ * moved below `######`
  */
-const sitePage = filePath => {
+const sitePage = (filePath, shift = 0) => {
     const lines = readFileSync(path.join(root, filePath), 'utf8').split('\n');
     const fail = (index, reason) => {
         throw new Error(`${filePath}:${index + 1}: ${reason}`);
@@ -541,13 +554,15 @@ const sitePage = filePath => {
             output.push(line);
             continue;
         }
-        if (/^<!--\s*twoslash/v.test(line)) {
-            if (line !== '<!-- twoslash') {
+        const comment = /^(?<indent>\s*)<!--\s*twoslash/v.exec(line);
+        if (comment) {
+            const { indent } = comment.groups;
+            if (line !== `${indent}<!-- twoslash`) {
                 fail(index, 'a twoslash comment opens with a line that is exactly "<!-- twoslash"');
             }
             const setup = [];
             index++;
-            for (; lines[index] !== '-->'; index++) {
+            for (; lines[index] !== `${indent}-->`; index++) {
                 if (index >= lines.length) {
                     fail(index - 1, 'a twoslash comment closes with a line that is exactly "-->"');
                 }
@@ -556,16 +571,25 @@ const sitePage = filePath => {
                 }
                 setup.push(lines[index]);
             }
-            if (lines[index + 1] !== '```ts') {
-                fail(index + 1, 'a twoslash comment is followed directly by a ```ts fence');
+            // Biome puts a blank line between a comment and a fence in a list item
+            while (lines[index + 1] === '') {
+                index++;
+            }
+            if (lines[index + 1] !== `${indent}\`\`\`ts`) {
+                fail(index + 1, 'a twoslash comment is followed by a ```ts fence');
             }
             index++;
             fence = { marker: '```', language: 'ts' };
-            output.push('```ts', ...setup, '// ---cut---');
+            output.push(`${indent}\`\`\`ts`, ...setup, `${indent}// ---cut---`);
             continue;
         }
+        const heading = /^(?<level>#{1,6})(?<rest> .*)?$/v.exec(line);
+        const level = (heading?.groups.level.length ?? 0) + shift;
+        if (heading && level > 6) {
+            fail(index, `a heading can't move ${shift} level(s) down, below ######`);
+        }
         output.push(
-            line
+            (heading ? `${'#'.repeat(level)}${heading.groups.rest ?? ''}` : line)
                 .split(/(`+[^`]*`+)/v)
                 .map((part, partIndex) =>
                     partIndex % 2 === 1
@@ -582,6 +606,26 @@ const sitePage = filePath => {
         fail(lines.length - 1, 'a code block is never closed');
     }
     return output.join('\n');
+};
+
+/**
+ * A page generated from repo files: the frontmatter, where only the `description` is written by
+ * hand, then the body, formatted as Biome would.
+ *
+ * @param sources - the files it's generated from, from the root
+ * @param body - the page's Markdown
+ * @returns the page's content
+ */
+const generatedPage = (sources, body) => {
+    const named = list(sources);
+    return `---
+${manualSection({ id: 'frontmatter', comment: { start: '#' }, body: 'description:' })}
+---
+
+<!-- ${signatureToken()} Generated from ${named} by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit ${named} instead, and the description only here. -->
+
+${format(body)}
+`;
 };
 
 /**
@@ -610,19 +654,42 @@ const whyPages = packages.flatMap(({ slug, sources, pages }) => {
         return [];
     }
     const [source] = files;
-    return [
-        {
-            filePath,
-            content: () => `---
-${manualSection({ id: 'frontmatter', comment: { start: '#' }, body: 'description:' })}
----
-
-<!-- ${signatureToken()} Generated from ${source} by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit ${source} instead, and the description only here. -->
-
-${sitePage(source)}`,
-        },
-    ];
+    return [{ filePath, content: () => generatedPage([source], sitePage(source)) }];
 });
+
+/**
+ * Each demo's page, generated from its README, which is its single source, followed by a section
+ * for each of its `readmes`. The README's title becomes the demo's, with `<ProjectHeader />` under
+ * it, and each further README's title becomes the section's heading, with its headings moved one
+ * level down. The page's `description` is its manual section.
+ */
+const demoPages = demos.map(({ slug, title, source, readmes = [] }) => {
+    const readme = `${source}/README.md`;
+    const withoutTitle = (filePath, shift) => {
+        const [first, ...rest] = sitePage(filePath, shift).split('\n');
+        if (!first.startsWith(`${'#'.repeat(shift + 1)} `)) {
+            throw new Error(`${filePath}: the first line must be its title, a "# " heading`);
+        }
+        return rest.join('\n');
+    };
+    return {
+        filePath: `docs/src/demos/${slug}/index.md`,
+        content: () =>
+            generatedPage(
+                [readme, ...readmes.map(part => part.path)],
+                [
+                    `# ${title}\n\n<ProjectHeader />\n${withoutTitle(readme, 0)}`,
+                    ...readmes.map(part => `## ${part.title}\n${withoutTitle(part.path, 1)}`),
+                ].join('\n\n')
+            ),
+    };
+});
+const nestedReadmes = infrastructure.filter(entry => entry.readmes);
+if (nestedReadmes.length > 0) {
+    throw new Error(
+        `Infrastructure pages are written by hand, so readmes does nothing: ${nestedReadmes.map(entry => entry.slug).join(', ')}`
+    );
+}
 
 /**
  * A skill's `name` and `description`, from the frontmatter of its `SKILL.md`. Only plain one-line
@@ -731,6 +798,7 @@ const files = [
         ),
     },
     ...whyPages,
+    ...demoPages,
 ];
 const results = await populateFiles(
     files
@@ -743,7 +811,7 @@ for (const result of results) {
         console.log(`Wrote ${path.relative(root, result.filePath)} (${result.reason})`);
     }
 }
-const undescribed = whyPages
+const undescribed = [...whyPages, ...demoPages]
     .map(({ filePath }) => filePath)
     .filter(filePath =>
         /^description:\s*$/mv.test(readFileSync(path.join(root, filePath), 'utf8'))

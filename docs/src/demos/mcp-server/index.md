@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: An MCP server that makes a REST API easy for AI agents to use, with tools shaped around tasks, OAuth with step-up scopes, and token exchange so it calls the API as the agent's user.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:6b41751fab62051f132aad0eb3636ccd Generated from demos/agents/mcp/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/mcp/README.md instead, and the description only here. -->
 
 # MCP server
 
@@ -32,7 +36,7 @@ This is a worked example rather than a package, and it isn't published. It's sti
 ## Example
 
 ```ts
-declare const process: { env: Record<string, string> };
+declare const process: { env: Record<string, string | undefined> };
 // ---cut---
 import { serve } from '@hono/node-server';
 import { createNotesMcpApp } from '@leyman/demo-agents-mcp';
@@ -50,7 +54,7 @@ const app = createNotesMcpApp({
         issuer: 'https://auth.example',
         resource: 'https://api.notes.example',
         clientId: 'notes-mcp',
-        clientSecret: process.env.NOTES_MCP_SECRET,
+        clientSecret: process.env.NOTES_MCP_SECRET!,
     },
     onError: error => console.error(error),
 });
@@ -129,7 +133,7 @@ Another authorization server (Keycloak, a hosted provider) is a different `issue
 
 ## Testing
 
-The tests run everything for real, as it would be deployed. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/tools/oauth-dev-server), the [notes API](/demos/openapi/#the-server) on a database of its own (from [`pg-dolly`](/packages/pg-dolly/)) that accepts only that server's tokens, and the MCP server in front each run on a free port. The agent is the SDK's own `Client`, with the dev server's OAuth provider (`DevOAuthClientProvider`, from `oauth-dev-server/mcp`) playing the user, so each test goes through the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents signed in as different users (`login_hint` at the dev server's login) each find only their own notes.
+The tests run everything for real, as it would be deployed. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/tools/oauth-dev-server), the [notes API](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) on a database of its own (from [`pg-dolly`](/packages/pg-dolly/)) that accepts only that server's tokens, and the MCP server in front each run on a free port. The agent is the SDK's own `Client`, with the dev server's OAuth provider (`DevOAuthClientProvider`, from `oauth-dev-server/mcp`) playing the user, so each test goes through the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents signed in as different users (`login_hint` at the dev server's login) each find only their own notes.
 
 Failures are caused for real rather than mocked. The tests stop the API, lose the API's answer to an added note on the way (replacing it with a `502` after the API ran it, so the retry gets the same note back), answer `409` while the first attempt still runs, make the API fail with a `500` (a database trigger refusing the note) and check it isn't asked again, have the API accept another audience, and use an issuer with no discovery document or keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`) rather than by waiting.
 
