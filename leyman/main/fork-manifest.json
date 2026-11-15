@@ -56,6 +56,10 @@
       "why": "runtimes, CLI tools and version parity"
     },
     {
+      "path": ".agents/skills/efficient-systems",
+      "why": "budgets, a realistic bench and output-preserving refactors for hot paths"
+    },
+    {
       "path": ".agents/skills/install-package",
       "why": "how to add a dependency"
     },

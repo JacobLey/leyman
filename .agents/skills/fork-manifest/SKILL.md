@@ -60,6 +60,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.agents/skills/create-package` | how to add a package |
 | `.agents/skills/debugging` | source maps, the cache and test failures |
 | `.agents/skills/devcontainer` | runtimes, CLI tools and version parity |
+| `.agents/skills/efficient-systems` | budgets, a realistic bench and output-preserving refactors for hot paths |
 | `.agents/skills/install-package` | how to add a dependency |
 | `.agents/skills/linting-formatting` | ESLint, Biome and auto-fix |
 | `.agents/skills/nx-run-tasks` | how to run Nx tasks |
