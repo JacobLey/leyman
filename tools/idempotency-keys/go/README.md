@@ -112,8 +112,18 @@ import (
 cfg, _ := config.LoadDefaultConfig(ctx)
 client := dynamodb.NewFromConfig(cfg)
 // Once, in a migration or your infrastructure code
-client.CreateTable(ctx, dynamodbstore.CreateTableInput(dynamodbstore.StoreOptions{}))
-client.UpdateTimeToLive(ctx, dynamodbstore.UpdateTimeToLiveInput(dynamodbstore.StoreOptions{}))
+options := dynamodbstore.StoreOptions{}
+if _, err := client.CreateTable(ctx, dynamodbstore.CreateTableInput(options)); err != nil {
+	return err
+}
+// A new table takes a few seconds to be ACTIVE, and UpdateTimeToLive fails on one still CREATING
+table := &dynamodb.DescribeTableInput{TableName: dynamodbstore.CreateTableInput(options).TableName}
+if err := dynamodb.NewTableExistsWaiter(client).Wait(ctx, table, 5*time.Minute); err != nil {
+	return err
+}
+if _, err := client.UpdateTimeToLive(ctx, dynamodbstore.UpdateTimeToLiveInput(options)); err != nil {
+	return err
+}
 
 keys, _ := idempotencykeys.New(dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{}))
 ```

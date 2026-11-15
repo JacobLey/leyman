@@ -232,9 +232,10 @@ suite('DynamoDbStore', () => {
     withStore.test(
         'Writes over an expired item of another fingerprint',
         async ({ store, identity }) => {
-            await claim(store, identity, '1'.repeat(32), shortTimes);
-            await store.complete(identity, '1'.repeat(32), response);
-            await setTimeout(10);
+            // Long enough to complete before it expires, so the item is an expired completed one
+            await claim(store, identity, '1'.repeat(32), { leaseMs: 200, ttlMs: 200 });
+            expect(await store.complete(identity, '1'.repeat(32), response)).to.equal(true);
+            await setTimeout(250);
             expect(
                 await claim(store, identity, '2'.repeat(32), longTimes, otherFingerprint)
             ).to.deep.equal({ state: 'claimed' });
