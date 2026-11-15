@@ -1,5 +1,11 @@
 # juniper
 
+## 2.8.3
+
+### Patch Changes
+
+- 754dbcc: Bring the WHY file in line with its docs site page, which is now generated from it, and drop its centered header, contents list and horizontal rules.
+
 ## 2.8.2
 
 ### Patch Changes

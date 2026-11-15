@@ -1,5 +1,12 @@
 # mocha-chain
 
+## 1.2.2
+
+### Patch Changes
+
+- 1f4d8ba: The WHY file's examples are type-checked on the docs site, and the contents list is gone.
+- 754dbcc: Bring the WHY file in line with its docs site page, which is now generated from it, and drop its centered header, contents list and horizontal rules.
+
 ## 1.2.1
 
 ### Patch Changes

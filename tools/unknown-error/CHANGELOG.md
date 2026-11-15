@@ -1,5 +1,11 @@
 # unknown-error
 
+## 0.2.3
+
+### Patch Changes
+
+- 754dbcc: Bring the WHY file in line with its docs site page, which is now generated from it, and drop its centered header, contents list and horizontal rules.
+
 ## 0.2.2
 
 ### Patch Changes

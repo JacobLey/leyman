@@ -1,6 +1,6 @@
 {
   "name": "barrelify",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Writes TypeScript barrel files (an index.ts that re-exports its directory) with import extensions that resolve under Node ESM, and checks in CI that they are up to date.",
   "engines": {
     "node": ">=24"

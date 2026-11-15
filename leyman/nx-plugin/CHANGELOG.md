@@ -1,5 +1,16 @@
 # @leyman/nx-plugin
 
+## 0.5.0
+
+### Minor Changes
+
+- 3cb8150: Update dependencies: @nx/devkit@24.0.5, nx@24.0.5
+
+### Patch Changes
+
+- Updated dependencies [754dbcc]
+  - juniper@2.8.3
+
 ## 0.4.2
 
 ### Patch Changes
