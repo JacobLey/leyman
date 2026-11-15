@@ -1,5 +1,22 @@
 # format-file
 
+## 2.0.0
+
+### Major Changes
+
+- 7951a62: Only the most preferred formatter runs, and a failure rejects with the new `FormatFileError` (with `formatter` and `cause`) instead of passing the files to the next formatter. Previously Biome wrote the files it could and exited with an error on one syntax error, and Prettier then reformatted the whole batch in its own style. A file excluded by Biome's `files.includes`, or one Biome doesn't support, made Biome exit with an error too, so Prettier formatted it. Biome now runs with `--no-errors-on-unmatched`, and Prettier likewise skips missing and unsupported files, so they are left unchanged without an error.
+  
+  To keep formatting best-effort, catch `FormatFileError`. `unsafeFallback: true` restores the old behavior exactly: each formatter in turn, and resolving even if all of them fail.
+
+### Patch Changes
+
+- 76a52d7: Document that `formatText` formats by extension only: path-matched settings such as Biome's `overrides` and `files.includes` don't apply.
+- Updated dependencies [67434a9]
+- Updated dependencies [c2fe089]
+- Updated dependencies [f7504e3]
+- Updated dependencies [81ec46e]
+  - haywire@2.0.8
+
 ## 1.3.2
 
 ### Patch Changes

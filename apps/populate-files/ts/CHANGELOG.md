@@ -1,5 +1,25 @@
 # populate-files
 
+## 2.0.0
+
+### Major Changes
+
+- b250760: `clean` without a `manifest` now throws a `TypeError` (the CLI's `--clean` without `--manifest` fails), instead of removing every file in `targetDir` that the run didn't write. With the default `targetDir` of `.`, that was the whole project, `.git` and `node_modules` included.
+  
+  To migrate, add a `manifest`: the first run adopts every file that is already up to date, without `force`, and from then on `clean` only removes files it wrote. Or pass `unsafeCleanUnlisted: true` (`--unsafe-clean-unlisted`) to keep the old behaviour on a directory that holds nothing but generated files. `unsafeCleanUnlisted` without `clean`, or with a `manifest`, also throws a `TypeError`.
+
+### Patch Changes
+
+- d3786ed: Reword the `not-owned` ownership error so it fits both of its causes: `File <path> exists but is not marked as generated (not signed)` for a `signed` file, and `(not listed in the manifest)` for an unsigned file with a `manifest`. The CLI's `--force` help now covers files tracked by `--manifest` too.
+- d3462ff: `clean` removes and reports stale files sorted by path (in UTF-16 code unit order), and checks that they are unedited in that order, as the Go implementation does. They came in the order the file system listed them, or the manifest held them, so which edited file was refused first could vary. A manifest listing one file by two paths (like `a.json` and `./a.json`) throws `GeneratedSignatureManifestError`, naming both, rather than using whichever came last.
+- Updated dependencies [7951a62]
+- Updated dependencies [76a52d7]
+- Updated dependencies [ff005f4]
+- Updated dependencies [61f7f7d]
+  - format-file@2.0.0
+  - generated-signature@0.3.3
+  - parse-cwd@2.1.3
+
 ## 1.2.4
 
 ### Patch Changes

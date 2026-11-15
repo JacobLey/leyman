@@ -1,5 +1,17 @@
 # haywire-launcher
 
+## 1.1.3
+
+### Patch Changes
+
+- 4fd0570: Accept options without an id, as `launch(container, undefined, { dispose: true })`, for a container that binds `EntryScript`. It ran, but didn't compile.
+- Updated dependencies [67434a9]
+- Updated dependencies [c2fe089]
+- Updated dependencies [f7504e3]
+- Updated dependencies [81ec46e]
+  - haywire@2.0.8
+  - entry-script@4.2.2
+
 ## 1.1.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "juniper-validator",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "StandardSchema-compliant validator for Juniper schemas.",
   "engines": {
     "node": ">=22.13.0"

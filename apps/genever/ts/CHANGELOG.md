@@ -1,5 +1,33 @@
 # genever
 
+## 0.11.0
+
+### Minor Changes
+
+- 2b8b987: Pointers, of errors and of `geneverSource` names, are percent-encoded as URI fragments (RFC 6901 §6), so each is also a `$ref` to the same place: the property `a b` is `#/properties/a%20b`, and `{id}` in a path is `%7Bid%7D`. The `$ref` a YAML recursive alias becomes is encoded the same way, so a key with `#` no longer breaks it.
+  
+  Of several mistakes, the one reported is now the first in a fixed order, the same in every genever implementation: the members of every object (properties, definitions, paths and the rest) are checked in the UTF-16 code unit order of their keys (RFC 8785 §3.2.3), not the order a JavaScript object keeps them in. Generated types keep the input's order, but when two names collide, the suffix (`Address2`) goes to the later one in that order, and referenced files load in it.
+  
+  A discriminator `mapping` to a component name with `~` or `%` now resolves.
+
+### Patch Changes
+
+- 9c18262: `geneverFile` (and the CLI) gives each URL 30 seconds to load, its redirects and body included, and then fails with a `GeneverLoadError` (`timed out after 30000 ms`), instead of waiting forever on a server that never answers. The bodies of redirects and failed responses are cancelled rather than left unread.
+- bab4d70: `GeneverFileOptions` no longer lists `baseUri`, which `geneverFile` always replaced with the input file's own URL.
+- 251e140: A definition with only `$id` and `$ref` that the schema itself declares is now a type like any other: `$defs: { B: { $id: 'https://example.com/b', $ref: 'root#/$defs/A' } }` generates `type B = A`, and its `$ref` is checked, so one to a document that isn't loaded fails as unsupported instead of being dropped. Only the aliases `geneverFile` adds itself, when a file's `$id` isn't the URL it was loaded from, are still seen through. So is a referenced file that only holds a `$ref`, which is now a type named after it. Two such definitions referring to each other are now a strict mode error (and `never` outside strict mode), like any other `$ref` back to the same value.
+- f530501: `typedMinItems` (and `--typed-min-items`) must be a non-negative integer, and anything else throws a `TypeError` saying so. `NaN` or `-1` used to turn typed `minItems` off without a word.
+- Updated dependencies [7951a62]
+- Updated dependencies [76a52d7]
+- Updated dependencies [ff005f4]
+- Updated dependencies [61f7f7d]
+- Updated dependencies [b250760]
+- Updated dependencies [d3786ed]
+- Updated dependencies [d3462ff]
+  - format-file@2.0.0
+  - generated-signature@0.3.3
+  - parse-cwd@2.1.3
+  - populate-files@2.0.0
+
 ## 0.10.5
 
 ### Patch Changes
