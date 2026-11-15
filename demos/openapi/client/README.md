@@ -1,11 +1,12 @@
 # demo-openapi-client
 
-A typed client for the OpenAPI demo's notes API, with types imported from the spec through a content mapper and routes read from openapi.json at runtime.
-
-Part of the [OpenAPI demo](../README.md). It's a worked example, and isn't published.
+A typed client for the [OpenAPI demo](../README.md)'s notes API, with types imported from the spec through a content mapper and routes read from `openapi.json` at runtime.
 
 ## Example
 
+<!-- twoslash
+declare const process: { env: Record<string, string | undefined> };
+-->
 ```ts
 import { NotesClient } from '@leyman/demo-openapi-client';
 
@@ -29,10 +30,16 @@ switch (created.status) {
 
 ## How it works
 
-- The types come from the spec. `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by [genever-content-mapper](../../../apps/genever-content-mapper) as `tsc` runs, so no file is generated or committed. This needs TypeScript 7.1 (the package is on its beta, `catalog:typescript-next`). `tsconfig.json` registers the mapper for `.openapi.yaml` in `contentMappers`, `package.json` trusts it in `trustedContentMappers`, and the `tsc` targets run [trusted-tsc](../../../apps/trusted-tsc), which runs `tsc` with the mapper in Node's permission sandbox. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`. An operation's `path`, `query` and `header` parameters and its `body` only appear if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
+- The types come from the spec. `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by [genever-content-mapper](../../../apps/genever-content-mapper) as `tsc` runs (the types are genever's, see [genever's OpenAPI guide](https://jacobley.github.io/leyman/packages/genever/guides/openapi)), so no file is generated or committed. This needs TypeScript 7.1 (the package is on its beta, `catalog:typescript-next`). `tsconfig.json` registers the mapper for `.openapi.yaml` in `contentMappers`, `package.json` trusts it in `trustedContentMappers`, and the `tsc` targets run [trusted-tsc](../../../apps/trusted-tsc), which runs `tsc` with the mapper in Node's permission sandbox. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`. An operation's `path`, `query` and `header` parameters and its `body` only appear if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
 - The routes come from the spec too. The method and path of each operation, and the statuses it documents, are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
 - There's one generic `call` rather than a method per operation, so a new operation in the spec works as soon as the spec package is rebuilt.
 - Header parameters are sent as headers. `createNote`'s optional `Idempotency-Key` makes a retry safe, as long as you send the same key with every retry of one note, and a new one for the next note:
+
+  <!-- twoslash
+  import type { NotesClient } from '@leyman/demo-openapi-client';
+
+  declare const client: NotesClient;
+  -->
 
   ```ts
   const key = crypto.randomUUID();
@@ -44,6 +51,18 @@ switch (created.status) {
 
 - The token can be a function, which is called before every request, so a token that expires can be refreshed rather than fixed at startup.
 - A status the spec doesn't document (say, a 500) throws `NotesClientUnexpectedStatusError`, rather than being returned as if it matched a type.
+
+An input the spec doesn't allow is a type error:
+
+<!-- twoslash
+import type { NotesClient } from '@leyman/demo-openapi-client';
+
+declare const client: NotesClient;
+// @errors: 2353
+-->
+```ts
+await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' } });
+```
 
 ## Options
 

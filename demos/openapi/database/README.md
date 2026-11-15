@@ -1,15 +1,6 @@
 # demo-openapi-database
 
-The Postgres schema for the OpenAPI demo, with its Drizzle tables, the migrations that build them, and a schema.sql snapshot of the result for tests to clone.
-
-Part of the [OpenAPI demo](../README.md). It's a worked example, and isn't published.
-
-## Contents
-
-- [What it exports](#what-it-exports)
-- [The schema](#the-schema)
-- [Why a package of its own](#why-a-package-of-its-own)
-- [Testing](#testing)
+The Postgres schema for the [OpenAPI demo](../README.md), with its Drizzle tables, the migrations that build them, and a `schema.sql` snapshot of the result for tests to clone.
 
 ## What it exports
 
@@ -18,6 +9,14 @@ Part of the [OpenAPI demo](../README.md). It's a worked example, and isn't publi
 | `notes`                                    | The Drizzle table, for queries                                                |
 | `@leyman/demo-openapi-database/schema.sql` | What the migrations build, for [`pg-dolly`](../../../tools/pg-dolly) to clone |
 
+<!-- twoslash
+// @filename: node.d.ts
+// Docs are type-checked without Node.js types
+declare module 'node:fs/promises' {
+    export function readFile(path: URL, encoding: 'utf8'): Promise<string>;
+}
+// @filename: index.ts
+-->
 ```ts
 import { readFile } from 'node:fs/promises';
 import { PgDolly } from 'pg-dolly';

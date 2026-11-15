@@ -1,22 +1,12 @@
 # demo-openapi-server
 
-The notes API for the OpenAPI demo, a Hono server on Postgres with Drizzle that validates every request and response against openapi.json, and checks bearer tokens (static tokens or JWTs) and their scopes.
-
-Part of the [OpenAPI demo](../README.md). It's a worked example, and isn't published.
-
-## Contents
-
-- [Example](#example)
-- [How a request flows](#how-a-request-flows)
-- [Retrying safely](#retrying-safely)
-- [Validation from the document](#validation-from-the-document)
-- [Authentication](#authentication)
-- [The database](#the-database)
-- [Composing with haywire](#composing-with-haywire)
-- [Testing](#testing)
+The notes API for the [OpenAPI demo](../README.md), a Hono server on Postgres with Drizzle that validates every request and response against `openapi.json`, and checks bearer tokens (static tokens or JWTs) and their scopes.
 
 ## Example
 
+<!-- twoslash
+declare const process: { env: Record<string, string | undefined> };
+-->
 ```ts
 import { serve } from '@hono/node-server';
 import { createNotesApp, jwtAuthenticator } from '@leyman/demo-openapi-server';
@@ -48,10 +38,28 @@ Each operation in `openapi.json` becomes a Hono route (`/notes/{noteId}` → `/n
 
 A path the spec doesn't have gets a `404`, and a method it doesn't have on a path it does gets a `405` with `Allow`. A handler that throws gets a `500`, reported to `onError`. `onError` gets the error as it was thrown, and Drizzle's errors include the query's parameters, so scrub them before they reach a log service.
 
+Handlers are typed from the spec, so a missing operation, or a response the spec doesn't document, is a type error:
+
+<!-- twoslash
+import type { NotesHandlers } from '@leyman/demo-openapi-server';
+// @errors: 2322
+-->
+```ts
+const getNote: NotesHandlers['getNote'] = async ({ path }) => ({
+    status: 410,
+    body: { code: 'gone', message: `Note ${path.noteId} is gone` },
+});
+```
+
 ## Retrying safely
 
 `createNote` takes an optional `Idempotency-Key` header, handled by [idempotency-keys](../../../tools/idempotency-keys/ts), so a client that timed out can send the same request again without adding the note twice:
 
+<!-- twoslash
+import type { NotesClient } from '@leyman/demo-openapi-client';
+
+declare const client: NotesClient;
+-->
 ```ts
 const key = crypto.randomUUID();
 // Sent again, with the same key, on every retry of this one note
@@ -80,6 +88,9 @@ Every answer the middleware gives itself is an `ApiError`, through idempotency-k
 - Keys are stored in Postgres, in the [database package](../database)'s `idempotency_keys` table, through the same pool as the handlers (`db.$client`). Claiming a key is one statement, exclusive and durable across every instance.
 - There's no notifier, so a duplicate waiting on a running request polls the table. Postgres `LISTEN` needs a connection of its own, connected before the app serves and closed afterwards, and the server doesn't own any connections (it's given a pool it never closes, and has no start or stop). A deployment that wants waiting requests woken at once binds `idempotencyKeysId` to keys with a `PostgresNotifier` on a client it owns:
 
+  <!-- twoslash
+  // @noErrors
+  -->
   ```ts
   const listener = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await listener.connect();
@@ -115,7 +126,7 @@ An `Authenticator` gets the token and the operation's scopes, and answers with t
 
 With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, listing its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). `resource` is where the API is served. If it has a path (because a proxy mounts the API under one), the metadata is served under that path too, where RFC 9728 places it. A client then only needs the API's URL to log in, which is how the [notes CLI](../../agents/cli) works.
 
-## The database
+## Querying the database
 
 The schema lives in the [`database`](../database) package, with the Drizzle tables, their migrations, and `schema.sql` (what the migrations build). The server queries the `notes` table it exports.
 
@@ -134,7 +145,23 @@ Handlers trust their input, since validation has already happened. `listNotes` u
 | `idempotencyKeysId` | `notesModule`                                                  | `postgresIdempotencyKeysBinding`: Postgres, through `databaseId`'s pool, no notifier |
 | `notesAppId`        | `notesModule`                                                  | the Hono app                                                                         |
 
+<!-- twoslash
+import type { Authenticator, NotesDatabase } from '@leyman/demo-openapi-server';
+
+declare const db: NotesDatabase;
+declare const introspect: Authenticator;
+declare const report: (error: Error) => void;
+-->
 ```ts
+import {
+    appConfigId,
+    authenticatorId,
+    databaseId,
+    notesAppId,
+    notesModule,
+} from '@leyman/demo-openapi-server';
+import { bind, createContainer } from 'haywire';
+
 const app = createContainer(
     notesModule
         .addBinding(bind(databaseId).withInstance(db))

@@ -1,8 +1,6 @@
 # demo-openapi-spec
 
-The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json and notes.openapi.yaml.
-
-Part of the [OpenAPI demo](../README.md). It's a worked example, and isn't published.
+The OpenAPI document of the [OpenAPI demo](../README.md)'s notes API, built from Juniper schemas and published as `openapi.json` and `notes.openapi.yaml`.
 
 ## The API
 
@@ -18,7 +16,50 @@ Every error is an `ApiError` (`{ code, message }`). `createNote` takes an option
 
 ## How it's built
 
-[`src/spec.ts`](./src/spec.ts) is the document as plain data, with [Juniper](../../../apps/juniper) schemas where the schemas go. Juniper's `serializeSpec` turns each one into JSON Schema 2020-12 (as OpenAPI 3.1 uses), and collects every schema named with `define()` into `components.schemas`, so no `$ref` can be left dangling and nothing has to be listed twice. The paths and security are only a few lines of plain data, so they don't need a builder library.
+[`src/spec.ts`](./src/spec.ts) is the document as plain data, with [Juniper](../../../apps/juniper) schemas where the schemas go. Juniper's [`serializeSpec`](https://jacobley.github.io/leyman/packages/juniper/guides/openapi#serializing-a-whole-spec) turns each one into JSON Schema 2020-12 (as OpenAPI 3.1 uses), and collects every schema named with `define()` into `components.schemas`, so no `$ref` can be left dangling and nothing has to be listed twice. The paths and security are only a few lines of plain data, so they don't need a builder library.
+
+```ts
+import { arraySchema, objectSchema, serializeSpec, stringSchema } from 'juniper';
+
+const note = objectSchema({
+    properties: {
+        id: stringSchema({ format: 'uuid' }),
+        title: stringSchema({ minLength: 1, maxLength: 200 }),
+        body: stringSchema({ maxLength: 10_000 }),
+        createdAt: stringSchema({ format: 'date-time' }),
+    },
+    required: ['id', 'title', 'body', 'createdAt'],
+    additionalProperties: false,
+}).define('Note');
+
+const spec = serializeSpec({
+    openapi: '3.1.0',
+    info: { title: 'Notes', version: '1.0.0' },
+    paths: {
+        '/notes': {
+            get: {
+                operationId: 'listNotes',
+                responses: {
+                    200: {
+                        description: 'The newest notes',
+                        content: {
+                            'application/json': {
+                                schema: objectSchema({
+                                    properties: { items: arraySchema(note) },
+                                    required: ['items'],
+                                    additionalProperties: false,
+                                }).define('NoteList'),
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+});
+```
+
+(Trimmed: the [full spec](./src/spec.ts) has every operation, and the bearer security scheme.)
 
 The `populate-files` target writes the document to `out/openapi.json`, and the same document as YAML to `out/notes.openapi.yaml`. Both are committed, and CI fails if either is stale. The package exports only those files. The client and server read the JSON at runtime (`@leyman/demo-openapi-spec/openapi.json`), and import their types from the YAML (`@leyman/demo-openapi-spec/notes.openapi.yaml`) through [genever-content-mapper](../../../apps/genever-content-mapper), as any outside consumer would, rather than importing the TypeScript. The YAML's name ends in `.openapi.yaml` because TypeScript won't map a `.json` file, and a compound extension leaves other YAML files alone.
 

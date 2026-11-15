@@ -2,18 +2,24 @@
 
 A CLI for the notes API, made for agents as well as people, with one short command per task and login, tokens and errors handled inside.
 
-Part of the [agents demo](../README.md). It's a worked example, and isn't published.
+An AI agent is good at wiring things together, but every call it makes costs context, and is another chance to get something wrong. An agent with a shell can run `notes list --q sheep` for a few tokens and get a fully authorized answer, as long as the CLI handles the plumbing (discovery, tokens, refresh and errors) itself.
 
-## Contents
+This demo is that CLI, for the [notes API](../../openapi). It's one of two demos that make the API easy for agents to use. The other, an [MCP server](../mcp), is for agents that connect to services instead.
 
-- [Example](#example)
-- [Commands](#commands)
-- [Made for agents](#made-for-agents)
-- [Login](#login)
-- [Errors](#errors)
-- [Testing](#testing)
-- [What was learned](#what-was-learned)
-- [Not covered](#not-covered)
+```
+agent ──shell──► notes CLI ──(the user's token)──► notes API ──► Postgres
+        (the user logs in once at the dev OAuth server)
+```
+
+## Why each piece
+
+A CLI does for an agent with a shell what MCP does for one that connects to services. In both, the plumbing stays on the tool's side, and the CLI costs an agent one command line in and one line per result out.
+
+The API points to its authorization server (Protected Resource Metadata, RFC 9728), so the CLI only needs the API's URL, and works with any standard authorization server. The [dev OAuth server](../../../tools/oauth-dev-server) runs the real flow locally, and Keycloak or a hosted provider could replace it by changing URLs.
+
+The CLI logs in as the user (by authorization code with PKCE, or with a device code) and asks for a token for the API only (`resource`). It refreshes the token itself, so an agent doesn't handle tokens at all. The API shows each user only their own notes.
+
+This is a worked example rather than a package, and it isn't published. It's still a full package (lint, types, 100% coverage), tested against the real notes API, Postgres and the dev OAuth server.
 
 ## Example
 

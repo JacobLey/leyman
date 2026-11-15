@@ -2,24 +2,32 @@
 
 An MCP server that gives AI agents a few task-shaped tools over the notes API, and calls the API as the agent's user through OAuth token exchange.
 
-Part of the [agents demo](../README.md). It's a worked example, and isn't published.
+An AI agent is good at wiring things together, but every call it makes costs context, and is another chance to get something wrong. So the easy path for an agent should be one short, typed, authorized call per task, with the plumbing (discovery, tokens, mapping onto the API, and errors) handled for it on the other side.
 
-## Contents
+This demo does that for agents that connect to services, in front of the [notes API](../../openapi). A companion demo, the [CLI](../cli), does the same for agents with a shell.
 
-- [Example](#example)
-- [Tools](#tools)
-- [Mapping onto the API](#mapping-onto-the-api)
-- [Keeping agents' context small](#keeping-agents-context-small)
-- [Authorization](#authorization)
-- [Calling the API as the user](#calling-the-api-as-the-user)
-- [Transport](#transport)
-- [Composing with haywire](#composing-with-haywire)
-- [Testing](#testing)
-- [What was learned](#what-was-learned)
-- [Not covered](#not-covered)
+```
+agent ──MCP──► MCP server ──(exchanged token)──► notes API ──► Postgres
+   (the agent logs in at the dev OAuth server; each server verifies its own tokens)
+```
+
+## Why each piece
+
+The notes API itself doesn't change for agents. It's a REST API described by OpenAPI, and it knows nothing about them. MCP is a different protocol (JSON-RPC on one endpoint, which describes itself through `tools/list`), so the MCP server sits beside the API rather than inside it, and calls it like any other client would.
+
+The tools are shaped around tasks rather than copied from the endpoints. They return summaries by default and details on request. Their inputs use the API's own constraints, read from `openapi.json`, so a tool can't accept anything the API would reject.
+
+Every hop has its own token, all for the same user. The agent gets a token for the MCP server, and the MCP server exchanges it (RFC 8693) for a token for the API, for the same user and with no more scopes (`act` says the server is acting for the user). No token is passed along as is, and each server checks that a token was issued for it (`aud`). The API shows each user only their own notes, whether they came through MCP or the CLI.
+
+The authorization server is a standard one. The [dev OAuth server](../../../tools/oauth-dev-server) runs the real flow locally, and a Keycloak sidecar or a hosted provider could replace it by changing URLs.
+
+This is a worked example rather than a package, and it isn't published. It's still a full package (lint, types, 100% coverage), tested against the real notes API, Postgres and the dev OAuth server.
 
 ## Example
 
+<!-- twoslash
+declare const process: { env: Record<string, string | undefined> };
+-->
 ```ts
 import { serve } from '@hono/node-server';
 import { createNotesMcpApp } from '@leyman/demo-agents-mcp';

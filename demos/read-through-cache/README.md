@@ -4,31 +4,18 @@ A read-through cache on Valkey built from BentoCache and lease-cache, with a mem
 
 This demo puts [BentoCache](https://bentocache.dev) together with Valkey to build a read-through cache that's fit for production, using [lease-cache](../../tools/lease-cache) where BentoCache falls short. Every feature sits behind its own option, so its effect (and its cost) can be tested on its own.
 
-It's a worked example rather than a package, and isn't published. The code itself is short, so most of this README explains why it's built this way, including what BentoCache doesn't do and what was learned while building it.
+It's a worked example rather than a package, and isn't published. The code itself is short, so most of what follows explains why it's built this way, including what BentoCache doesn't do and what was learned while building it.
 
-## Contents
-
-- [Example](#example)
-- [Options](#options)
-- [Reading values](#reading-values)
-  - [Resources: keys derived from inputs](#resources-keys-derived-from-inputs)
-  - [TTL per value](#ttl-per-value)
-- [How a read flows](#how-a-read-flows)
-- [Features](#features)
-  - [Read-through, one load per instance](#read-through-one-load-per-instance)
-  - [Memory tier, and keeping it in sync](#memory-tier-and-keeping-it-in-sync)
-  - [Stale-while-revalidate](#stale-while-revalidate)
-  - [lease-cache: one load across instances, and no outdated values](#lease-cache-one-load-across-instances-and-no-outdated-values)
-  - [When Valkey is down](#when-valkey-is-down)
-  - [Sharding over several Valkey nodes](#sharding-over-several-valkey-nodes)
-- [Composing with haywire](#composing-with-haywire)
-- [Not covered](#not-covered)
-- [Testing](#testing)
 
 ## Example
 
 A cache on a Valkey connection the application already has (say, for rate limiting), with copies in memory kept in sync, stale values served while refreshing, and each miss loaded once across every instance:
 
+<!-- twoslash
+type User = { readonly id: number; readonly name: string };
+declare const db: { users: { find: (id: number) => Promise<User | null> } };
+declare const id: number;
+-->
 ```ts
 import { createReadThroughCache } from '@leyman/demo-read-through-cache';
 import { Redis } from 'ioredis';
@@ -52,7 +39,7 @@ const users = cache.resource({
     ttlMs: user => (user ? 60_000 : 5000),
 });
 
-const user = await users.get({ id });
+const user: User | null = await users.get({ id });
 
 await users.invalidate({ id }); // after an update: next read loads
 await users.expire({ id }); // or: next read serves the old value while loading
@@ -194,6 +181,14 @@ BentoCache's Redis driver talks to one server, or to a Redis Cluster (Valkey clu
 
 For a fixed set of nodes, pass the application's connections as `shards`:
 
+<!-- twoslash
+import type { Redis } from 'ioredis';
+import { createReadThroughCache } from '@leyman/demo-read-through-cache';
+
+declare const valkey: Redis;
+declare const cacheA: Redis;
+declare const cacheB: Redis;
+-->
 ```ts
 const { cache, close } = createReadThroughCache({
     connection: valkey,
@@ -208,6 +203,24 @@ const { cache, close } = createReadThroughCache({
 
 Options (and a container's bindings) are fixed once the cache is built, so nodes that change while the application runs can't come from them. Instead, the application creates a `ResizableValkeyTopology` itself (it opens a connection per node, and closes them when disposed), [binds](#composing-with-haywire) the instance, and resizes it later:
 
+<!-- twoslash
+import { bind, createContainer } from 'haywire';
+import {
+    cacheConfigId,
+    leaseCacheTierBinding,
+    noMemoryTierBinding,
+    readThroughCacheModule,
+    ResizableValkeyTopology,
+    valkeyTopologyId,
+    waitForFreshBinding,
+} from '@leyman/demo-read-through-cache';
+
+const cacheModule = readThroughCacheModule
+    .addBinding(bind(cacheConfigId).withInstance({ prefix: 'app', ttlMs: 60_000 }))
+    .addBinding(noMemoryTierBinding)
+    .addBinding(waitForFreshBinding)
+    .addBinding(leaseCacheTierBinding({ leaseMs: 5000, pollMs: 50, waitMs: 2000 }));
+-->
 ```ts
 const nodes = [
     { name: 'cache-a', size: 1, url: 'redis://cache-a:6379' },
@@ -246,7 +259,24 @@ For nodes that only grow and shrink at the end of a list, [`constant-consistent-
 
 `createReadThroughCache` is a shortcut. The cache is made of [haywire](../../tools/haywire) bindings, and each option picks one of them. `readThroughCacheModule` holds the cache itself, and needs one binding for each setting the application provides, and one for each feature. Compose them directly to bind something the options can't express (a `ResizableValkeyTopology`, or your own memory tier), or to share bindings with the rest of an application built with haywire:
 
+<!-- twoslash
+import type { Redis } from 'ioredis';
+
+declare const valkey: Redis;
+-->
 ```ts
+import {
+    cacheConfigId,
+    leaseCacheTierBinding,
+    ReadThroughCache,
+    readThroughCacheModule,
+    singleNodeTopologyBinding,
+    staleWhileRevalidateBinding,
+    syncedMemoryTierBinding,
+    valkeyConnectionId,
+} from '@leyman/demo-read-through-cache';
+import { bind, createContainer } from 'haywire';
+
 const container = createContainer(
     readThroughCacheModule
         .addBinding(bind(cacheConfigId).withInstance({ prefix: 'app', ttlMs: 60_000 }))
@@ -291,5 +321,5 @@ The tests run against a real Valkey, which is a `valkey` sidecar in the devconta
 - Several logical databases stand in for several servers. Nodes in the tests are databases `1` to `4` of one server, which don't share keys, and that's all sharding needs.
 - Each test varies one feature. It starts from a baseline module (one node, BentoCache's own Valkey tier, no memory tier, no grace), and swaps in the feature it's about with `replaceBinding()`, which haywire type-checks like any other binding. `createReadThroughCache` has its own tests for each option.
 - Each container stands in for a process. Two containers in one test share no BentoCache, memory tier or locks, only Valkey, like two pods would. (They do share the application's connection, as a stand-in for Valkey itself.)
-- The tests order events rather than waiting on time. The test controls the loader (`test/helpers/loader.ts`), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead.
+- The tests order events rather than waiting on time. The test controls the loader ([`test/helpers/loader.ts`](./test/helpers/loader.ts)), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead.
 - Every test uses its own prefix, so tests don't need to clear the server, and don't see each other's keys.

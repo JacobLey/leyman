@@ -9,14 +9,14 @@ spec (juniper) ──► openapi.json, notes.openapi.yaml ──┬──► cli
 database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
 ```
 
-These are worked examples, and none of them is published. Each is still a full package (lint, types, 100% coverage), and the server's tests run against the real `postgres` sidecar.
+These are worked examples, and none of them is published. Each is still a full package (lint, types, 100% coverage), and the server's tests run against a real Postgres.
 
-| Package | Output | README |
-|---|---|---|
-| [`spec`](./spec) | `openapi.json` and `notes.openapi.yaml`, built from Juniper schemas | [What the spec says, and how it is checked](./spec/README.md) |
-| [`client`](./client) | A typed client, from `openapi.json` | [How the types and routes come from the spec](./client/README.md) |
-| [`database`](./database) | The Drizzle schema, its migrations, and `schema.sql` | [The schema, and what the migrations build](./database/README.md) |
-| [`server`](./server) | The service, Hono on Postgres | [Validation, authentication, the database and its tests](./server/README.md) |
+| Package                  | What it is                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| [`spec`](./spec)         | `openapi.json` and `notes.openapi.yaml`, built from Juniper schemas: what the spec says, and how it's checked |
+| [`client`](./client)     | A typed client, from `openapi.json`: how its types and routes come from the spec                              |
+| [`database`](./database) | The Drizzle schema, its migrations, and `schema.sql`: what the migrations build                               |
+| [`server`](./server)     | The service, Hono on Postgres: validation, retries, authentication, the database and its tests                |
 
 ## Why each piece
 
@@ -32,7 +32,7 @@ The database schema is whatever the migrations build. Drizzle generates SQL migr
 
 ## What was learned
 
-- Nx expands `$` in a target's options. Options are forwarded to the command in double quotes, so a migrate command containing `$DATABASE_URL` would run against the server's default database. The migrate command is set in `env` instead.
+- Nx expands `$` in a target's options. Options are forwarded to the command in double quotes, so a migrate command containing `$DATABASE_URL` would run against the server's default database. The migrate command is set in `env` instead (see [pg-dolly-schema as an Nx target](https://jacobley.github.io/leyman/packages/pg-dolly-schema/getting-started#as-an-nx-target)).
 - drizzle-kit doesn't declare what it imports. It loads `drizzle-orm` and the `pg` driver from its own install location, which pnpm's strict layout doesn't allow, so a `packageExtensions` entry in `pnpm-workspace.yaml` makes them peers.
 - `drizzle-kit migrate` adds its own bookkeeping table (`drizzle.__drizzle_migrations`). A schema-only dump kept the table but not its rows, so a test database looked unmigrated, and migrating it would have run every migration again. `pg-dolly-schema --data` keeps the rows too.
 - drizzle-kit has no check-only mode to find schema changes that no migration covers. `scripts/nx/drizzle-kit-check.sh` generates into a copy of the migrations, through a temporary config that only changes `out`, and compares the two.
