@@ -1,11 +1,9 @@
-// The only file that starts AWS Emulator or builds an SDK client: the launcher's API is still settling, so a change
-// to it lands here alone.
+// The only file that starts AWS Emulator or builds an SDK client, so a change to the launcher lands here alone.
 import type { AwsEmulator } from 'aws-emulator-launch';
 import { randomUUID } from 'node:crypto';
-import { Agent } from 'node:https';
 import { EventBridge } from '@aws-sdk/client-eventbridge';
 import { SQS } from '@aws-sdk/client-sqs';
-import { AwsEmulatorSpawnError, launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { before } from 'mocha-chain';
 
 /**
@@ -18,7 +16,7 @@ const startEmulator = async (): Promise<AwsEmulator> => {
     try {
         return await launchAwsEmulator();
     } catch (error) {
-        if (error instanceof AwsEmulatorSpawnError) {
+        if (error instanceof AwsEmulatorNotRunError) {
             throw new Error(
                 'The outbox relay tests need aws-emulator on PATH. The devcontainer and the Dagger test container install it: rebuild the devcontainer',
                 { cause: error }
@@ -27,23 +25,6 @@ const startEmulator = async (): Promise<AwsEmulator> => {
         throw error;
     }
 };
-
-/**
- * Client settings for the emulator alone: nothing from the environment or `~/.aws` (the default chain), requests
- * signed with this run's keys, and HTTPS trusting only its CA.
- *
- * @param emulator - Running emulator
- * @returns Settings for any SDK client
- */
-const clientConfig = (emulator: AwsEmulator) =>
-    ({
-        endpoint: emulator.endpoint,
-        region: emulator.region,
-        credentials: emulator.credentials,
-        requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-        useFipsEndpoint: false,
-        useDualstackEndpoint: false,
-    }) as const;
 
 export interface AwsClients {
     readonly eventBridge: EventBridge;
@@ -58,8 +39,11 @@ const shared: { clients?: AwsClients } = {};
  */
 const withEmulator = before(async () => {
     const emulator = await startEmulator();
-    const config = clientConfig(emulator);
-    shared.clients = { eventBridge: new EventBridge(config), sqs: new SQS(config) };
+    // Nothing from the environment or `~/.aws`: requests signed with this run's keys, HTTPS trusting only its CA
+    shared.clients = {
+        eventBridge: new EventBridge(awsClientConfig(emulator)),
+        sqs: new SQS(awsClientConfig(emulator)),
+    };
     return { emulator };
 });
 withEmulator.after(async ({ emulator }) => {
