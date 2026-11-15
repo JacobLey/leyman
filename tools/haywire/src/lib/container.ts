@@ -78,13 +78,16 @@ type ScopeCache = Map<
     {
         promise?: Promise<readonly [unknown]>;
         /**
-         * Async version only: resolves once the provider has returned, without waiting for deferred dependencies.
+         * Async version only, while the value is created: resolves once the provider has returned, without waiting for
+         * deferred dependencies.
          */
-        output?: Promise<readonly [unknown]>;
+        output?: Promise<readonly [unknown]> | null;
         /**
-         * Async version only: path of the request creating the value, see `#getImplementation`.
+         * Async version only, while the value is created: path of the request creating it, see `#getImplementation`.
+         * Only for a value with deferred dependencies of its own, and cleared once `promise` settles, so other requests
+         * for a cached value don't walk their path.
          */
-        creatingPath?: RequestPath;
+        creatingPath?: RequestPath | null;
         value?: unknown;
     }
 >;
@@ -140,7 +143,7 @@ const requestPathIds = (path: RequestPath): GenericHaywireId[] => {
  * @param ancestor - path of the request creating a cached value
  * @returns whether `ancestor` is on `path`
  */
-const isNestedIn = (path: RequestPath, ancestor: RequestPath | undefined): boolean => {
+const isNestedIn = (path: RequestPath, ancestor: RequestPath): boolean => {
     for (let node: RequestPath | null = path; node; node = node.parent) {
         if (node === ancestor) {
             return true;
@@ -1822,7 +1825,8 @@ export class Container<Outputs extends [Extendable]> {
                 // dependencies) takes it as soon as its provider returns, as a sync container does. Waiting for the
                 // deferred dependencies would never finish, since they wait for this request. Any other request waits,
                 // so it never receives a value whose deferred dependencies then fail.
-                const [value] = await (isNestedIn(requestedPath, cached.creatingPath)
+                const [value] = await (cached.creatingPath &&
+                isNestedIn(requestedPath, cached.creatingPath)
                     ? cached.output!
                     : cached.promise!);
                 return {
@@ -1832,9 +1836,15 @@ export class Container<Outputs extends [Extendable]> {
             }
         }
 
-        // A node of this creation's own, so `isNestedIn` only matches requests made by this creation: the node a caller
-        // passes is shared by every element of a list, and by every call of the same supplier.
-        const path: RequestPath = { id: requestedPath.id, parent: requestedPath.parent };
+        // Only a cached value with deferred dependencies of its own can be requested by its own creation before `promise`
+        // settles (any other value's `promise` settles with `output`), so only its creation is isTracked: with a node of its
+        // own, so `isNestedIn` only matches requests made by this creation, since the node a caller passes is shared by
+        // every element of a list, and by every call of the same supplier.
+        const isTracked =
+            relevantCache !== null && binding.dependencyIds.some(id => id.annotations.deferred);
+        const path: RequestPath = isTracked
+            ? { id: requestedPath.id, parent: requestedPath.parent }
+            : requestedPath;
 
         // Create the value that will be put in cache immediately. Will be necessary to check during deferred rejections
         // to safely evict from cache.
@@ -1915,17 +1925,22 @@ export class Container<Outputs extends [Extendable]> {
             // if this async method was actually generated "eagerly" and therefore fully resolved.
             const cacheValue = cacheContainer as {
                 promise: Promise<[unknown]>;
-                output: Promise<readonly [unknown]>;
-                creatingPath: RequestPath;
+                output: Promise<readonly [unknown]> | null;
+                creatingPath: RequestPath | null;
                 value: unknown;
             };
-            cacheValue.output = outputPromise;
-            cacheValue.creatingPath = path;
+            if (isTracked) {
+                cacheValue.output = outputPromise;
+                cacheValue.creatingPath = path;
+            }
             cacheValue.promise = (async (): Promise<[unknown]> => {
                 try {
                     const [value] = await outputPromise;
                     cacheValue.value = value;
                     await Promise.all(deferredPromises);
+                    // Every request now gets the settled value from `promise`, so later ones needn't check their path
+                    cacheValue.output = null;
+                    cacheValue.creatingPath = null;
                     return [value];
                 } catch (err) {
                     // Failures may occur because of deferred dependencies,
