@@ -620,6 +620,25 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
+        slug: 'outbox-relay',
+        title: 'Outbox relay',
+        pitch: 'A transactional outbox on Postgres, relayed to EventBridge by a relay that claims rows with a lease, retries only what EventBridge says is worth retrying, and wakes on NOTIFY.',
+        source: 'demos/outbox-relay',
+        files: [
+            { label: 'Outbox table', path: 'demos/outbox-relay/schema.sql' },
+            { label: 'Writing to the outbox', path: 'demos/outbox-relay/src/lib/outbox.ts' },
+            { label: 'Claiming with a lease', path: 'demos/outbox-relay/src/lib/claim.ts' },
+            { label: 'Relay', path: 'demos/outbox-relay/src/lib/relay.ts' },
+            {
+                label: 'Integration tests',
+                path: 'demos/outbox-relay/test/integration/relay-once.spec.ts',
+            },
+            { label: 'AWS Emulator helper', path: 'demos/outbox-relay/test/helpers/aws.ts' },
+        ],
+        uses: ['pg-dolly', 'aws-emulator-launch', 'mocha-chain'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'openapi',
         title: 'OpenAPI',
         pitch: 'A small notes API built properly from the spec down to the database, with an OpenAPI 3.1 document written with Juniper, genever types for a typed client and a Hono server that validates every request and response, Drizzle on Postgres with a database per test, and a Go client and server from the same document, each tested against the other.',

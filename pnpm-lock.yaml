@@ -2330,6 +2330,9 @@ importers:
       '@aws-sdk/client-dynamodb':
         specifier: 'catalog:'
         version: 3.1164.0
+      '@aws-sdk/client-eventbridge':
+        specifier: 'catalog:'
+        version: 3.1164.0
       '@aws-sdk/client-sqs':
         specifier: 'catalog:'
         version: 3.1164.0
@@ -2351,6 +2354,9 @@ importers:
       '@leyman/demo-openapi-server':
         specifier: workspace:^
         version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.14.0(supports-color@8.1.1))
+      '@leyman/demo-outbox-relay':
+        specifier: workspace:^
+        version: file:demos/outbox-relay
       '@leyman/demo-read-through-cache':
         specifier: workspace:^
         version: file:demos/read-through-cache(@aws-sdk/client-dynamodb@3.1164.0)(supports-color@8.1.1)
@@ -6838,6 +6844,10 @@ packages:
 
   '@leyman/demo-openapi-spec@file:demos/openapi/spec':
     resolution: {directory: demos/openapi/spec, type: directory}
+    engines: {node: '>=26'}
+
+  '@leyman/demo-outbox-relay@file:demos/outbox-relay':
+    resolution: {directory: demos/outbox-relay, type: directory}
     engines: {node: '>=26'}
 
   '@leyman/demo-read-through-cache@file:demos/read-through-cache':
@@ -14912,6 +14922,13 @@ snapshots:
       juniper: file:apps/juniper(eslint@10.14.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint
+
+  '@leyman/demo-outbox-relay@file:demos/outbox-relay':
+    dependencies:
+      '@aws-sdk/client-eventbridge': 3.1164.0
+      pg: 8.23.1
+    transitivePeerDependencies:
+      - pg-native
 
   '@leyman/demo-read-through-cache@file:demos/read-through-cache(@aws-sdk/client-dynamodb@3.1164.0)(supports-color@8.1.1)':
     dependencies:
