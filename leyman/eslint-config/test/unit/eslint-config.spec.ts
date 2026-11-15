@@ -73,6 +73,7 @@ const reactPluginsOf = async (packageJson: object) => {
 suite('configGenerator React', () => {
     // The first React config imports the React plugins, about a thousand modules, which on a loaded CI runner under c8
     // outlasts a test's timeout. Only this load gets the longer timeout, so the tests still hold the config to it
+    // eslint-disable-next-line sonarjs/no-mixed-completion-style -- `this: Context` is a type annotation, not a done callback, and no-invalid-this needs it
     before(async function (this: Context) {
         this.timeout(10_000);
         await configOf({ dependencies: { react: '^19' } });
