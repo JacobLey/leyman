@@ -634,6 +634,7 @@ export const demos: readonly Demo[] = [
             { label: 'AWS Emulator helper', path: 'demos/webhook-receiver/test/helpers/aws.ts' },
         ],
         uses: ['idempotency-keys', 'aws-emulator-launch', 'mocha-chain'],
+        related: ['sqs-job-queue'],
         pages: [{ text: 'Overview', link: '' }],
     },
     {

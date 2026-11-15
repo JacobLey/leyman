@@ -4,7 +4,7 @@ description: A Standard Webhooks receiver that checks signatures in constant tim
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:41f0f7cb660956df4d94d406e3abfe60 Generated from demos/webhook-receiver/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/webhook-receiver/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:832424b987ae8fd5e266a6951329e8b3 Generated from demos/webhook-receiver/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/webhook-receiver/README.md instead, and the description only here. -->
 
 # Webhook receiver
 
@@ -52,7 +52,7 @@ const receive = createWebhookReceiver({
 export { receive };
 ```
 
-A worker reads the queue: the SQS job queue demo (`demos/sqs-job-queue`) is that side, including how it drops the duplicates that still get through.
+A worker reads the queue: the [SQS job queue demo](/demos/sqs-job-queue/) is that side, including how it drops the duplicates that still get through.
 
 ## How a delivery flows
 

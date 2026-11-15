@@ -43,7 +43,7 @@ const receive = createWebhookReceiver({
 export { receive };
 ```
 
-A worker reads the queue: the SQS job queue demo (`demos/sqs-job-queue`) is that side, including how it drops the duplicates that still get through.
+A worker reads the queue: the [SQS job queue demo](../sqs-job-queue) is that side, including how it drops the duplicates that still get through.
 
 ## How a delivery flows
 
