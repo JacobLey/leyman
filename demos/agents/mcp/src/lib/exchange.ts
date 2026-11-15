@@ -1,4 +1,5 @@
-import { discover, lazily, requestTimeoutMs } from './discovery.js';
+import type { Credentials } from '@leyman/demo-fetch-middleware';
+import { authorizationServerFetch, discover, lazily } from './discovery.js';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
 const textEncoder = new TextEncoder();
@@ -47,23 +48,25 @@ interface Exchanged {
  * so, so a token an agent sent can't be exchanged by anyone else.
  *
  * Each agent token's exchange is kept until it nears expiry, and requests in the meantime wait for the same one;
- * expired ones are dropped as new ones come in.
+ * expired ones are dropped as new ones come in. When the API refuses one before then (its keys rotated, say),
+ * `renew` exchanges the agent's token again, once for every request refused the same token: requests that come
+ * later get the renewed one.
  *
  * @param options - The issuer, the server's credentials, and the API it calls
- * @returns A token for the API, for an agent's token
+ * @returns The credentials for an agent's token, for `bearer`: `token` and `renew` reject with a
+ * `NotesMcpAuthorizationServerError` when the authorization server can't be found or refuses the exchange
  */
 export const tokenExchange = (
     options: TokenExchangeOptions
-): ((agentToken: string) => Promise<string>) => {
+): ((agentToken: string) => Credentials) => {
     const tokenEndpoint = lazily(async () => discover(options.issuer, 'token_endpoint'));
     const credentials = [formEncode(options.clientId), formEncode(options.clientSecret)].join(':');
     const authorization = `Basic ${textEncoder.encode(credentials).toBase64()}`;
 
     const request = async (agentToken: string): Promise<Exchanged> => {
-        const response = await fetch(await tokenEndpoint(), {
+        const response = await authorizationServerFetch(await tokenEndpoint(), {
             method: 'POST',
             headers: { authorization },
-            signal: AbortSignal.timeout(requestTimeoutMs),
             body: new URLSearchParams({
                 grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
                 subject_token: agentToken,
@@ -109,11 +112,7 @@ export const tokenExchange = (
         }
     };
 
-    return async agentToken => {
-        const known = exchanged.get(agentToken);
-        if (known !== undefined && known.expiresAt > Date.now()) {
-            return known.token;
-        }
+    const exchangeOnce = async (agentToken: string): Promise<string> => {
         let inFlight = pending.get(agentToken);
         if (inFlight === undefined) {
             inFlight = exchange(agentToken);
@@ -121,4 +120,22 @@ export const tokenExchange = (
         }
         return inFlight;
     };
+
+    return agentToken => ({
+        token: async () => {
+            const known = exchanged.get(agentToken);
+            return known !== undefined && known.expiresAt > Date.now()
+                ? known.token
+                : exchangeOnce(agentToken);
+        },
+        renew: async refused => {
+            const known = exchanged.get(agentToken);
+            // Renewed already, by a request refused before this one
+            if (known !== undefined && known.token !== refused) {
+                return known.token;
+            }
+            exchanged.delete(agentToken);
+            return exchangeOnce(agentToken);
+        },
+    });
 };

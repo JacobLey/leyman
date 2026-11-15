@@ -30,6 +30,12 @@ export interface StackOptions {
      * @default apiAudience
      */
     readonly apiAccepts?: string;
+    /**
+     * The MCP server's cap on requests in flight to the API.
+     *
+     * @default no cap
+     */
+    readonly maxConcurrentRequests?: number;
 }
 
 /**
@@ -82,6 +88,7 @@ export const withStack = (options: StackOptions = {}) => {
                     resource: apiAudience,
                     clientId: mcpService.clientId,
                     clientSecret: mcpService.clientSecret,
+                    maxConcurrentRequests: options.maxConcurrentRequests,
                 },
                 onError,
             }).fetch

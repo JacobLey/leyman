@@ -4,7 +4,7 @@ description: Middleware around fetch for Node.js, in the shape of Go's RoundTrip
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:918be2882b41b7b4995b0c8519c72b36 Generated from demos/fetch-middleware/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/fetch-middleware/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:9c5de33e2f9a7ccff460bfd9e1424516 Generated from demos/fetch-middleware/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/fetch-middleware/README.md instead, and the description only here. -->
 
 # Fetch middleware
 
@@ -82,9 +82,10 @@ Sends with Ky, as the last `Send`: Ky retries and times out as it's set up to, a
 - The shape costs almost nothing: `compose` is ten lines, and needs no framework.
 - [cockatiel](https://github.com/connor4312/cockatiel) was the first retrier tried. It needed a wrapper to honor `Retry-After`, its `maxAttempts` counts retries rather than sends, and its wait between retries doesn't stop when the request is aborted. Ky does all of that itself, so it replaced both the wrapper and the timeout middleware.
 - Ky's hooks fit some concerns badly. A rate limiter has to take a slot before every attempt and give it back after every outcome, which no pair of hooks covers. As a middleware it's one `await`.
+- Where a middleware goes decides what it counts. Composed in front of `kySend`, it sees a whole call, retries and their delays included: right for a token, which a retry should reuse. Composed into Ky's own `fetch` (`kySend({ fetch: compose([...]) })`), it sees each attempt: right for a concurrency cap, so a request waiting out a retry's delay holds no slot. The MCP demo's limiter goes there.
 - Ky retries only statuses it throws for, and doesn't give `shouldRetry` the request. `kySend` works around both, which two small changes to Ky would make unnecessary.
 
 ## Not covered
 
-- Rate limiting and logging as middleware (next, in the MCP demo, where many agents share one API).
+- Logging as a middleware.
 - Streaming request bodies with retries: Ky buffers a body to send it again.

@@ -65,7 +65,7 @@ suite('tokenExchange', () => {
     withServer.test(
         "Gets a token for the API, as the agent's user, with the server acting",
         async ({ alice, exchange }) => {
-            const token = await exchange(alice);
+            const token = await exchange(alice).token();
 
             expect(decodeJwt(token)).to.deep.include({
                 aud: apiResource,
@@ -82,13 +82,13 @@ suite('tokenExchange', () => {
             const bob = await agentToken(server, 'bob');
 
             const [first, second, forBob] = await Promise.all([
-                exchange(alice),
-                exchange(alice),
-                exchange(bob),
+                exchange(alice).token(),
+                exchange(alice).token(),
+                exchange(bob).token(),
             ]);
 
             expect(second).to.equal(first);
-            expect(await exchange(alice)).to.equal(first);
+            expect(await exchange(alice).token()).to.equal(first);
             expect(decodeJwt(forBob).sub).to.equal('bob');
         }
     );
@@ -98,20 +98,42 @@ suite('tokenExchange', () => {
         // Only the clock: requests still run in real time
         const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
         try {
-            const first = await exchange(alice);
+            const first = await exchange(alice).token();
 
             // 40 seconds left (it never outlives the agent's token, so may be a second short of 600): the same token
             clock.tick(560_000);
-            expect(await exchange(alice)).to.equal(first);
+            expect(await exchange(alice).token()).to.equal(first);
 
             // Within 30 seconds of expiry: another, and the expired one is dropped along the way
             clock.tick(15_000);
-            await exchange(bob);
-            expect(await exchange(alice)).to.not.equal(first);
+            await exchange(bob).token();
+            expect(await exchange(alice).token()).to.not.equal(first);
         } finally {
             clock.restore();
         }
     });
+
+    withServer.test(
+        'Renews a refused token once, however many ask at a time',
+        async ({ alice, exchange }) => {
+            const first = await exchange(alice).token();
+
+            // Another request's credentials for the same agent token renew the same exchange
+            const [renewed, again] = await Promise.all([
+                exchange(alice).renew(first),
+                exchange(alice).renew(first),
+            ]);
+
+            expect(renewed).to.not.equal(first);
+            expect(again).to.equal(renewed);
+            expect(decodeJwt(renewed!)).to.deep.include({ aud: apiResource, sub: 'alice' });
+            // A request refused the old token after the renewal gets the renewed one
+            expect(await exchange(alice).renew(first)).to.equal(renewed);
+            expect(await exchange(alice).token()).to.equal(renewed);
+            // Refused the renewed one too: exchanged again
+            expect(await exchange(alice).renew(renewed!)).to.not.equal(renewed);
+        }
+    );
 
     withServer.test(
         'Rejects, and tries again, when the exchange is refused',
@@ -123,16 +145,18 @@ suite('tokenExchange', () => {
                 clientSecret: 'wrong',
             });
 
-            await expect(exchange(alice)).to.be.rejectedWith(
+            await expect(exchange(alice).token()).to.be.rejectedWith(
                 NotesMcpAuthorizationServerError,
                 "refused to exchange the agent's token (401)"
             );
-            await expect(exchange(alice)).to.be.rejectedWith(NotesMcpAuthorizationServerError);
+            await expect(exchange(alice).token()).to.be.rejectedWith(
+                NotesMcpAuthorizationServerError
+            );
         }
     );
 
     withServer.test('Rejects a token not issued for the server', async ({ exchange }) => {
-        await expect(exchange('forged')).to.be.rejectedWith(
+        await expect(exchange('forged').token()).to.be.rejectedWith(
             NotesMcpAuthorizationServerError,
             "refused to exchange the agent's token (400)"
         );
@@ -147,11 +171,11 @@ suite('tokenExchange', () => {
                 ...service,
             });
 
-            await expect(exchange(alice)).to.be.rejectedWith(
+            await expect(exchange(alice).token()).to.be.rejectedWith(
                 NotesMcpAuthorizationServerError,
                 'discovery answered 404'
             );
-            await expect(exchange(alice)).to.be.rejectedWith(
+            await expect(exchange(alice).token()).to.be.rejectedWith(
                 NotesMcpAuthorizationServerError,
                 'discovery answered 404'
             );
@@ -169,7 +193,7 @@ suite('tokenExchange', () => {
                 ...service,
             });
 
-            await expect(exchange(alice)).to.be.rejectedWith(
+            await expect(exchange(alice).token()).to.be.rejectedWith(
                 NotesMcpAuthorizationServerError,
                 'discovery named no token_endpoint'
             );
@@ -188,7 +212,7 @@ suite('tokenExchange', () => {
                 ...service,
             });
 
-            await expect(exchange(alice)).to.be.rejectedWith(
+            await expect(exchange(alice).token()).to.be.rejectedWith(
                 NotesMcpAuthorizationServerError,
                 'named another issuer'
             );

@@ -1,3 +1,4 @@
+import { compose, kySend } from '@leyman/demo-fetch-middleware';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
 /**
@@ -5,6 +6,32 @@ import { NotesMcpAuthorizationServerError } from './errors.js';
  * forever.
  */
 export const requestTimeoutMs = 10_000;
+
+/**
+ * The longest a `Retry-After` is waited for: a longer one is cut to it.
+ */
+export const maxRetryAfterMs = 30_000;
+
+/**
+ * How requests to the authorization server are sent: each attempt times out, and a request safe to send twice (a
+ * `GET`, such as discovery) is sent up to twice more when the server is busy or a gateway fails for a moment,
+ * waiting as long as a `429` or `503` asks. The token exchange's `POST` has no `Idempotency-Key`, so it's sent once.
+ */
+export const authorizationServerFetch = compose(
+    [],
+    kySend({
+        timeout: requestTimeoutMs,
+        retry: {
+            limit: 2,
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- HTTP statuses
+            statusCodes: [429, 502, 503, 504],
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- HTTP statuses
+            afterStatusCodes: [429, 503],
+            maxRetryAfter: maxRetryAfterMs,
+            jitter: true,
+        },
+    })
+);
 
 /**
  * The endpoints of an authorization server's metadata this server uses: its keys to verify tokens with, and where to
@@ -27,9 +54,9 @@ export const discover = async (
     issuer: string,
     endpoint: AuthorizationServerEndpoint
 ): Promise<string> => {
-    const response = await fetch(`${issuer.replace(/\/$/v, '')}/.well-known/openid-configuration`, {
-        signal: AbortSignal.timeout(requestTimeoutMs),
-    });
+    const response = await authorizationServerFetch(
+        `${issuer.replace(/\/$/v, '')}/.well-known/openid-configuration`
+    );
     if (!response.ok) {
         throw new NotesMcpAuthorizationServerError(issuer, `discovery answered ${response.status}`);
     }

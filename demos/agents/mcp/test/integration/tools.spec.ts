@@ -1,6 +1,7 @@
 import type { CallToolResult } from '@modelcontextprotocol/client';
 import type { NoteSummary } from '@leyman/demo-agents-mcp';
 import type { Agent } from '#test/helpers/agent.js';
+import { setTimeout } from 'node:timers/promises';
 import { sql } from 'drizzle-orm';
 import { NotesMcpApiError } from '@leyman/demo-agents-mcp';
 import { notes } from '@leyman/demo-openapi-server';
@@ -413,6 +414,39 @@ suite('Tools', () => {
         );
     });
 
+    suite('When the API refuses an exchanged token', () => {
+        withAgent.test(
+            'Exchanges the agent token again, once, and sends the call again',
+            async ({ agent, api, apiFetch, errors }) => {
+                await agent.client.callTool({ name: 'find_notes', arguments: {} });
+                const tokens: (string | null)[] = [];
+                let refused: string | null = null;
+                // As after the API's keys rotate: the token the server still holds is refused, a new one isn't
+                api.use(async request => {
+                    const token = request.headers.get('authorization');
+                    tokens.push(token);
+                    refused ??= token;
+                    return token === refused
+                        ? Response.json(
+                              { code: 'unauthorized', message: 'Invalid token' },
+                              { status: 401 }
+                          )
+                        : apiFetch(request);
+                });
+
+                const result = await agent.client.callTool({ name: 'find_notes', arguments: {} });
+                await agent.client.callTool({ name: 'find_notes', arguments: {} });
+
+                expect(result.structuredContent).to.deep.equal({ notes: [] });
+                expect(errors).to.deep.equal([]);
+                expect(tokens).to.have.length(3);
+                expect(tokens[1]).to.not.equal(tokens[0]);
+                // The next call has the renewed token from the start
+                expect(tokens[2]).to.equal(tokens[1]);
+            }
+        );
+    });
+
     suite('For each user', () => {
         // Another user's agent, on the same server
         const withOther = withAgent.beforeEach(async ({ url }) => ({
@@ -502,6 +536,39 @@ suite('Tools, when the API refuses the server', () => {
             }
         );
     }
+});
+
+suite('Tools, with a cap on concurrent requests', () => {
+    const withAgent = withStack({ maxConcurrentRequests: 1 }).beforeEach(async ({ url }) => ({
+        agent: await connectAgent(url),
+    }));
+    withAgent.afterEach(async ({ agent }) => {
+        await agent.close();
+    });
+
+    withAgent.test('Sends the API one request at a time', async ({ agent, api, apiFetch }) => {
+        let inFlight = 0;
+        let most = 0;
+        api.use(async request => {
+            inFlight++;
+            most = Math.max(most, inFlight);
+            try {
+                // Long enough that a second request would arrive while this one runs
+                await setTimeout(100);
+                return await apiFetch(request);
+            } finally {
+                inFlight--;
+            }
+        });
+
+        const results = await Promise.all([
+            agent.client.callTool({ name: 'find_notes', arguments: {} }),
+            agent.client.callTool({ name: 'find_notes', arguments: {} }),
+        ]);
+
+        expect(results.map(({ isError }) => isError)).to.deep.equal([undefined, undefined]);
+        expect(most).to.equal(1);
+    });
 });
 
 suite('Tools, for a 2025-era agent', () => {
