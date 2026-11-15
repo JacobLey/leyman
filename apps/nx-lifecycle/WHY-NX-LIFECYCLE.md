@@ -1,16 +1,12 @@
-<div style="text-align:center">
-
 # Why nx-lifecycle?
 
-</div>
+## The problem
 
-## The Problem
+Nx's `dependsOn` lets a target wait for other targets. To set it correctly you need to know about every other target, including your dependencies' targets, and as a monorepo grows that gets unwieldy.
 
-Nx's `dependsOn` field lets you declare that a target must wait for other targets to complete before it runs. To set it correctly, though, you need to know about every other target, including those of your dependencies, and you have to update the dependents whenever you add a step. As a monorepo grows, that gets unwieldy.
+### Hand-written `dependsOn` doesn't scale
 
-### Manual `dependsOn` doesn't scale
-
-Consider a simple setup: a TypeScript build step (`tsc`) followed by a unit test runner (`mocha`).
+Take a TypeScript build (`tsc`) followed by a test runner (`mocha`):
 
 ```json
 {
@@ -25,37 +21,31 @@ Consider a simple setup: a TypeScript build step (`tsc`) followed by a unit test
 }
 ```
 
-This is fine. `mocha` waits for `tsc`, and `tsc` waits for its upstream dependencies to build first.
+`mocha` waits for `tsc`, and `tsc` waits for its upstream projects to build first.
 
-Now you need to add a post-build step, perhaps a [`populate-files`](https://www.npmjs.com/package/load-populate-files) step that uses the freshly-compiled JS to generate a JSON config.
+Now add a post-build step, say [`populate-files`](https://www.npmjs.com/package/load-populate-files) generating a JSON config from the compiled JavaScript. It must run after `tsc` but before `mocha`. So `mocha` now has to depend on `populate-files` instead of `tsc`, and `tsc` has to depend on the `populate-files` of _its_ dependencies, but only in the projects that have that step.
 
-The new step must run after `tsc` but before `mocha`. So `mocha` now has to depend on `populate-files` instead of `tsc`. And `tsc` now has to depend on the `populate-files` of _its_ dependencies, but only in the packages that actually have that step.
+Adding one target meant changing two existing ones, depending on what each upstream project implements. With dozens of projects and targets, every new step means more of these changes.
 
-Instead of just adding the new target, you had to update the dependencies of two existing ones, and which ones depends on what each upstream package implements. In a monorepo with dozens of packages and targets, every new step means more of these edits.
+### It gets worse as the repo grows
 
-### The compounding problem
+- Projects implement targets differently (TypeScript, Java, Go).
+- Some projects have `populate-files`, others don't.
+- A new `lint`, `typecheck` or `codegen` step in one project means auditing every other project's `dependsOn`.
+- There is no single place that shows the intended order of operations, since it is spread across every `project.json`.
 
-It gets worse as the repo grows:
+The `dependsOn` fields end up describing how each project happens to be built, and the order you meant is hard to see in them.
 
-- Different packages implement targets differently (TypeScript vs Java vs Go)
-- Some packages have `populate-files`, others don't
-- A new `lint`, `typecheck`, or `codegen` step in one package requires auditing every other package's `dependsOn` to see what needs updating
-- There is no single place that shows the _intended_ order of operations, since it's spread across every `project.json`
+## The solution
 
-The `dependsOn` fields end up describing how each package happens to be built, and the order you meant is hard to see in them.
+nx-lifecycle splits the configuration into two parts.
 
----
+[Stages](https://jacobley.github.io/leyman/packages/nx-lifecycle/guides/stages-and-hooks) declare the workflow once, such as `build` with hooks `pre`, `run` and `post`, then `test` with hooks `run` and `report`. They state the intended order, independent of any tool, and not every project has to implement every step.
 
-## The Solution
+Bindings declare once which concrete targets (`tsc`, `eslint`) run in which hook, and each project opts in by declaring those targets. Each binding is written once, next to the tool, instead of in every target that depends on it.
 
-`nx-lifecycle` solves this by splitting the configuration into two parts.
+From those, every `dependsOn` is derived. The [plugin](https://jacobley.github.io/leyman/packages/nx-lifecycle/getting-started) infers them when Nx builds the project graph, or the [executor](https://jacobley.github.io/leyman/packages/nx-lifecycle/guides/executor) writes them into `nx.json` and `project.json`.
 
-First, you declare abstract, high-level workflows once, called stages. For example, `build` has the hooks `pre`, `run` and `post`, and `test` has `run` and `report`. The stages state the _intended_ order of operations, independent of any specific tool, and not every project has to implement every step.
+Adding a step means adding one binding, and every `dependsOn` after it is recomputed. With the plugin there is nothing to keep in sync. With the executor the generated files are committed, and CI checks they are up to date.
 
-Then you declare once which concrete targets (`tsc`, `eslint`) are bound to which stage and hook. Each project opts in by defining those targets. If your monorepo has Java projects too, you might bind a Gradle target to `build:run` alongside `tsc`. Each binding is written once, next to the tool, instead of in every target that depends on it.
-
-From the stages and bindings, `nx-lifecycle` derives every `dependsOn`. Its Nx plugin infers them when Nx builds the project graph, or its executor writes them into `nx.json` and `project.json`.
-
-Adding a new step then means adding one binding, and every `dependsOn` after it is recomputed. With the plugin this happens every time Nx builds the project graph, so there is nothing to keep in sync. With the executor the generated configs are committed, and CI checks they are up to date.
-
-Now `nx run <project>:build` runs whatever "building" means for each project.
+Then `nx run <project>:build` runs whatever building means for that project.

@@ -1,10 +1,6 @@
-<div style="text-align:center">
-
 # Why mocha-chain?
 
-</div>
-
-## The Problem
+## The problem
 
 Mocha's `beforeEach` hook is the standard way to set up fresh state before each test. With TypeScript, though, it makes you choose between type safety and test isolation.
 
@@ -12,6 +8,9 @@ Mocha's `beforeEach` hook is the standard way to set up fresh state before each 
 
 The natural pattern is to declare a variable in the suite scope, assign it in `beforeEach`, and use it in tests:
 
+<!-- twoslash
+// @noErrors
+-->
 ```ts
 suite('Division.divide', () => {
 
@@ -33,6 +32,9 @@ TypeScript knows `division` could be `null`, since it was declared that way. So 
 
 The obvious fix is to construct once and share:
 
+<!-- twoslash
+// @noErrors
+-->
 ```ts
 const division = new Division();
 ```
@@ -43,6 +45,9 @@ Now the type is clean, but this only works for immutable values. Once the object
 
 You could construct inside each test body:
 
+<!-- twoslash
+// @noErrors
+-->
 ```ts
 test('success', () => {
     const division = new Division();
@@ -52,12 +57,13 @@ test('success', () => {
 
 But this gives up what hooks are for. A hook keeps shared setup in one place and runs it once per context, and teardown hooks run even when a test fails.
 
----
-
-## The Solution
+## The solution
 
 `mocha-chain` lets hooks return values that are passed forward as typed context. Instead of a shared mutable variable in the outer scope, each hook returns an object and the next hook or test receives it as a parameter:
 
+<!-- twoslash
+// @noErrors
+-->
 ```ts
 const withDivision = beforeEach(() => {
     return { division: new Division() };
@@ -70,4 +76,4 @@ withDivision.test('success', ({ division }) => {
 
 `division` is typed `Division` rather than `Division | null`, so the test needs no `!` assertion or cast. Each test still gets a fresh instance from the hook, and the teardown hooks (`afterEach`, `after`) receive the same context, so cleanup is type-safe too.
 
-→ [Back to README](https://www.npmjs.com/package/mocha-chain)
+[vitest-chain](https://www.npmjs.com/package/vitest-chain) solves the same problem for Vitest.

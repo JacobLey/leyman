@@ -1,8 +1,4 @@
-<div style="text-align:center">
-
 # Why genever?
-
-</div>
 
 ## The problem
 

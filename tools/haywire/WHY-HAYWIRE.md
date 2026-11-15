@@ -1,10 +1,6 @@
-<div style="text-align:center">
-
 # Why Haywire?
 
-</div>
-
-## The Problem
+## The problem
 
 Most JavaScript DI libraries leave wiring mistakes to be found at runtime. These are the mistakes that motivated Haywire.
 
@@ -21,12 +17,23 @@ The container passed `undefined` to a parameter that was never supposed to be op
 
 ### String and symbol keys
 
-Most DI frameworks identify dependencies by string tokens or `Symbol`s:
+Most DI frameworks identify dependencies by string tokens or symbols:
 
+<!-- twoslash
+interface Logger {
+    info(message: string): void;
+}
+declare class ConsoleLogger {}
+declare class FileLogger {}
+declare const container: {
+    bind(token: string): { to(implementation: unknown): void };
+    get<T>(token: string): T;
+};
+-->
 ```ts
 container.bind('Logger').to(ConsoleLogger);
-container.bind('Logger').to(FileLogger); // Oops — silently overwrites
-container.get<Logger>('Logger');          // No type guarantee here
+container.bind('Logger').to(FileLogger); // Silently overwrites
+container.get<Logger>('Logger'); // No type guarantee
 ```
 
 In a large codebase you will eventually have several things named `Logger`, `ApiClient` or `Url`, and nothing stops you from injecting the wrong one.
@@ -35,17 +42,25 @@ In a large codebase you will eventually have several things named `Logger`, `Api
 
 The most common approach in JavaScript is injection with decorators:
 
+<!-- twoslash
+declare const DATABASE_TOKEN: unique symbol;
+declare class Database {}
+declare function Injectable(): (target: unknown, context: ClassDecoratorContext) => void;
+declare function Inject(
+    token: symbol
+): (target: undefined, context: ClassFieldDecoratorContext) => void;
+-->
 ```ts
 @Injectable()
 class UserService {
     @Inject(DATABASE_TOKEN)
-    private database!: Database; // Marked non-optional, but never written in constructor
+    private database!: Database; // Typed as always set, but not set by the constructor
 }
 ```
 
 This has a few problems:
 
-- It requires `experimentalDecorators` and `reflect-metadata`, which is still a proposal.
+- Most libraries require `experimentalDecorators` and `reflect-metadata`, which is still a proposal.
 - Property injection types the field as always set, but the constructor never sets it, so TypeScript is wrong about it.
 - Private fields can't be injected at all.
 - If your tsconfig changes, injection may stop working without any build error.
@@ -54,28 +69,24 @@ This has a few problems:
 
 When a binding can return `null` or `undefined`, its consumers shouldn't receive that value unless they opt in to it. Most frameworks don't track this in types, so you either write defensive checks everywhere or hope the provider never returns null.
 
----
-
 ## Requirements
 
 Haywire was written to meet the requirements below. Each of the other TypeScript DI libraries misses at least one of them.
 
-- A DI library should work in plain JavaScript. Decorators are a common way to mark injections, but they need extra tooling, and they don't change the type of what they decorate, so they can't be fully type-safe.
-- It should only inject through constructors. Property injection is type-unsafe (fields look non-optional but are skipped during construction), and it can't set private fields.
+- A DI library should work in plain JavaScript. Decorators need extra tooling, and they don't change the type of what they decorate, so they can't be fully type-safe.
+- It should only inject through constructors. Property injection is type-unsafe, and it can't set private fields.
 - Circular dependencies should be supported. They are an antipattern, but sometimes they can't be avoided, so a library should let you opt into them explicitly rather than deadlocking or recursing forever.
-- There should be singleton, request and transient scopes, since different resources need different lifecycles. A database client should be shared (singleton), a request context should be scoped to a single invocation (request), and everything else should be created fresh (transient).
-- Async should be optional. Some resources need async initialization, like a secret loaded from a remote store, while others are fully synchronous. A binding shouldn't need to know whether its dependencies are sync or async.
-- It shouldn't use global state. Libraries that use `reflect-metadata` or a global registry change shared state. That makes it impossible to have several independent containers (say one for production and one for tests), and can cause conflicts between packages.
-- Dependencies should be identified by type rather than by string. Strings and symbols don't scale. A type-safe library should be able to tell two `string` values (like `DATABASE_URL` and `DATABASE_PASSWORD`) apart by their types, without relying on naming conventions.
-- Its data structures should be immutable. Adding a binding shouldn't change an existing module, because changing it makes its type unsafe and causes bugs wherever else the module is used.
-- Values that are only known at runtime should be injectable (like an HTTP `Request` object) without rebuilding the whole container for every request.
+- There should be singleton, request and transient scopes. A database client should be shared, a request context should be scoped to one invocation, and everything else should be created fresh.
+- Async should be optional. Some resources need async initialization, like a secret loaded from a remote store, but a binding shouldn't need to know whether its dependencies are sync or async.
+- It shouldn't use global state. Global registries and `reflect-metadata` make it impossible to have independent containers (such as one for production and one for tests), and cause conflicts between packages.
+- Dependencies should be identified by type. Two `string` values, like a database URL and password, should be told apart by their types rather than by a naming convention.
+- Its data structures should be immutable, so adding a binding never changes an existing module.
+- Values that are only known at runtime should be injectable, like an HTTP request, without rebuilding the container for every request.
 - Wiring should be checked at compile time. Missing bindings, mismatched types and duplicate registrations should be impossible to write in TypeScript, rather than only caught at runtime.
-
----
 
 ## Haywire's approach
 
-Haywire gets type safety without decorators or global state by encoding the relationships between dependencies entirely in TypeScript's type system. Each of these is a type error:
+Haywire encodes the relationships between dependencies in TypeScript's type system, without decorators or global state. Each of these is a type error:
 
 - A duplicate binding.
 - A missing dependency.
@@ -84,7 +95,40 @@ Haywire gets type safety without decorators or global state by encoding the rela
 
 So when the code compiles, the container has a binding for everything it needs, and it works apart from problems outside it like bad credentials or network failures. The checks that types can't do, like detecting circular dependencies and validating sync suppliers, are done by `container.check()`, which is meant to be called in your test suite.
 
----
+## How the checks work
+
+Some checks are plain TypeScript, like `nullable()` only accepting a boolean. Others, like rejecting a duplicate binding, depend on everything added so far, so Haywire tracks that in generics and validates each call against it.
+
+Where possible, the error says what is wrong. Adding a second binding for an id fails with:
+
+```
+Property 'error' is missing in type 'Binding<...>' but required in type
+'{ error: "Error: an output is already bound. Use replaceBinding() on a module to swap it."; }'.
+```
+
+A few checks have no argument to attach a message to, like `identifier<unknown>()`. They add a parameter that only exists in types, which is an empty tuple when the call is valid, and an impossible value when it isn't, so the error is "Expected 1 arguments". A set that only accepts values it doesn't already have shows the idea:
+
+<!-- twoslash
+// @errors: 2554
+-->
+```ts
+// A value that never exists, so callers can't pass it
+declare const impossible: unique symbol;
+
+type ValidateAdd<Values, T> = [T] extends [Values] ? [typeof impossible] : [];
+
+class PickySet<Values = never> {
+    add<T>(value: T, ...invalidInput: ValidateAdd<Values, T>): PickySet<Values | T> {
+        return new PickySet<Values | T>();
+    }
+}
+
+const set = new PickySet().add(1 as const).add(2 as const);
+
+set.add(2 as const);
+```
+
+Casting to `any` or using `// @ts-expect-error` gets around these checks, but then there is no type safety to expect.
 
 ## Comparisons
 

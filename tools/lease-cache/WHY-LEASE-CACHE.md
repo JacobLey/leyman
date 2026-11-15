@@ -1,16 +1,5 @@
 # Why lease-cache?
 
-Back to the [README](https://www.npmjs.com/package/lease-cache).
-
-## Contents
-
-- [The problem](#the-problem)
-- [How it works](#how-it-works)
-- [Why it is correct](#why-it-is-correct)
-- [Design decisions](#design-decisions)
-- [Compared to alternatives](#compared-to-alternatives)
-- [Non-goals](#non-goals)
-
 ## The problem
 
 A read-through cache returns the cached value, or loads it on a miss and caches it. Two things go wrong once several instances (processes, pods) share the cache.

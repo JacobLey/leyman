@@ -1,16 +1,6 @@
-# Why pg-dolly
+# Why pg-dolly?
 
 Integration tests against Postgres should be deterministic and repeatable. Each test should start from a state it sets up itself, rather than from whatever a developer's database happens to hold, what a previous run left behind, or a manual setup step. `pg-dolly` makes that the default by giving every test a database of its own, holding a copy of the schema and nothing else.
-
-## Contents
-
-- [Why a database per test](#why-a-database-per-test)
-- [Why templates](#why-templates)
-- [Why the schema is SQL](#why-the-schema-is-sql)
-- [Sharing a server safely](#sharing-a-server-safely)
-- [Cleaning up](#cleaning-up)
-- [Non-goals](#non-goals)
-- [Compared to alternatives](#compared-to-alternatives)
 
 ## Why a database per test
 
@@ -53,7 +43,6 @@ Tests usually run against the same server as a developer's own databases, and ma
 - A failed test's clone is kept to inspect, and its name printed. A later run drops it once `retainMs` has passed, rather than the very next run, so a run of another package's tests started right after doesn't drop it while someone is looking.
 - What a crashed run left behind is dropped by the next run to connect, since the crashed run's lock is free. `DROP DATABASE … WITH (FORCE)` also ends connections the crashed process left open.
 - Templates no run has used for `retainMs` are dropped, so changing the schema over and over doesn't fill the server with old templates.
-
 
 ## Non-goals
 

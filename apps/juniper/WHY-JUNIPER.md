@@ -1,10 +1,6 @@
-<div style="text-align:center">
-
 # Why Juniper?
 
-</div>
-
-## The Problem
+## The problem
 
 [JSON Schema](https://json-schema.org/) is a powerful vocabulary for describing data formats that is both human and machine readable. It is widely supported, and it is the basis of tools like OpenAPI.
 
@@ -52,23 +48,17 @@ Ajv's `{ strict: true }` setting catches all three of these, but only once the s
 
 Juniper solves this with strict typings on the schema builders. You explicitly declare the type of each schema (e.g. `object` or `number`), and only the keywords that apply to that type can be set.
 
----
-
 ## The DRY Problem
 
 Good code should be DRY ([Don't repeat yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)). However, a JSON Schema is just JSON, and it doesn't mean anything to TypeScript. The usual workflow is to write a JSON Schema, and then write a matching TypeScript interface separately. Keeping the two in sync by hand quickly becomes a maintenance nightmare. A field added to one is forgotten in the other, or a required field becomes optional in the schema but not in the type, and the mismatch isn't noticed until runtime.
 
 Juniper resolves this by generating the JSON Schema and the TypeScript type at the same time, from one definition, so there is nothing to keep in sync. Types are inferred from the JSON Schema keywords where possible, but schema generation isn't limited to what TypeScript can express.
 
----
-
 ## The Multi-Draft Problem
 
 JSON Schema comes in multiple versions, often called "drafts". Each generally follows the patterns set by the ones before it, but some changes are breaking and are non-trivial to fix. Perhaps the most infamous is OpenAPI 3.0's `nullable` keyword, which it uses instead of the `type: ['string', 'null']` form of JSON Schema Draft 2020-12. When the same schemas are needed in both environments, a static JSON file means either duplicating schemas or applying transformations by hand.
 
 By generating the JSON Schema dynamically, Juniper can adjust the output to fit the environment. Pass `openApi30: true` to `toJSON()`, and Juniper emits the OpenAPI 3.0 form. Keywords 3.0 has no equivalent for, like `if`/`then`/`else` and `dependentRequired`, are rewritten as `anyOf` branches. The few that can't be rewritten, like `contains`, are dropped, so the 3.0 schema may accept more than the 2020-12 one.
-
----
 
 ## Objectives
 
@@ -89,8 +79,6 @@ Juniper has the following goals for generating JSON Schema:
 - Juniper favors correctness over speed when generating schemas, so schemas should be generated once, at startup.
   - _Validation_ (with [juniper-validator](https://www.npmjs.com/package/juniper-validator) or just plain [Ajv](https://www.npmjs.com/package/ajv)) should still be very fast, _because_ the generation happens outside the critical path.
 
----
-
 ## Limitations
 
 Juniper's TypeScript types for a schema are best effort, and some JSON Schema concepts don't map cleanly to TypeScript:
@@ -104,8 +92,6 @@ Juniper's TypeScript types for a schema are best effort, and some JSON Schema co
   ```
 
   The general exception is nullability. `.not(nullSchema())` makes a nullable schema non-nullable, in both the JSON Schema and its type.
-
----
 
 ## Comparisons
 
