@@ -142,7 +142,7 @@
     },
     {
       "path": ".devcontainer/initialize.sh",
-      "why": "writes the worktree's .env on the host, links the shared Claude settings; tolerates a missing local-ingress"
+      "why": "writes the worktree's .env on the host, links the shared Claude settings and plans folder; tolerates a missing local-ingress"
     },
     {
       "path": ".devcontainer/names.sh",

@@ -122,6 +122,38 @@ Dagger sets `pnpm_config_store_dir=.pnpm-store` and mounts its own cache volume 
 
 ---
 
+## Sharing agent state across repos
+
+One person working in several repos built this way can share two things between them: agent instructions and settings, and plans. Both work with a single repo too, and neither needs setting up: `initialize.sh` creates the folders on every start.
+
+### Instructions, settings and memory
+
+Every repo's `claude-config/settings.json` and `claude-config/CLAUDE.md` link into the same `.claude-shared/` folder, as long as the repos' main checkouts sit side by side (`~/code/<repo-a>/`, `~/code/<repo-b>/`). A change in one repo, including one made through `/config`, is seen by all of them. Claude's auto-memory can't be shared this way: it lives in `claude-config/projects/<path>/memory`, one per repo.
+
+So decide where a note goes by who it's about:
+
+- **Your workflow, in every repo** (how you commit, when to push, how you like reviews): the shared `CLAUDE.md`. When a memory turns out to hold in another repo too, move it there and delete the memory.
+- **One repo's decisions** (its packages, its history): that repo's memory.
+- **What any contributor needs**: the repo's own `AGENTS.md` or skills, committed. Neither of the above.
+
+### Plans
+
+`plans/` holds work that isn't done yet: checklists, scoped designs, follow-ups. It is gitignored, and every worktree of a repo links to the same `.shared/plans/`, so a plan written in one worktree is read in the next. On its own it's a plain local folder.
+
+To share plans across repos and machines, make it a git repo:
+
+1. Create a **private** repository for your plans, with one folder per repo (`<repo-a>/`, `<repo-b>/`) and a `README.md` with your rules.
+2. In one repo, clone it as that repo's `.shared/plans` (`git clone <url> <repo>-worktrees/.shared/plans`, before the folder exists, or into the empty one).
+3. In each other repo, either clone it again into its own `.shared/plans`, or replace that folder with a link to the first clone. A link needs the clone to be mounted, so it must sit inside a folder the devcontainer mounts.
+
+Then:
+
+- **A plan goes in the folder of the repo that will do the work.** That makes the plans repo the way repos send each other work: a session in one repo that finds something another repo should do writes it into that repo's folder.
+- **Sync by hand, every time:** `git -C plans pull --rebase` before reading or editing a plan, and commit, pull and push right after changing one. Sessions in other worktrees and repos push to it too. Nothing syncs on its own.
+- **Plans hold only undone work.** Mark an item done while it's on a branch, and delete it once it's on the default branch.
+
+---
+
 ## Agents
 
 If you are already in a worktree, do the work there, on its branch. Don't create another worktree: `scripts/worktree new` is only for starting a branch from the main checkout.
