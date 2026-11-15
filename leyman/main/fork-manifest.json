@@ -222,10 +222,6 @@
       "why": "infers a crate's Nx targets"
     },
     {
-      "path": "patches/nx@23.3.1.patch",
-      "why": "the Nx planner patch that keeps daemon-less runs fast"
-    },
-    {
       "path": "patches/@typescript-eslint__eslint-plugin@8.72.1.patch",
       "why": "a wrong autofix under the v flag, which the eslint config's rules reach"
     },

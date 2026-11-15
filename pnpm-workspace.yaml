@@ -152,10 +152,10 @@ catalog:
   json-schema-to-zod: ^2.8.1
   '@modelcontextprotocol/client': ^2.4.0
   '@modelcontextprotocol/server': ^2.4.0
-  '@naxodev/gonx': ^4.1.2
+  '@naxodev/gonx': ^5.0.0
   '@noble/hashes': ^2.4.0
-  '@nx/devkit': ^23.3.1
-  '@nx/js': ^23.3.1
+  '@nx/devkit': ^24.0.5
+  '@nx/js': ^24.0.5
   openapi-typescript: ^7.13.0
   quicktype-core: ^26.0.0
   semver: ^7.8.5
@@ -218,7 +218,7 @@ catalog:
   miniflare: ^4.20260730.0
   mocha: ^12.0.3
   normalize-exception: ^4.0.1
-  nx: ^23.3.1
+  nx: ^24.0.5
   oauth4webapi: ^3.8.8
   oidc-provider: ^9.13.3
   openapi-types: ^12.1.3
@@ -306,6 +306,3 @@ patchedDependencies:
   # the first property test on CI. Unmaps from the ranges instead. Drop once a release fixing
   # https://github.com/dubzzz/fast-check/issues/7551 is 7 days old
   fast-check@4.10.2: patches/fast-check@4.10.2.patch
-  # Without the daemon, as in Docker and CI, each wave of task hashing copies the whole task graph to native code with
-  # every result written onto it so far, about 112s of a warm `verify`. Nx prunes those results for the daemon only
-  nx@23.3.1: patches/nx@23.3.1.patch
