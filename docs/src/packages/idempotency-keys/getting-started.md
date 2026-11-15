@@ -1,5 +1,5 @@
 ---
-description: Install idempotency-keys, create its Postgres table or point it at Valkey, then wrap a handler with handle().
+description: Install idempotency-keys, create its Postgres table or point it at DynamoDB or Valkey, then wrap a handler with handle().
 ---
 
 # Getting started
@@ -23,7 +23,7 @@ yarn add idempotency-keys
 :::
 
 ::: tip
-idempotency-keys is ESM only, for Node.js 22.12 or later. It has no dependencies: bring your own Postgres or Valkey client. The built-in adapters are imported from `idempotency-keys/postgres` and `idempotency-keys/valkey`, and everything else from `idempotency-keys`. The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
+idempotency-keys is ESM only, for Node.js 22.12 or later. It has no dependencies: bring your own Postgres, DynamoDB or Valkey client. The built-in adapters are imported from `idempotency-keys/postgres`, `idempotency-keys/dynamodb` and `idempotency-keys/valkey`, and everything else from `idempotency-keys`. The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
 :::
 
 ## Create the table
@@ -42,7 +42,7 @@ await pool.query(createTableSql());
 
 `createTableSql('my_keys')` names the table something else; pass the same name to the store. The statement is the one in the [specification](/packages/idempotency-keys/reference/specification#what-is-stored), so it can be copied into a migration tool's SQL file as it is.
 
-Using Valkey instead? Skip this step: see [Stores](/packages/idempotency-keys/guides/stores#valkey) for its connection. Another database? See [Writing a store](/packages/idempotency-keys/guides/writing-a-store).
+Using DynamoDB or Valkey instead? See [Stores](/packages/idempotency-keys/guides/stores#dynamodb) for DynamoDB's table and [Valkey](/packages/idempotency-keys/guides/stores#valkey) for its connection. Another database? See [Writing a store](/packages/idempotency-keys/guides/writing-a-store).
 
 ## Handle a request
 
@@ -131,7 +131,7 @@ const deleted = await store.deleteExpired();
 
 ## Next steps
 
-- [Stores](/packages/idempotency-keys/guides/stores): Postgres or Valkey, and when not to use Valkey.
+- [Stores](/packages/idempotency-keys/guides/stores): Postgres, DynamoDB or Valkey, and when not to use Valkey.
 - [Writing a store](/packages/idempotency-keys/guides/writing-a-store): keys in any other database.
 - [Notifiers](/packages/idempotency-keys/guides/notifiers): wake a waiting duplicate as soon as the first request ends.
 - [Which responses are stored](/packages/idempotency-keys/guides/responses): the default policy, releasing `5xx`, and crashed requests.

@@ -50,9 +50,11 @@ CREATE TABLE idempotency_keys (
 
 In Valkey, it is a hash at `<prefix>:<identity>`, with fields `fingerprint`, `token` and `lease` while running, and `status`, `headers` and `body` once completed, written by Lua scripts every implementation sends byte for byte.
 
-A response's headers are `[name, value]` pairs, names in lower case, without the headers a server recomputes for every response (`content-length`, `transfer-encoding`, `connection`, `keep-alive`). Both layouts store them as a JSON array. A response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`) is never stored: ending an attempt with one is an error, and the attempt still holds the key.
+In DynamoDB, it is an item keyed by `identity` (bytes), with `fingerprint`, `expires_at` and `ttl` (the expiry in seconds, for DynamoDB's own Time to Live), plus `token` and `lease_expires_at` while running, or `status`, `headers` and `body` once completed. A claim is one conditional `PutItem`, which returns the item it found when its condition fails, and completing and releasing are an `UpdateItem` and a `DeleteItem` conditioned on the token.
 
-Every lease and expiry is measured on one clock all servers agree on. Postgres uses `clock_timestamp()` and Valkey `TIME`, so servers whose clocks drift still agree. A store without a clock of its own may use the servers' clocks, and then `leaseMs` has to cover the slowest handler plus the worst drift between servers.
+A response's headers are `[name, value]` pairs, names in lower case, without the headers a server recomputes for every response (`content-length`, `transfer-encoding`, `connection`, `keep-alive`). Every layout store them as a JSON array. A response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`) is never stored: ending an attempt with one is an error, and the attempt still holds the key.
+
+Every lease and expiry is measured on one clock all servers agree on. Postgres uses `clock_timestamp()` and Valkey `TIME`, so servers whose clocks drift still agree. A store without a clock of its own may use the servers' clocks, and then `leaseMs` has to cover the slowest handler plus the worst drift between servers. DynamoDB is one: every write carries the server's time, as `:now` in milliseconds.
 
 ## Any store
 

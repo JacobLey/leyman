@@ -2,7 +2,7 @@
 
 # idempotency-keys
 
-Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres and Valkey built in.
+Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres, DynamoDB and Valkey built in.
 
 [![npm package](https://badge.fury.io/js/idempotency-keys.svg)](https://www.npmjs.com/package/idempotency-keys)
 [![License](https://img.shields.io/npm/l/idempotency-keys.svg)](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/LICENSE)
@@ -11,7 +11,7 @@ Server-side support for the Idempotency-Key header, so clients can safely retry 
 
 When a client sends a `POST` and the connection drops before the response arrives, it has no way to know whether the server got the request. Retrying might create a second order, or send a second email. The fix that Stripe popularized, and that is now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), is the `Idempotency-Key` header: the client generates a unique key and sends it with every attempt of the same request, and the server remembers what it answered for that key.
 
-`idempotency-keys` is a library to handle these requests on the server, storing the keys in a store every instance shares: Postgres or Valkey, or one you write. Wrap a handler with `handle()`, and the first request with a given key runs normally and has its response saved. Retries with the same key get the saved response back instead of running the handler again. Since the keys aren't kept in memory, it works no matter which instance a retry lands on.
+`idempotency-keys` is a library to handle these requests on the server, storing the keys in a store every instance shares: Postgres, DynamoDB or Valkey, or one you write. Wrap a handler with `handle()`, and the first request with a given key runs normally and has its response saved. Retries with the same key get the saved response back instead of running the handler again. Since the keys aren't kept in memory, it works no matter which instance a retry lands on.
 
 It also covers the cases that are easy to get wrong:
 
@@ -20,7 +20,7 @@ It also covers the cases that are easy to get wrong:
 - If a server crashes mid-request, its hold on the key expires after a timeout and the next retry runs.
 - A Go server can share the same keys, since both implementations follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md). This package implements version 1.1 of it, exported as `SPEC_VERSION`.
 
-Use the Postgres store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again. Any other database can hold the keys through a store of your own, written to a short [contract](#writing-a-store).
+Use the Postgres or DynamoDB store when a duplicate would really hurt, like a payment. Valkey works too, but a failover or a flush can lose keys, and a retry after that runs again. Any other database can hold the keys through a store of your own, written to a short [contract](#writing-a-store).
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
 
@@ -36,6 +36,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 - [API](#api)
   - [IdempotencyKeys](#idempotencykeys)
   - [PostgresStore](#postgresstore)
+  - [DynamoDbStore](#dynamodbstore)
   - [ValkeyStore](#valkeystore)
   - [PostgresNotifier](#postgresnotifier)
   - [ValkeyNotifier](#valkeynotifier)
@@ -49,7 +50,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i idempotency-keys
 ```
 
-ESM only. It has no dependencies: bring your own Postgres or Valkey client. The protocol, `handle()` and the store interfaces come from `idempotency-keys`; the built-in adapters from `idempotency-keys/postgres` (`PostgresStore`, `PostgresNotifier`, `createTableSql`) and `idempotency-keys/valkey` (`ValkeyStore`, `ValkeyNotifier`). The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
+ESM only. It has no dependencies: bring your own Postgres, DynamoDB or Valkey client. The protocol, `handle()` and the store interfaces come from `idempotency-keys`; the built-in adapters from `idempotency-keys/postgres` (`PostgresStore`, `PostgresNotifier`, `createTableSql`), `idempotency-keys/dynamodb` (`DynamoDbStore`, `createTableInput`, `updateTimeToLiveInput`) and `idempotency-keys/valkey` (`ValkeyStore`, `ValkeyNotifier`). The core needs only `fetch`'s `Request` and `Response` and WebCrypto; the Valkey adapters also import `node:buffer`, which Bun, Deno and Workers (`nodejs_compat`) provide.
 
 ## Example
 
@@ -262,6 +263,45 @@ Deletes every expired row. **Returns** `Promise<number>`, how many.
 
 The `CREATE TABLE` statement of the spec, for a migration. **Returns** `string`.
 
+### `DynamoDbStore`
+
+From `idempotency-keys/dynamodb`, like `createTableInput` and `updateTimeToLiveInput`.
+
+#### `new DynamoDbStore({ connection, tableName? })`
+
+| Option       | Type                 | Default              | Description                                                                                                    |
+| ------------ | -------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `connection` | `DynamoDbConnection` | —                    | Required. Anything with `putItem`, `updateItem` and `deleteItem`, as the `DynamoDB` client of the AWS SDK has. |
+| `tableName`  | `string`             | `'idempotency_keys'` | The table.                                                                                                     |
+
+Pass the aggregated `DynamoDB` client of `@aws-sdk/client-dynamodb`, not `DynamoDBClient` (which only has `send`). The package doesn't depend on the SDK; another client works if a failed condition rejects with an error named `ConditionalCheckFailedException` carrying the item it found as `Item`, as the SDK's errors do.
+
+```ts
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDbStore } from 'idempotency-keys/dynamodb';
+
+const store = new DynamoDbStore({ connection: new DynamoDB({ region: 'us-east-1' }) });
+```
+
+DynamoDB is strict, like Postgres: a claim is one conditional `PutItem`, so it is exclusive, and DynamoDB keeps it. When a claim loses, DynamoDB sends back the item that beat it, so a replay takes one request. Two things differ from the other stores:
+
+- **The clock is each server's own.** DynamoDB has no clock a condition can read, so every write carries the server's `Date.now()`. A server whose clock runs ahead can take over a lease early, so `leaseMs` has to cover the slowest handler plus the worst clock drift between your servers.
+- **An item holds at most 400 KB**, response included. Completing with a larger response rejects with DynamoDB's error, and the key stays held until its lease runs out.
+
+#### `createTableInput(tableName?)` and `updateTimeToLiveInput(tableName?)`
+
+The `CreateTable` input of the spec's table (the partition key `identity`, bytes, billed per request), and the `UpdateTimeToLive` input that has DynamoDB delete expired items by their `ttl` attribute. Time to Live is optional: without it, an expired item stays until a claim writes over it. Every write checks the expiry itself.
+
+```ts
+import { DynamoDB, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
+import { createTableInput, updateTimeToLiveInput } from 'idempotency-keys/dynamodb';
+
+const dynamodb = new DynamoDB({ region: 'us-east-1' });
+await dynamodb.createTable(createTableInput());
+await waitUntilTableExists({ client: dynamodb, maxWaitTime: 60 }, { TableName: 'idempotency_keys' });
+await dynamodb.updateTimeToLive(updateTimeToLiveInput());
+```
+
 ### `ValkeyStore`
 
 From `idempotency-keys/valkey`, like `ValkeyNotifier`.
@@ -303,7 +343,7 @@ Announces with `PUBLISH channel identity` on `publisher`, and subscribes on `sub
 
 **Returns** `Promise<ValkeyNotifier>`, once subscribed. `.close()` unsubscribes; it never closes either connection.
 
-Either notifier works with either store. A notifier only makes waiting faster: a waiting request polls the store regardless, so one that is down or loses a message only makes waiters slower.
+Either notifier works with any store; DynamoDB has none of its own. A notifier only makes waiting faster: a waiting request polls the store regardless, so one that is down or loses a message only makes waiters slower.
 
 ### Hashes and keys
 

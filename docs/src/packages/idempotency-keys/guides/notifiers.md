@@ -8,7 +8,7 @@ A duplicate of a running request waits for it, up to `waitMs`. While it waits it
 
 A notifier wakes it at once. After every request that completes or releases its key, the server publishes the key's identity on a channel. Every server listening wakes its requests waiting on that identity, and they claim again from the store.
 
-The store stays the source of truth. A woken request reads the store, and a waiting request keeps polling whether or not a notifier is set, so a notifier that is down, or loses a message, only makes waiting slower. Either notifier works with either store.
+The store stays the source of truth. A woken request reads the store, and a waiting request keeps polling whether or not a notifier is set, so a notifier that is down, or loses a message, only makes waiting slower. Either notifier works with any store, so a DynamoDB store, which has no notifier of its own, can use Postgres or Valkey to wake its waiters.
 
 ## Postgres
 

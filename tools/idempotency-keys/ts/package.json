@@ -1,7 +1,7 @@
 {
   "name": "idempotency-keys",
   "version": "0.2.0",
-  "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres and Valkey built in.",
+  "description": "Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres, DynamoDB and Valkey built in.",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -25,6 +25,8 @@
     "retry",
     "fetch",
     "postgres",
+    "dynamodb",
+    "aws",
     "valkey",
     "redis"
   ],
@@ -37,6 +39,7 @@
   ],
   "exports": {
     ".": "./dist/idempotency-keys.js",
+    "./dynamodb": "./dist/dynamodb.js",
     "./postgres": "./dist/postgres.js",
     "./valkey": "./dist/valkey.js"
   },
@@ -45,6 +48,7 @@
     "#test/*": "./dist-test/*"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "catalog:",
     "@biomejs/biome": "catalog:",
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",

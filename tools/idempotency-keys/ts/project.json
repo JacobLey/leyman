@@ -18,6 +18,7 @@
       "inputs": [
         "...",
         "{workspaceRoot}/tools/idempotency-keys/SPEC.md",
+        "aws-emulator",
         "postgres",
         "valkey"
       ]

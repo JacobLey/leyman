@@ -29,8 +29,9 @@ export const defaultRespondPolicy: RespondPolicy = ({ status }) =>
 
 export interface IdempotencyKeysOptions {
     /**
-     * Where records live: a `PostgresStore` (from `idempotency-keys/postgres`), a `ValkeyStore` (from
-     * `idempotency-keys/valkey`), or any store keeping the spec's store contract.
+     * Where records live: a `PostgresStore` (from `idempotency-keys/postgres`), a `DynamoDbStore` (from
+     * `idempotency-keys/dynamodb`), a `ValkeyStore` (from `idempotency-keys/valkey`), or any store keeping the spec's
+     * store contract.
      */
     readonly store: IdempotencyStore;
     /**

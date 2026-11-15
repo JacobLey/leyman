@@ -456,7 +456,7 @@ export const packages: readonly Package[] = [
         slug: 'idempotency-keys',
         title: 'idempotency-keys',
         category: 'Data and caching',
-        pitch: 'Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres and Valkey built in, in TypeScript and Go.',
+        pitch: 'Server-side support for the Idempotency-Key header, so clients can safely retry a POST. Works across instances on a shared store, with Postgres, DynamoDB and Valkey built in, in TypeScript and Go.',
         sources: ['tools/idempotency-keys/ts'],
         related: ['lease-cache'],
         pages: [

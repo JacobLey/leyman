@@ -4,7 +4,7 @@ description: Keep idempotency keys in any database by implementing IdempotencySt
 
 # Writing a store
 
-Postgres and Valkey are the stores that ship, but the keys can live in any database that every server reaches: DynamoDB, MongoDB, SQLite on one machine, or a key-value service of your platform. `store` takes anything implementing `IdempotencyStore`.
+Postgres, DynamoDB and Valkey are the stores that ship, but the keys can live in any database that every server reaches: MongoDB, SQLite on one machine, or a key-value service of your platform. `store` takes anything implementing `IdempotencyStore`.
 
 A store does less than it might seem. The library computes the hashes, waits on running requests, applies the respond policy, notifies other servers and checks every response before storing it. A store only keeps one record per identity, with three operations:
 
@@ -16,7 +16,7 @@ What each must guarantee is the specification's [store contract](https://github.
 
 ## An in-memory store
 
-This store keeps its records in a `Map` of one process. It is the store the package's own tests run every [test vector](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) against, alongside Postgres and Valkey, and the code below is that file. Each record is kept as JSON, as an external store would hold it, so nothing is shared by reference, and each operation first waits a couple of milliseconds, as a round trip would, so a claim and its complete really are apart in time.
+This store keeps its records in a `Map` of one process. It is the store the package's own tests run every [test vector](https://github.com/JacobLey/leyman/tree/main/tools/idempotency-keys/test-vectors) against, alongside Postgres, DynamoDB and Valkey, and the code below is that file. Each record is kept as JSON, as an external store would hold it, so nothing is shared by reference, and each operation first waits a couple of milliseconds, as a round trip would, so a claim and its complete really are apart in time.
 
 <<< @/../../tools/idempotency-keys/ts/test/helpers/memory-store.ts
 
@@ -48,4 +48,4 @@ Run your store through the test vectors' scenarios, as the package's [vector tes
 
 ## Sharing keys across languages
 
-How a store lays out its records is its own. A TypeScript server and a [Go](/packages/idempotency-keys/guides/go) server share keys through a store only if both write the same layout, which the specification pins byte for byte for Postgres and Valkey. A store of your own is shared across languages once each language implements it.
+How a store lays out its records is its own. A TypeScript server and a [Go](/packages/idempotency-keys/guides/go) server share keys through a store only if both write the same layout, which the specification pins byte for byte for Postgres, DynamoDB and Valkey. A store of your own is shared across languages once each language implements it.

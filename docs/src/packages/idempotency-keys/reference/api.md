@@ -1,16 +1,16 @@
 ---
-description: IdempotencyKeys and its options, handle and begin, the store interface, the Postgres and Valkey stores and notifiers, the hashes, and every error of the TypeScript package.
+description: IdempotencyKeys and its options, handle and begin, the store interface, the Postgres, DynamoDB and Valkey stores, the notifiers, the hashes, and every error of the TypeScript package.
 ---
 
 # API
 
-The protocol, `handle()`, the hashes, the errors and the interfaces are exported from `idempotency-keys`. The built-in adapters each have a subpath: [`idempotency-keys/postgres`](#idempotency-keys-postgres) and [`idempotency-keys/valkey`](#idempotency-keys-valkey).
+The protocol, `handle()`, the hashes, the errors and the interfaces are exported from `idempotency-keys`. The built-in adapters each have a subpath: [`idempotency-keys/postgres`](#idempotency-keys-postgres), [`idempotency-keys/dynamodb`](#idempotency-keys-dynamodb) and [`idempotency-keys/valkey`](#idempotency-keys-valkey).
 
 ## `new IdempotencyKeys(options)`
 
 | Option               | Type                                                                     | Default                                         | Description                                                                                                                                                                                                                                                                                                      |
 | -------------------- | ------------------------------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `store`              | `IdempotencyStore`                                                       | —                                               | Required. A [`PostgresStore`](#new-postgresstore-client-table), a [`ValkeyStore`](#new-valkeystore-connection-prefix), or [your own](#idempotencystore).                                                                                                                                                         |
+| `store`              | `IdempotencyStore`                                                       | —                                               | Required. A [`PostgresStore`](#new-postgresstore-client-table), a [`DynamoDbStore`](#new-dynamodbstore-connection-tablename), a [`ValkeyStore`](#new-valkeystore-connection-prefix), or [your own](#idempotencystore).                                                                                           |
 | `notifier`           | `IdempotencyNotifier`                                                    | none                                            | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll. See [Notifiers](/packages/idempotency-keys/guides/notifiers).                                                                                                                                         |
 | `ttlMs`              | `number`                                                                 | `86_400_000` (24 h)                             | How long a key lasts from when it was claimed. A takeover claims it again.                                                                                                                                                                                                                                       |
 | `leaseMs`            | `number`                                                                 | `60_000`                                        | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`.                                                                                                                                                                    |
@@ -157,6 +157,27 @@ The `CREATE TABLE` statement of the specification, for a migration. `table` defa
 
 **Returns** `Promise<PostgresNotifier>`, once listening. **Rejects** with `IdempotencyKeysOptionError` for an empty channel or one over 63 bytes, and with the `LISTEN`'s error. `notifier.close()` runs `UNLISTEN` (after the connection failed, it only stops dispatching). It never closes either connection.
 
+## `idempotency-keys/dynamodb`
+
+`DynamoDbStore`, `createTableInput`, `updateTimeToLiveInput`, and their types.
+
+### `new DynamoDbStore({ connection, tableName? })`
+
+| Option       | Type                 | Default              | Description                                                                                                                                                                                                                                                                         |
+| ------------ | -------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection` | `DynamoDbConnection` | —                    | Required. Anything with `putItem`, `updateItem` and `deleteItem`, as the `DynamoDB` client of `@aws-sdk/client-dynamodb` has. A failed condition must reject with an error named `ConditionalCheckFailedException` carrying the item found as `Item`. Never destroyed by the store. |
+| `tableName`  | `string`             | `'idempotency_keys'` | The table, made with [`createTableInput()`](#createtableinput-tablename).                                                                                                                                                                                                           |
+
+Every time is this server's `Date.now()`, so `leaseMs` must cover the worst clock drift between servers. Completing with a response that makes the item larger than 400 KB rejects with DynamoDB's error, and the key stays held until its lease runs out. Any error but a failed condition, or a failed condition without an item, is passed on as it is.
+
+### `createTableInput(tableName?)`
+
+The `CreateTable` input of the specification's table: the partition key `identity`, bytes, billed per request. `tableName` defaults to `'idempotency_keys'`. **Returns** `DynamoDbCreateTableInput`, for `client.createTable()`.
+
+### `updateTimeToLiveInput(tableName?)`
+
+The `UpdateTimeToLive` input that turns on Time to Live for the `ttl` attribute, so DynamoDB deletes expired items. Optional. **Returns** `DynamoDbUpdateTimeToLiveInput`, for `client.updateTimeToLive()`.
+
 ## `idempotency-keys/valkey`
 
 `ValkeyStore`, `ValkeyNotifier`, and their types.
@@ -227,4 +248,4 @@ Every error extends `IdempotencyKeysError`.
 
 Also exported from `idempotency-keys`, for your own stores, notifiers and wrappers: `IdempotencyStore`, `ClaimParams`, `ClaimResult`, `StoredResponse`, `IdempotencyAttempt`, `IdempotencyNotifier` (`publish`, `subscribe`), `RespondPolicy`, `RespondResult`, `BeginParams`, `BeginResult`, `HandleOptions`, `IdempotencyKeysOptions`, `ProblemKind`, `IdentityInput` and `FingerprintInput`.
 
-From `idempotency-keys/postgres`: `PostgresQueryable`, `PostgresStoreOptions`, `PostgresListener`, `PostgresNotification` and `PostgresNotifierOptions`. From `idempotency-keys/valkey`: `ValkeyConnection`, `ValkeyStoreOptions`, `ValkeyPublisher`, `ValkeySubscriber` and `ValkeyNotifierOptions`.
+From `idempotency-keys/postgres`: `PostgresQueryable`, `PostgresStoreOptions`, `PostgresListener`, `PostgresNotification` and `PostgresNotifierOptions`. From `idempotency-keys/dynamodb`: `DynamoDbConnection`, `DynamoDbStoreOptions`, `DynamoDbPutItemInput`, `DynamoDbUpdateItemInput`, `DynamoDbDeleteItemInput`, `DynamoDbAttributes`, `DynamoDbAttributeValue`, `DynamoDbCreateTableInput` and `DynamoDbUpdateTimeToLiveInput`. From `idempotency-keys/valkey`: `ValkeyConnection`, `ValkeyStoreOptions`, `ValkeyPublisher`, `ValkeySubscriber` and `ValkeyNotifierOptions`.

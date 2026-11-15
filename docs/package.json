@@ -15,6 +15,7 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "catalog:",
     "@biomejs/biome": "catalog:",
     "@hono/node-server": "catalog:",
     "@leyman/demo-agents-mcp": "workspace:^",
