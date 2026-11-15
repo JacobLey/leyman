@@ -4,7 +4,7 @@ description: A small notes API built properly from the spec down to the database
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:34cb7ac6b263fce8aa86df98aecc93df Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md and demos/openapi/server/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md and demos/openapi/server/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:7de35562e3ecefe33c61a3590ab9cf34 Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md and demos/openapi/server/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md and demos/openapi/server/README.md instead, and the description only here. -->
 
 # OpenAPI
 
@@ -200,11 +200,11 @@ await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' }
 
 ### Options
 
-| Option    | Default            | Description                                                                                                      |
-| --------- | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                                             |
-| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs one.               |
-| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or a renewed token, from [fetch-middleware](/demos/fetch-middleware/). |
+| Option    | Default            | Description                                                                                                                                   |
+| --------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                                                                          |
+| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs a token: pass this, or a `fetch` that adds one. |
+| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or a renewed token, from [fetch-middleware](/demos/fetch-middleware/).                              |
 
 ### Testing
 

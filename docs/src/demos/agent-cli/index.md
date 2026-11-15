@@ -4,7 +4,7 @@ description: A CLI that makes a REST API easy for AI agents with a shell. Each t
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:2a89fb652606f22b8b17f162fba3c4ed Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:90ebd079660242a693565c52538904ad Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
 
 # CLI for agents
 
@@ -99,25 +99,32 @@ Only one command refreshes at a time, holding `session.lock`. A command that had
 
 `notes logout` revokes the refresh token (RFC 7009) at the issuer the login was made at, which ends the login there, so a copy of `session.json` can't be refreshed afterwards. The access token can't be revoked (it's a JWT that the API checks on its own), so it stays valid until it expires, minutes later. The login is forgotten locally even when revoking fails, and the CLI reports the failure. If the server can't revoke tokens at all (it names no revocation endpoint), the CLI says so on stderr.
 
-Every request (discovery, tokens, each attempt at the API) gives up after 10 seconds. A request to the API that's safe to send twice is sent up to three times when the network fails or the API answers `429`, `502`, `503` or `504`, waiting a little longer each time, with jitter (or as long as `Retry-After` asks, cut to 30 seconds), so a command can take about a minute before it fails. Reads are safe to repeat, and `notes add` sends an `Idempotency-Key`, so the API answers a repeat with the note it already made rather than making a second. [Ky](https://github.com/sindresorhus/ky) sends the requests, with the retries and the timeout of each attempt, and the token is a middleware around it, where any other concern of sending a request can go too (see [fetch-middleware](/demos/fetch-middleware/), which the demos share). The CLI is a public client, since it can't keep a secret, so it has no client secret and relies on PKCE instead. The OAuth is done by [oauth4webapi](https://github.com/panva/oauth4webapi), which checks each of these steps. Plain HTTP is only allowed to this machine (`127.0.0.1`, `localhost`), for local development.
+Requests for logging in (discovery, tokens, revoking) give up after 10 seconds. Each attempt at the API gives up after 15 seconds, longer than the 10 seconds the API holds a repeated `notes add` while the first is still running (see the server's [Retrying safely](/demos/openapi/#retrying-safely)), so the repeat gets the note rather than timing out first.
+
+A request to the API that's safe to send twice is sent up to three times when the network fails, an attempt times out, or the API answers `409`, `429`, `502`, `503` or `504`. Reads are safe to repeat, and `notes add` sends an `Idempotency-Key`, so the API answers a repeat with the note it already made rather than making a second. That covers a gateway failing after the API added the note: the repeat gets the same note. A `409` means the first `notes add` with that key is still running, so asking again is safe too. If it's still running after the third attempt, the command says so, since the note may yet be added (see [Errors](#errors)). Between attempts the CLI waits a little longer each time, with jitter, or for a `429` or `503` as long as `Retry-After` asks, cut to 30 seconds.
+
+At worst, that's three attempts of 15 seconds and two waits of 30, so a command can take nearly 2 minutes before it fails. A token the API refuses is refreshed and the request sent again from the start, retries and all, which can make it nearly 4 minutes.
+
+[Ky](https://github.com/sindresorhus/ky) sends the requests, with the retries and the timeout of each attempt, and the token is a middleware around it, where any other concern of sending a request can go too (see [fetch-middleware](/demos/fetch-middleware/), which the demos share). The CLI is a public client, since it can't keep a secret, so it has no client secret and relies on PKCE instead. The OAuth is done by [oauth4webapi](https://github.com/panva/oauth4webapi), which checks each of these steps. Plain HTTP is only allowed to this machine (`127.0.0.1`, `localhost`), for local development.
 
 ## Errors
 
-| When                                                                                   | stderr                                                                                       | Exit |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---- |
-| Not logged in                                                                          | `Not logged in. Run notes login --api <url> first.`                                          | 3    |
-| The login expired, and can't be refreshed (no refresh token, or the server refuses it) | `The login has expired, …. Run notes login again.`                                           | 3    |
-| The API refuses the token (`401` after a refresh, `403`)                               | `The API refused the login (…). Run notes login again.`                                      | 3    |
-| The login fails (denied, or a forged response)                                         | `Login failed (…). Run notes login again.`                                                   | 3    |
-| The login isn't finished in time                                                       | `Login timed out after 600s. Run notes login again.`                                         | 3    |
-| The API refuses the input (`400`)                                                      | `The API refused it: …`, with the API's reason                                               | 1    |
-| No such note                                                                           | `No note has the id …. notes list shows the ids there are.`                                  | 1    |
-| `--device`, at an authorization server that has no device authorization endpoint       | `… can't log in a device. Run notes login without --device.`                                 | 1    |
-| The URL isn't an API that says how to log in                                           | `… doesn't say how to log in (…). Is it the notes API?`                                      | 1    |
-| The authorization server can't be reached to refresh                                   | `Failed to refresh the login at … (…).`                                                      | 1    |
-| Logging out, the authorization server can't be reached or refuses                      | `Logged out here, but … did not revoke the login (…): it stays good there until it expires.` | 1    |
-| Anything else (the API down, say)                                                      | `Failed: …`                                                                                  | 1    |
-| A mistake in the command line                                                          | yargs's message, then `Run notes --help for usage.`                                          | 2    |
+| When                                                                                   | stderr                                                                                           | Exit |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---- |
+| Not logged in                                                                          | `Not logged in. Run notes login --api <url> first.`                                              | 3    |
+| The login expired, and can't be refreshed (no refresh token, or the server refuses it) | `The login has expired, …. Run notes login again.`                                               | 3    |
+| The API refuses the token (`401` after a refresh, `403`)                               | `The API refused the login (…). Run notes login again.`                                          | 3    |
+| The login fails (denied, or a forged response)                                         | `Login failed (…). Run notes login again.`                                                       | 3    |
+| The login isn't finished in time                                                       | `Login timed out after 600s. Run notes login again.`                                             | 3    |
+| The API refuses the input (`400`)                                                      | `The API refused it: …`, with the API's reason                                                   | 1    |
+| `notes add`, when the API is still adding the note after every retry                   | `The API is still adding the note, and may yet add it. Check notes list before adding it again.` | 1    |
+| No such note                                                                           | `No note has the id …. notes list shows the ids there are.`                                      | 1    |
+| `--device`, at an authorization server that has no device authorization endpoint       | `… can't log in a device. Run notes login without --device.`                                     | 1    |
+| The URL isn't an API that says how to log in                                           | `… doesn't say how to log in (…). Is it the notes API?`                                          | 1    |
+| The authorization server can't be reached to refresh                                   | `Failed to refresh the login at … (…).`                                                          | 1    |
+| Logging out, the authorization server can't be reached or refuses                      | `Logged out here, but … did not revoke the login (…): it stays good there until it expires.`     | 1    |
+| Anything else (the API down, say)                                                      | `Failed: …`                                                                                      | 1    |
+| A mistake in the command line                                                          | yargs's message, then `Run notes --help for usage.`                                              | 2    |
 
 ## Testing
 
