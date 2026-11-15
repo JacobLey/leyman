@@ -43,6 +43,8 @@ func TestMain(m *testing.M) {
 
 An `*Emulator` has the `Endpoint`, the `Region` of its config file, the run's `Credentials`, and its certificate authority as PEM (`CA`) and as a file (`CAFile`, which the emulator deletes when it stops). `HTTPClient()` returns a client that trusts that certificate authority and no other. `Stop()` sends `SIGTERM`, which makes the emulator delete its files and exit, and returns once it has exited. Calling it again, or after the emulator exited on its own, only waits for that exit.
 
+An emulator that gets no API call for `IdleTimeout` exits on its own, without a word to the test process: the next request fails as a refused connection (`connect: connection refused`). The default of 10 minutes is far longer than a suite's pauses between requests, short of stopping at a debugger breakpoint, while an emulator left behind by a crashed test process is gone within minutes. Raise it for a suite that waits longer between requests.
+
 Errors match with `errors.Is`, and include the emulator's output where it wrote any:
 
 | Error             | When                                                                                                                                   |

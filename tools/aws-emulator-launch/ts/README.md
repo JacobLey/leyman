@@ -55,6 +55,8 @@ In a test suite, start the emulator in a hook that runs once (Mocha's root `befo
 
 The emulator's usage telemetry is off for the runs it starts (`-t off`), with no option to change it, since `-t on` can't override `EMULATOR_TELEMETRY` or the emulator's config file anyway. To run the emulator with telemetry, start it from its own command line (`aws-emulator`) instead.
 
+An emulator that gets no API call for `idleTimeoutMs` exits on its own, without a word to the test process: the next request fails as a refused connection (`ECONNREFUSED`). The default of 10 minutes is far longer than a suite's pauses between requests, short of stopping at a debugger breakpoint, while an emulator left behind by a crashed test process is gone within minutes. Raise it for a suite that waits longer between requests.
+
 ## API
 
 ### `launchAwsEmulator(options?)`

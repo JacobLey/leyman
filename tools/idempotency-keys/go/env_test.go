@@ -59,7 +59,7 @@ func TestMain(m *testing.M) {
 
 	table := uniqueName("idempotency_keys_test_")
 	if err := emulator.createTable(context.Background(), table); err != nil {
-		emulator.stop(table)
+		emulator.stop()
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -67,7 +67,7 @@ func TestMain(m *testing.M) {
 	testEnv = env{pool: pool, valkey: client, dynamodb: emulator, dynamodbTable: table}
 	code := m.Run()
 
-	emulator.stop(table)
+	emulator.stop()
 	client.Close()
 	pool.Close()
 	os.Exit(code)

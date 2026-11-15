@@ -18,6 +18,8 @@ Starts AWS Emulator on a free port (`-p 0`) of 127.0.0.1 (`-b 127.0.0.1`, the ad
 
 Telemetry is always off for the runs it starts, since `-t on` can't override `EMULATOR_TELEMETRY` or the emulator's config file anyway. To run the emulator with telemetry, start it from its own command line (`aws-emulator`) instead.
 
+An emulator that gets no API call for `idleTimeoutMs` exits on its own, without a word to the test process: the next request fails as a refused connection (`ECONNREFUSED`). The default of 10 minutes is far longer than a suite's pauses between requests, short of stopping at a debugger breakpoint, while an emulator left behind by a crashed test process is gone within minutes. Raise it for a suite that waits longer between requests.
+
 ## `AwsEmulator`
 
 | Property                  | Type                               | Description                                                                                                                                                                                |

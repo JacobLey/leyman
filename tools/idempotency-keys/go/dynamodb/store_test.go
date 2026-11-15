@@ -46,14 +46,14 @@ func TestMain(m *testing.M) {
 	table = uniqueName("idempotency_keys_test_")
 
 	if err := running.createTable(ctx, table); err != nil {
-		running.stop(table)
+		running.stop()
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	code := m.Run()
 
-	running.stop(table)
+	running.stop()
 	os.Exit(code)
 }
 
@@ -528,7 +528,13 @@ func TestUpdateTimeToLiveInput(t *testing.T) {
 		t.Fatalf("got %+v", input)
 	}
 
-	// The table TestMain created has it on, or on its way, as DynamoDB takes a while
+	// TestMain's table has it off until now, as no other test relies on it
+	if _, err := client.UpdateTimeToLive(t.Context(), dynamodbstore.UpdateTimeToLiveInput(
+		dynamodbstore.StoreOptions{Table: table})); err != nil {
+		t.Fatal(err)
+	}
+
+	// On, or on its way, as DynamoDB takes a while
 	output, err := client.DescribeTimeToLive(t.Context(), &dynamodb.DescribeTimeToLiveInput{TableName: aws.String(table)})
 	if err != nil {
 		t.Fatal(err)

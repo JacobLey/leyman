@@ -1,12 +1,15 @@
 import type { AwsEmulator } from 'aws-emulator-launch';
 import { randomUUID } from 'node:crypto';
-import { setTimeout } from 'node:timers/promises';
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDB, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
 import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { createTableInput } from 'idempotency-keys/dynamodb';
 import { before } from 'mocha-chain';
 
-const tablePollMs = 100;
+/**
+ * How the SDK's waiter polls a new table, in seconds: often, as the emulator makes one active within seconds (the
+ * waiter's own minimum delay is 20 s), and only so long, so a table that never becomes active fails the run.
+ */
+const tableWaiter = { minDelay: 0.1, maxDelay: 0.5, maxWaitTime: 30 };
 
 /**
  * Starts AWS Emulator on a free port, which the devcontainer and Dagger's test container install.
@@ -29,20 +32,14 @@ const startEmulator = async (): Promise<AwsEmulator> => {
 };
 
 /**
- * Creates a table, and waits until it can be used.
+ * Creates a table, and waits until it is active. Time to Live stays off, as the store never relies on it.
  *
  * @param dynamodb - The client
  * @param table - What to call it
  */
 export const createTable = async (dynamodb: DynamoDB, table: string): Promise<void> => {
     await dynamodb.createTable(createTableInput(table));
-    for (;;) {
-        const { Table: description } = await dynamodb.describeTable({ TableName: table });
-        if (description?.TableStatus === 'ACTIVE') {
-            return;
-        }
-        await setTimeout(tablePollMs);
-    }
+    await waitUntilTableExists({ client: dynamodb, ...tableWaiter }, { TableName: table });
 };
 
 export interface DynamoDbContext {
@@ -67,8 +64,8 @@ export const withDynamoDb = before(async () => {
     shared.context = { dynamodb, table };
     return { emulator, ...shared.context };
 });
-withDynamoDb.after(async ({ emulator, dynamodb, table }) => {
-    await dynamodb.deleteTable({ TableName: table });
+// The table goes with the emulator, which keeps everything in memory
+withDynamoDb.after(async ({ emulator, dynamodb }) => {
     dynamodb.destroy();
     await emulator.stop();
 });
