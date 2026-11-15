@@ -65,7 +65,7 @@ withDynamoDb.after(async ({ emulator, dynamodb }) => {
 
 The emulator starts empty, so tests create the tables and queues they use. Giving each a name of its own means they don't need to clean up after each other.
 
-If `aws-emulator` isn't installed, `launchAwsEmulator` rejects with an `AwsEmulatorSpawnError` that links AWS's install guide. A repository that installs the emulator for you (in a devcontainer, say) can catch it and say how to get it there instead.
+If `aws-emulator` isn't installed, `launchAwsEmulator` rejects with an `AwsEmulatorNotRunError` that links AWS's install guide. A repository that installs the emulator for you (in a devcontainer, say) can catch it and say how to get it there instead.
 
 ## Next steps
 

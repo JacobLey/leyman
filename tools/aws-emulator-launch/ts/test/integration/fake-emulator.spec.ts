@@ -8,8 +8,8 @@ import {
     AwsEmulatorError,
     AwsEmulatorExitError,
     AwsEmulatorFileError,
-    AwsEmulatorSpawnError,
-    AwsEmulatorTimeoutError,
+    AwsEmulatorNotRunError,
+    AwsEmulatorStartTimeoutError,
     launchAwsEmulator,
 } from 'aws-emulator-launch';
 import { before, suite } from 'mocha-chain';
@@ -140,7 +140,7 @@ suite('launchAwsEmulator with a fake emulator', () => {
     );
 
     withFakes.test(
-        'Leaves telemetry to the emulator, and takes another idle timeout',
+        'Leaves telemetry to the emulator, and rounds the idle timeout up to whole seconds',
         async ({ fakes }) => {
             const { binary, argsFile } = await serving(fakes, 'options', [
                 await fakes.writeFiles('options'),
@@ -148,12 +148,12 @@ suite('launchAwsEmulator with a fake emulator', () => {
 
             const emulator = await launchAwsEmulator({
                 binary,
-                idleTimeoutSeconds: 30,
+                idleTimeoutMs: 1500,
                 telemetry: true,
             });
             await emulator.stop();
 
-            expect(await readFile(argsFile, 'utf8')).to.equal('-p 0 -a on --idle-timeout 30\n');
+            expect(await readFile(argsFile, 'utf8')).to.equal('-p 0 -a on --idle-timeout 2\n');
         }
     );
 
@@ -202,9 +202,9 @@ suite('launchAwsEmulator with a fake emulator', () => {
             const binary = path.join(fakes.dir, 'missing');
 
             await expect(launchAwsEmulator({ binary }))
-                .to.be.rejectedWith(AwsEmulatorSpawnError, 'getting-started')
+                .to.be.rejectedWith(AwsEmulatorNotRunError, 'getting-started')
                 .and.eventually.be.instanceOf(AwsEmulatorError)
-                .and.include({ name: 'AwsEmulatorSpawnError', binary });
+                .and.include({ name: 'AwsEmulatorNotRunError', binary });
         }
     );
 
@@ -243,9 +243,9 @@ suite('launchAwsEmulator with a fake emulator', () => {
             ]);
 
             await expect(launchAwsEmulator({ binary, startTimeoutMs: 200 }))
-                .to.be.rejectedWith(AwsEmulatorTimeoutError, '1.0.290')
+                .to.be.rejectedWith(AwsEmulatorStartTimeoutError, '1.0.290')
                 .and.eventually.include({
-                    name: 'AwsEmulatorTimeoutError',
+                    name: 'AwsEmulatorStartTimeoutError',
                     timeoutMs: 200,
                     output: '{"fields":{"message":"listening on 9297"}}\n',
                 });

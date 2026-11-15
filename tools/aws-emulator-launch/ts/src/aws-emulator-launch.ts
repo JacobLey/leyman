@@ -5,8 +5,8 @@ import path from 'node:path';
 import {
     AwsEmulatorExitError,
     AwsEmulatorFileError,
-    AwsEmulatorSpawnError,
-    AwsEmulatorTimeoutError,
+    AwsEmulatorNotRunError,
+    AwsEmulatorStartTimeoutError,
 } from '#internal/lib/errors.js';
 import { parseIni, parseStartupLine } from '#internal/lib/startup.js';
 
@@ -14,8 +14,8 @@ export {
     AwsEmulatorError,
     AwsEmulatorExitError,
     AwsEmulatorFileError,
-    AwsEmulatorSpawnError,
-    AwsEmulatorTimeoutError,
+    AwsEmulatorNotRunError,
+    AwsEmulatorStartTimeoutError,
 } from '#internal/lib/errors.js';
 
 /**
@@ -29,12 +29,12 @@ export interface LaunchAwsEmulatorOptions {
      */
     readonly binary?: string;
     /**
-     * Seconds without an API call after which the emulator exits on its own (`--idle-timeout`), so one whose process
-     * died before calling `stop()` doesn't run forever.
+     * Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`, rounded up to
+     * whole seconds), so one whose process died before calling `stop()` doesn't run forever.
      *
-     * @default 600
+     * @default 600000
      */
-    readonly idleTimeoutSeconds?: number;
+    readonly idleTimeoutMs?: number;
     /**
      * Milliseconds to wait for the startup line, after which the emulator is killed.
      *
@@ -90,7 +90,8 @@ export interface AwsEmulator {
 }
 
 const defaultBinary = 'aws-emulator';
-const defaultIdleTimeoutSeconds = 600;
+const defaultIdleTimeoutMs = 600_000;
+const msPerSecond = 1000;
 const defaultStartTimeoutMs = 10_000;
 
 /**
@@ -130,9 +131,9 @@ const iniValue = (file: string, text: string, key: string): string => {
  *
  * @param options - How to start it
  * @returns Where it serves, its region, keys and certificate authority, and how to stop it
- * @rejects {AwsEmulatorSpawnError} When the binary can't be run
+ * @rejects {AwsEmulatorNotRunError} When the binary can't be run
  * @rejects {AwsEmulatorExitError} When the emulator exits before it starts
- * @rejects {AwsEmulatorTimeoutError} When it doesn't start within `startTimeoutMs`
+ * @rejects {AwsEmulatorStartTimeoutError} When it doesn't start within `startTimeoutMs`
  * @rejects {AwsEmulatorFileError} When a file its startup line names can't be read
  */
 export const launchAwsEmulator = async (
@@ -140,7 +141,7 @@ export const launchAwsEmulator = async (
 ): Promise<AwsEmulator> => {
     const {
         binary = defaultBinary,
-        idleTimeoutSeconds = defaultIdleTimeoutSeconds,
+        idleTimeoutMs = defaultIdleTimeoutMs,
         startTimeoutMs = defaultStartTimeoutMs,
         telemetry = false,
     } = options;
@@ -152,7 +153,8 @@ export const launchAwsEmulator = async (
             '-a',
             'on',
             '--idle-timeout',
-            String(idleTimeoutSeconds),
+            // Whole seconds, rounded up
+            String(Math.ceil(idleTimeoutMs / msPerSecond)),
             ...(telemetry ? [] : ['-t', 'off']),
         ],
         { stdio: ['ignore', 'pipe', 'pipe'] }
@@ -179,7 +181,7 @@ export const launchAwsEmulator = async (
     };
     const startup = new Promise<StartupLine>((resolve, reject) => {
         child.on('error', error => {
-            reject(new AwsEmulatorSpawnError(binary, error));
+            reject(new AwsEmulatorNotRunError(binary, error));
         });
         child.stdout.on('data', (chunk: string) => {
             const lines = (partialLine + chunk).split('\n');
@@ -194,7 +196,7 @@ export const launchAwsEmulator = async (
         child.once('close', (code, signal) => {
             reject(
                 hasTimedOut
-                    ? new AwsEmulatorTimeoutError(startTimeoutMs, output)
+                    ? new AwsEmulatorStartTimeoutError(startTimeoutMs, output)
                     : new AwsEmulatorExitError(code, signal, output)
             );
         });

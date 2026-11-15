@@ -13,7 +13,7 @@ export abstract class AwsEmulatorError extends Error {}
 /**
  * The binary couldn't be run: most often it isn't installed, or isn't on `PATH`.
  */
-export class AwsEmulatorSpawnError extends AwsEmulatorError {
+export class AwsEmulatorNotRunError extends AwsEmulatorError {
     public readonly binary: string;
     public constructor(binary: string, cause: unknown) {
         super(
@@ -22,7 +22,7 @@ export class AwsEmulatorSpawnError extends AwsEmulatorError {
                 cause,
             }
         );
-        this.name = 'AwsEmulatorSpawnError';
+        this.name = 'AwsEmulatorNotRunError';
         this.binary = binary;
     }
 }
@@ -49,14 +49,14 @@ export class AwsEmulatorExitError extends AwsEmulatorError {
  * The emulator didn't print its startup line in time, so it was killed. Releases before 1.0.290 print a different
  * line, so they always end here.
  */
-export class AwsEmulatorTimeoutError extends AwsEmulatorError {
+export class AwsEmulatorStartTimeoutError extends AwsEmulatorError {
     public readonly timeoutMs: number;
     public readonly output: string;
     public constructor(timeoutMs: number, output: string) {
         super(
             `AWS Emulator didn't print its startup line within ${timeoutMs} ms, so it was killed. It needs version 1.0.290 or later (${installPage}). Its output:\n${output}`
         );
-        this.name = 'AwsEmulatorTimeoutError';
+        this.name = 'AwsEmulatorStartTimeoutError';
         this.timeoutMs = timeoutMs;
         this.output = output;
     }

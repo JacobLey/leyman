@@ -67,12 +67,12 @@ The emulator's usage telemetry is off for the runs it starts (`-t off`), as AWS 
 
 Starts AWS Emulator on a free port (`-p 0`), with authentication on (`-a on`), and waits for the line it logs once it serves requests. Lines before it, JSON or not, are ignored.
 
-| Option               | Type      | Default          | Description                                                                               |
-| -------------------- | --------- | ---------------- | ----------------------------------------------------------------------------------------- |
-| `binary`             | `string`  | `'aws-emulator'` | The emulator's executable, a path or a name looked up on `PATH`.                          |
-| `idleTimeoutSeconds` | `number`  | `600`            | Seconds without an API call after which the emulator exits on its own (`--idle-timeout`). |
-| `startTimeoutMs`     | `number`  | `10000`          | How long to wait for the startup line before killing the emulator.                        |
-| `telemetry`          | `boolean` | `false`          | `false` turns telemetry off for the run. `true` leaves it to the emulator's own setting.  |
+| Option           | Type      | Default          | Description                                                                                                                 |
+| ---------------- | --------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `binary`         | `string`  | `'aws-emulator'` | The emulator's executable, a path or a name looked up on `PATH`.                                                            |
+| `idleTimeoutMs`  | `number`  | `600000`         | Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`, rounded up to whole seconds). |
+| `startTimeoutMs` | `number`  | `10000`          | How long to wait for the startup line before killing the emulator.                                                          |
+| `telemetry`      | `boolean` | `false`          | `false` turns telemetry off for the run. `true` leaves it to the emulator's own setting.                                    |
 
 **Returns** `Promise<AwsEmulator>`.
 
@@ -94,12 +94,12 @@ Starts AWS Emulator on a free port (`-p 0`), with authentication on (`-a on`), a
 
 Every error extends `AwsEmulatorError`.
 
-| Error                     | When                                                                                                                                                 | Properties                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `AwsEmulatorSpawnError`   | The binary couldn't be run, most often because it isn't installed or isn't on `PATH`. The message links AWS's install guide.                         | `binary`, and the spawn error as `cause`                       |
-| `AwsEmulatorExitError`    | The emulator exited before it started, for instance on an option it doesn't know.                                                                    | `code`, `signal`, and `output` (its standard output and error) |
-| `AwsEmulatorTimeoutError` | No startup line within `startTimeoutMs`, so the emulator was killed (`SIGKILL`). A release before 1.0.290 always ends here, and the message says so. | `timeoutMs`, `output`                                          |
-| `AwsEmulatorFileError`    | A file the startup line names couldn't be read, or lacks the region or a key.                                                                        | `file`                                                         |
+| Error                          | When                                                                                                                                                 | Properties                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `AwsEmulatorNotRunError`       | The binary couldn't be run, most often because it isn't installed or isn't on `PATH`. The message links AWS's install guide.                         | `binary`, and the spawn error as `cause`                       |
+| `AwsEmulatorExitError`         | The emulator exited before it started, for instance on an option it doesn't know.                                                                    | `code`, `signal`, and `output` (its standard output and error) |
+| `AwsEmulatorStartTimeoutError` | No startup line within `startTimeoutMs`, so the emulator was killed (`SIGKILL`). A release before 1.0.290 always ends here, and the message says so. | `timeoutMs`, `output`                                          |
+| `AwsEmulatorFileError`         | A file the startup line names couldn't be read, or lacks the region or a key.                                                                        | `file`                                                         |
 
 ## Also See
 

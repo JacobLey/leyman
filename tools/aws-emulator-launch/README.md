@@ -22,8 +22,8 @@ The two take the same options and return the same things, in each language's con
 | TypeScript | Go |
 |------------|----|
 | `launchAwsEmulator(options?)` | `Launch(ctx, Options)` |
-| `binary`, `idleTimeoutSeconds`, `startTimeoutMs`, `telemetry` | `Binary`, `IdleTimeout`, `StartTimeout`, `Telemetry` |
+| `binary`, `idleTimeoutMs`, `startTimeoutMs`, `telemetry` | `Binary`, `IdleTimeout`, `StartTimeout`, `Telemetry` |
 | `endpoint`, `region`, `credentials`, `ca`, `caFile` | `Endpoint`, `Region`, `Credentials`, `CA`, `CAFile` |
 | Pass `ca` to an `https.Agent` | `HTTPClient()` |
 | `stop()`, or `await using` | `Stop()` |
-| `AwsEmulatorSpawnError`, `AwsEmulatorExitError`, `AwsEmulatorTimeoutError`, `AwsEmulatorFileError` | `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile` |
+| `AwsEmulatorNotRunError`, `AwsEmulatorExitError`, `AwsEmulatorStartTimeoutError`, `AwsEmulatorFileError` | `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile` |

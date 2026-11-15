@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Agent } from 'node:https';
 import { setTimeout } from 'node:timers/promises';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { AwsEmulatorSpawnError, launchAwsEmulator } from 'aws-emulator-launch';
+import { AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { createTableInput } from 'idempotency-keys/dynamodb';
 import { before } from 'mocha-chain';
 
@@ -19,7 +19,7 @@ const startEmulator = async (): Promise<AwsEmulator> => {
     try {
         return await launchAwsEmulator();
     } catch (error) {
-        if (error instanceof AwsEmulatorSpawnError) {
+        if (error instanceof AwsEmulatorNotRunError) {
             throw new Error(
                 'The DynamoDB tests need aws-emulator on PATH. The devcontainer and the Dagger test container install it: rebuild the devcontainer',
                 { cause: error }
