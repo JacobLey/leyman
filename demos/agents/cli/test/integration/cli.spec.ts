@@ -524,6 +524,57 @@ suite('notes', () => {
             }
         });
 
+        withLogin.test(
+            'Adds one note when a gateway fails after the API added it, getting it again on the retry',
+            async ({ app, configDir, db, served }) => {
+                const statuses: number[] = [];
+                served.use(async request => {
+                    const response = await app.fetch(request);
+                    statuses.push(response.status);
+                    // The API added it, and the gateway in front of it failed to pass the answer on
+                    return statuses.length === 1
+                        ? new Response('Bad gateway', { status: 502 })
+                        : response;
+                });
+
+                const { code, stdout } = await notes(configDir, ['add', '--title', 'Dolly']);
+
+                const rows = await db.select().from(notesTable);
+                expect(code).to.equal(0);
+                expect(statuses).to.deep.equal([201, 201]);
+                expect(rows.map(({ id }) => id)).to.deep.equal([stdout.trim()]);
+            }
+        );
+
+        withLogin.test(
+            'Says to check the list when the API is still adding the note after every retry',
+            async ({ app, configDir, served }) => {
+                let attempts = 0;
+                served.use(async request => {
+                    if (request.method !== 'POST') {
+                        return app.fetch(request);
+                    }
+                    attempts++;
+                    return Response.json(
+                        {
+                            code: 'idempotency_key_in_use',
+                            message:
+                                'A request with this Idempotency-Key is still running: retry later',
+                        },
+                        { status: 409 }
+                    );
+                });
+
+                const { code, stderr } = await notes(configDir, ['add', '--title', 'Dolly']);
+
+                expect(code).to.equal(1);
+                expect(attempts).to.equal(3);
+                expect(stderr).to.equal(
+                    'The API is still adding the note, and may yet add it. Check notes list before adding it again.\n'
+                );
+            }
+        );
+
         withLogin.test('Refreshes an expired login', async ({ configDir }) => {
             const session = await editSession(configDir, { expiresAt: 0 });
 

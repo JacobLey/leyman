@@ -3,6 +3,7 @@ import type { Command, NotesCommandInput } from './lib/types.js';
 import { randomUUID } from 'node:crypto';
 import { text } from 'node:stream/consumers';
 import { bind } from 'haywire';
+import { NotesCliError } from '#internal/lib/errors.js';
 import { connect, refused } from '#internal/lib/notes.js';
 import { SessionStore } from '#internal/lib/session.js';
 import { commandId } from './lib/types.js';
@@ -39,6 +40,13 @@ export const noteAddCommand: Command<AddCommandExtendedInput> = {
             header: { 'Idempotency-Key': randomUUID() },
             body: { title, body: stdin ? await text(process.stdin) : body },
         });
+        if (created.status === 409) {
+            // The first attempt was still running after every retry. It may yet add the note, and running the
+            // command again sends a new key, so it could add a second
+            throw new NotesCliError(
+                'The API is still adding the note, and may yet add it. Check notes list before adding it again.'
+            );
+        }
         if (created.status !== 201) {
             throw refused(created);
         }

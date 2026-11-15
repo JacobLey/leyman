@@ -7,9 +7,10 @@ import * as oauth from 'oauth4webapi';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 
 /**
- * How long any request the CLI makes (discovery, tokens, the API) waits for an answer.
+ * How long a request for logging in (discovery, tokens, revocation) waits for an answer. Each attempt at the API
+ * has its own, longer, timeout (`apiAttemptTimeoutMs`).
  */
-export const requestTimeoutMs = 10_000;
+const requestTimeoutMs = 10_000;
 
 /**
  * `oauth4webapi`'s options for a request: it times out, and plain HTTP is allowed only to this machine (a local API
