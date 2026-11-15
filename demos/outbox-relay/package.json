@@ -1,0 +1,54 @@
+{
+  "name": "@leyman/demo-outbox-relay",
+  "version": "0.0.1",
+  "description": "A transactional outbox on Postgres relayed to Amazon EventBridge: events committed with the business rows, claimed by lease with SKIP LOCKED, retried only when EventBridge says so, and woken by NOTIFY.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/outbox-relay#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/outbox-relay.js",
+  "exports": {
+    ".": "./dist/outbox-relay.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "catalog:",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-sqs": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg-dolly": "workspace:^",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#test/*": "./dist-test/*"
+  }
+}

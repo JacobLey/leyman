@@ -19,6 +19,9 @@ catalogs:
     '@aws-sdk/client-dynamodb':
       specifier: ^3.1164.0
       version: 3.1164.0
+    '@aws-sdk/client-eventbridge':
+      specifier: ^3.1164.0
+      version: 3.1164.0
     '@aws-sdk/client-sqs':
       specifier: ^3.1164.0
       version: 3.1164.0
@@ -2117,6 +2120,73 @@ importers:
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
+
+  demos/outbox-relay:
+    dependencies:
+      '@aws-sdk/client-eventbridge':
+        specifier: 'catalog:'
+        version: 3.1164.0
+      pg:
+        specifier: 'catalog:'
+        version: 8.23.1
+    devDependencies:
+      '@aws-sdk/client-sqs':
+        specifier: 'catalog:'
+        version: 3.1164.0
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.23.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      aws-emulator-launch:
+        specifier: workspace:^
+        version: file:tools/aws-emulator-launch/ts
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.4.0
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      pg-dolly:
+        specifier: workspace:^
+        version: file:tools/pg-dolly
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   demos/read-through-cache:
     dependencies:
@@ -5146,6 +5216,10 @@ packages:
 
   '@aws-sdk/client-dynamodb@3.1164.0':
     resolution: {integrity: sha512-jrX0BtmtyRelTW/yAGgFpXvDj8BioL80njIGVfOsMsCrSKi+Ai0QZ45AqWgA0h1r7uzqfpWFhNUQZO77sOoyzg==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-eventbridge@3.1164.0':
+    resolution: {integrity: sha512-RAsaaJsCxEZMl7G0uPbn8KdzR5WYpHqQyYTFEs1G6g1VX1wEEao2qDJwqlud9tI8r0WonZ/S+266lrg4NoPDzA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sqs@3.1164.0':
@@ -12377,6 +12451,18 @@ snapshots:
       '@aws-sdk/credential-provider-node': 3.972.94
       '@aws-sdk/dynamodb-codec': 3.973.56
       '@aws-sdk/middleware-endpoint-discovery': 3.972.37
+      '@aws-sdk/types': 3.975.0
+      '@smithy/core': 3.39.0
+      '@smithy/fetch-http-handler': 5.8.1
+      '@smithy/node-http-handler': 4.14.2
+      '@smithy/types': 4.20.0
+      tslib: 2.8.1
+
+  '@aws-sdk/client-eventbridge@3.1164.0':
+    dependencies:
+      '@aws-sdk/core': 3.980.1
+      '@aws-sdk/credential-provider-node': 3.972.94
+      '@aws-sdk/signature-v4-multi-region': 3.996.51
       '@aws-sdk/types': 3.975.0
       '@smithy/core': 3.39.0
       '@smithy/fetch-http-handler': 5.8.1

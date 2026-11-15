@@ -177,6 +177,9 @@
     },
     {
       "path": "./demos/sqs-job-queue"
+    },
+    {
+      "path": "./demos/outbox-relay"
     }
   ]
 }
