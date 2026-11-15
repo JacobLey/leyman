@@ -4,6 +4,7 @@ packages:
   - tools/*
   - tools/constant-consistent-hash/*
   - tools/generated-signature/*
+  - tools/aws-emulator-launch/*
   - tools/idempotency-keys/*
   - tools/test-chain/*
   - e2e/*

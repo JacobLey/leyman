@@ -28,6 +28,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
     "barrelify": "workspace:^",
     "c8": "catalog:",
     "constant-consistent-hash": "workspace:^",

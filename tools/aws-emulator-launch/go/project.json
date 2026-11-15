@@ -1,0 +1,40 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/aws-emulator-launch-go",
+  "metadata": {
+    "description": "Starts AWS Emulator for tests from Go, on a free port, and returns its endpoint, credentials and certificate authority."
+  },
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
+    "check-go-release": {},
+    "go-test": {
+      "inputs": [
+        "...",
+        "aws-emulator"
+      ]
+    },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

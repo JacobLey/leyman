@@ -171,6 +171,9 @@
     },
     {
       "path": "./demos/fetch-middleware"
+    },
+    {
+      "path": "./tools/aws-emulator-launch/ts"
     }
   ]
 }

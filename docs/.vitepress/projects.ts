@@ -275,6 +275,20 @@ export const packages: readonly Package[] = [
         ],
     },
     {
+        slug: 'aws-emulator-launch',
+        title: 'aws-emulator-launch',
+        category: 'Testing',
+        pitch: 'Starts AWS Emulator for tests, on a free port, and returns its endpoint, credentials and certificate authority, in TypeScript and Go.',
+        sources: ['tools/aws-emulator-launch/ts'],
+        related: ['idempotency-keys'],
+        pages: [
+            { text: 'Overview', link: '' },
+            { text: 'Getting started', link: 'getting-started' },
+            { text: 'Guides', items: [{ text: 'Go', link: 'guides/go' }] },
+            { text: 'Reference', items: [{ text: 'API', link: 'reference/api' }] },
+        ],
+    },
+    {
         slug: 'mocha-chain',
         title: 'mocha-chain',
         category: 'Testing',
