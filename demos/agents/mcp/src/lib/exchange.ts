@@ -38,8 +38,58 @@ const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';
 
 interface Exchanged {
     readonly token: string;
+    /**
+     * When to stop using the token, or `null` when the authorization server didn't say when it expires.
+     */
+    readonly expiresAt: number | null;
+}
+
+/**
+ * An exchanged token kept for later requests: only one that says when it expires.
+ */
+interface Kept extends Exchanged {
     readonly expiresAt: number;
 }
+
+/**
+ * A token exchange's response (RFC 8693 §2.2.1): `access_token` is required, and `expires_in` only recommended.
+ * Without it, the token's lifetime is unknown, so it's used only for the requests that waited for this exchange, and
+ * never kept: a guessed lifetime could keep sending it after it expired.
+ *
+ * @param issuer - Who answered, for errors
+ * @param body - The response's JSON
+ * @returns The token, and when to stop using it
+ * @throws {NotesMcpAuthorizationServerError} When `access_token` isn't a non-empty string, or `expires_in` is there
+ * but isn't a positive number
+ */
+const parseExchanged = (issuer: string, body: unknown): Exchanged => {
+    const {
+        access_token: token,
+        expires_in: expiresIn,
+    }: Partial<Record<'access_token' | 'expires_in', unknown>> =
+        typeof body === 'object' && body !== null ? body : {};
+    if (typeof token !== 'string' || token === '') {
+        throw new NotesMcpAuthorizationServerError(
+            issuer,
+            'exchanged the token for no access_token'
+        );
+    }
+    if (expiresIn === undefined) {
+        return { token, expiresAt: null };
+    }
+    if (typeof expiresIn !== 'number' || expiresIn <= 0) {
+        throw new NotesMcpAuthorizationServerError(
+            issuer,
+            'exchanged the token with an invalid expires_in'
+        );
+    }
+    return {
+        token,
+        expiresAt:
+            Date.now() +
+            (expiresIn - Math.min(expiryMarginSeconds, expiresIn / 2)) * millisecondsPerSecond,
+    };
+};
 
 /**
  * Tokens for the API, as the agent's user, by token exchange (RFC 8693): the agent's token (issued for this server,
@@ -50,7 +100,8 @@ interface Exchanged {
  * Each agent token's exchange is kept until it nears expiry, and requests in the meantime wait for the same one;
  * expired ones are dropped as new ones come in. When the API refuses one before then (its keys rotated, say),
  * `renew` exchanges the agent's token again, once for every request refused the same token: requests that come
- * later get the renewed one.
+ * later get the renewed one. An exchange whose response doesn't say when its token expires (no `expires_in`) is used
+ * only by the requests that waited for it, and isn't kept: the next request exchanges again.
  *
  * @param options - The issuer, the server's credentials, and the API it calls
  * @returns The credentials for an agent's token, for `bearer`: `token` and `renew` reject with a
@@ -81,20 +132,10 @@ export const tokenExchange = (
                 `refused to exchange the agent's token (${response.status})`
             );
         }
-        const body = (await response.json()) as {
-            readonly access_token: string;
-            readonly expires_in: number;
-        };
-        return {
-            token: body.access_token,
-            expiresAt:
-                Date.now() +
-                (body.expires_in - Math.min(expiryMarginSeconds, body.expires_in / 2)) *
-                    millisecondsPerSecond,
-        };
+        return parseExchanged(options.issuer, await response.json());
     };
 
-    const exchanged = new Map<string, Exchanged>();
+    const exchanged = new Map<string, Kept>();
     const pending = new Map<string, Promise<string>>();
     const exchange = async (agentToken: string): Promise<string> => {
         try {
@@ -105,7 +146,9 @@ export const tokenExchange = (
                     exchanged.delete(key);
                 }
             }
-            exchanged.set(agentToken, fresh);
+            if (fresh.expiresAt !== null) {
+                exchanged.set(agentToken, { token: fresh.token, expiresAt: fresh.expiresAt });
+            }
             return fresh.token;
         } finally {
             pending.delete(agentToken);

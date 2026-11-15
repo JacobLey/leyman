@@ -2,7 +2,7 @@ import type { OAuthTokenVerifier } from '@modelcontextprotocol/server';
 import type { JWTVerifyGetKey } from 'jose';
 import { OAuthError, OAuthErrorCode } from '@modelcontextprotocol/server';
 import { createRemoteJWKSet, errors, jwtVerify } from 'jose';
-import { discover, lazily } from './discovery.js';
+import { authorizationServerTimeoutMs, discover, lazily } from './discovery.js';
 
 export interface JwtVerifierOptions {
     /**
@@ -43,7 +43,9 @@ const tokenErrors = [
 export const jwtVerifier = (options: JwtVerifierOptions): OAuthTokenVerifier => {
     const keys = lazily(async (): Promise<JWTVerifyGetKey> => {
         const jwksUri = await discover(options.issuer, 'jwks_uri');
-        return createRemoteJWKSet(new URL(jwksUri));
+        return createRemoteJWKSet(new URL(jwksUri), {
+            timeoutDuration: authorizationServerTimeoutMs,
+        });
     });
     return {
         verifyAccessToken: async token => {

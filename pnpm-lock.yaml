@@ -1555,6 +1555,9 @@ importers:
       jose:
         specifier: 'catalog:'
         version: 6.2.14
+      ky:
+        specifier: 'catalog:'
+        version: 2.2.0
       p-queue:
         specifier: 'catalog:'
         version: 10.0.0
@@ -14254,6 +14257,7 @@ snapshots:
       haywire: file:tools/haywire
       hono: 4.13.17
       jose: 6.2.14
+      ky: 2.2.0
       p-queue: 10.0.0
     transitivePeerDependencies:
       - eslint

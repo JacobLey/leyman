@@ -2,10 +2,10 @@ import { compose, kySend } from '@leyman/demo-fetch-middleware';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
 /**
- * How long a request to another server may take: one that never answers fails, rather than holding a tool call
- * forever.
+ * How long each attempt to send a request to the authorization server may take to answer: one that never answers
+ * fails, rather than holding a tool call forever. (The notes API has its own, `apiRequestTimeoutMs`.)
  */
-export const requestTimeoutMs = 10_000;
+export const authorizationServerTimeoutMs = 10_000;
 
 /**
  * The longest a `Retry-After` is waited for: a longer one is cut to it.
@@ -20,7 +20,7 @@ export const maxRetryAfterMs = 30_000;
 export const authorizationServerFetch = compose(
     [],
     kySend({
-        timeout: requestTimeoutMs,
+        timeout: authorizationServerTimeoutMs,
         retry: {
             limit: 2,
             // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- HTTP statuses

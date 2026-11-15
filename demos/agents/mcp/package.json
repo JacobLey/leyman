@@ -35,6 +35,7 @@
     "haywire": "workspace:^",
     "hono": "catalog:",
     "jose": "catalog:",
+    "ky": "catalog:",
     "p-queue": "catalog:"
   },
   "devDependencies": {

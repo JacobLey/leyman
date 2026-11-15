@@ -202,6 +202,81 @@ suite('tokenExchange', () => {
         }
     });
 
+    suite('When the token endpoint answers', () => {
+        /**
+         * An authorization server whose token endpoint answers each exchange with `body`.
+         */
+        const withIssuer = beforeEach(async () => {
+            const issuer = await listen();
+            const exchanges: string[] = [];
+            let body: unknown = {};
+            issuer.use(async request => {
+                const { pathname } = new URL(request.url);
+                if (pathname === '/token') {
+                    exchanges.push(request.method);
+                    return Response.json(body);
+                }
+                return Response.json({ issuer: issuer.url, token_endpoint: `${issuer.url}/token` });
+            });
+            return {
+                issuer,
+                exchanges,
+                answer: (next: unknown) => {
+                    body = next;
+                },
+                exchange: tokenExchange({ issuer: issuer.url, resource: apiResource, ...service }),
+            };
+        });
+        withIssuer.afterEach(async ({ issuer }) => {
+            await issuer.close();
+        });
+
+        withIssuer.test(
+            'Uses a token without expires_in only for the requests that waited, never keeping it',
+            async ({ exchanges, answer, exchange }) => {
+                answer({ access_token: 'unknown-lifetime', token_type: 'Bearer' });
+
+                expect(
+                    await Promise.all([exchange('agent').token(), exchange('agent').token()])
+                ).to.deep.equal(['unknown-lifetime', 'unknown-lifetime']);
+                expect(exchanges).to.have.length(1);
+
+                expect(await exchange('agent').token()).to.equal('unknown-lifetime');
+                expect(exchanges).to.have.length(2);
+            }
+        );
+
+        withIssuer.test(
+            'Rejects an answer without an access_token',
+            async ({ answer, exchange }) => {
+                for (const body of [
+                    { expires_in: 60 },
+                    { access_token: '', expires_in: 60 },
+                    null,
+                ]) {
+                    answer(body);
+                    await expect(exchange('agent').token()).to.be.rejectedWith(
+                        NotesMcpAuthorizationServerError,
+                        'exchanged the token for no access_token'
+                    );
+                }
+            }
+        );
+
+        withIssuer.test(
+            'Rejects an expires_in that is not a positive number',
+            async ({ answer, exchange }) => {
+                for (const expiresIn of [0, -60, '60', null]) {
+                    answer({ access_token: 'token', expires_in: expiresIn });
+                    await expect(exchange('agent').token()).to.be.rejectedWith(
+                        NotesMcpAuthorizationServerError,
+                        'exchanged the token with an invalid expires_in'
+                    );
+                }
+            }
+        );
+    });
+
     withServer.test(
         'Rejects a discovery document for another issuer',
         async ({ server, alice }) => {
