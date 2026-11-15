@@ -66,11 +66,11 @@ await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' }
 
 ## Options
 
-| Option    | Default            | Description                                                                                        |
-| --------- | ------------------ | -------------------------------------------------------------------------------------------------- |
-| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                               |
-| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs one. |
-| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing.                                              |
+| Option    | Default            | Description                                                                                                    |
+| --------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                                           |
+| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs one.             |
+| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or a renewed token, from [fetch-middleware](../../fetch-middleware). |
 
 ## Testing
 
