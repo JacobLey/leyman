@@ -1,6 +1,6 @@
-import type { KyInstance } from 'ky';
+import type { Options, RetryOptions } from 'ky';
 import type { Send } from './compose.js';
-import { isHTTPError } from 'ky';
+import ky, { isHTTPError } from 'ky';
 
 /**
  * @import { NetworkError, TimeoutError } from 'ky'
@@ -31,6 +31,23 @@ const isReplayable = (request: Request): boolean =>
     idempotentMethods.has(request.method) || request.headers.has('idempotency-key');
 
 /**
+ * Every method Ky may retry: `isReplayable` decides for each request, so Ky's own check lets them all through.
+ */
+const retryMethods: readonly string[] = [...idempotentMethods, 'POST'].map(method =>
+    method.toLowerCase()
+);
+
+export interface KySendOptions extends Omit<Options, 'retry' | 'throwHttpErrors'> {
+    /**
+     * Ky's retry options. Which requests are retried is up to `kySend` (see it), so there are no `methods`, and
+     * `statusCodes` is required: it's also which statuses Ky throws for.
+     */
+    readonly retry: Omit<RetryOptions, 'methods' | 'statusCodes'> & {
+        readonly statusCodes: readonly number[];
+    };
+}
+
+/**
  * The response an `HTTPError` was for. Ky has already read its body into `data` (parsed, for JSON), so the body is
  * that again: the same JSON or text, or none when Ky couldn't read it.
  *
@@ -57,22 +74,31 @@ const rebuild = (response: Response, data: unknown): Response => {
 };
 
 /**
- * Sends with a Ky instance, as the last `Send` of a composed `fetch`: Ky retries and times out as it's set up to,
- * and the result is `fetch`'s, an error status included.
+ * Sends with Ky, as the last `Send` of a composed `fetch`: Ky retries and times out as it's set up to, and the
+ * result is `fetch`'s, an error status included.
  *
- * Ky retries only the statuses it throws an `HTTPError` for (`throwHttpErrors`), so set that to the retry statuses.
- * Once Ky is out of retries, the status comes back as a response rather than its `HTTPError`. A request that isn't
- * safe to send twice (neither an idempotent method nor with an `Idempotency-Key`) is sent once, whatever Ky's
- * `retry.methods` say. Include `post` there for those with a key to be retried.
+ * Only a request safe to send twice is retried: an idempotent method, or one with an `Idempotency-Key`. Ky retries
+ * only the statuses it throws an `HTTPError` for, so it throws for exactly the retry statuses, and once it's out of
+ * retries the status comes back as a response rather than its `HTTPError`. A delay that `Retry-After` asks for
+ * longer than `retry.maxRetryAfter` is cut to it, as Ky does.
  *
- * @param api - The Ky instance, with its retry and timeout options
- * @returns What sends each request with it
+ * @param options - Ky's options: its retries, timeout and so on
+ * @returns What sends each request with Ky
  * @rejects {NetworkError} When the network still fails once out of retries
  * @rejects {TimeoutError} When an attempt times out
  */
-export const kySend =
-    (api: KyInstance): Send =>
-    async request => {
+export const kySend = (options: KySendOptions): Send => {
+    const statuses: ReadonlySet<number> = new Set(options.retry.statusCodes);
+    const api = ky.create({
+        ...options,
+        retry: {
+            ...options.retry,
+            statusCodes: [...statuses],
+            methods: [...retryMethods],
+        },
+        throwHttpErrors: status => statuses.has(status),
+    });
+    return async request => {
         try {
             return await api(request, isReplayable(request) ? {} : { retry: 0 });
         } catch (error) {
@@ -82,3 +108,4 @@ export const kySend =
             return rebuild(error.response, error.data);
         }
     };
+};

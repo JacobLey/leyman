@@ -1,5 +1,4 @@
 import type { Session, SessionStore } from './session.js';
-import ky from 'ky';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 import { refresh, requestTimeoutMs } from './oauth.js';
@@ -59,19 +58,6 @@ export const connect = async (store: SessionStore): Promise<Notes> => {
             return fresh;
         });
     };
-    const api = ky.create({
-        timeout: requestTimeoutMs,
-        retry: {
-            limit: 2,
-            // `kySend` sends a POST again only with an `Idempotency-Key`
-            methods: ['delete', 'get', 'head', 'options', 'post', 'put', 'trace'],
-            statusCodes: retryStatuses,
-            afterStatusCodes: retryStatuses,
-            maxRetryAfter: maxRetryAfterMs,
-            jitter: true,
-        },
-        throwHttpErrors: status => retryStatuses.includes(status),
-    });
     return new NotesClient({
         baseUrl: session.api,
         fetch: compose(
@@ -94,7 +80,16 @@ export const connect = async (store: SessionStore): Promise<Notes> => {
                     },
                 }),
             ],
-            kySend(api)
+            kySend({
+                timeout: requestTimeoutMs,
+                retry: {
+                    limit: 2,
+                    statusCodes: retryStatuses,
+                    afterStatusCodes: retryStatuses,
+                    maxRetryAfter: maxRetryAfterMs,
+                    jitter: true,
+                },
+            })
         ),
     });
 };

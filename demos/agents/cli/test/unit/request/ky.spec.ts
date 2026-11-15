@@ -1,5 +1,5 @@
 import type { Send } from '#internal/lib/request/compose.js';
-import ky, { NetworkError } from 'ky';
+import { NetworkError } from 'ky';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { kySend } from '#internal/lib/request/ky.js';
@@ -14,16 +14,15 @@ const withKy = (
     respond: (attempt: number) => Promise<Response>
 ): { send: Send; sent: { method: string; body: string }[] } => {
     const sent: { method: string; body: string }[] = [];
-    const api = ky.create({
+    const send = kySend({
         fetch: async (input, init) => {
             const request = new Request(input, init);
             sent.push({ method: request.method, body: await request.text() });
             return respond(sent.length - 1);
         },
-        retry: { limit: 1, delay: () => 0, statusCodes: [503], methods: ['get', 'post'] },
-        throwHttpErrors: status => status === 503,
+        retry: { limit: 1, delay: () => 0, statusCodes: [503] },
     });
-    return { send: kySend(api), sent };
+    return { send, sent };
 };
 
 suite('kySend', () => {
