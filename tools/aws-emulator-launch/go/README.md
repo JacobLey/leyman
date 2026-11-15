@@ -33,14 +33,13 @@ func TestMain(m *testing.M) {
 }
 ```
 
-`Launch` runs the emulator with a free port (`-p 0`), authentication on (`-a on`), an idle timeout, and telemetry off (`-t off`), and returns once it has logged the line that says it serves requests. Cancelling its context stops the start, but not an emulator that already started, which runs until `Stop`.
+`Launch` runs the emulator on a free port (`-p 0`) of 127.0.0.1 (`-b 127.0.0.1`, the address its certificate covers), authentication on (`-a on`), an idle timeout, and telemetry off (`-t off`), and returns once it has logged the line that says it serves requests. Telemetry has no option, since `-t on` can't override `EMULATOR_TELEMETRY` or the emulator's config file anyway: to run the emulator with telemetry, start it from its own command line instead. Cancelling its context stops the start, but not an emulator that already started, which runs until `Stop`.
 
-| `Options` field | Default          | Description                                                                                                                                               |
-| --------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Binary`        | `"aws-emulator"` | The emulator's executable, a path or a name looked up on `PATH`.                                                                                          |
-| `IdleTimeout`   | 10 minutes       | How long the emulator runs without an API call before it exits on its own, rounded up to whole seconds.                                                   |
-| `StartTimeout`  | 10 seconds       | How long to wait for the startup line before killing the emulator.                                                                                        |
-| `Telemetry`     | `false`          | `false` turns the emulator's usage telemetry off for the run, as AWS asks of tools that start it for you. `true` leaves it to the emulator's own setting. |
+| `Options` field | Default          | Description                                                                                             |
+| --------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| `Binary`        | `"aws-emulator"` | The emulator's executable, a path or a name looked up on `PATH`.                                        |
+| `IdleTimeout`   | 10 minutes       | How long the emulator runs without an API call before it exits on its own, rounded up to whole seconds. |
+| `StartTimeout`  | 10 seconds       | How long to wait for the startup line before killing the emulator.                                      |
 
 An `*Emulator` has the `Endpoint`, the `Region` of its config file, the run's `Credentials`, and its certificate authority as PEM (`CA`) and as a file (`CAFile`, which the emulator deletes when it stops). `HTTPClient()` returns a client that trusts that certificate authority and no other. `Stop()` sends `SIGTERM`, which makes the emulator delete its files and exit, and returns once it has exited. Calling it again, or after the emulator exited on its own, only waits for that exit.
 

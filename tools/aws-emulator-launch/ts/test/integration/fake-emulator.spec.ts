@@ -124,7 +124,7 @@ suite('launchAwsEmulator with a fake emulator', () => {
     });
 
     withFakes.test(
-        'Runs on a free port with authentication on, telemetry off, and an idle timeout',
+        'Runs on a free port of 127.0.0.1 with authentication on, telemetry off, and an idle timeout',
         async ({ fakes }) => {
             const { binary, argsFile } = await serving(fakes, 'defaults', [
                 await fakes.writeFiles('defaults'),
@@ -134,28 +134,26 @@ suite('launchAwsEmulator with a fake emulator', () => {
             await emulator.stop();
 
             expect(await readFile(argsFile, 'utf8')).to.equal(
-                '-p 0 -a on --idle-timeout 600 -t off\n'
+                '-b 127.0.0.1 -p 0 -a on --idle-timeout 600 -t off\n'
             );
         }
     );
 
-    withFakes.test(
-        'Leaves telemetry to the emulator, and rounds the idle timeout up to whole seconds',
-        async ({ fakes }) => {
-            const { binary, argsFile } = await serving(fakes, 'options', [
-                await fakes.writeFiles('options'),
-            ]);
+    withFakes.test('Rounds the idle timeout up to whole seconds', async ({ fakes }) => {
+        const { binary, argsFile } = await serving(fakes, 'options', [
+            await fakes.writeFiles('options'),
+        ]);
 
-            const emulator = await launchAwsEmulator({
-                binary,
-                idleTimeoutMs: 1500,
-                telemetry: true,
-            });
-            await emulator.stop();
+        const emulator = await launchAwsEmulator({
+            binary,
+            idleTimeoutMs: 1500,
+        });
+        await emulator.stop();
 
-            expect(await readFile(argsFile, 'utf8')).to.equal('-p 0 -a on --idle-timeout 2\n');
-        }
-    );
+        expect(await readFile(argsFile, 'utf8')).to.equal(
+            '-b 127.0.0.1 -p 0 -a on --idle-timeout 2 -t off\n'
+        );
+    });
 
     withFakes.test('Stops it, and waits until it has exited', async ({ fakes }) => {
         const { binary, pidFile } = await serving(fakes, 'stops', [

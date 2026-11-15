@@ -41,13 +41,6 @@ export interface LaunchAwsEmulatorOptions {
      * @default 10000
      */
     readonly startTimeoutMs?: number;
-    /**
-     * `false` turns the emulator's usage telemetry off for the run (`-t off`). `true` leaves it to the emulator's own
-     * setting, which is on unless `EMULATOR_TELEMETRY` or its config file turns it off.
-     *
-     * @default false
-     */
-    readonly telemetry?: boolean;
 }
 
 /**
@@ -127,7 +120,8 @@ const iniValue = (file: string, text: string, key: string): string => {
 };
 
 /**
- * Starts AWS Emulator on a free port, with authentication on, and waits until it serves requests.
+ * Starts AWS Emulator on a free port of 127.0.0.1, with authentication on and telemetry off, and waits until it
+ * serves requests.
  *
  * @param options - How to start it
  * @returns Where it serves, its region, keys and certificate authority, and how to stop it
@@ -143,19 +137,23 @@ export const launchAwsEmulator = async (
         binary = defaultBinary,
         idleTimeoutMs = defaultIdleTimeoutMs,
         startTimeoutMs = defaultStartTimeoutMs,
-        telemetry = false,
     } = options;
     const child = spawn(
         binary,
         [
+            // Only the address its certificate covers, whatever EMULATOR_BIND_ADDRESS says
+            '-b',
+            '127.0.0.1',
             '-p',
             '0',
             '-a',
             'on',
-            '--idle-timeout',
             // Whole seconds, rounded up
+            '--idle-timeout',
             String(Math.ceil(idleTimeoutMs / msPerSecond)),
-            ...(telemetry ? [] : ['-t', 'off']),
+            // Off always wins over EMULATOR_TELEMETRY and the config file, while on can't override them (`aws-emulator --help`)
+            '-t',
+            'off',
         ],
         { stdio: ['ignore', 'pipe', 'pipe'] }
     );

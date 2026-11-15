@@ -6,9 +6,9 @@ Starts AWS Emulator for tests, on a free port, and returns its endpoint, credent
 
 Ideally each test process starts an emulator of its own, on a port nothing else uses, and stops it at the end. The emulator keeps everything in memory and starts in about 150 ms, so that costs little, and parallel runs never see each other's tables or queues.
 
-aws-emulator-launch starts the emulator that way, on a free port, with authentication on as it is on AWS, and with an idle timeout, so one left behind by a crashed test process exits on its own. It waits for the line the emulator logs once it serves requests (ignoring its other output), reads the files that line names, and returns the endpoint, the region, the run's keys and the certificate authority. When it fails, the error says why, for instance that the binary isn't installed (with a link to AWS's install guide), or that the emulator exited before it started (with its output).
+aws-emulator-launch starts the emulator that way, on a free port of 127.0.0.1 (the address its certificate covers), with authentication on as it is on AWS, and with an idle timeout, so one left behind by a crashed test process exits on its own. It waits for the line the emulator logs once it serves requests (ignoring its other output), reads the files that line names, and returns the endpoint, the region, the run's keys and the certificate authority. When it fails, the error says why, for instance that the binary isn't installed (with a link to AWS's install guide), or that the emulator exited before it started (with its output).
 
-It needs AWS Emulator 1.0.290 or later, which you install as AWS describes. Earlier releases log a different line once they start, so they time out. Telemetry is off for the runs it starts, unless you ask to leave it to the emulator's own setting.
+It needs AWS Emulator 1.0.290 or later, which you install as AWS describes. Earlier releases log a different line once they start, so they time out. Telemetry is off for the runs it starts. To run the emulator with telemetry, start it from its own command line instead.
 
 ## Packages
 
@@ -22,7 +22,7 @@ The two take the same options and return the same things, in each language's con
 | TypeScript | Go |
 |------------|----|
 | `launchAwsEmulator(options?)` | `Launch(ctx, Options)` |
-| `binary`, `idleTimeoutMs`, `startTimeoutMs`, `telemetry` | `Binary`, `IdleTimeout`, `StartTimeout`, `Telemetry` |
+| `binary`, `idleTimeoutMs`, `startTimeoutMs` | `Binary`, `IdleTimeout`, `StartTimeout` |
 | `endpoint`, `region`, `credentials`, `ca`, `caFile` | `Endpoint`, `Region`, `Credentials`, `CA`, `CAFile` |
 | Pass `ca` to an `https.Agent` | `HTTPClient()` |
 | `stop()`, or `await using` | `Stop()` |

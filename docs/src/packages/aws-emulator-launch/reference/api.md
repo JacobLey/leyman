@@ -6,18 +6,17 @@ description: launchAwsEmulator, its options, the AwsEmulator it returns, and its
 
 ## `launchAwsEmulator(options?)`
 
-Starts AWS Emulator on a free port (`-p 0`), with authentication on (`-a on`), and waits for the line it logs once it serves requests. Lines before it, JSON or not, are ignored. It then reads the files that line names: the certificate authority, the config (for the region) and the run's keys beside it.
+Starts AWS Emulator on a free port (`-p 0`) of 127.0.0.1 (`-b 127.0.0.1`, the address its certificate covers), with authentication on (`-a on`) and telemetry off (`-t off`), and waits for the line it logs once it serves requests. Lines before it, JSON or not, are ignored. It then reads the files that line names: the certificate authority, the config (for the region) and the run's keys beside it.
 
-| Option           | Type      | Default          | Description                                                                                                                 |
-| ---------------- | --------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `binary`         | `string`  | `'aws-emulator'` | The emulator's executable, a path or a name looked up on `PATH`.                                                            |
-| `idleTimeoutMs`  | `number`  | `600000`         | Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`, rounded up to whole seconds). |
-| `startTimeoutMs` | `number`  | `10000`          | How long to wait for the startup line before killing the emulator.                                                          |
-| `telemetry`      | `boolean` | `false`          | `false` turns telemetry off for the run (`-t off`). `true` leaves it to the emulator's own setting.                         |
+| Option           | Type     | Default          | Description                                                                                                                 |
+| ---------------- | -------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `binary`         | `string` | `'aws-emulator'` | The emulator's executable, a path or a name looked up on `PATH`.                                                            |
+| `idleTimeoutMs`  | `number` | `600000`         | Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`, rounded up to whole seconds). |
+| `startTimeoutMs` | `number` | `10000`          | How long to wait for the startup line before killing the emulator.                                                          |
 
 **Returns** `Promise<AwsEmulator>`. When it rejects after the emulator started running, it has stopped the emulator first.
 
-The emulator's usage telemetry is off by default, as AWS asks of tools that start the emulator for you. With `telemetry: true` it follows the emulator's own setting, which is on unless `EMULATOR_TELEMETRY` or its config file turns it off.
+Telemetry is always off for the runs it starts, since `-t on` can't override `EMULATOR_TELEMETRY` or the emulator's config file anyway. To run the emulator with telemetry, start it from its own command line (`aws-emulator`) instead.
 
 ## `AwsEmulator`
 

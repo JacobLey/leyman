@@ -168,7 +168,7 @@ func isRunning(t *testing.T, pidFile string) bool {
 
 // options runs the binary given, with every other option's default.
 func options(binary string) awsemulator.Options {
-	return awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 0, Telemetry: false}
+	return awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 0}
 }
 
 func launch(t *testing.T, options awsemulator.Options) *awsemulator.Emulator {
@@ -244,18 +244,18 @@ func TestLaunchRunsOnAFreePortWithAuthenticationOnAndTelemetryOff(t *testing.T) 
 
 	launch(t, options(binary)).Stop()
 
-	if args := readText(t, argsFile); args != "-p 0 -a on --idle-timeout 600 -t off\n" {
+	if args := readText(t, argsFile); args != "-b 127.0.0.1 -p 0 -a on --idle-timeout 600 -t off\n" {
 		t.Errorf("got %q", args)
 	}
 }
 
-func TestLaunchLeavesTelemetryToTheEmulatorAndRoundsTheIdleTimeoutUp(t *testing.T) { //nolint:paralleltest // See fakes
+func TestLaunchRoundsTheIdleTimeoutUp(t *testing.T) { //nolint:paralleltest // See fakes
 	fake := newFakes(t)
 	binary, argsFile, _ := fake.serving("options", fake.writeFiles("options", nil))
 
-	launch(t, awsemulator.Options{Binary: binary, IdleTimeout: 1500 * time.Millisecond, StartTimeout: 0, Telemetry: true}).Stop()
+	launch(t, awsemulator.Options{Binary: binary, IdleTimeout: 1500 * time.Millisecond, StartTimeout: 0}).Stop()
 
-	if args := readText(t, argsFile); args != "-p 0 -a on --idle-timeout 2\n" {
+	if args := readText(t, argsFile); args != "-b 127.0.0.1 -p 0 -a on --idle-timeout 2 -t off\n" {
 		t.Errorf("got %q", args)
 	}
 }
@@ -300,7 +300,7 @@ func TestLaunchFailsWhenItExitsBeforeTheStartupLine(t *testing.T) { //nolint:par
 func TestLaunchKillsItWhenTheStartupLineNeverComes(t *testing.T) { //nolint:paralleltest // See fakes
 	binary, _, pidFile := newFakes(t).serving("silent", `{"fields":{"message":"listening on 9297"}}`)
 
-	_, err := awsemulator.Launch(t.Context(), awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 200 * time.Millisecond, Telemetry: false})
+	_, err := awsemulator.Launch(t.Context(), awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 200 * time.Millisecond})
 	if !errors.Is(err, awsemulator.ErrStartTimeout) || !strings.Contains(err.Error(), "1.0.290") ||
 		!strings.Contains(err.Error(), "listening on 9297") {
 		t.Errorf("got %v", err)

@@ -59,9 +59,6 @@ type Options struct {
 	// StartTimeout is how long to wait for the startup line, after which the emulator is killed:
 	// DefaultStartTimeout by default.
 	StartTimeout time.Duration
-	// Telemetry false turns the emulator's usage telemetry off for the run (-t off). True leaves it to the emulator's
-	// own setting, which is on unless EMULATOR_TELEMETRY or its config file turns it off.
-	Telemetry bool
 }
 
 // Credentials are an emulator run's keys, which requests are signed with, since authentication is on.
@@ -113,8 +110,8 @@ type startResult struct {
 	exited  bool
 }
 
-// Launch starts AWS Emulator on a free port, with authentication on, and waits until it serves requests. Cancelling
-// ctx only stops the start: once Launch returns, the emulator runs until Stop.
+// Launch starts AWS Emulator on a free port of 127.0.0.1, with authentication on and telemetry off, and waits until
+// it serves requests. Cancelling ctx only stops the start: once Launch returns, the emulator runs until Stop.
 func Launch(ctx context.Context, options Options) (*Emulator, error) {
 	binary := cmp.Or(options.Binary, DefaultBinary)
 	startTimeout := cmp.Or(options.StartTimeout, DefaultStartTimeout)
@@ -182,17 +179,13 @@ func Launch(ctx context.Context, options Options) (*Emulator, error) {
 	}
 }
 
-// arguments are the emulator's command line arguments: a free port, authentication on, an idle timeout, and telemetry
-// off unless left to the emulator.
+// arguments are the emulator's command line arguments: a free port of the address its certificate covers, whatever
+// EMULATOR_BIND_ADDRESS says; authentication on; an idle timeout, rounded up to whole seconds; and telemetry off,
+// which always wins over EMULATOR_TELEMETRY and the config file, while on can't override them (aws-emulator --help).
 func arguments(options Options) []string {
 	idleSeconds := int(math.Ceil(cmp.Or(options.IdleTimeout, DefaultIdleTimeout).Seconds()))
 
-	args := []string{"-p", "0", "-a", "on", "--idle-timeout", strconv.Itoa(idleSeconds)}
-	if !options.Telemetry {
-		args = append(args, "-t", "off")
-	}
-
-	return args
+	return []string{"-b", "127.0.0.1", "-p", "0", "-a", "on", "--idle-timeout", strconv.Itoa(idleSeconds), "-t", "off"}
 }
 
 // newEmulator reads the files a startup line names: the certificate authority, the config, and the keys beside it.
