@@ -8,7 +8,7 @@ import testVectors from '@leyman/idempotency-keys-test-vectors/test-vectors.json
     type: 'json',
 };
 import { suite } from 'mocha-chain';
-import { withDolly } from '#test/helpers/database.js';
+import { withDynamoDb } from '#test/helpers/dynamodb.js';
 import { send } from '#test/helpers/http.js';
 import { startServer } from '#test/helpers/servers.js';
 
@@ -18,6 +18,8 @@ const combinations = [
     { store: 'postgres', notifier: 'none' },
     { store: 'valkey', notifier: 'valkey' },
     { store: 'valkey', notifier: 'none' },
+    { store: 'dynamodb', notifier: 'valkey' },
+    { store: 'dynamodb', notifier: 'none' },
 ] as const satisfies readonly Pick<ServerConfig, 'notifier' | 'store'>[];
 
 const directions = [
@@ -138,7 +140,7 @@ for (const { store, notifier } of combinations as readonly Pick<
     suite(`${store} store, ${notifier === 'none' ? 'no' : notifier} notifier`, () => {
         for (const [firstLanguage, secondLanguage] of directions) {
             suite(`${firstLanguage} first, then ${secondLanguage}`, () => {
-                const withServers = withDolly.beforeEach(async ({ template }) => {
+                const withServers = withDynamoDb.beforeEach(async ({ template, dynamoDb }) => {
                     const isPostgresUsed = store === 'postgres' || notifier === 'postgres';
                     const database = isPostgresUsed ? await template.clone() : null;
                     const id = randomUUID();
@@ -148,7 +150,9 @@ for (const { store, notifier } of combinations as readonly Pick<
                         leaseMs,
                         waitMs,
                         valkeyUrl,
-                        table: 'idempotency_keys',
+                        dynamoDb,
+                        // Each test's own database, or the run's DynamoDB table
+                        table: store === 'dynamodb' ? dynamoDb.table : 'idempotency_keys',
                         prefix: `idempotency-keys-interop:${id}`,
                         channel: `idempotency_keys_${id}`,
                         databaseUrl: database?.url ?? '',

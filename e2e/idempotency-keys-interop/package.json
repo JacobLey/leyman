@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@aws-sdk/client-dynamodb": "catalog:",
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",

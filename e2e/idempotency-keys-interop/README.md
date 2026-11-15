@@ -4,7 +4,7 @@ Drives a TypeScript server and a Go server on idempotency-keys against each othe
 
 The [specification](../../tools/idempotency-keys/SPEC.md) says that servers in both languages, on the same store and notifier, serve one set of keys as if they were one server. The test vectors check each implementation's hashes and store operations separately. This package checks the two together, end to end: it runs both servers as child processes and sends every request across from one to the other.
 
-The servers are the same small app in each language: the TypeScript one, [`test/server/server.ts`](./test/server/server.ts), on `handle()`, and the Go one, [`e2e/idempotency-keys-interop-go`](../idempotency-keys-interop-go/), on `Keys.Middleware`. Both read the same environment variables (store, notifier, table, key prefix, channel, lease and wait). They answer every path and method with `{"server":"<language>","run":<n>}` (`n` counting the handler's runs for the `x-scope` header's scope), after sleeping for `x-delay-ms` and with the status in `x-status`, when a request sends those headers. Neither header is part of the fingerprint, so a retry of the same request can ask for another status.
+The servers are the same small app in each language: the TypeScript one, [`test/server/server.ts`](./test/server/server.ts), on `handle()`, and the Go one, [`e2e/idempotency-keys-interop-go`](../idempotency-keys-interop-go/), on `Keys.Middleware`. Both read the same environment variables (store, notifier, table, key prefix, channel, lease and wait, and DynamoDB's endpoint, certificate authority, region and keys). They answer every path and method with `{"server":"<language>","run":<n>}` (`n` counting the handler's runs for the `x-scope` header's scope), after sleeping for `x-delay-ms` and with the status in `x-status`, when a request sends those headers. Neither header is part of the fingerprint, so a retry of the same request can ask for another status.
 
 ## Matrix
 
@@ -14,8 +14,11 @@ Every case runs on each combination, in both directions (TypeScript first then G
 | -------- | ---------------------- |
 | Postgres | Postgres, Valkey, none |
 | Valkey   | Valkey, none           |
+| DynamoDB | Valkey, none           |
 
-Each test gets a Postgres database of its own (from [`pg-dolly`](../../tools/pg-dolly/), holding the library's `createTableSql()` table), a Valkey key prefix and channel of its own, and two new servers.
+DynamoDB isn't paired with the Postgres notifier: notifiers don't depend on the store, and the Postgres store already runs with it.
+
+Each test gets a Postgres database of its own (from [`pg-dolly`](../../tools/pg-dolly/), holding the library's `createTableSql()` table), a Valkey key prefix and channel of its own, and two new servers. DynamoDB has one table for the whole run, on one [AWS Emulator](https://github.com/aws/aws-emulator) the tests start, since a new table takes a few seconds to be ready, as on AWS. Tests share it safely, as each one claims new keys (a scope and key of its own).
 
 ## Cases
 
@@ -35,6 +38,6 @@ Requests go over a raw socket rather than `fetch`, which would normalize the tar
 nx run @leyman/e2e-idempotency-keys-interop:test
 ```
 
-It needs the `postgres` and `valkey` sidecars, and Go, as `test` builds the Go server first (`go build` into the gitignored `bin/`, in a root `before` hook). It runs in about 45 seconds, most of it waiting on leases and waits.
+It needs the `postgres` and `valkey` sidecars, `aws-emulator` on `PATH` (the devcontainer and Dagger's test container install it), and Go, as `test` builds the Go server first (`go build` into the gitignored `bin/`, in a root `before` hook). It runs in about a minute, most of it waiting on leases and waits.
 
 It is not published, and has no source of its own, only tests and the server they run.

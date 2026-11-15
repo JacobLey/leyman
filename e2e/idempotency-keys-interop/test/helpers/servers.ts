@@ -1,5 +1,6 @@
 import type { ChildProcess } from 'node:child_process';
 import type { Context } from 'mocha';
+import type { DynamoDbConfig } from '#test/helpers/dynamodb.js';
 import { execFile, spawn } from 'node:child_process';
 import { once } from 'node:events';
 import path from 'node:path';
@@ -35,7 +36,7 @@ before(async function (this: Context) {
  * The configuration both servers read from the environment.
  */
 export interface ServerConfig {
-    readonly store: 'postgres' | 'valkey';
+    readonly store: 'dynamodb' | 'postgres' | 'valkey';
     readonly notifier: 'none' | 'postgres' | 'valkey';
     readonly table: string;
     readonly prefix: string;
@@ -44,6 +45,7 @@ export interface ServerConfig {
     readonly waitMs: number;
     readonly databaseUrl: string;
     readonly valkeyUrl: string;
+    readonly dynamoDb: Omit<DynamoDbConfig, 'table'>;
 }
 
 export interface Server {
@@ -76,6 +78,11 @@ export const startServer = async (language: Language, config: ServerConfig): Pro
         IK_WAIT_MS: String(config.waitMs),
         DATABASE_URL: config.databaseUrl,
         VALKEY_URL: config.valkeyUrl,
+        AWS_ENDPOINT_URL_DYNAMODB: config.dynamoDb.endpoint,
+        AWS_CA_BUNDLE: config.dynamoDb.caFile,
+        AWS_REGION: config.dynamoDb.region,
+        AWS_ACCESS_KEY_ID: config.dynamoDb.accessKeyId,
+        AWS_SECRET_ACCESS_KEY: config.dynamoDb.secretAccessKey,
     };
     const child: ChildProcess =
         language === 'go'

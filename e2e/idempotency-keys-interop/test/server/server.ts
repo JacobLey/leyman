@@ -3,17 +3,22 @@
  * `e2e/idempotency-keys-interop-go` (whose `main.go` documents the configuration and the route both share).
  *
  * Its configuration comes from the environment: `IK_STORE`, `IK_NOTIFIER`, `IK_TABLE`, `IK_PREFIX`, `IK_CHANNEL`,
- * `IK_LEASE_MS`, `IK_WAIT_MS`, `DATABASE_URL` and `VALKEY_URL`. It prints `listening <port>` once ready, and
+ * `IK_LEASE_MS`, `IK_WAIT_MS`, `DATABASE_URL`, `VALKEY_URL`, and for DynamoDB `AWS_ENDPOINT_URL_DYNAMODB`,
+ * `AWS_CA_BUNDLE`, `AWS_REGION`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. It prints `listening <port>` once ready, and
  * `run <scope>` as its handler starts.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { IdempotencyNotifier, IdempotencyStore } from 'idempotency-keys';
+import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { Agent } from 'node:https';
 import { setTimeout } from 'node:timers/promises';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { Redis } from 'ioredis';
 import { Client, Pool } from 'pg';
 import { IdempotencyKeys } from 'idempotency-keys';
+import { DynamoDbStore } from 'idempotency-keys/dynamodb';
 import { PostgresNotifier, PostgresStore } from 'idempotency-keys/postgres';
 import { ValkeyNotifier, ValkeyStore } from 'idempotency-keys/valkey';
 
@@ -56,6 +61,23 @@ class Connections {
     }
 }
 
+/**
+ * A client of the emulator the driver started, read explicitly from the environment rather than left to the SDK's
+ * own lookup, trusting only its certificate authority.
+ *
+ * @returns The client
+ */
+const connectDynamoDb = async (): Promise<DynamoDB> =>
+    new DynamoDB({
+        endpoint: env('AWS_ENDPOINT_URL_DYNAMODB'),
+        region: env('AWS_REGION'),
+        credentials: {
+            accessKeyId: env('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: env('AWS_SECRET_ACCESS_KEY'),
+        },
+        requestHandler: { httpsAgent: new Agent({ ca: await readFile(env('AWS_CA_BUNDLE')) }) },
+    });
+
 const createStore = async (connections: Connections): Promise<IdempotencyStore> => {
     const kind = env('IK_STORE');
     switch (kind) {
@@ -68,6 +90,12 @@ const createStore = async (connections: Connections): Promise<IdempotencyStore> 
                 // Replies as bytes, as the store requires
                 connection: { eval: async (...args) => connection.callBuffer('EVAL', ...args) },
                 prefix: env('IK_PREFIX'),
+            });
+        }
+        case 'dynamodb': {
+            return new DynamoDbStore({
+                connection: await connectDynamoDb(),
+                tableName: env('IK_TABLE'),
             });
         }
         default: {

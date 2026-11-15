@@ -3,15 +3,23 @@
 //
 // Its configuration comes from the environment, as the TypeScript server's does:
 //
-//	IK_STORE      postgres | valkey
-//	IK_NOTIFIER   none | postgres | valkey
-//	IK_TABLE      the Postgres store's table
-//	IK_PREFIX     the Valkey store's key prefix
-//	IK_CHANNEL    the notifier's channel
-//	IK_LEASE_MS   the lease, in milliseconds
-//	IK_WAIT_MS    the wait, in milliseconds
-//	DATABASE_URL  Postgres, for its store or notifier
-//	VALKEY_URL    Valkey, for its store or notifier (redis://host:port/db)
+//	IK_STORE                   dynamodb | postgres | valkey
+//	IK_NOTIFIER                none | postgres | valkey
+//	IK_TABLE                   the Postgres or DynamoDB store's table
+//	IK_PREFIX                  the Valkey store's key prefix
+//	IK_CHANNEL                 the notifier's channel
+//	IK_LEASE_MS                the lease, in milliseconds
+//	IK_WAIT_MS                 the wait, in milliseconds
+//	DATABASE_URL               Postgres, for its store or notifier
+//	VALKEY_URL                 Valkey, for its store or notifier (redis://host:port/db)
+//	AWS_ENDPOINT_URL_DYNAMODB  DynamoDB, for its store (the emulator's https:// endpoint)
+//	AWS_CA_BUNDLE              the only certificate authority DynamoDB's certificate is checked against (a PEM file)
+//	AWS_REGION                 DynamoDB's region
+//	AWS_ACCESS_KEY_ID          the key DynamoDB requests are signed with
+//	AWS_SECRET_ACCESS_KEY      its secret
+//
+// The DynamoDB client is built from those variables alone, rather than the SDK's default chain of config files and
+// credential providers, so nothing outside them changes where it connects or how it signs.
 //
 // It listens on a free port of 127.0.0.1, and prints "listening <port>" once it is ready. Every path and method runs
 // the same handler, behind the middleware, with the scope from the x-scope header and the operation "interop". The
@@ -22,6 +30,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,11 +43,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/valkey-io/valkey-go"
 
 	idempotencykeys "github.com/JacobLey/leyman/tools/idempotency-keys/go"
+	dynamodbstore "github.com/JacobLey/leyman/tools/idempotency-keys/go/dynamodb"
 	"github.com/JacobLey/leyman/tools/idempotency-keys/go/postgres"
 	valkeystore "github.com/JacobLey/leyman/tools/idempotency-keys/go/valkey"
 )
@@ -47,6 +60,7 @@ const (
 	defaultStatus  = http.StatusCreated
 	maxPoolConns   = 3
 	readTimeout    = 10 * time.Second
+	choiceDynamoDB = "dynamodb"
 	choiceNone     = "none"
 	choicePostgres = "postgres"
 	choiceValkey   = "valkey"
@@ -111,7 +125,41 @@ func (c *connections) valkeyClient() (valkey.Client, error) {
 	return client, nil
 }
 
-//nolint:ireturn // Either store, as configured
+// dynamoDB is a client of the emulator the e2e started, from the environment alone, trusting only its CA.
+func (c *connections) dynamoDB() (*dynamodb.Client, error) {
+	caPEM, err := os.ReadFile(c.getenv("AWS_CA_BUNDLE"))
+	if err != nil {
+		return nil, fmt.Errorf("AWS_CA_BUNDLE: %w", err)
+	}
+
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM(caPEM) {
+		return nil, fmt.Errorf("%w: AWS_CA_BUNDLE holds no certificate", errConfig)
+	}
+
+	credentials := aws.Credentials{ //nolint:exhaustruct_v5 // The keys never expire
+		AccessKeyID:     c.getenv("AWS_ACCESS_KEY_ID"),
+		SecretAccessKey: c.getenv("AWS_SECRET_ACCESS_KEY"),
+	}
+
+	return dynamodb.New(dynamodb.Options{ //nolint:exhaustruct_v5 // Options left out are the defaults
+		Region:       c.getenv("AWS_REGION"),
+		BaseEndpoint: aws.String(c.getenv("AWS_ENDPOINT_URL_DYNAMODB")),
+		Credentials: aws.CredentialsProviderFunc(func(context.Context) (aws.Credentials, error) {
+			return credentials, nil
+		}),
+		HTTPClient: &http.Client{ //nolint:exhaustruct_v5 // Options left out are the defaults
+			Transport: &http.Transport{ //nolint:exhaustruct_v5 // Options left out are the defaults
+				TLSClientConfig: &tls.Config{ //nolint:exhaustruct_v5 // Options left out are the defaults
+					RootCAs:    roots,
+					MinVersion: tls.VersionTLS12,
+				},
+			},
+		},
+	}), nil
+}
+
+//nolint:ireturn // Any store, as configured
 func (c *connections) store(ctx context.Context) (idempotencykeys.Store, error) {
 	switch kind := c.getenv("IK_STORE"); kind {
 	case choicePostgres:
@@ -133,6 +181,13 @@ func (c *connections) store(ctx context.Context) (idempotencykeys.Store, error) 
 		}
 
 		return valkeystore.NewStore(client, valkeystore.StoreOptions{Prefix: c.getenv("IK_PREFIX")}), nil
+	case choiceDynamoDB:
+		client, err := c.dynamoDB()
+		if err != nil {
+			return nil, err
+		}
+
+		return dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{Table: c.getenv("IK_TABLE")}), nil
 	default:
 		return nil, fmt.Errorf("%w: IK_STORE %q", errConfig, kind)
 	}

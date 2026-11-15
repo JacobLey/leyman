@@ -72,10 +72,11 @@ The [test vectors](https://github.com/JacobLey/leyman/tree/main/tools/idempotenc
 | -------- | ---------------------- |
 | Postgres | Postgres, Valkey, none |
 | Valkey   | Valkey, none           |
+| DynamoDB | Valkey, none           |
 
 On each, it checks that one server replays the other's response without running the handler; that a duplicate sent to the other server waits and gets the same response, woken by a notification when there is a notifier; that it gets a `409` when its wait runs out; that the key on another body is a `422`; that once one server is killed mid-request and its lease runs out, the other runs the request; that a `429` on one frees the key for the other; and that a request target sent raw to one server and normalized to the other is one request.
 
-To run it, with the Postgres and Valkey sidecars of the devcontainer and Go installed:
+To run it, with the Postgres and Valkey sidecars of the devcontainer, and Go and AWS Emulator installed:
 
 ```sh
 nx run @leyman/e2e-idempotency-keys-interop:test
