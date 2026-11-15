@@ -8,7 +8,7 @@ This module handles that header in a Go server, with `net/http` middleware. The 
 
 A retry that comes in while the first request is still running waits for it to finish, or gets a `409` if the wait runs out. The first request's claim on the key is a lease, so if its server crashes, a waiting request takes over once the lease runs out. A response the first request sends after that isn't stored.
 
-It is the Go side of [idempotency-keys](../ts/). Both implementations follow one [specification](../SPEC.md) for their hashes, rows and notifications, and pass the same [test vectors](../test-vectors/), so Go and TypeScript servers on one store share the same keys. This module implements version 1.0 of the specification, exported as `SpecVersion`.
+It is the Go side of [idempotency-keys](../ts/). Both implementations follow one [specification](../SPEC.md) for their hashes, rows and notifications, and pass the same [test vectors](../test-vectors/), so Go and TypeScript servers on one store share the same keys. This module implements version 1.1 of the specification, exported as `SpecVersion`.
 
 Use the Postgres store for payments and anything else where a duplicate would really hurt. On Valkey, a failover that loses writes, or a flush, forgets keys, and a retry after that runs again.
 

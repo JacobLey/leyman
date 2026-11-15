@@ -1,6 +1,6 @@
 # idempotency-keys specification
 
-Version 1.0
+Version 1.1
 
 This document describes what every implementation of idempotency-keys does, and everything two implementations have
 to agree on: the hashes, what they write to a store, and the notification that wakes a waiting request. Because both
@@ -10,8 +10,8 @@ all of them against every store it ships. The [interop e2e](../../e2e/idempotenc
 language on every store and notifier, and drives them against each other.
 
 A server may also bring its own store, written to the [store contract](#the-store-contract). Two servers interoperate
-through a store only when both write the same layout: the [Postgres](#postgres) and [Valkey](#valkey-or-redis) layouts
-below are pinned byte for byte, so every implementation's built-in stores interoperate, while a custom store is shared
+through a store only when both write the same layout: the [Postgres](#postgres), [Valkey](#valkey-or-redis) and
+[DynamoDB](#dynamodb) layouts below are pinned byte for byte, so every implementation's built-in stores interoperate, while a custom store is shared
 across languages only if each language implements its layout.
 
 Status codes follow the IETF draft [The Idempotency-Key HTTP Header Field][draft] (draft 07): `400` for a key that
@@ -258,6 +258,52 @@ strings, numbers in decimal:
 
 `body` is binary: read the reply as bytes, not text (a client that decodes replies as UTF-8 changes a binary body).
 
+### DynamoDB
+
+Strict: a claim is a conditional write, so it is exclusive, and DynamoDB keeps it durably. DynamoDB has no clock a
+condition can read, so every time is the server's own (`Date.now()`, `time.Now()`), sent with each request as `:now`
+in milliseconds since the epoch. As [Attempts](#attempts) says, `leaseMs` must then cover the worst drift between
+servers as well as the slowest handler.
+
+A record is one item in a table whose name is configurable (`idempotency_keys` unless configured), with the partition
+key `identity` (binary) and no sort key. Its attributes:
+
+| Attribute | Type | Value |
+|---|---|---|
+| `identity` | `B` | The 32-byte digest. |
+| `fingerprint` | `B` | The 32-byte digest. |
+| `token` | `S` | The holder's token, while running. |
+| `lease_expires_at` | `N` | When the lease runs out, in milliseconds since the epoch, while running. |
+| `expires_at` | `N` | When the key expires, in milliseconds since the epoch. |
+| `ttl` | `N` | `expires_at` in seconds, rounded up, for DynamoDB's own expiry. |
+| `status` | `N` | The response's status, once completed. |
+| `headers` | `S` | The response's headers, the JSON array, once completed. |
+| `body` | `B` | The response's body, once completed (empty for an empty body). |
+
+DynamoDB's Time to Live, turned on for `ttl`, deletes expired items some time after they expire, never before, so
+`deleteExpired` isn't needed. Without it, expired items stay until a claim writes over them. Reads never rely on it:
+every condition checks `expires_at` itself.
+
+A claim is one `PutItem` of a running record (`identity`, `fingerprint`, `token`, `lease_expires_at`, `expires_at`,
+`ttl`), replacing any item there, with `ReturnValuesOnConditionCheckFailure` set to `ALL_OLD`:
+
+```
+attribute_not_exists(identity) OR expires_at <= :now OR (lease_expires_at <= :now AND fingerprint = :fingerprint)
+```
+
+A write is a claim. A failed condition returns the item it found, which is unexpired: `running` with its
+`fingerprint` when it has no `status`, `completed` otherwise. So a claim is one request, with no read after it.
+
+Completing is an `UpdateItem` that sets `status`, `headers` and `body` and removes
+`token` and `lease_expires_at`; releasing is a `DeleteItem`. Both have the condition
+
+```
+token = :token AND expires_at > :now
+```
+
+and a failed condition is `false`, never an error. An item holds at most 400 KB, so a response that doesn't fit is
+refused with an error when completing, which leaves the attempt to its lease.
+
 ## Notifiers
 
 A notifier only wakes waiting requests sooner. It is never the source of truth: a waiter claims again from the store
@@ -280,6 +326,10 @@ The version is `major.minor`. A major version changes something on the wire, in 
 different majors can't share keys. A minor version adds something an older implementation can ignore. A wording fix
 changes neither. The spec's version is independent of the packages' versions, and each implementation exports the
 version it implements.
+
+### 1.1
+
+Adds the [DynamoDB](#dynamodb) store's layout.
 
 ### 1.0
 

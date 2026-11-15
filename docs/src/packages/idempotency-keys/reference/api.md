@@ -208,7 +208,7 @@ The fingerprint hash. **Returns** `Promise<string>`, 64 hex characters.
 
 ### `SPEC_VERSION`
 
-The version of the [specification](/packages/idempotency-keys/reference/specification) this package implements, as `'major.minor'` (`'1.0'`). Servers whose implementations share a major version share keys.
+The version of the [specification](/packages/idempotency-keys/reference/specification) this package implements, as `'major.minor'` (`'1.1'`). Servers whose implementations share a major version share keys.
 
 ## Errors
 

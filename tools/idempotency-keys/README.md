@@ -6,7 +6,7 @@ With the header, a client sends one unique key with every attempt of the same re
 
 A retry that arrives while the first request is still running waits for its response, or gets a `409` if the wait runs out. A key reused on a different request gets a `422` instead of the other request's response. If a server crashes mid-request, its claim on the key is a lease, and a waiting request takes over once it runs out.
 
-Every implementation follows one [specification](./SPEC.md) (currently version 1.0), which covers the hashes, what goes in the store, and the notification that wakes a waiting request. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a TypeScript server and a Go server on every store and notifier, and checks that each one replays, waits on, takes over and rejects the other's requests.
+Every implementation follows one [specification](./SPEC.md) (currently version 1.1), which covers the hashes, what goes in the store, and the notification that wakes a waiting request. The [interop e2e](../../e2e/idempotency-keys-interop/) runs a TypeScript server and a Go server on every store and notifier, and checks that each one replays, waits on, takes over and rejects the other's requests.
 
 The specification has a `major.minor` version of its own, which each implementation exports (`SPEC_VERSION` in TypeScript, `SpecVersion` in Go) and the test vectors record. Servers share keys when their implementations share a major version.
 

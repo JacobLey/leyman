@@ -1,5 +1,5 @@
 {
-  "specVersion": "1.0",
+  "specVersion": "1.1",
   "defaults": {
     "ttlMs": 86400000,
     "leaseMs": 60000,
