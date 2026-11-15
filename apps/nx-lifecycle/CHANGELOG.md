@@ -1,5 +1,19 @@
 # nx-lifecycle
 
+## 1.5.0
+
+### Minor Changes
+
+- 3cb8150: Update dependencies: @nx/devkit@24.0.5, nx@24.0.5
+
+### Patch Changes
+
+- 754dbcc: Bring the WHY file in line with its docs site page, which is now generated from it, and drop its centered header, contents list and horizontal rules.
+- Updated dependencies [754dbcc]
+  - haywire@2.0.9
+  - juniper@2.8.3
+  - unknown-error@0.2.3
+
 ## 1.4.2
 
 ### Patch Changes

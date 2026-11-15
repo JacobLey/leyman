@@ -1,5 +1,11 @@
 # constant-consistent-hash
 
+## 0.3.2
+
+### Patch Changes
+
+- 1f4d8ba: The WHY file's examples are type-checked on the docs site, and the contents list is gone.
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # pg-dolly
 
+## 0.4.1
+
+### Patch Changes
+
+- 754dbcc: Bring the WHY file in line with its docs site page, which is now generated from it, and drop its centered header, contents list and horizontal rules.
+
 ## 0.4.0
 
 ### Minor Changes

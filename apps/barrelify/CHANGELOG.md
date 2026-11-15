@@ -1,5 +1,13 @@
 # barrelify
 
+## 2.3.1
+
+### Patch Changes
+
+- 84474e5: Describe the package in plain words.
+- Updated dependencies [754dbcc]
+  - unknown-error@0.2.3
+
 ## 2.3.0
 
 ### Minor Changes
