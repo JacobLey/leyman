@@ -1,0 +1,55 @@
+{
+  "name": "@leyman/demo-sqs-job-queue",
+  "version": "0.0.1",
+  "description": "A job queue on SQS: retries by visibility timeout with a heartbeat for long jobs, a dead-letter queue and redrive, FIFO order per group, and duplicate deliveries skipped through idempotency-keys on DynamoDB.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/sqs-job-queue#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/sqs-job-queue.js",
+  "exports": {
+    ".": "./dist/sqs-job-queue.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "catalog:",
+    "idempotency-keys": "workspace:^"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "p-defer": "catalog:",
+    "sinon": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
+  }
+}

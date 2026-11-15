@@ -1,0 +1,29 @@
+{
+  "extends": "@leyman/configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../../tools/idempotency-keys/ts"
+    },
+    {
+      "path": "../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../tools/aws-emulator-launch/ts"
+    },
+    {
+      "path": "../../leyman/expect"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    }
+  ]
+}

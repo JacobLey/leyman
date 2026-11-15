@@ -145,6 +145,7 @@ catalog:
   '@apidevtools/swagger-parser': ^13.1.0
   '@arethetypeswrong/core': ^0.18.5
   '@aws-sdk/client-dynamodb': ^3.1164.0
+  '@aws-sdk/client-sqs': ^3.1164.0
   '@biomejs/biome': ^2.6.4
   '@changesets/cli': ^3.0.3
   '@happy-dom/global-registrator': ^21.0.4
