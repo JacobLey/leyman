@@ -1,16 +1,5 @@
 # Why constant-consistent-hash?
 
-Back to the [README](https://www.npmjs.com/package/constant-consistent-hash).
-
-## Contents
-
-- [The problem](#the-problem)
-- [How it works](#how-it-works)
-- [Why it is correct](#why-it-is-correct)
-- [Hashing the key](#hashing-the-key)
-- [Compared to alternatives](#compared-to-alternatives)
-- [Non-goals](#non-goals)
-
 ## The problem
 
 Spreading keys across `n` buckets (shards, cache nodes, partitions, workers) with `hash(key) % n` balances well, but changing `n` moves almost every key. Going from 4 to 5 buckets keeps only 1 key in 5 where it was, and every move is data to copy or a cache to warm.

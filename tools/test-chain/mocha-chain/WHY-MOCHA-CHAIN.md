@@ -9,7 +9,13 @@ Mocha's `beforeEach` hook is the standard way to set up fresh state before each 
 The natural pattern is to declare a variable in the suite scope, assign it in `beforeEach`, and use it in tests:
 
 <!-- twoslash
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 -->
 ```ts
 suite('Division.divide', () => {
@@ -33,7 +39,13 @@ TypeScript knows `division` could be `null`, since it was declared that way. So 
 The obvious fix is to construct once and share:
 
 <!-- twoslash
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 -->
 ```ts
 const division = new Division();
@@ -46,7 +58,13 @@ Now the type is clean, but this only works for immutable values. Once the object
 You could construct inside each test body:
 
 <!-- twoslash
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 -->
 ```ts
 test('success', () => {
@@ -62,7 +80,11 @@ But this gives up what hooks are for. A hook keeps shared setup in one place and
 `mocha-chain` lets hooks return values that are passed forward as typed context. Instead of a shared mutable variable in the outer scope, each hook returns an object and the next hook or test receives it as a parameter:
 
 <!-- twoslash
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+import { expect } from 'chai';
+import { beforeEach } from 'mocha-chain';
 -->
 ```ts
 const withDivision = beforeEach(() => {

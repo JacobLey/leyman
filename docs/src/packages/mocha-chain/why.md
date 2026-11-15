@@ -4,7 +4,7 @@ description: Why mocha-chain exists - Mocha's beforeEach forces nullable variabl
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:273cd82f64ad9c6bdc96f578eaa2f21c Generated from tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md instead, and the description only here. -->
+<!-- @generated-signature v1:bb5777c2264771101cf3ad2c5482e659 Generated from tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md instead, and the description only here. -->
 
 # Why mocha-chain?
 
@@ -17,7 +17,13 @@ Mocha's `beforeEach` hook is the standard way to set up fresh state before each 
 The natural pattern is to declare a variable in the suite scope, assign it in `beforeEach`, and use it in tests:
 
 ```ts
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 // ---cut---
 suite('Division.divide', () => {
 
@@ -40,7 +46,13 @@ TypeScript knows `division` could be `null`, since it was declared that way. So 
 The obvious fix is to construct once and share:
 
 ```ts
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 // ---cut---
 const division = new Division();
 ```
@@ -52,7 +64,13 @@ Now the type is clean, but this only works for immutable values. Once the object
 You could construct inside each test body:
 
 ```ts
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+declare const expect: (actual: unknown) => { to: { equal: (expected: unknown) => void } };
+declare const suite: (title: string, fn: () => void) => void;
+declare const beforeEach: (fn: () => void) => void;
+declare const test: (title: string, fn: () => void) => void;
 // ---cut---
 test('success', () => {
     const division = new Division();
@@ -67,7 +85,11 @@ But this gives up what hooks are for. A hook keeps shared setup in one place and
 `mocha-chain` lets hooks return values that are passed forward as typed context. Instead of a shared mutable variable in the outer scope, each hook returns an object and the next hook or test receives it as a parameter:
 
 ```ts
-// @noErrors
+declare class Division {
+    divide(dividend: number, divisor: number): number;
+}
+import { expect } from 'chai';
+import { beforeEach } from 'mocha-chain';
 // ---cut---
 const withDivision = beforeEach(() => {
     return { division: new Division() };

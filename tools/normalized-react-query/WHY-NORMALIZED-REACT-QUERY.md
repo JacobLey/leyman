@@ -10,7 +10,9 @@ The problem with pairing keys to functions by hand is that nothing keeps them co
 - Two calls can use different keys for the same data (a cache miss). Both fetch it, so the cache doesn't help at all.
 
 <!-- twoslash
-// @noErrors
+// @filename: api/users.ts
+export declare const getUsers: () => Promise<{ id: number; name: string }[]>;
+// @filename: example.ts
 -->
 ```ts
 import { useQuery } from '@tanstack/react-query';
@@ -51,7 +53,20 @@ Data is often related (a book has an author, a list page has users). Fetching th
 `.propagate()` declares the relationship once, next to the query:
 
 <!-- twoslash
-// @noErrors
+import { resource } from 'normalized-react-query';
+interface Author {
+    name: string;
+}
+interface Book {
+    title: string;
+    authorId: number;
+}
+declare const getAuthor: (id: number) => Promise<Author>;
+declare const getBook: (id: number) => Promise<Book>;
+const authors = resource({
+    key: ({ authorId }: { authorId: number }) => ['authors', authorId],
+    queryFn: ({ params }) => getAuthor(params.authorId),
+});
 -->
 ```ts
 const books = resource<{ bookId: number }, Book>({

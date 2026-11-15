@@ -4,7 +4,7 @@ description: Why normalized-react-query exists - keys and fetchers that drift ap
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:15724234c05b66939c8744524a203606 Generated from tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md instead, and the description only here. -->
+<!-- @generated-signature v1:bebff0264a2b6c6c969aeaad7ebafd91 Generated from tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md instead, and the description only here. -->
 
 # Why normalized-react-query?
 
@@ -18,7 +18,9 @@ The problem with pairing keys to functions by hand is that nothing keeps them co
 - Two calls can use different keys for the same data (a cache miss). Both fetch it, so the cache doesn't help at all.
 
 ```ts
-// @noErrors
+// @filename: api/users.ts
+export declare const getUsers: () => Promise<{ id: number; name: string }[]>;
+// @filename: example.ts
 // ---cut---
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from './api/users.js';
@@ -58,7 +60,20 @@ Data is often related (a book has an author, a list page has users). Fetching th
 `.propagate()` declares the relationship once, next to the query:
 
 ```ts
-// @noErrors
+import { resource } from 'normalized-react-query';
+interface Author {
+    name: string;
+}
+interface Book {
+    title: string;
+    authorId: number;
+}
+declare const getAuthor: (id: number) => Promise<Author>;
+declare const getBook: (id: number) => Promise<Book>;
+const authors = resource({
+    key: ({ authorId }: { authorId: number }) => ['authors', authorId],
+    queryFn: ({ params }) => getAuthor(params.authorId),
+});
 // ---cut---
 const books = resource<{ bookId: number }, Book>({
     key: ({ bookId }) => ['books', bookId],
