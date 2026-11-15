@@ -63,7 +63,7 @@ Ky's own answer (a hook that refreshes on `401`) renews once per request instead
 
 Sends with Ky, as the last `Send`: Ky retries and times out as it's set up to, and the result is `fetch`'s, an error status included, for a client that reads error statuses itself.
 
-- Only a request safe to send twice is retried: an idempotent method (RFC 9110 §9.2.2), or one with an `Idempotency-Key`. A `POST` without one is sent once.
+- Only a request safe to send twice is retried: an idempotent method (RFC 9110 §9.2.2), or one with an `Idempotency-Key`. A `POST` or `PATCH` without one is sent once. Ky's `shouldRetry` makes that call, so `retry` takes no `shouldRetry` of its own.
 - `retry.statusCodes` is required, since it's also which statuses Ky throws for: Ky retries only those. Once Ky is out of retries, the status comes back as a response.
 - Ky has already read that response's body, so it's rebuilt from what Ky read: the same JSON or text, or none when Ky couldn't read it.
 - A `Retry-After` longer than `retry.maxRetryAfter` is cut to it, as Ky does, rather than given up on.
@@ -74,7 +74,8 @@ Sends with Ky, as the last `Send`: Ky retries and times out as it's set up to, a
 - [cockatiel](https://github.com/connor4312/cockatiel) was the first retrier tried. It needed a wrapper to honor `Retry-After`, its `maxAttempts` counts retries rather than sends, and its wait between retries doesn't stop when the request is aborted. Ky does all of that itself, so it replaced both the wrapper and the timeout middleware.
 - Ky's hooks fit some concerns badly. A rate limiter has to take a slot before every attempt and give it back after every outcome, which no pair of hooks covers. As a middleware it's one `await`.
 - Where a middleware goes decides what it counts. Composed in front of `kySend`, it sees a whole call, retries and their delays included: right for a token, which a retry should reuse. Composed into Ky's own `fetch` (`kySend({ fetch: compose([...]) })`), it sees each attempt: right for a concurrency cap, so a request waiting out a retry's delay holds no slot. The MCP demo's limiter goes there.
-- Ky retries only statuses it throws for, so `kySend` turns the last `HTTPError` back into a response. And Ky decides by method alone whether a request may be retried, so `kySend` turns retries off for a request that isn't safe to send twice. One maintainer has proposed letting an `Idempotency-Key` allow retries ([ky#692](https://github.com/sindresorhus/ky/issues/692)), which would make that part unnecessary.
+- Ky retries only statuses it throws for, so `kySend` turns the last `HTTPError` back into a response.
+- Ky's `retry.methods` decides by method alone, but `shouldRetry` sees the request (each error Ky retries carries it). So `kySend` lets every method through `methods` and decides per request in `shouldRetry`.
 
 ## Not covered
 

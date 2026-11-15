@@ -1,6 +1,6 @@
 import type { Options, RetryOptions } from 'ky';
 import type { Send } from './compose.js';
-import ky, { isHTTPError } from 'ky';
+import ky, { isHTTPError, isNetworkError, isTimeoutError } from 'ky';
 
 /**
  * @import { NetworkError, TimeoutError } from 'ky'
@@ -31,18 +31,36 @@ const isReplayable = (request: Request): boolean =>
     idempotentMethods.has(request.method) || request.headers.has('idempotency-key');
 
 /**
- * Every method Ky may retry: `isReplayable` decides for each request, so Ky's own check lets them all through.
+ * Every method Ky may retry: Ky's own check lets them all through, and `shouldRetry` decides by `isReplayable`.
  */
-const retryMethods: readonly string[] = [...idempotentMethods, 'POST'].map(method =>
+const retryMethods: readonly string[] = [...idempotentMethods, 'PATCH', 'POST'].map(method =>
     method.toLowerCase()
 );
 
+/**
+ * Ky's `shouldRetry`: no retry for a request that isn't safe to send again, and otherwise Ky's own checks. Every
+ * error Ky retries carries its request; any other error isn't retried by Ky's checks either.
+ *
+ * @param state - What Ky passes
+ * @param state.error - Why the attempt failed
+ * @returns `false` to send no more, or `undefined` for Ky's own checks
+ */
+const shouldRetry = ({ error }: { readonly error: Error }): false | undefined => {
+    if (
+        (isHTTPError(error) || isNetworkError(error) || isTimeoutError(error)) &&
+        !isReplayable(error.request)
+    ) {
+        return false;
+    }
+    return undefined;
+};
+
 export interface KySendOptions extends Omit<Options, 'retry' | 'throwHttpErrors'> {
     /**
-     * Ky's retry options. Which requests are retried is up to `kySend` (see it), so there are no `methods`, and
-     * `statusCodes` is required: it's also which statuses Ky throws for.
+     * Ky's retry options. Which requests are retried is up to `kySend` (see it), so there are no `methods` or
+     * `shouldRetry`, and `statusCodes` is required: it's also which statuses Ky throws for.
      */
-    readonly retry: Omit<RetryOptions, 'methods' | 'statusCodes'> & {
+    readonly retry: Omit<RetryOptions, 'methods' | 'shouldRetry' | 'statusCodes'> & {
         readonly statusCodes: readonly number[];
     };
 }
@@ -77,7 +95,8 @@ const rebuild = (response: Response, data: unknown): Response => {
  * Sends with Ky, as the last `Send` of a composed `fetch`: Ky retries and times out as it's set up to, and the
  * result is `fetch`'s, an error status included.
  *
- * Only a request safe to send twice is retried: an idempotent method, or one with an `Idempotency-Key`. Ky retries
+ * Only a request safe to send twice is retried: an idempotent method, or one with an `Idempotency-Key` (a retry an
+ * `afterResponse` hook forces with `ky.retry()` is that hook's own decision, and Ky doesn't check it). Ky retries
  * only the statuses it throws an `HTTPError` for, so it throws for exactly the retry statuses, and once it's out of
  * retries the status comes back as a response rather than its `HTTPError`. A delay that `Retry-After` asks for
  * longer than `retry.maxRetryAfter` is cut to it, as Ky does.
@@ -95,12 +114,13 @@ export const kySend = (options: KySendOptions): Send => {
             ...options.retry,
             statusCodes: [...statuses],
             methods: [...retryMethods],
+            shouldRetry,
         },
         throwHttpErrors: status => statuses.has(status),
     });
     return async request => {
         try {
-            return await api(request, isReplayable(request) ? {} : { retry: 0 });
+            return await api(request);
         } catch (error) {
             if (!isHTTPError(error)) {
                 throw error;

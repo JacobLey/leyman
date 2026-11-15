@@ -1,5 +1,5 @@
 import type { Send } from '@leyman/demo-fetch-middleware';
-import { NetworkError } from 'ky';
+import { NetworkError, TimeoutError } from 'ky';
 import { kySend } from '@leyman/demo-fetch-middleware';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
@@ -132,6 +132,23 @@ suite('kySend', () => {
         ]);
     });
 
+    test('Sends a PATCH with an Idempotency-Key again', async () => {
+        const { send, sent } = withKy(async attempt =>
+            attempt === 0 ? new Response('busy', { status: 503 }) : new Response('done')
+        );
+
+        const response = await send(
+            new Request('http://example.test', {
+                method: 'PATCH',
+                body: 'note',
+                headers: { 'Idempotency-Key': 'key' },
+            })
+        );
+
+        expect(await response.text()).to.equal('done');
+        expect(sent.map(({ method }) => method)).to.deep.equal(['PATCH', 'PATCH']);
+    });
+
     test('Rejects with the network error once a GET is out of retries', async () => {
         const { send, sent } = withKy(async () => {
             throw new TypeError('fetch failed', { cause: new Error('ECONNREFUSED') });
@@ -150,5 +167,37 @@ suite('kySend', () => {
             send(new Request('http://example.test', { method: 'POST', body: 'note' }))
         ).to.be.rejectedWith(NetworkError);
         expect(sent).to.deep.equal([{ method: 'POST', body: 'note' }]);
+    });
+
+    test('Rejects with the timeout at once for a POST without an Idempotency-Key', async () => {
+        let attempts = 0;
+        const send = kySend({
+            fetch: async (input, init) => {
+                attempts++;
+                const { signal } = new Request(input, init);
+                return new Promise((_resolve, reject) => {
+                    signal.addEventListener('abort', () => {
+                        reject(signal.reason as Error);
+                    });
+                });
+            },
+            timeout: 10,
+            retry: { limit: 1, delay: () => 0, statusCodes: [503], retryOnTimeout: true },
+        });
+
+        await expect(
+            send(new Request('http://example.test', { method: 'POST', body: 'note' }))
+        ).to.be.rejectedWith(TimeoutError);
+        expect(attempts).to.equal(1);
+    });
+
+    test('Rejects with an error Ky does not recognize at once', async () => {
+        const failure = new Error('bug');
+        const { send, sent } = withKy(async () => {
+            throw failure;
+        });
+
+        await expect(send(new Request('http://example.test'))).to.be.rejectedWith(failure);
+        expect(sent).to.have.length(1);
     });
 });
