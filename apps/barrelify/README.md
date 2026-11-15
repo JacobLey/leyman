@@ -2,7 +2,7 @@
 
 # barrelify
 
-Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
+Writes TypeScript barrel files (an index.ts that re-exports its directory) with import extensions that resolve under Node ESM, and checks in CI that they are up to date.
 
 [![npm package](https://badge.fury.io/js/barrelify.svg)](https://www.npmjs.com/package/barrelify)
 [![License](https://img.shields.io/npm/l/barrelify.svg)](https://github.com/JacobLey/leyman/blob/main/apps/barrelify/LICENSE)

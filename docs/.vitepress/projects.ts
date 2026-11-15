@@ -369,7 +369,7 @@ export const packages: readonly Package[] = [
         slug: 'barrelify',
         title: 'Barrelify',
         category: 'Generated files and monorepo tooling',
-        pitch: 'Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.',
+        pitch: 'Writes TypeScript barrel files (an index.ts that re-exports its directory) with import extensions that resolve under Node ESM, and checks in CI that they are up to date.',
         sources: ['apps/barrelify'],
         related: ['populate-files'],
         pages: [

@@ -1,5 +1,5 @@
 ---
-description: Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
+description: Writes TypeScript barrel files (an index.ts that re-exports its directory) with import extensions that resolve under Node ESM, and checks in CI that they are up to date.
 ---
 
 # Barrelify
