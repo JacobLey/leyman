@@ -2,7 +2,7 @@
 
 # iso-crypto
 
-Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypto, for hashing, AES encryption (including GCM), PBKDF2 and HKDF key derivation, and ECDH.
+Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypto, for hashing, HMAC, AES encryption (including GCM), PBKDF2 and HKDF key derivation, and ECDH.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
@@ -11,9 +11,10 @@ Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypt
 
 Node.js and browsers both have cryptography built in, but with different APIs. Node.js has the [`node:crypto`](https://nodejs.org/api/crypto.html) module, and browsers have WebCrypto ([`crypto.subtle`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto)), which also wants every key imported as a `CryptoKey` before it will use it.
 
-`iso-crypto` provides one async API for both, for hashing, encryption, key derivation and ECDH. Package `imports` conditions pick `node:crypto` on Node.js and `crypto.subtle` in the browser, so the same code runs in both. Secrets, keys and IVs are plain `Uint8Array`s or strings, so there's no `importKey` or `CryptoKey` to deal with.
+`iso-crypto` provides one async API for both, for hashing, HMAC, encryption, key derivation and ECDH. Package `imports` conditions pick `node:crypto` on Node.js and `crypto.subtle` in the browser, so the same code runs in both. Secrets, keys and IVs are plain `Uint8Array`s or strings, so there's no `importKey` or `CryptoKey` to deal with.
 
 - `encrypt` defaults to AES-256-GCM, which detects tampering. `decrypt` rejects altered content or the wrong secret, and additional authenticated data can bind a ciphertext to its context.
+- `hmac` signs data with a secret, and `verifyHmac` checks a signature in constant time, e.g. to verify a webhook.
 - `deriveKey` makes a key from a password with PBKDF2, or from a high-entropy secret with HKDF, on both platforms.
 - `eccEncrypt` and `eccDecrypt` encrypt between two parties in one call. They derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
 - ECC keys can be generated, and public keys compressed or decompressed, on P-256, P-384 and P-521.
@@ -25,6 +26,7 @@ Node.js and browsers both have cryptography built in, but with different APIs. N
 
 - [Supported Algorithms](#supported-algorithms)
   - [Hash](#hash)
+  - [HMAC](#hmac)
   - [Symmetric Encryption](#symmetric-encryption)
   - [Key Derivation](#key-derivation)
   - [ECDH (Asymmetric)](#ecdh-asymmetric)
@@ -33,6 +35,7 @@ Node.js and browsers both have cryptography built in, but with different APIs. N
   - [Encoding](#encoding)
   - [Random](#random)
   - [Hash](#hash-1)
+  - [HMAC](#hmac-1)
   - [Symmetric Encryption](#symmetric-encryption-1)
   - [Authenticated encryption with a password](#authenticated-encryption-with-a-password)
   - [ECC](#ecc)
@@ -48,6 +51,8 @@ Node.js and browsers both have cryptography built in, but with different APIs. N
   - [decodeObject](#decodeobjectinput-recordstring-string)
   - [encodeObject](#encodeobjectinput-recordstring-uint8array)
   - [hash](#hashinput-inputtext-algorithm-hash)
+  - [hmac](#hmacparams--data-inputtext-secret-inputtext--options--hash-hashalgorithm-)
+  - [verifyHmac](#verifyhmacparams--data-inputtext-secret-inputtext-signature-inputtext--options--hash-hashalgorithm-)
   - [deriveKey](#derivekeyparams--secret-inputtext-salt-inputtext--options-pbkdf2options--hkdfoptions)
   - [decrypt](#decryptparams--encrypted-inputtext-iv-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
   - [encrypt](#encryptparams--data-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
@@ -71,6 +76,13 @@ Node.js and browsers both have cryptography built in, but with different APIs. N
 - ✅ sha256
 - ✅ sha384
 - ✅ sha512
+
+### HMAC
+
+- ✅ hmac-sha1
+- ✅ hmac-sha256
+- ✅ hmac-sha384
+- ✅ hmac-sha512
 
 ### Symmetric Encryption
 
@@ -139,6 +151,35 @@ const customHashed: Uint8Array = await hash(
     }
 );
 encode(customHashed, 'base64'); // 8ff0IFBTdySF86lYF23zbCfmerD9ieLgid5Ak+5pRwffOgSY8yQ78HifX0lxZ0hKHZP4uZ0Nfr9dcwZmo5Mkfw==
+```
+
+### HMAC
+
+A webhook sender signs each request with a secret it shares with you. [Standard Webhooks](https://www.standardwebhooks.com/), for one, sends an HMAC-SHA256 of `id.timestamp.body` in base64, as `v1,<signature>` in the `webhook-signature` header:
+
+```ts
+import { decode, verifyHmac } from 'iso-crypto';
+
+// The part of the secret after `whsec_` is base64
+const secret = decode({ text: 'MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw', encoding: 'base64' });
+
+// A header can carry several space-separated signatures, check each
+const signature = headers['webhook-signature'].split(' ')[0].replace('v1,', '');
+
+const isValid: boolean = await verifyHmac({
+    data: `${headers['webhook-id']}.${headers['webhook-timestamp']}.${body}`,
+    secret,
+    signature: { text: signature, encoding: 'base64' },
+});
+```
+
+Check the timestamp is recent as well, or an old request can be replayed. To sign instead, `hmac` returns the signature:
+
+```ts
+import { encode, hmac } from 'iso-crypto';
+
+const signature: Uint8Array = await hmac({ data: 'This is my text', secret: 'Super duper secret' });
+encode(signature, 'hex');
 ```
 
 ### Symmetric Encryption
@@ -426,6 +467,20 @@ await decrypt({ ...encrypted, secret }, { encryption, additionalData: `user:${us
 ```
 
 Other modes don't authenticate anything, so they throw a `TypeError` rather than ignore it.
+
+### hmac(params: { data: InputText; secret: InputText }, options?: { hash?: HashAlgorithm })
+
+Asynchronously signs `data` with an HMAC built on the given hash (defaults to `SHA256`), and returns the signature, which is as long as the hash's output.
+
+The secret can't be empty: WebCrypto refuses an empty HMAC key, so both platforms throw a `RangeError` for one. Secrets longer than the hash's block size are hashed first, as HMAC specifies.
+
+### verifyHmac(params: { data: InputText; secret: InputText; signature: InputText }, options?: { hash?: HashAlgorithm })
+
+Asynchronously checks that `signature` is the HMAC of `data`, and resolves `true` or `false`.
+
+The comparison takes the same time however much of the signature matches (`timingSafeEqual` on Node.js, `crypto.subtle.verify` in the browser), so it can't be guessed a byte at a time. A signature of the wrong length resolves `false` rather than throwing. That check can show in the timing, but the expected length is no secret: it's the hash's output size.
+
+The signature is decoded like any other `InputText`, so invalid hex still throws a `TypeError`. An empty secret throws a `RangeError`, as with `hmac`.
 
 ### deriveKey(params: { secret: InputText; salt: InputText }, options?: Pbkdf2Options | HkdfOptions)
 

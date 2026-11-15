@@ -1,7 +1,7 @@
 {
   "name": "iso-crypto",
   "version": "3.1.5",
-  "description": "Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypto, for hashing, AES encryption (including GCM), PBKDF2 and HKDF key derivation, and ECDH.",
+  "description": "Cryptography with one API in browsers and Node.js, over WebCrypto and node:crypto, for hashing, HMAC, AES encryption (including GCM), PBKDF2 and HKDF key derivation, and ECDH.",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -33,6 +33,7 @@
     "ecc",
     "sha",
     "hash",
+    "hmac",
     "encode"
   ],
   "sideEffects": false,
@@ -66,6 +67,11 @@
       "types": "./dist/iso/hash/types.js",
       "browser": "./dist/iso/hash/browser.js",
       "default": "./dist/iso/hash/node.js"
+    },
+    "#hmac": {
+      "types": "./dist/iso/hmac/types.js",
+      "browser": "./dist/iso/hmac/browser.js",
+      "default": "./dist/iso/hmac/node.js"
     },
     "#random": {
       "types": "./dist/iso/random/types.js",
