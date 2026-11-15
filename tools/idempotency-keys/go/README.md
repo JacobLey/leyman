@@ -1,16 +1,16 @@
 # idempotency-keys-go
 
-Server-side support for the Idempotency-Key header in Go, so clients can safely retry a POST. Works across instances, on Postgres or Valkey.
+Server-side support for the Idempotency-Key header in Go, so clients can safely retry a POST. Works across instances, on Postgres, Valkey or DynamoDB.
 
 When a client sends a `POST` and the connection drops before the response arrives, it can't tell whether the server handled the request, and a retry might create the same order twice. The `Idempotency-Key` header, popularized by Stripe and now an [IETF draft](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07), lets the client send one unique key with every attempt of a request, so the server can recognize a retry and send back what it answered the first time.
 
-This module handles that header in a Go server, with `net/http` middleware. The first request with a key runs your handler, and its status, headers and body are saved in Postgres or Valkey, through your own `pgx` pool or `valkey-go` client. A retry with the same key gets that response back, marked `Idempotent-Replayed: true`, on whichever instance it reaches. A request only counts as a retry if its method, path, query, body and any headers you name match the first one, and a key reused on a different request gets a `422`.
+This module handles that header in a Go server, with `net/http` middleware. The first request with a key runs your handler, and its status, headers and body are saved in Postgres, Valkey or DynamoDB, through your own `pgx` pool, `valkey-go` client or AWS SDK client. A retry with the same key gets that response back, marked `Idempotent-Replayed: true`, on whichever instance it reaches. A request only counts as a retry if its method, path, query, body and any headers you name match the first one, and a key reused on a different request gets a `422`.
 
 A retry that comes in while the first request is still running waits for it to finish, or gets a `409` if the wait runs out. The first request's claim on the key is a lease, so if its server crashes, a waiting request takes over once the lease runs out. A response the first request sends after that isn't stored.
 
 It is the Go side of [idempotency-keys](../ts/). Both implementations follow one [specification](../SPEC.md) for their hashes, rows and notifications, and pass the same [test vectors](../test-vectors/), so Go and TypeScript servers on one store share the same keys. This module implements version 1.1 of the specification, exported as `SpecVersion`.
 
-Use the Postgres store for payments and anything else where a duplicate would really hurt. On Valkey, a failover that loses writes, or a flush, forgets keys, and a retry after that runs again.
+Use the Postgres or DynamoDB store for payments and anything else where a duplicate would really hurt. On Valkey, a failover that loses writes, or a flush, forgets keys, and a retry after that runs again.
 
 Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempotency-keys/guides/go), are on the [docs site](https://jacobley.github.io/leyman/packages/idempotency-keys/).
 
@@ -20,6 +20,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
 - [Example](#example)
 - [Usage](#usage)
   - [Valkey](#valkey)
+  - [DynamoDB](#dynamodb)
   - [Without net/http](#without-nethttp)
   - [Which responses are stored](#which-responses-are-stored)
   - [Writing a store](#writing-a-store)
@@ -33,7 +34,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
 go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest
 ```
 
-It needs Go 1.25 or later, and versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies. The `postgres` package uses [pgx](https://github.com/jackc/pgx) v5, because `database/sql` can't `LISTEN`, and the `valkey` package uses [valkey-go](https://github.com/valkey-io/valkey-go).
+It needs Go 1.25 or later, and versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies. The `postgres` package uses [pgx](https://github.com/jackc/pgx) v5, because `database/sql` can't `LISTEN`, the `valkey` package uses [valkey-go](https://github.com/valkey-io/valkey-go), and the `dynamodb` package uses the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2). Each package only brings in its own client, so you only download what you import.
 
 ## Example
 
@@ -97,6 +98,35 @@ keys, _ := idempotencykeys.New(valkeystore.NewStore(client, valkeystore.StoreOpt
 ```
 
 The store runs the spec's Lua scripts with `EVAL`, and each script touches a single key, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) and keeps it until `Close`. You can mix stores and notifiers, so a Postgres store with a Valkey notifier is fine.
+
+### DynamoDB
+
+```go
+import (
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
+	dynamodbstore "github.com/JacobLey/leyman/tools/idempotency-keys/go/dynamodb"
+)
+
+cfg, _ := config.LoadDefaultConfig(ctx)
+client := dynamodb.NewFromConfig(cfg)
+// Once, in a migration or your infrastructure code
+client.CreateTable(ctx, dynamodbstore.CreateTableInput(dynamodbstore.StoreOptions{}))
+client.UpdateTimeToLive(ctx, dynamodbstore.TimeToLiveInput(dynamodbstore.StoreOptions{}))
+
+keys, _ := idempotencykeys.New(dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{}))
+```
+
+Like Postgres, it is strict. A claim is a single conditional `PutItem`, so only one request can win it, and DynamoDB keeps it durably. When the claim loses, DynamoDB sends back the item that beat it, so a claim never needs a second request to read it.
+
+DynamoDB has no clock that a condition can read, so the store uses each server's own clock (`time.Now()`). If one server's clock runs ahead of another's, it sees leases run out early and can take one over while its request is still running. Set the lease to your slowest handler plus the worst drift you expect between servers. A key can also expire early by that much.
+
+`CreateTableInput` and `TimeToLiveInput` give the requests for the table: a partition key `identity` (binary), billed on demand, and DynamoDB's Time to Live on the `ttl` attribute. Create the table however you manage infrastructure, as long as the key is the same. Time to Live is optional. It deletes expired items some time after they expire, so the table doesn't keep growing. The store never relies on it, since every request checks the expiry itself, and without it an expired item stays until the next claim of its key writes over it. There is no `DeleteExpired`.
+
+A DynamoDB item holds at most 400 KB, so a response bigger than that (less the few attributes around it) can't be stored. `Complete` returns DynamoDB's error, and the key is left to its lease, as when a server crashes.
+
+There is no DynamoDB notifier. Without one, waiting requests poll the store. If you already run Valkey or Postgres, either notifier works with the DynamoDB store.
 
 ### Without net/http
 
@@ -171,6 +201,8 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 | `PostgresNotifier.listen(...)`                   | `postgres.Listen(ctx, publisher, *pgx.Conn, NotifierOptions)`; `Close(ctx)` runs `UNLISTEN`                                                                                  |
 | `new ValkeyStore({ connection, prefix? })`       | `valkey.NewStore(valkey.Client, StoreOptions)`                                                                                                                               |
 | `ValkeyNotifier.listen(...)`                     | `valkey.Listen(ctx, valkey.Client, NotifierOptions)`; `Close()`                                                                                                              |
+| `new DynamoDbStore({ connection, tableName? })`  | `dynamodb.NewStore(dynamodb.Client, StoreOptions)`, a `*dynamodb.Client` from the AWS SDK                                                                                    |
+| `createTableInput`, `updateTimeToLiveInput`      | `dynamodb.CreateTableInput(StoreOptions)`, `dynamodb.TimeToLiveInput(StoreOptions)`                                                                                          |
 
 Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 
@@ -186,6 +218,7 @@ Go strings are bytes, so a header value is hashed and stored as the bytes receiv
 - **Headers are stored by name, in byte order of their lower-case names.** Go's `http.Header` is a map, so there is no other order to keep. Names differing only in case, which a handler can only set by writing to the map directly, are in byte order of the names as set. The values under each name keep their order.
 - **A request with an empty `RequestURI`** (one built to call a handler directly, rather than read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped in its own way.
 - **No lease renewal.** Set the lease above your slowest handler, since a request that runs longer can be taken over and run twice.
+- **DynamoDB uses the servers' clocks**, so on that store the lease also has to cover clock drift between servers, and a stored response is limited to what fits in a 400 KB item.
 
 ## Development
 
@@ -195,4 +228,4 @@ Run it through Nx, like any other project:
 nx run @leyman/idempotency-keys-go:verify
 ```
 
-It has no `package.json`. The tests read the [test vectors](../test-vectors/) by path, which `project.json` lists as an implicit dependency. They run against the devcontainer's Postgres (`$DATABASE_URL`) and Valkey (`valkey:6379`) sidecars, so `go test ./...` also works directly there.
+It has no `package.json`. The tests read the [test vectors](../test-vectors/) by path, which `project.json` lists as an implicit dependency. They run against the devcontainer's Postgres (`$DATABASE_URL`) and Valkey (`valkey:6379`) sidecars, and against DynamoDB in [AWS Emulator](https://github.com/aws/aws-emulator), which the devcontainer installs and each test run starts on its own (the root package and `dynamodb` each start one, with one table). So `go test ./...` also works directly there. If `aws-emulator` isn't on `PATH`, the tests fail and say to rebuild the devcontainer.

@@ -2,7 +2,7 @@
   "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/idempotency-keys-go",
   "metadata": {
-    "description": "Server-side support for the Idempotency-Key header in Go, so clients can safely retry a POST. Works across instances, on Postgres or Valkey."
+    "description": "Server-side support for the Idempotency-Key header in Go, so clients can safely retry a POST. Works across instances, on Postgres, Valkey or DynamoDB."
   },
   "implicitDependencies": [
     "@leyman/idempotency-keys-test-vectors"
@@ -15,6 +15,7 @@
     "go-test": {
       "inputs": [
         "...",
+        "aws-emulator",
         "postgres",
         "valkey"
       ]

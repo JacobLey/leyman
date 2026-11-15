@@ -3,7 +3,9 @@ package idempotencykeys_test
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"testing"
 
@@ -11,6 +13,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/valkey-io/valkey-go"
 
+	idempotencykeys "github.com/JacobLey/leyman/tools/idempotency-keys/go"
+	dynamodbstore "github.com/JacobLey/leyman/tools/idempotency-keys/go/dynamodb"
 	"github.com/JacobLey/leyman/tools/idempotency-keys/go/postgres"
 	valkeystore "github.com/JacobLey/leyman/tools/idempotency-keys/go/valkey"
 )
@@ -21,11 +25,13 @@ const (
 	valkeyDatabase = 6
 )
 
-// env is one connection pool and one Valkey client for the package's tests, which each use a table, key prefix and
-// channel of their own.
+// env is one connection pool, one Valkey client and one DynamoDB table (in an emulator of the package's own) for the
+// package's tests, which each use a table, key prefix, channel or identities of their own.
 type env struct {
-	pool   *pgxpool.Pool
-	valkey valkey.Client
+	pool          *pgxpool.Pool
+	valkey        valkey.Client
+	dynamodb      *emulator
+	dynamodbTable string
 }
 
 // testEnv is shared by the package's tests, which TestMain opens and closes.
@@ -45,9 +51,23 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	testEnv = env{pool: pool, valkey: client}
+	emulator, err := startEmulator(context.Background())
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	table := uniqueName("idempotency_keys_test_")
+	if err := emulator.createTable(context.Background(), table); err != nil {
+		emulator.stop(table)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	testEnv = env{pool: pool, valkey: client, dynamodb: emulator, dynamodbTable: table}
 	code := m.Run()
 
+	emulator.stop(table)
 	client.Close()
 	pool.Close()
 	os.Exit(code)
@@ -137,4 +157,44 @@ func (e env) valkeyNotifier(t *testing.T) *valkeystore.Notifier {
 	t.Cleanup(notifier.Close)
 
 	return notifier
+}
+
+// dynamodbStore is a DynamoDB store on the package's table, under identities of its own.
+func (e env) dynamodbStore() saltedStore {
+	return saltedStore{
+		Store: dynamodbstore.NewStore(e.dynamodb.client, dynamodbstore.StoreOptions{Table: e.dynamodbTable}),
+		salt:  uniqueName(""),
+	}
+}
+
+// saltedStore keeps a store's records apart from every other test's in a shared table, by hashing each identity with a
+// salt of its own.
+type saltedStore struct {
+	idempotencykeys.Store
+
+	salt string
+}
+
+func (s saltedStore) Claim(ctx context.Context, params idempotencykeys.ClaimParams) (idempotencykeys.ClaimResult, error) {
+	params.Identity = s.identity(params.Identity)
+
+	return s.Store.Claim(ctx, params) //nolint:wrapcheck // Only a test's
+}
+
+func (s saltedStore) Complete(
+	ctx context.Context,
+	identity, token string,
+	response idempotencykeys.StoredResponse,
+) (bool, error) {
+	return s.Store.Complete(ctx, s.identity(identity), token, response) //nolint:wrapcheck // Only a test's
+}
+
+func (s saltedStore) Release(ctx context.Context, identity, token string) (bool, error) {
+	return s.Store.Release(ctx, s.identity(identity), token) //nolint:wrapcheck // Only a test's
+}
+
+func (s saltedStore) identity(identity string) string {
+	sum := sha256.Sum256([]byte(s.salt + identity))
+
+	return hex.EncodeToString(sum[:])
 }

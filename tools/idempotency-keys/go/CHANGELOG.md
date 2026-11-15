@@ -1,5 +1,10 @@
 # idempotency-keys-go
 
+## 0.3.0
+
+- The new `dynamodb` package is the spec's DynamoDB store, on the AWS SDK for Go v2: `NewStore` takes a `*dynamodb.Client` (or anything with its `PutItem`, `UpdateItem` and `DeleteItem`), and `CreateTableInput` and `TimeToLiveInput` give the requests that create its table and turn on Time to Live. It is strict, like the Postgres store, and uses the servers' clocks, so the lease has to cover clock drift between them. A response too big for a 400 KB item is an error when completing. It shares keys with the TypeScript package's `DynamoDbStore`.
+- `SpecVersion` is `"1.1"`, which adds the DynamoDB layout. Servers on 1.0 share keys with it as before.
+
 ## 0.2.1
 
 - `Handle` stores a response's headers in a fixed order: by lower-case name in byte order, as documented, and names that differ only in case (which a handler can only set by writing to the header map directly) by their bytes, instead of in whatever order the map gave them.

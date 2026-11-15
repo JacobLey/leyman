@@ -1,5 +1,5 @@
 ---
-description: The Go implementation of idempotency-keys, with net/http middleware and the postgres and valkey packages, sharing keys with TypeScript servers on the same store.
+description: The Go implementation of idempotency-keys, with net/http middleware and the postgres, valkey and dynamodb packages, sharing keys with TypeScript servers on the same store.
 ---
 
 # Go
@@ -15,6 +15,7 @@ go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest
 | `github.com/JacobLey/leyman/tools/idempotency-keys/go`          | `New`, the middleware, `Begin`, the hashes. No dependencies.                           |
 | `github.com/JacobLey/leyman/tools/idempotency-keys/go/postgres` | The Postgres store and notifier, on [pgx](https://github.com/jackc/pgx) v5.            |
 | `github.com/JacobLey/leyman/tools/idempotency-keys/go/valkey`   | The Valkey store and notifier, on [valkey-go](https://github.com/valkey-io/valkey-go). |
+| `github.com/JacobLey/leyman/tools/idempotency-keys/go/dynamodb` | The DynamoDB store, on the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2).  |
 
 The Postgres package uses pgx rather than `database/sql`, which can't `LISTEN`.
 
@@ -69,7 +70,22 @@ notifier, _ := valkeystore.Listen(ctx, client, valkeystore.NotifierOptions{})
 keys, _ := idempotencykeys.New(valkeystore.NewStore(client, valkeystore.StoreOptions{}), idempotencykeys.WithNotifier(notifier))
 ```
 
-The store runs the specification's Lua scripts with `EVAL`, one key each, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) until `Close`. As in TypeScript, either notifier works with either store, and the [Stores](/packages/idempotency-keys/guides/stores#choosing) advice holds too. Valkey can forget a key on a failover, so use Postgres for payments.
+The store runs the specification's Lua scripts with `EVAL`, one key each, so it works on a cluster. The notifier subscribes on a connection it takes from the client (`Dedicate`) until `Close`. As in TypeScript, either notifier works with either store, and the [Stores](/packages/idempotency-keys/guides/stores#choosing) advice holds too. Valkey can forget a key on a failover, so use Postgres or DynamoDB for payments.
+
+## DynamoDB
+
+```go
+import dynamodbstore "github.com/JacobLey/leyman/tools/idempotency-keys/go/dynamodb"
+
+client := dynamodb.NewFromConfig(cfg)
+// Once, in a migration or your infrastructure code
+client.CreateTable(ctx, dynamodbstore.CreateTableInput(dynamodbstore.StoreOptions{}))
+client.UpdateTimeToLive(ctx, dynamodbstore.TimeToLiveInput(dynamodbstore.StoreOptions{}))
+
+keys, _ := idempotencykeys.New(dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{}))
+```
+
+`NewStore` takes a `*dynamodb.Client`, or anything with its `PutItem`, `UpdateItem` and `DeleteItem`. It works as the TypeScript `DynamoDbStore` does, on the same table: a claim is one conditional `PutItem`, so the store is strict, and it uses each server's clock, so the lease has to cover the worst drift between servers as well as the slowest handler. `CreateTableInput` and `TimeToLiveInput` give the requests that create the table (partition key `identity`, binary, billed on demand) and turn on Time to Live for `ttl`, which only cleans up expired items: the store never relies on it. A response that doesn't fit in a 400 KB item makes `Complete` return DynamoDB's error, and the key is left to its lease. There is no DynamoDB notifier, so pair it with the Valkey or Postgres one, or let waiting requests poll.
 
 ## Options
 
@@ -107,7 +123,7 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 
 ## Writing a store
 
-`New` takes any `Store` (`Claim`, `Complete`, `Release`), so records can live somewhere other than Postgres or Valkey. A store written to the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) works with everything else: each operation is atomic for its identity, an expired record counts as absent, a takeover needs a matching fingerprint, `Complete` and `Release` check the token, and a failure is an error, never an answer. A store without a clock of its own may use the servers', with the lease covering the worst drift between them too. Its layout is its own, so a TypeScript server shares it only if it implements the same one.
+`New` takes any `Store` (`Claim`, `Complete`, `Release`), so records can live somewhere other than Postgres, Valkey or DynamoDB. A store written to the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) works with everything else: each operation is atomic for its identity, an expired record counts as absent, a takeover needs a matching fingerprint, `Complete` and `Release` check the token, and a failure is an error, never an answer. A store without a clock of its own may use the servers', with the lease covering the worst drift between them too. Its layout is its own, so a TypeScript server shares it only if it implements the same one.
 
 The module's [`example_test.go`](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/go/example_test.go) has an in-memory store written to the contract, which the tests run through every scenario of the test vectors, and which the package docs show as the `Store` example.
 

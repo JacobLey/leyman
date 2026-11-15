@@ -266,6 +266,7 @@ func TestScenarioVectors(t *testing.T) {
 			name: "Postgres store",
 		},
 		{create: func(*testing.T) idempotencykeys.Store { return testEnv.valkeyStore() }, name: "Valkey store"},
+		{create: func(*testing.T) idempotencykeys.Store { return testEnv.dynamodbStore() }, name: "DynamoDB store"},
 		{create: func(*testing.T) idempotencykeys.Store { return newMemoryStore() }, name: "example memory store"},
 	}
 	// Bounds the scenarios running at once, as each holds Postgres connections, which every test shares
