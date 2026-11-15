@@ -26,11 +26,6 @@ export const listen = async (): Promise<Served> => {
         fetch: async request => current(request),
         port: 0,
         hostname: '127.0.0.1',
-        // The CLI runs in this process, and never beside a Hono server otherwise: left to its default, `serve` swaps
-        // the global `Request` for a subclass whose clones aren't instances of it, and Ky then keeps a timed-out
-        // attempt's aborted signal on its retry
-        // (https://github.com/sindresorhus/ky/blob/3541888878c4d303a8bc2ad61815f4e048f55a5d/source/core/Ky.ts#L1342-L1345)
-        overrideGlobalObjects: false,
     });
     await once(server, 'listening');
     const { port } = server.address() as AddressInfo;
