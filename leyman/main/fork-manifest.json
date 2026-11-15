@@ -126,7 +126,7 @@
     },
     {
       "path": ".devcontainer/Dockerfile",
-      "why": "the image everything runs in; delete the stages of languages the fork lacks. `apply` names its user after the fork"
+      "why": "the image everything runs in. `apply` cuts the stages of conditions the fork lacks, and names its user after the fork"
     },
     {
       "path": ".devcontainer/devcontainer-lock.json",
@@ -134,11 +134,11 @@
     },
     {
       "path": ".devcontainer/devcontainer.json",
-      "why": "the container's environment and post-create steps. `apply` names the container, its service and user after the fork"
+      "why": "the container's environment and post-create steps. `apply` cuts what the fork's conditions don't need, and names the container, its service and user after the fork"
     },
     {
       "path": ".devcontainer/docker-compose.yml",
-      "why": "the container and its sidecars. `apply` names its service after the fork, and gives its Nx cache no upstream"
+      "why": "the container and its sidecars. `apply` cuts the sidecars of conditions the fork lacks, names its service after the fork, and gives its Nx cache no upstream"
     },
     {
       "path": ".devcontainer/initialize.sh",
@@ -342,7 +342,7 @@
     },
     {
       "path": "AGENTS.md",
-      "why": "the agent entry point"
+      "why": "the agent entry point. `apply` lists in it the skills the fork took and those its installed packages ship"
     },
     {
       "path": "CLAUDE.md",
@@ -377,7 +377,7 @@
     },
     {
       "path": "pnpm-workspace.yaml",
-      "why": "the catalog and workspace globs"
+      "why": "the catalog and workspace globs. `apply` prunes the catalog and patches to what the fork depends on, and approves the skills of the packages it installs"
     },
     {
       "path": "tools/local-ingress",
@@ -396,23 +396,23 @@
   "repoOnly": [
     {
       "path": ".agents/skills/framework-audit",
-      "why": "a link to @leyman/framework's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
+      "why": "a link to @leyman/framework's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init)"
     },
     {
       "path": ".agents/skills/eslint-config",
-      "why": "a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
+      "why": "a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init)"
     },
     {
       "path": ".agents/skills/principles",
-      "why": "a link to @leyman/configs' source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
+      "why": "a link to @leyman/configs' source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init)"
     },
     {
       "path": ".agents/skills/mocha-chain",
-      "why": "a link to mocha-chain's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
+      "why": "a link to mocha-chain's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init)"
     },
     {
       "path": ".agents/skills/nx-lifecycle",
-      "why": "a link to nx-lifecycle's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
+      "why": "a link to nx-lifecycle's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init)"
     },
     {
       "path": ".agents/skills/fork-manifest",
@@ -538,6 +538,14 @@
       "why": "vendor: what the test explorer extension loads"
     }
   ],
+  "dependencies": {
+    "go": [
+      "@naxodev/gonx"
+    ],
+    "publishing": [
+      "@changesets/cli"
+    ]
+  },
   "nx": {
     "plugins": {
       "go": [

@@ -26,6 +26,7 @@ dedupeInjectedDeps: false
 skills:
   dirs:
     - .agents/skills
+# fork-manifest:repo-only
 # This workspace's packages ship skills that leyman/main/scripts/link-skills.mjs links to their source, current as they
 # are edited, where pnpm would link the injected copies, current only after a build
 permissions:
@@ -39,6 +40,7 @@ permissions:
     skills: false
   nx-lifecycle@file:apps/nx-lifecycle:
     skills: false
+# fork-manifest:end
 
 # Required for Docker install
 packageImportMethod: clone-or-copy
@@ -73,13 +75,19 @@ allowBuilds:
   '@swc/core': false
   esbuild: false
   nx: false
+  # fork-manifest:when valkey
   # Via @valkey/valkey-glide. Its postinstall only warns when a dependent's version range for it looks unusual
   protobufjs: false
+  # fork-manifest:end
+  # fork-manifest:when go
   # Native bindings, but gonx only loads the `tree-sitter-go.wasm` the package ships
   tree-sitter-go: false
+  # fork-manifest:end
   unrs-resolver: false
+  # fork-manifest:repo-only
   # Via wrangler and miniflare. Its postinstall only checks that the platform binary (an optional dependency) is there
   workerd: false
+  # fork-manifest:end
 
 peerDependencyRules:
   allowedVersions:
@@ -94,6 +102,7 @@ packageExtensions:
   '@nx/js':
     peerDependencies:
       typescript: '*'
+  # fork-manifest:when drizzle
   # drizzle-kit imports drizzle-orm (to check their versions match, and to read schemas) and a driver (to migrate)
   # without declaring them, so pnpm's strict layout can't resolve them. As peers, they resolve to the project's own.
   drizzle-kit:
@@ -103,14 +112,17 @@ packageExtensions:
     peerDependenciesMeta:
       pg:
         optional: true
+  # fork-manifest:end
 
 overrides:
   # nx (7.29.0), miniflare 4 (7.28.0) and wrangler's miniflare 5 prerelease (7.29.1) pin undici exactly,
   # below the advisory fixes in 7.30.1. Remove once none of them pins a version below that.
   undici@7: ^7.30.1
+  # fork-manifest:repo-only
   # miniflare 4 pins sharp exactly at 0.35.2 (libheif and librsvg advisories fixed in 0.35.5), and its stable line
   # has had no release since. Remove once a miniflare 4 release depends on >=0.35.5.
   miniflare>sharp: 0.35.5
+  # fork-manifest:end
   # eslint, nx, mocha, test-exclude, typescript-estree, sonarjs and @swc/cli allow minimatch 10 (or 9) at most, below
   # the pattern amplification fix in 11.0.1, and mocha and test-exclude allow glob 13 at most, below the abort fix in
   # 14.0.2. They only call APIs both majors share. Remove each once none of them allows a version below its fix.
@@ -120,12 +132,16 @@ overrides:
   # pins import-x ~4.17.1, and a fork takes these overrides with it, so this keeps that pair on minimatch 10 (import-x
   # only compiles patterns from the config, never untrusted input). Remove once an eslint-config on ~4.18 is on npm.
   eslint-plugin-import-x>minimatch: ^10.2.6
+  # fork-manifest:when docs-site
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
   '@vueuse/integrations>axios': '-'
+  # fork-manifest:end
+  # fork-manifest:when drizzle
   # drizzle-kit declares it but never loads it (its bundle uses esbuild directly), and it brings esbuild 0.18,
   # which has a dev server advisory fixed in 0.25.
   drizzle-kit>@esbuild-kit/esm-loader: '-'
+  # fork-manifest:end
 
 catalog:
   '@abapify/ts-xsd': ^0.4.34

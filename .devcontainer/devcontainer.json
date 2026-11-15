@@ -18,7 +18,9 @@
 
   "postCreateCommand": {
     "pnpm": "pnpm install --frozen-lockfile --config.confirmModulesPurge=false",
+    // fork-manifest:when dagger
     "dagger": "scripts/commands/dagger-develop || echo 'warning: Dagger bindings not generated, so editors flag dagger/main.go (only editors: dagger generates its own). Run dagger-develop once Docker is up.' >&2",
+    // fork-manifest:end
     "tag-images": "sh .devcontainer/tag-pinned-images.sh"
   },
 
@@ -28,14 +30,22 @@
         "anthropic.claude-code",
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
+        // fork-manifest:when ci
         "github.vscode-github-actions",
+        // fork-manifest:end
+        // fork-manifest:when go
         "golang.go",
+        // fork-manifest:end
         "ms-azuretools.vscode-docker",
         "nrwl.angular-console",
+        // fork-manifest:when tofu
         "opentofu.vscode-opentofu",
+        // fork-manifest:end
         "redhat.vscode-yaml",
         "ritwickdey.LiveServer",
+        // fork-manifest:when rust
         "rust-lang.rust-analyzer",
+        // fork-manifest:end
         "ryanluker.vscode-coverage-gutters",
         "tamasfe.even-better-toml",
         "timonwong.shellcheck",

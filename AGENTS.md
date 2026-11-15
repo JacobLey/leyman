@@ -5,7 +5,11 @@
 
 This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx documentation.
 
-This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files under `.agents/skills/` (or a package's own `.agents/skills/`) and they appear under [Skills](#skills), a table generated from each skill's `name` and `description` frontmatter by [`docs/scripts/populate-docs.mjs`](./docs/scripts/populate-docs.mjs) (`nx run @leyman/docs:populate-files`); edit this file only inside its manual sections. Each `.claude/skills` is a link to the `.agents/skills` beside it, for Claude Code, which reads only that.
+This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files under `.agents/skills/` (or a package's own `.agents/skills/`), each listed under [Skills](#skills) by its `name` and `description` frontmatter. Each `.claude/skills` is a link to the `.agents/skills` beside it, for Claude Code, which reads only that.
+
+<!-- fork-manifest:repo-only -->
+The table is generated from that frontmatter by [`docs/scripts/populate-docs.mjs`](./docs/scripts/populate-docs.mjs) (`nx run @leyman/docs:populate-files`): edit this file only inside its manual sections.
+<!-- fork-manifest:end -->
 
 Commit messages have a short subject and the reasoning in the body: see [`.agents/skills/commit-messages/SKILL.md`](./.agents/skills/commit-messages/SKILL.md).
 
@@ -23,7 +27,11 @@ The workspace task lifecycle (install → prepare → check/build → test → v
 ## Skills
 
 <!-- @manual-start skills -->
-Focused guides for common workflows in this repo. Every one is also linked from `.agents/skills`: the skills packages ship by `leyman/main/scripts/link-skills.mjs`, and the principles skill is generated from the [principles page](./docs/src/framework/principles.md).
+Focused guides for common workflows in this repo. The skills that installed packages ship are linked into `.agents/skills` too.
+
+<!-- fork-manifest:repo-only -->
+Here `leyman/main/scripts/link-skills.mjs` links them, from this workspace's packages' source, and the principles skill is generated from the [principles page](./docs/src/framework/principles.md).
+<!-- fork-manifest:end -->
 <!-- @manual-end skills -->
 
 | Skill                                                                       | What it covers                                                                                                                                                                                                                                                                                | Source                             |

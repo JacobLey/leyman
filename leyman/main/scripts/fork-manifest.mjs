@@ -32,7 +32,7 @@ import { parseArgs } from 'node:util';
 
 export const workspaceRoot = path.resolve(import.meta.dirname, '../../..');
 
-const dependencyFields = [
+export const dependencyFields = [
     'dependencies',
     'devDependencies',
     'peerDependencies',
@@ -41,6 +41,9 @@ const dependencyFields = [
 
 export const readManifest = () =>
     JSON.parse(readFileSync(path.join(import.meta.dirname, '../fork-manifest.json'), 'utf8'));
+
+// `localeCompare` follows the machine's locale
+const codeUnitOrder = (a, b) => Number(a > b) - Number(a < b);
 
 export const covers = (classified, file) =>
     file === classified || file.startsWith(`${classified}/`);
@@ -85,6 +88,123 @@ const copyFile = (file, to) => {
         symlinkSync(readlinkSync(source), target);
     } else {
         copyFileSync(source, target);
+    }
+};
+
+// A copied file may hold lines that only some forks take, between whole-line markers written as a comment of its own
+// syntax (`#`, `//` or `<!-- -->`): `fork-manifest:when <condition>` opens a region kept only for a fork with that
+// condition, `fork-manifest:repo-only` one that no fork keeps, and `fork-manifest:end` closes the innermost. Regions
+// nest, and a line is kept only when every region around it is. The markers never reach a fork.
+const markerComments = [
+    ['#', ''],
+    ['//', ''],
+    ['<!--', '-->'],
+];
+const markerPrefix = 'fork-manifest:';
+
+const parseMarker = line => {
+    const trimmed = line.trim();
+    const [open, close] = markerComments.find(
+        ([start, end]) => trimmed.startsWith(start) && trimmed.endsWith(end)
+    ) ?? ['', ''];
+    const comment = trimmed.slice(open.length, trimmed.length - close.length).trim();
+    if (open === '' || !comment.startsWith(markerPrefix)) {
+        return null;
+    }
+    const body = comment.slice(markerPrefix.length);
+    if (body === 'end' || body === 'repo-only') {
+        return { kind: body };
+    }
+    const condition = /^when (?<condition>[\d\-a-z]+)$/v.exec(body)?.groups?.condition;
+    return condition === undefined ? { kind: 'malformed', body } : { kind: 'when', condition };
+};
+
+/**
+ * What is wrong with a file's region markers: a malformed marker, an unknown condition, an `end` with nothing open, or
+ * a region never closed.
+ *
+ * @param text - the file's content
+ * @param conditions - the manifest's conditions
+ * @returns one message per problem, each starting with its line number
+ */
+export const regionProblems = (text, conditions) => {
+    const problems = [];
+    const open = [];
+    for (const [index, line] of text.split('\n').entries()) {
+        const marker = parseMarker(line);
+        if (marker?.kind === 'malformed') {
+            problems.push(`line ${index + 1}: unknown marker fork-manifest:${marker.body}`);
+        } else if (marker?.kind === 'end') {
+            if (open.pop() === undefined) {
+                problems.push(`line ${index + 1}: fork-manifest:end with no region open`);
+            }
+        } else if (marker) {
+            if (marker.kind === 'when' && !Object.hasOwn(conditions, marker.condition)) {
+                problems.push(`line ${index + 1}: unknown condition \`${marker.condition}\``);
+            }
+            open.push(index + 1);
+        }
+    }
+    return [
+        ...problems,
+        ...open.map(lineNumber => `line ${lineNumber}: region never closed by fork-manifest:end`),
+    ];
+};
+
+// A blank line on both sides of a cut region would leave two in a row, so the second goes too
+const cutRegions = (text, requested) => {
+    const open = [];
+    const kept = [];
+    let hasCut = false;
+    for (const line of text.split('\n')) {
+        const marker = parseMarker(line);
+        if (marker) {
+            if (marker.kind === 'end') {
+                open.pop();
+            } else {
+                open.push(marker.kind === 'when' && requested.has(marker.condition));
+            }
+            hasCut = true;
+        } else if (!open.every(Boolean)) {
+            hasCut = true;
+        } else if (!(hasCut && line.trim() === '' && kept.at(-1)?.trim() === '')) {
+            kept.push(line);
+            hasCut = false;
+        }
+    }
+    return kept.join('\n');
+};
+
+const cutConditionalRegions = ({ conditions }, requested, files, to) => {
+    const marked = files
+        .filter(file => !lstatSync(path.join(to, file)).isSymbolicLink())
+        .map(file => ({ file, text: readFileSync(path.join(to, file), 'utf8') }))
+        .filter(({ text }) => text.includes(markerPrefix));
+    for (const { file, text } of marked) {
+        const problems = regionProblems(text, conditions);
+        if (problems.length > 0) {
+            throw new Error(`${file}: ${problems.join('; ')}`);
+        }
+        writeFileSync(path.join(to, file), cutRegions(text, requested));
+    }
+};
+
+// Dependencies only an unrequested condition uses, such as `@changesets/cli` without `publishing`. The catalog and
+// patches are pruned to what is left afterwards.
+const dropConditionalDependencies = ({ dependencies }, requested, files, to) => {
+    const unrequested = new Set(
+        Object.entries(dependencies)
+            .filter(([condition]) => !requested.has(condition))
+            .flatMap(([, names]) => names)
+    );
+    for (const file of packageJsons(files)) {
+        const target = path.join(to, file);
+        const packageJson = readJson(target);
+        const fields = dependencyFields.filter(field => Object.hasOwn(packageJson, field));
+        for (const field of fields) {
+            packageJson[field] = without(packageJson[field], unrequested);
+        }
+        writeJson(target, packageJson);
     }
 };
 
@@ -555,6 +675,166 @@ const rewriteMainReadme = (files, to) => {
     );
 };
 
+/**
+ * A skill's `name` and `description`, from its frontmatter. Only plain one-line values are read, as
+ * `docs/scripts/populate-docs.mjs` reads them for this repository's table; anything else fails rather than being
+ * misread.
+ *
+ * @param file - the `SKILL.md`, for the error
+ * @param text - its content
+ * @returns its name and description
+ * @throws {Error} when either is missing or not a plain one-line value
+ */
+const readSkillFrontmatter = (file, text) => {
+    const frontmatter = /^---\n(?<yaml>.*?)\n---\n/sv.exec(text)?.groups?.yaml ?? '';
+    const field = key => {
+        const pattern = new RegExp(`^${key}:(?<value>.*)$`, 'mv');
+        const value = pattern.exec(frontmatter)?.groups?.value.trim();
+        if (!value || /^["'>\|]/v.test(value)) {
+            throw new Error(`${file}: frontmatter needs a plain one-line ${key}`);
+        }
+        return value;
+    };
+    return { name: field('name'), description: field('description') };
+};
+
+/**
+ * The skills a fork gets from the packages it installs from npm instead of copying: each ships `skills/<name>/SKILL.md`,
+ * which pnpm links into `.agents/skills` once `pnpm-workspace.yaml` approves the package.
+ *
+ * @param files - files `apply` copied
+ * @param to - directory `apply` wrote to
+ * @returns each skill, with the package that ships it, in package order
+ */
+const installedSkills = (files, to) => {
+    const copied = packageJsons(files).map(file => readJson(path.join(to, file)));
+    const taken = new Set(copied.map(({ name }) => name));
+    const installed = new Set(
+        copied.flatMap(packageJson => dependencyRanges(packageJson).map(({ name }) => name))
+    );
+    const committed = listFiles();
+    return packageJsons(committed)
+        .map(file => ({
+            directory: path.posix.dirname(file),
+            ...readJson(path.join(workspaceRoot, file)),
+        }))
+        .filter(({ name }) => installed.has(name) && !taken.has(name))
+        .toSorted((a, b) => codeUnitOrder(a.name, b.name))
+        .flatMap(({ directory, name: packageName }) =>
+            committed
+                .filter(file => {
+                    const [skillsDirectory, skill, skillFile, ...rest] = path.posix
+                        .relative(directory, file)
+                        .split('/');
+                    return (
+                        skillsDirectory === 'skills' &&
+                        skill &&
+                        skillFile === 'SKILL.md' &&
+                        rest.length === 0
+                    );
+                })
+                .map(file => ({
+                    ...readSkillFrontmatter(
+                        file,
+                        readFileSync(path.join(workspaceRoot, file), 'utf8')
+                    ),
+                    packageName,
+                }))
+        );
+};
+
+const quoteYamlKey = key => (/^[\w\-]+$/v.test(key) ? key : `'${key}'`);
+
+// This repository's `permissions` stay here (a `repo-only` region): its packages' skills link to their source. A fork
+// installs them from npm, so pnpm links the copies it installed, approved as `nx-plugin init` approves them.
+const approveInstalledSkills = (skills, to) => {
+    const packages = [...new Set(skills.map(({ packageName }) => packageName))];
+    if (packages.length === 0) {
+        return;
+    }
+    const file = path.join(to, 'pnpm-workspace.yaml');
+    const text = readFileSync(file, 'utf8');
+    if (/^permissions:/mv.test(text)) {
+        throw new Error(
+            'pnpm-workspace.yaml still has `permissions` after its regions were cut: keep them in a repo-only region'
+        );
+    }
+    const block = [
+        "# The skills the framework's packages ship for coding agents",
+        'permissions:',
+        ...packages.flatMap(name => [`  ${quoteYamlKey(name)}:`, '    skills: true']),
+    ];
+    writeFileSync(file, `${text.trimEnd()}\n\n${block.join('\n')}\n`);
+};
+
+const agentsGuide = 'AGENTS.md';
+const generatedLinePattern = /^<!-- @(?:generated-signature|manual-end|manual-start)\b.*-->$/v;
+
+const textWidth = text => [...text].length;
+// The separator row's `---`
+const minimumColumnWidth = 3;
+
+// Pads each column to its widest cell, as Biome formats a Markdown table
+const markdownTable = rows => {
+    const widths = rows[0].map((_cell, column) =>
+        Math.max(minimumColumnWidth, ...rows.map(row => textWidth(row[column])))
+    );
+    const line = row =>
+        `| ${row.map((text, column) => text + ' '.repeat(widths[column] - textWidth(text))).join(' | ')} |`;
+    return [
+        line(rows[0]),
+        line(widths.map(columnWidth => '-'.repeat(columnWidth))),
+        ...rows.slice(1).map(row => line(row)),
+    ];
+};
+
+// This repository's `AGENTS.md` lists every skill here, generated by `docs/scripts/populate-docs.mjs`, which a fork
+// doesn't take. A fork's lists the skills it took and those its installed packages ship, and is its own to edit from
+// then on: the signature and manual-section markers go, the prose of the manual sections stays.
+const writeAgentsGuide = (files, to, skills) => {
+    if (!files.includes(agentsGuide)) {
+        return;
+    }
+    const target = path.join(to, agentsGuide);
+    const lines = readFileSync(target, 'utf8').split('\n');
+    const start = lines.findIndex(line => line.startsWith('| Skill '));
+    if (start === -1) {
+        throw new Error(`${agentsGuide} no longer has a "| Skill" table: update writeAgentsGuide`);
+    }
+    const end = lines.findIndex((line, index) => index > start && !line.startsWith('|'));
+    const taken = files
+        .filter(file => /(?:^|\/)\.agents\/skills\/[^\/]+\/SKILL\.md$/v.test(file))
+        .map(file => {
+            const owner = file.slice(0, file.indexOf('.agents/'));
+            return {
+                ...readSkillFrontmatter(file, readFileSync(path.join(to, file), 'utf8')),
+                link: `./${file}`,
+                source: owner === '' ? 'this repository' : `\`${owner.slice(0, -1)}\`'s own`,
+            };
+        });
+    const shipped = skills.map(skill => ({
+        ...skill,
+        source: `shipped by \`${skill.packageName}\``,
+    }));
+    const rows = [...taken, ...shipped]
+        .toSorted((a, b) => codeUnitOrder(a.name, b.name))
+        .map(({ description, link, name, source }) => [
+            link ? `[\`${name}\`](${link})` : `\`${name}\``,
+            description.replaceAll('|', String.raw`\|`),
+            source,
+        ]);
+    const text = [
+        ...lines.slice(0, start),
+        ...markdownTable([['Skill', 'What it covers', 'Source'], ...rows]),
+        ...lines.slice(end === -1 ? lines.length : end),
+    ]
+        .filter(line => !generatedLinePattern.test(line))
+        .join('\n')
+        .replace(/^\n+/v, '')
+        .replaceAll(/\n{3,}/gv, '\n\n');
+    writeFileSync(target, text);
+};
+
 const fencePattern = /^ {0,3}(?:`{3}|~{3})/v;
 const inlineCodePattern = /`[^\n`]+`/gv;
 const linkPattern = /\]\((?<target>[^\s\)]+)(?<title> "[^\n"]*")?\)/gv;
@@ -699,14 +979,19 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     for (const file of files) {
         copyFile(file, to);
     }
+    cutConditionalRegions(manifest, requested, files, to);
     stripNxJson(manifest, requested, to);
+    dropConditionalDependencies(manifest, requested, files, to);
     pointAtNpm(files, to);
     installTools(files, to);
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
+    const skills = installedSkills(files, to);
+    approveInstalledSkills(skills, to);
     renameDevcontainer(files, to);
     neutralizeCacheDefaults(files, to);
     rewriteMainReadme(files, to);
+    writeAgentsGuide(files, to, skills);
     pointLinksUpstream(files, to);
     writeUpstream(to, { commit, conditions, extraPackages, files });
     return { files, skipped, taken };

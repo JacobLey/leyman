@@ -16,7 +16,21 @@ A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/fra
 - `entries`: a fork takes it. Add `when` if only some forks need it, and `why` in one line.
 - `repoOnly`: it stays here. `why` says what ties it to this repo.
 
-An `nx.json` target, named input or plugin that belongs to one condition goes under `nx` too, so a fork without that condition doesn't get it. Anything else in `nx.json` goes to every fork.
+An `nx.json` target, named input or plugin that belongs to one condition goes under `nx` too, so a fork without that condition doesn't get it. Anything else in `nx.json` goes to every fork. Likewise a dependency of a taken `package.json` that only one condition uses goes under `dependencies` (`@changesets/cli` under `publishing`); `apply` then prunes the catalog and patches to what is left.
+
+## Lines only some forks take
+
+A file every fork takes can still hold lines only some need: a Dockerfile stage, a compose sidecar, a `pnpm-workspace.yaml` entry. Wrap them in whole-line markers written as a comment of the file's own syntax (`#`, `//` in JSONC, `<!-- -->` in Markdown):
+
+```dockerfile
+# fork-manifest:when go
+FROM ${GO_IMAGE} AS go
+# fork-manifest:end
+```
+
+`fork-manifest:when <condition>` keeps the lines only for a fork with that condition, `fork-manifest:repo-only` keeps them for none (this repo's own `permissions`, a rule for one of its packages), and regions nest: a comment naming `dagger/main.go` inside a `go` stage sits in a `dagger` region of its own. A fork never sees the markers, and a blank line left doubled by a cut goes too. `check-fork-manifest` fails on a marker it can't parse, an unknown condition, or an unbalanced region. Prefer a marker to a rewrite in `fork-manifest.mjs`, which only fits what a marker can't express: JSON without comments, or a value a fork renames.
+
+`AGENTS.md` is the one file `apply` writes from what it took: its skills table lists the skills the fork took and those its installed packages ship (which `apply` approves in `pnpm-workspace.yaml`, so pnpm links them), and the signature and manual-section markers go, since nothing in a fork regenerates it. The prose of its manual sections is copied, so keep it true of a fork, with what is only true here in a `repo-only` region.
 
 ## What portable means
 
@@ -26,7 +40,7 @@ A file is portable if it works with the other entries and nothing else. It may m
 
 | What | When | What it catches |
 |------|------|-----------------|
-| `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names or links to that didn't come along, with no optional conditions and with all of them |
+| `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths, conditions and dependencies, malformed region markers, and anything an applied fork names or links to that didn't come along, with no optional conditions and with all of them |
 | `fork-manifest-audit` | By hand and weekly, never in `verify` | What only shows up when a fork runs: applies the manifest with `tools/parse-cwd`, installs from nothing, runs `verify` and checks for lifecycle drift, and that `drift` reports nothing right after `apply` |
 
 The audit runs without any optional condition, so it doesn't prove the conditional files work. Neither reads the prose of the skills, which still name this repo's packages as examples.
@@ -71,10 +85,10 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.agents/skills/worktrees` | the worktree layout and flow |
 | `.agents/skills/writing-readmes` | the README bar |
 | `.devcontainer/.dockerignore` | keeps the image's build context empty |
-| `.devcontainer/Dockerfile` | the image everything runs in; delete the stages of languages the fork lacks. `apply` names its user after the fork |
+| `.devcontainer/Dockerfile` | the image everything runs in. `apply` cuts the stages of conditions the fork lacks, and names its user after the fork |
 | `.devcontainer/devcontainer-lock.json` | pins the devcontainer features |
-| `.devcontainer/devcontainer.json` | the container's environment and post-create steps. `apply` names the container, its service and user after the fork |
-| `.devcontainer/docker-compose.yml` | the container and its sidecars. `apply` names its service after the fork, and gives its Nx cache no upstream |
+| `.devcontainer/devcontainer.json` | the container's environment and post-create steps. `apply` cuts what the fork's conditions don't need, and names the container, its service and user after the fork |
+| `.devcontainer/docker-compose.yml` | the container and its sidecars. `apply` cuts the sidecars of conditions the fork lacks, names its service after the fork, and gives its Nx cache no upstream |
 | `.devcontainer/initialize.sh` | writes the worktree's .env on the host, links the shared Claude settings and plans folder; tolerates a missing local-ingress |
 | `.devcontainer/names.sh` | the worktree's DNS labels |
 | `.devcontainer/nx-cache-server.mjs` | the Nx cache shared by worktrees, which the compose file always mounts. `apply` drops its default OIDC audience, which names this repo's hosted cache |
@@ -100,12 +114,12 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.gitattributes` | marks generated output |
 | `.gitignore` | what the targets write and nothing should commit |
 | `.nx/installation` | the link that lets Nx find plugins in leyman/main, so the root package.json stays empty |
-| `AGENTS.md` | the agent entry point |
+| `AGENTS.md` | the agent entry point. `apply` lists in it the skills the fork took and those its installed packages ship |
 | `CLAUDE.md` | links to AGENTS.md |
 | `biome.json` | formatting rules |
 | `nx.json` | target defaults, named inputs and lifecycle targets |
 | `package.json` | stays empty by design |
-| `pnpm-workspace.yaml` | the catalog and workspace globs |
+| `pnpm-workspace.yaml` | the catalog and workspace globs. `apply` prunes the catalog and patches to what the fork depends on, and approves the skills of the packages it installs |
 | `tsconfig.base.json` | empty on purpose, so Nx hashes it in place of tsconfig.json |
 | `tsconfig.json` | the TypeScript project root |
 
@@ -198,11 +212,11 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.agents/skills/framework-audit` | a link to @leyman/framework's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
-| `.agents/skills/eslint-config` | a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
-| `.agents/skills/principles` | a link to @leyman/configs' source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
-| `.agents/skills/mocha-chain` | a link to mocha-chain's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
-| `.agents/skills/nx-lifecycle` | a link to nx-lifecycle's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
+| `.agents/skills/framework-audit` | a link to @leyman/framework's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init) |
+| `.agents/skills/eslint-config` | a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init) |
+| `.agents/skills/principles` | a link to @leyman/configs' source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init) |
+| `.agents/skills/mocha-chain` | a link to mocha-chain's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init) |
+| `.agents/skills/nx-lifecycle` | a link to nx-lifecycle's source; a fork has pnpm link its installed copy (approved in pnpm-workspace.yaml by `apply`, as by nx-plugin init) |
 | `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |

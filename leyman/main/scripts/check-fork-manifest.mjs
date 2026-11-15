@@ -1,20 +1,23 @@
 // Checks that `fork-manifest.json` still draws the line between what a fork takes and what stays in this repo: every
-// file under its `roots`, and every file at the top of the workspace, is classified exactly once, and every path,
-// condition and target it names is real. It then applies the manifest to a temporary directory, and inspects that
-// whatever the result names came along too, so a wrong classification fails here without installing anything.
+// file under its `roots`, and every file at the top of the workspace, is classified exactly once, every path,
+// condition, dependency and target it names is real, and the region markers in what a fork takes balance. It then
+// applies the manifest to a temporary directory, and inspects that whatever the result names came along too, so a wrong
+// classification fails here without installing anything.
 //
 // Has no dependencies, because CI's `test` job runs it straight from the checkout, with no `node_modules`.
 
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
     apply,
     covers,
+    dependencyFields,
     inspect,
     listFiles,
     readManifest,
     readSkill,
+    regionProblems,
     renderSkill,
     workspaceRoot,
 } from './fork-manifest.mjs';
@@ -57,8 +60,8 @@ const checkFiles = ({ roots }, files, classified) => {
     ];
 };
 
-const checkConditions = ({ conditions, nx }, classified) => {
-    const grouped = [nx.namedInputs, nx.plugins, nx.targets];
+const checkConditions = ({ conditions, dependencies, nx }, classified) => {
+    const grouped = [dependencies, nx.namedInputs, nx.plugins, nx.targets];
     return [
         ...Object.keys(conditions)
             .filter(
@@ -70,7 +73,10 @@ const checkConditions = ({ conditions, nx }, classified) => {
         ...grouped
             .flatMap(group => Object.keys(group))
             .filter(condition => !Object.hasOwn(conditions, condition))
-            .map(condition => `nx: unknown condition \`${condition}\`, not in \`conditions\``),
+            .map(
+                condition =>
+                    `nx or dependencies: unknown condition \`${condition}\`, not in \`conditions\``
+            ),
     ];
 };
 
@@ -92,6 +98,40 @@ const checkNx = ({ nx }) => {
             .filter(name => !pluginNames.has(name))
             .map(name => `nx: plugin ${name} isn't in nx.json`),
     ];
+};
+
+// A dependency cut by condition must be one that a package.json a fork takes declares
+const checkDependencies = ({ dependencies, entries, packages }, files) => {
+    const taken = [...entries, ...packages];
+    const declared = new Set(
+        files
+            .filter(file => path.basename(file) === 'package.json')
+            .filter(file => taken.some(entry => covers(entry.path, file)))
+            .flatMap(file => {
+                const packageJson = JSON.parse(
+                    readFileSync(path.join(workspaceRoot, file), 'utf8')
+                );
+                return dependencyFields.flatMap(field => Object.keys(packageJson[field] ?? {}));
+            })
+    );
+    return Object.values(dependencies)
+        .flat()
+        .filter(name => !declared.has(name))
+        .map(name => `dependencies ${name}: no package.json a fork takes depends on it`);
+};
+
+// The region markers in what a fork takes must balance and name real conditions, or `apply` fails on them
+const checkRegions = ({ conditions, entries, packages }, files) => {
+    const taken = [...entries, ...packages];
+    return files
+        .filter(file => taken.some(entry => covers(entry.path, file)))
+        .filter(file => !lstatSync(path.join(workspaceRoot, file)).isSymbolicLink())
+        .flatMap(file => {
+            const text = readFileSync(path.join(workspaceRoot, file), 'utf8');
+            return text.includes('fork-manifest:')
+                ? regionProblems(text, conditions).map(problem => `${file}: ${problem}`)
+                : [];
+        });
 };
 
 // Whatever a fork asks for, what it gets must hang together: with nothing optional, and with everything
@@ -118,6 +158,8 @@ const failures = () => {
         ...checkFiles(manifest, files, classified),
         ...checkConditions(manifest, classified),
         ...checkNx(manifest),
+        ...checkDependencies(manifest, files),
+        ...checkRegions(manifest, files),
     ];
     if (found.length > 0) {
         // Applying needs the manifest's own paths to be right

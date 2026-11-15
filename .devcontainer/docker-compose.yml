@@ -27,14 +27,20 @@ services:
       # has less to delete before VS Code starts the new container (the devcontainer skill's "Rebuilding").
       # pnpm's registry metadata, shared like the store
       pnpm_config_cache_dir: ${WORKTREES_DIR}/.shared/pnpm-cache
+      # fork-manifest:when go
       # Go's build and module caches, both safe for several `go` commands at once
       GOCACHE: ${WORKTREES_DIR}/.shared/go-build
       GOMODCACHE: ${WORKTREES_DIR}/.shared/go-mod
+      # fork-manifest:end
+      # fork-manifest:when playwright
       # Browsers for Playwright tests, downloaded once and kept across rebuilds
       PLAYWRIGHT_BROWSERS_PATH: ${WORKTREES_DIR}/.shared/playwright-browsers
+      # fork-manifest:end
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
+      # fork-manifest:when postgres
       # The `postgres` sidecar. A fixed dev password: local-only, not a secret
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+      # fork-manifest:end
       # This worktree's URL is https://${WORKTREE_NAME}.${REPO_NAME}.localhost
       REPO_NAME: ${REPO_NAME:?run .devcontainer/initialize.sh}
       WORKTREE_NAME: ${WORKTREE_NAME:?run .devcontainer/initialize.sh}
@@ -63,10 +69,15 @@ services:
 
     depends_on:
       - nx-cache
+      # fork-manifest:when dagger
       - dagger-nx-cache
+      # fork-manifest:end
+      # fork-manifest:when valkey
       - valkey
+      # fork-manifest:end
+      # fork-manifest:when postgres
       - postgres
-
+      # fork-manifest:end
     # Overrides default command so things don't shut down after the process ends.
     command:
       - sleep
@@ -89,6 +100,7 @@ services:
       NX_CACHE_SERVER_MAX_SIZE_GB: ${NX_CACHE_SERVER_MAX_SIZE_GB-5}
     restart: unless-stopped
 
+  # fork-manifest:when dagger
   # The Nx cache for `dagger-test`. Separate from `nx-cache`, whose results were built in a different environment, and
   # with no upstream, so what it serves was only ever built by Dagger on this machine. Every worktree's shares a directory.
   # Listens on port 3000, where `Test` in `dagger/main.go` expects it.
@@ -103,10 +115,14 @@ services:
     environment:
       NX_CACHE_SERVER_MAX_SIZE_GB: ${NX_CACHE_SERVER_MAX_SIZE_GB-5}
     restart: unless-stopped
+  # fork-manifest:end
 
-  # For tests that run against Valkey, at `valkey:6379`: Dagger binds its service under the same hostname.
-  # One per worktree (unlike the shared caches), so concurrent test runs never see each other's keys.
-  # Keep the image in sync with `valkeyImage` in `dagger/main.go`.
+  # fork-manifest:when valkey
+  # For tests that run against Valkey, at `valkey:6379`. One per worktree (unlike the shared caches), so concurrent
+  # test runs never see each other's keys.
+  # fork-manifest:when dagger
+  # Dagger binds its service under the same hostname: keep the image in sync with `valkeyImage` in `dagger/main.go`.
+  # fork-manifest:end
   valkey:
     image: valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd
     # Data only lives as long as the container: tests never rely on it surviving
@@ -117,10 +133,15 @@ services:
       - --appendonly
       - 'no'
     restart: unless-stopped
+  # fork-manifest:end
 
-  # For tests that run against Postgres, at `postgres:5432` (`DATABASE_URL` above): Dagger binds its service under
-  # the same hostname. One per worktree, like `valkey`.
-  # Keep the image and settings in sync with `postgresImage` and `postgresService` in `dagger/main.go`.
+  # fork-manifest:when postgres
+  # For tests that run against Postgres, at `postgres:5432` (`DATABASE_URL` above). One per worktree, so concurrent
+  # test runs never see each other's data.
+  # fork-manifest:when dagger
+  # Dagger binds its service under the same hostname: keep the image and settings in sync with `postgresImage` and
+  # `postgresService` in `dagger/main.go`.
+  # fork-manifest:end
   postgres:
     image: postgres:18.6-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
     environment:
@@ -142,6 +163,7 @@ services:
       - -c
       - max_connections=500
     restart: unless-stopped
+  # fork-manifest:end
 
 networks:
   # Created by `initialize.sh`, shared by every repo's devcontainers

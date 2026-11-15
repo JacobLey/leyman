@@ -23,6 +23,7 @@ linters:
     gomoddirectives:
       # A workspace project depends on another through a local `replace`, as it's never fetched
       replace-local: true
+    # fork-manifest:when dagger
     godot:
       # Dagger's pragmas, like `+cache="never"`, have to end a doc comment as they are
       exclude:
@@ -31,21 +32,30 @@ linters:
       # The generated `dagger.gen.go` gives the module's type both kinds of receiver
       exclusions:
         - Ci.MarshalJSON
+    # fork-manifest:end
     wrapcheck:
-      # The engine's errors already name the query that failed, and a group only returns its own functions' errors
       ignore-package-globs:
+        # fork-manifest:when dagger
+        # The engine's errors already name the query that failed
         - dagger/ci/internal/dagger
+        # fork-manifest:end
+        # A group only returns its own functions' errors
         - golang.org/x/sync/errgroup
+        # fork-manifest:repo-only
         # genever's own errors, built as errors.New builds one
         - github.com/JacobLey/leyman/apps/genever/go/internal/gerr
+        # fork-manifest:end
   exclusions:
     generated: lax
     # The error from closing what was only read has nothing to report
     presets:
       - std-error-handling
+    # fork-manifest:when dagger
     paths:
       - dagger/internal/
+    # fork-manifest:end
     rules:
+      # fork-manifest:when dagger
       # Its doc comments are the CLI's help text (`dagger call --help`), not godoc
       - path: dagger/main\.go
         linters:
@@ -70,14 +80,17 @@ linters:
       - path: dagger/go\.mod
         linters:
           - gomoddirectives
+      # fork-manifest:end
       # A test's expected values read best written out where they're compared, even when two tests expect the same
       - path: _test\.go
         linters:
           - goconst
+      # fork-manifest:repo-only
       # Its numbers are the hash's specified constants and bit widths, which a name wouldn't explain further
       - path: tools/constant-consistent-hash/go/
         linters:
           - mnd
+      # fork-manifest:end
 
 formatters:
   enable:
@@ -85,5 +98,7 @@ formatters:
     - goimports
   exclusions:
     generated: lax
+    # fork-manifest:when dagger
     paths:
       - dagger/internal/
+    # fork-manifest:end
