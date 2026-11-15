@@ -72,7 +72,7 @@ func (e *emulator) createTable(ctx context.Context, table string) error {
 		return fmt.Errorf("wait for table: %w", err)
 	}
 
-	if _, err := e.client.UpdateTimeToLive(ctx, dynamodbstore.TimeToLiveInput(options)); err != nil {
+	if _, err := e.client.UpdateTimeToLive(ctx, dynamodbstore.UpdateTimeToLiveInput(options)); err != nil {
 		return fmt.Errorf("turn on TTL: %w", err)
 	}
 

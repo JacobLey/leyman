@@ -32,13 +32,13 @@ const startEmulator = async (): Promise<AwsEmulator> => {
  * Creates a table, and waits until it can be used.
  *
  * @param dynamodb - The client
- * @param tableName - What to call it
+ * @param table - What to call it
  */
-export const createTable = async (dynamodb: DynamoDB, tableName: string): Promise<void> => {
-    await dynamodb.createTable(createTableInput(tableName));
+export const createTable = async (dynamodb: DynamoDB, table: string): Promise<void> => {
+    await dynamodb.createTable(createTableInput(table));
     for (;;) {
-        const { Table: table } = await dynamodb.describeTable({ TableName: tableName });
-        if (table?.TableStatus === 'ACTIVE') {
+        const { Table: description } = await dynamodb.describeTable({ TableName: table });
+        if (description?.TableStatus === 'ACTIVE') {
             return;
         }
         await setTimeout(tablePollMs);
@@ -47,7 +47,7 @@ export const createTable = async (dynamodb: DynamoDB, tableName: string): Promis
 
 export interface DynamoDbContext {
     readonly dynamodb: DynamoDB;
-    readonly tableName: string;
+    readonly table: string;
 }
 
 const shared: { context?: DynamoDbContext } = {};
@@ -61,14 +61,14 @@ export const withDynamoDb = before(async () => {
     const emulator = await startEmulator();
     // Authentication stays on, as on AWS: requests are signed with this run's keys
     const dynamodb = new DynamoDB(awsClientConfig(emulator));
-    const tableName = `idempotency_keys_${randomUUID()}`;
+    const table = `idempotency_keys_${randomUUID()}`;
     // As on AWS, a new table takes a few seconds to be ready
-    await createTable(dynamodb, tableName);
-    shared.context = { dynamodb, tableName };
+    await createTable(dynamodb, table);
+    shared.context = { dynamodb, table };
     return { emulator, ...shared.context };
 });
-withDynamoDb.after(async ({ emulator, dynamodb, tableName }) => {
-    await dynamodb.deleteTable({ TableName: tableName });
+withDynamoDb.after(async ({ emulator, dynamodb, table }) => {
+    await dynamodb.deleteTable({ TableName: table });
     dynamodb.destroy();
     await emulator.stop();
 });

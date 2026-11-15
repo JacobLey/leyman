@@ -108,20 +108,20 @@ suite('DynamoDbStore', () => {
         await expect(store.release('a'.repeat(64), '1'.repeat(32))).to.be.rejected;
     });
 
-    const withStore = withDynamoDb.beforeEach(({ dynamodb, tableName }) => ({
-        store: new DynamoDbStore({ connection: dynamodb, tableName }),
+    const withStore = withDynamoDb.beforeEach(({ dynamodb, table }) => ({
+        store: new DynamoDbStore({ connection: dynamodb, table }),
         identity: randomBytes(32).toString('hex'),
     }));
 
     withStore.test(
         'Writes a running item, then a completed one, as the spec describes',
-        async ({ dynamodb, tableName, store, identity }) => {
+        async ({ dynamodb, table, store, identity }) => {
             const key = { identity: { B: Buffer.from(identity, 'hex') } };
             const before = Date.now();
             await claim(store, identity, '1'.repeat(32));
             const after = Date.now();
             const { Item: running } = await dynamodb.getItem({
-                TableName: tableName,
+                TableName: table,
                 Key: key,
                 ConsistentRead: true,
             });
@@ -143,7 +143,7 @@ suite('DynamoDbStore', () => {
 
             await store.complete(identity, '1'.repeat(32), response);
             const { Item: completed } = await dynamodb.getItem({
-                TableName: tableName,
+                TableName: table,
                 Key: key,
                 ConsistentRead: true,
             });
@@ -159,10 +159,10 @@ suite('DynamoDbStore', () => {
         }
     );
 
-    withStore.test('Turns on Time to Live with its input', async ({ dynamodb, tableName }) => {
-        await dynamodb.updateTimeToLive(updateTimeToLiveInput(tableName));
+    withStore.test('Turns on Time to Live with its input', async ({ dynamodb, table }) => {
+        await dynamodb.updateTimeToLive(updateTimeToLiveInput(table));
         const { TimeToLiveDescription: description } = await dynamodb.describeTimeToLive({
-            TableName: tableName,
+            TableName: table,
         });
         expect(description).to.include({ AttributeName: 'ttl' });
         expect(description!.TimeToLiveStatus).to.be.oneOf(['ENABLED', 'ENABLING']);
@@ -293,7 +293,7 @@ suite('DynamoDbStore', () => {
     );
 
     withStore.test('Passes on any error but a failed condition', async ({ dynamodb, identity }) => {
-        const store = new DynamoDbStore({ connection: dynamodb, tableName: 'missing_table' });
+        const store = new DynamoDbStore({ connection: dynamodb, table: 'missing_table' });
         await expect(
             claim(store, identity, '1'.repeat(32))
         ).to.be.rejected.and.eventually.have.property('name', 'ResourceNotFoundException');

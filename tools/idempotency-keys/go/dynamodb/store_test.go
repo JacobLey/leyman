@@ -519,10 +519,10 @@ func TestCreateTableInput(t *testing.T) {
 	}
 }
 
-func TestTimeToLiveInput(t *testing.T) {
+func TestUpdateTimeToLiveInput(t *testing.T) {
 	t.Parallel()
 
-	input := dynamodbstore.TimeToLiveInput(dynamodbstore.StoreOptions{Table: ""})
+	input := dynamodbstore.UpdateTimeToLiveInput(dynamodbstore.StoreOptions{Table: ""})
 	if *input.TableName != "idempotency_keys" || *input.TimeToLiveSpecification.AttributeName != "ttl" ||
 		!*input.TimeToLiveSpecification.Enabled {
 		t.Fatalf("got %+v", input)

@@ -80,12 +80,12 @@ import dynamodbstore "github.com/JacobLey/leyman/tools/idempotency-keys/go/dynam
 client := dynamodb.NewFromConfig(cfg)
 // Once, in a migration or your infrastructure code
 client.CreateTable(ctx, dynamodbstore.CreateTableInput(dynamodbstore.StoreOptions{}))
-client.UpdateTimeToLive(ctx, dynamodbstore.TimeToLiveInput(dynamodbstore.StoreOptions{}))
+client.UpdateTimeToLive(ctx, dynamodbstore.UpdateTimeToLiveInput(dynamodbstore.StoreOptions{}))
 
 keys, _ := idempotencykeys.New(dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{}))
 ```
 
-`NewStore` takes a `*dynamodb.Client`, or anything with its `PutItem`, `UpdateItem` and `DeleteItem`. It works as the TypeScript `DynamoDbStore` does, on the same table: a claim is one conditional `PutItem`, so the store is strict, and it uses each server's clock, so the lease has to cover the worst drift between servers as well as the slowest handler. `CreateTableInput` and `TimeToLiveInput` give the requests that create the table (partition key `identity`, binary, billed on demand) and turn on Time to Live for `ttl`, which only cleans up expired items: the store never relies on it. A response that doesn't fit in a 400 KB item makes `Complete` return DynamoDB's error, and the key is left to its lease. There is no DynamoDB notifier, so pair it with the Valkey or Postgres one, or let waiting requests poll.
+`NewStore` takes a `*dynamodb.Client`, or anything with its `PutItem`, `UpdateItem` and `DeleteItem`. It works as the TypeScript `DynamoDbStore` does, on the same table: a claim is one conditional `PutItem`, so the store is strict, and it uses each server's clock, so the lease has to cover the worst drift between servers as well as the slowest handler. `CreateTableInput` and `UpdateTimeToLiveInput` give the requests that create the table (partition key `identity`, binary, billed on demand) and turn on Time to Live for `ttl`, which only cleans up expired items: the store never relies on it. A response that doesn't fit in a 400 KB item makes `Complete` return DynamoDB's error, and the key is left to its lease. There is no DynamoDB notifier, so pair it with the Valkey or Postgres one, or let waiting requests poll.
 
 ## Options
 

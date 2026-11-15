@@ -62,7 +62,7 @@ type Client interface {
 
 var _ Client = (*dynamodb.Client)(nil)
 
-// StoreOptions configure [NewStore], [CreateTableInput] and [TimeToLiveInput].
+// StoreOptions configure [NewStore], [CreateTableInput] and [UpdateTimeToLiveInput].
 type StoreOptions struct {
 	// Table is the table's name. "idempotency_keys" when empty.
 	Table string
@@ -89,10 +89,10 @@ func CreateTableInput(options StoreOptions) *dynamodb.CreateTableInput {
 	}
 }
 
-// TimeToLiveInput is the UpdateTimeToLive request that turns on DynamoDB's own expiry for the table's ttl attribute,
-// so expired items are deleted some time after they expire. The store never relies on it: every condition checks the
-// expiry itself, so without it expired items only stay until a claim writes over them.
-func TimeToLiveInput(options StoreOptions) *dynamodb.UpdateTimeToLiveInput {
+// UpdateTimeToLiveInput is the UpdateTimeToLive request that turns on DynamoDB's own expiry for the table's ttl
+// attribute, so expired items are deleted some time after they expire. The store never relies on it: every condition
+// checks the expiry itself, so without it expired items only stay until a claim writes over them.
+func UpdateTimeToLiveInput(options StoreOptions) *dynamodb.UpdateTimeToLiveInput {
 	return &dynamodb.UpdateTimeToLiveInput{
 		TableName: aws.String(tableName(options)),
 		TimeToLiveSpecification: &types.TimeToLiveSpecification{

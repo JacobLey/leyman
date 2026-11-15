@@ -51,13 +51,13 @@ import { DynamoDbStore } from 'idempotency-keys/dynamodb';
 
 const dynamodb = new DynamoDB({ region: 'us-east-1' });
 const keys = new IdempotencyKeys({
-    store: new DynamoDbStore({ connection: dynamodb, tableName: 'idempotency_keys' }),
+    store: new DynamoDbStore({ connection: dynamodb, table: 'idempotency_keys' }),
 });
 ```
 
 The connection is the aggregated `DynamoDB` client, with methods such as `putItem`, not `DynamoDBClient`, which only has `send`. The package doesn't depend on the SDK: anything with the same `putItem`, `updateItem` and `deleteItem` works, as long as a failed condition rejects with an error named `ConditionalCheckFailedException` that carries the item it found as `Item`, as the SDK's errors do. The store never destroys the client.
 
-The table has one key, `identity`, holding bytes. [`createTableInput()`](/packages/idempotency-keys/reference/api#createtableinput-tablename) gives what `CreateTable` takes, billed per request, and [`updateTimeToLiveInput()`](/packages/idempotency-keys/reference/api#updatetimetoliveinput-tablename) turns on Time to Live for the `ttl` attribute, so DynamoDB deletes expired keys on its own, some time after they expire. Without it, an expired item stays until the next request with its key writes over it. Every write checks the expiry itself, so it never relies on when DynamoDB gets round to deleting.
+The table has one key, `identity`, holding bytes. [`createTableInput()`](/packages/idempotency-keys/reference/api#createtableinput-table) gives what `CreateTable` takes, billed per request, and [`updateTimeToLiveInput()`](/packages/idempotency-keys/reference/api#updatetimetoliveinput-table) turns on Time to Live for the `ttl` attribute, so DynamoDB deletes expired keys on its own, some time after they expire. Without it, an expired item stays until the next request with its key writes over it. Every write checks the expiry itself, so it never relies on when DynamoDB gets round to deleting.
 
 ```ts
 import { type DynamoDB, waitUntilTableExists } from '@aws-sdk/client-dynamodb';

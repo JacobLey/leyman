@@ -2,7 +2,7 @@
 
 ## 0.3.0
 
-- The new `dynamodb` package is the spec's DynamoDB store, on the AWS SDK for Go v2: `NewStore` takes a `*dynamodb.Client` (or anything with its `PutItem`, `UpdateItem` and `DeleteItem`), and `CreateTableInput` and `TimeToLiveInput` give the requests that create its table and turn on Time to Live. It is strict, like the Postgres store, and uses the servers' clocks, so the lease has to cover clock drift between them. A response too big for a 400 KB item is an error when completing. It shares keys with the TypeScript package's `DynamoDbStore`.
+- The new `dynamodb` package is the spec's DynamoDB store, on the AWS SDK for Go v2: `NewStore` takes a `*dynamodb.Client` (or anything with its `PutItem`, `UpdateItem` and `DeleteItem`), and `CreateTableInput` and `UpdateTimeToLiveInput` give the requests that create its table and turn on Time to Live. It is strict, like the Postgres store, and uses the servers' clocks, so the lease has to cover clock drift between them. A response too big for a 400 KB item is an error when completing. It shares keys with the TypeScript package's `DynamoDbStore`.
 - `SpecVersion` is `"1.1"`, which adds the DynamoDB layout. Servers on 1.0 share keys with it as before.
 
 ## 0.2.1

@@ -46,8 +46,8 @@ const stores: readonly (readonly [string, (context: Context) => IdempotencyStore
     ['Postgres', ({ pool }) => new PostgresStore({ client: pool })],
     [
         'DynamoDB',
-        ({ dynamodb, tableName, prefix }) =>
-            isolated(new DynamoDbStore({ connection: dynamodb, tableName }), prefix),
+        ({ dynamodb, table, prefix }) =>
+            isolated(new DynamoDbStore({ connection: dynamodb, table }), prefix),
     ],
     [
         'Valkey',

@@ -45,13 +45,13 @@ const startEmulator = async (): Promise<AwsEmulator> => {
  * Creates a table, and waits until it can be used.
  *
  * @param dynamodb - The client
- * @param tableName - What to call it
+ * @param table - What to call it
  */
-const createTable = async (dynamodb: DynamoDB, tableName: string): Promise<void> => {
-    await dynamodb.createTable(createTableInput(tableName));
+const createTable = async (dynamodb: DynamoDB, table: string): Promise<void> => {
+    await dynamodb.createTable(createTableInput(table));
     for (;;) {
-        const { Table: table } = await dynamodb.describeTable({ TableName: tableName });
-        if (table?.TableStatus === 'ACTIVE') {
+        const { Table: description } = await dynamodb.describeTable({ TableName: table });
+        if (description?.TableStatus === 'ACTIVE') {
             return;
         }
         await setTimeout(tablePollMs);

@@ -113,7 +113,7 @@ cfg, _ := config.LoadDefaultConfig(ctx)
 client := dynamodb.NewFromConfig(cfg)
 // Once, in a migration or your infrastructure code
 client.CreateTable(ctx, dynamodbstore.CreateTableInput(dynamodbstore.StoreOptions{}))
-client.UpdateTimeToLive(ctx, dynamodbstore.TimeToLiveInput(dynamodbstore.StoreOptions{}))
+client.UpdateTimeToLive(ctx, dynamodbstore.UpdateTimeToLiveInput(dynamodbstore.StoreOptions{}))
 
 keys, _ := idempotencykeys.New(dynamodbstore.NewStore(client, dynamodbstore.StoreOptions{}))
 ```
@@ -122,7 +122,7 @@ Like Postgres, it is strict. A claim is a single conditional `PutItem`, so only 
 
 DynamoDB has no clock that a condition can read, so the store uses each server's own clock (`time.Now()`). If one server's clock runs ahead of another's, it sees leases run out early and can take one over while its request is still running. Set the lease to your slowest handler plus the worst drift you expect between servers. A key can also expire early by that much.
 
-`CreateTableInput` and `TimeToLiveInput` give the requests for the table: a partition key `identity` (binary), billed on demand, and DynamoDB's Time to Live on the `ttl` attribute. Create the table however you manage infrastructure, as long as the key is the same. Time to Live is optional. It deletes expired items some time after they expire, so the table doesn't keep growing. The store never relies on it, since every request checks the expiry itself, and without it an expired item stays until the next claim of its key writes over it. There is no `DeleteExpired`.
+`CreateTableInput` and `UpdateTimeToLiveInput` give the requests for the table: a partition key `identity` (binary), billed on demand, and DynamoDB's Time to Live on the `ttl` attribute. Create the table however you manage infrastructure, as long as the key is the same. Time to Live is optional. It deletes expired items some time after they expire, so the table doesn't keep growing. The store never relies on it, since every request checks the expiry itself, and without it an expired item stays until the next claim of its key writes over it. There is no `DeleteExpired`.
 
 A DynamoDB item holds at most 400 KB, so a response bigger than that (less the few attributes around it) can't be stored. `Complete` returns DynamoDB's error, and the key is left to its lease, as when a server crashes.
 
@@ -201,8 +201,8 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 | `PostgresNotifier.listen(...)`                   | `postgres.Listen(ctx, publisher, *pgx.Conn, NotifierOptions)`; `Close(ctx)` runs `UNLISTEN`                                                                                  |
 | `new ValkeyStore({ connection, prefix? })`       | `valkey.NewStore(valkey.Client, StoreOptions)`                                                                                                                               |
 | `ValkeyNotifier.listen(...)`                     | `valkey.Listen(ctx, valkey.Client, NotifierOptions)`; `Close()`                                                                                                              |
-| `new DynamoDbStore({ connection, tableName? })`  | `dynamodb.NewStore(dynamodb.Client, StoreOptions)`, a `*dynamodb.Client` from the AWS SDK                                                                                    |
-| `createTableInput`, `updateTimeToLiveInput`      | `dynamodb.CreateTableInput(StoreOptions)`, `dynamodb.TimeToLiveInput(StoreOptions)`                                                                                          |
+| `new DynamoDbStore({ connection, table? })`      | `dynamodb.NewStore(dynamodb.Client, StoreOptions)`, a `*dynamodb.Client` from the AWS SDK                                                                                    |
+| `createTableInput`, `updateTimeToLiveInput`      | `dynamodb.CreateTableInput(StoreOptions)`, `dynamodb.UpdateTimeToLiveInput(StoreOptions)`                                                                                    |
 
 Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 

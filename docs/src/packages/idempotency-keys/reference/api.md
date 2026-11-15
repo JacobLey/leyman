@@ -161,20 +161,20 @@ The `CREATE TABLE` statement of the specification, for a migration. `table` defa
 
 `DynamoDbStore`, `createTableInput`, `updateTimeToLiveInput`, and their types.
 
-### `new DynamoDbStore({ connection, tableName? })`
+### `new DynamoDbStore({ connection, table? })`
 
 | Option       | Type                 | Default              | Description                                                                                                                                                                                                                                                                         |
 | ------------ | -------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `connection` | `DynamoDbConnection` | —                    | Required. Anything with `putItem`, `updateItem` and `deleteItem`, as the `DynamoDB` client of `@aws-sdk/client-dynamodb` has. A failed condition must reject with an error named `ConditionalCheckFailedException` carrying the item found as `Item`. Never destroyed by the store. |
-| `tableName`  | `string`             | `'idempotency_keys'` | The table, made with [`createTableInput()`](#createtableinput-tablename).                                                                                                                                                                                                           |
+| `table`      | `string`             | `'idempotency_keys'` | The table, made with [`createTableInput()`](#createtableinput-table).                                                                                                                                                                                                               |
 
 Every time is this server's `Date.now()`, so `leaseMs` must cover the worst clock drift between servers. Completing with a response that makes the item larger than 400 KB rejects with DynamoDB's error, and the key stays held until its lease runs out. Any error but a failed condition, or a failed condition without an item, is passed on as it is.
 
-### `createTableInput(tableName?)`
+### `createTableInput(table?)`
 
-The `CreateTable` input of the specification's table: the partition key `identity`, bytes, billed per request. `tableName` defaults to `'idempotency_keys'`. **Returns** `DynamoDbCreateTableInput`, for `client.createTable()`.
+The `CreateTable` input of the specification's table: the partition key `identity`, bytes, billed per request. `table` defaults to `'idempotency_keys'`. **Returns** `DynamoDbCreateTableInput`, for `client.createTable()`.
 
-### `updateTimeToLiveInput(tableName?)`
+### `updateTimeToLiveInput(table?)`
 
 The `UpdateTimeToLive` input that turns on Time to Live for the `ttl` attribute, so DynamoDB deletes expired items. Optional. **Returns** `DynamoDbUpdateTimeToLiveInput`, for `client.updateTimeToLive()`.
 

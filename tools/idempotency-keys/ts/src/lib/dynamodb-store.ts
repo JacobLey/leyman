@@ -65,7 +65,7 @@ export interface DynamoDbStoreOptions {
     /**
      * Name of the table, created with {@link createTableInput}. Defaults to `idempotency_keys`.
      */
-    readonly tableName?: string;
+    readonly table?: string;
 }
 
 /**
@@ -113,11 +113,11 @@ const completeUpdate =
  * The table every implementation shares, as in the spec: the partition key `identity`, bytes, and nothing else
  * declared, billed per request.
  *
- * @param tableName - Name of the table, `idempotency_keys` by default
+ * @param table - Name of the table, `idempotency_keys` by default
  * @returns `CreateTable` input, e.g. for `client.createTable()`
  */
-export const createTableInput = (tableName = defaultTableName): DynamoDbCreateTableInput => ({
-    TableName: tableName,
+export const createTableInput = (table = defaultTableName): DynamoDbCreateTableInput => ({
+    TableName: table,
     AttributeDefinitions: [{ AttributeName: 'identity', AttributeType: 'B' }],
     KeySchema: [{ AttributeName: 'identity', KeyType: 'HASH' }],
     BillingMode: 'PAY_PER_REQUEST',
@@ -127,13 +127,11 @@ export const createTableInput = (tableName = defaultTableName): DynamoDbCreateTa
  * Turns on DynamoDB's Time to Live for the `ttl` attribute, so expired items are deleted. Optional: without it,
  * expired items stay until a claim writes over them.
  *
- * @param tableName - Name of the table, `idempotency_keys` by default
+ * @param table - Name of the table, `idempotency_keys` by default
  * @returns `UpdateTimeToLive` input, e.g. for `client.updateTimeToLive()`
  */
-export const updateTimeToLiveInput = (
-    tableName = defaultTableName
-): DynamoDbUpdateTimeToLiveInput => ({
-    TableName: tableName,
+export const updateTimeToLiveInput = (table = defaultTableName): DynamoDbUpdateTimeToLiveInput => ({
+    TableName: table,
     TimeToLiveSpecification: { AttributeName: 'ttl', Enabled: true },
 });
 
@@ -183,11 +181,11 @@ interface FoundItem {
  */
 export class DynamoDbStore implements IdempotencyStore {
     readonly #connection: DynamoDbConnection;
-    readonly #tableName: string;
+    readonly #table: string;
 
-    public constructor({ connection, tableName = defaultTableName }: DynamoDbStoreOptions) {
+    public constructor({ connection, table = defaultTableName }: DynamoDbStoreOptions) {
         this.#connection = connection;
-        this.#tableName = tableName;
+        this.#table = table;
     }
 
     public async claim({
@@ -202,7 +200,7 @@ export class DynamoDbStore implements IdempotencyStore {
         const recordFingerprint = { B: fromHex(fingerprint) };
         try {
             await this.#connection.putItem({
-                TableName: this.#tableName,
+                TableName: this.#table,
                 Item: {
                     identity: { B: fromHex(identity) },
                     fingerprint: recordFingerprint,
@@ -255,7 +253,7 @@ export class DynamoDbStore implements IdempotencyStore {
     ): Promise<boolean> {
         const now = Date.now();
         const update = this.#connection.updateItem({
-            TableName: this.#tableName,
+            TableName: this.#table,
             Key: { identity: { B: fromHex(identity) } },
             UpdateExpression: completeUpdate,
             ConditionExpression: tokenCondition,
@@ -281,7 +279,7 @@ export class DynamoDbStore implements IdempotencyStore {
     public async release(identity: string, token: string): Promise<boolean> {
         const now = Date.now();
         const deletion = this.#connection.deleteItem({
-            TableName: this.#tableName,
+            TableName: this.#table,
             Key: { identity: { B: fromHex(identity) } },
             ConditionExpression: tokenCondition,
             ExpressionAttributeNames: {

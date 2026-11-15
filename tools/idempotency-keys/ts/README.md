@@ -267,12 +267,12 @@ The `CREATE TABLE` statement of the spec, for a migration. **Returns** `string`.
 
 From `idempotency-keys/dynamodb`, like `createTableInput` and `updateTimeToLiveInput`.
 
-#### `new DynamoDbStore({ connection, tableName? })`
+#### `new DynamoDbStore({ connection, table? })`
 
 | Option       | Type                 | Default              | Description                                                                                                    |
 | ------------ | -------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `connection` | `DynamoDbConnection` | —                    | Required. Anything with `putItem`, `updateItem` and `deleteItem`, as the `DynamoDB` client of the AWS SDK has. |
-| `tableName`  | `string`             | `'idempotency_keys'` | The table.                                                                                                     |
+| `table`      | `string`             | `'idempotency_keys'` | The table.                                                                                                     |
 
 Pass the aggregated `DynamoDB` client of `@aws-sdk/client-dynamodb`, not `DynamoDBClient` (which only has `send`). The package doesn't depend on the SDK; another client works if a failed condition rejects with an error named `ConditionalCheckFailedException` carrying the item it found as `Item`, as the SDK's errors do.
 
@@ -288,7 +288,7 @@ DynamoDB is strict, like Postgres: a claim is one conditional `PutItem`, so it i
 - **The clock is each server's own.** DynamoDB has no clock a condition can read, so every write carries the server's `Date.now()`. A server whose clock runs ahead can take over a lease early, so `leaseMs` has to cover the slowest handler plus the worst clock drift between your servers.
 - **An item holds at most 400 KB**, response included. Completing with a larger response rejects with DynamoDB's error, and the key stays held until its lease runs out.
 
-#### `createTableInput(tableName?)` and `updateTimeToLiveInput(tableName?)`
+#### `createTableInput(table?)` and `updateTimeToLiveInput(table?)`
 
 The `CreateTable` input of the spec's table (the partition key `identity`, bytes, billed per request), and the `UpdateTimeToLive` input that has DynamoDB delete expired items by their `ttl` attribute. Time to Live is optional: without it, an expired item stays until a claim writes over it. Every write checks the expiry itself.
 

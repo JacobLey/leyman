@@ -98,7 +98,7 @@ const createStore = async (connections: Connections): Promise<IdempotencyStore> 
         case 'dynamodb': {
             return new DynamoDbStore({
                 connection: await connectDynamoDb(),
-                tableName: env('IK_TABLE'),
+                table: env('IK_TABLE'),
             });
         }
         default: {
