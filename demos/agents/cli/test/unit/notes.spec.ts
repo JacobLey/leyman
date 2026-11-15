@@ -47,14 +47,21 @@ suite('connect', () => {
     const withApi = beforeEach(async () => {
         const directory = await mkdtemp(Path.join(tmpdir(), 'notes-connect-'));
         const tokens: (string | undefined)[] = [];
+        // The authorizations the API refuses
+        const refused = new Set<string>();
         const server = createServer((request, response) => {
             tokens.push(request.headers.authorization);
             response.setHeader('content-type', 'application/json');
+            if (refused.has(request.headers.authorization ?? '')) {
+                response.statusCode = 401;
+                response.end('{"code":"unauthorized","message":"Refused"}');
+                return;
+            }
             response.end('{"notes":[]}');
         }).listen(0, '127.0.0.1');
         await once(server, 'listening');
         const { port } = server.address() as AddressInfo;
-        return { directory, server, tokens, api: `http://127.0.0.1:${port}` };
+        return { directory, server, tokens, refused, api: `http://127.0.0.1:${port}` };
     });
     withApi.afterEach(async ({ directory, server }) => {
         server.close();
@@ -109,6 +116,83 @@ suite('connect', () => {
             );
             expect(await store.load()).to.equal(null);
             expect(tokens).to.deep.equal([]);
+        }
+    );
+
+    withApi.test(
+        'Sends the request again with a refreshed login when the API refuses a token that has not expired',
+        async ({ api, directory, refused, tokens }) => {
+            const revoked: Session = {
+                api,
+                // Nothing listens here, so refreshing would fail
+                issuer: 'http://127.0.0.1:1',
+                clientId: 'client',
+                accessToken: 'revoked',
+                refreshToken: 'refresh',
+                expiresAt: null,
+            };
+            const store = new RefreshedElsewhereStore(directory, {
+                ...revoked,
+                accessToken: 'fresh',
+            });
+            await store.save(revoked);
+            refused.add('Bearer revoked');
+
+            const notes = await connect(store);
+            const result = await notes.call('listNotes', {});
+
+            expect(result.status).to.equal(200);
+            expect(tokens).to.deep.equal(['Bearer revoked', 'Bearer fresh']);
+        }
+    );
+
+    withApi.test(
+        'Returns the refusal when there is no refresh token to renew the login with',
+        async ({ api, directory, refused, tokens }) => {
+            const store = new SessionStore(directory);
+            await store.save({
+                api,
+                issuer: 'http://127.0.0.1:1',
+                clientId: 'client',
+                accessToken: 'revoked',
+                refreshToken: null,
+                expiresAt: null,
+            });
+            refused.add('Bearer revoked');
+
+            const notes = await connect(store);
+            const result = await notes.call('listNotes', {});
+
+            expect(result.status).to.equal(401);
+            expect(tokens).to.deep.equal(['Bearer revoked']);
+        }
+    );
+
+    withApi.test(
+        'Returns the refusal of a login it already refreshed, without refreshing again',
+        async ({ api, directory, refused, tokens }) => {
+            const expired: Session = {
+                api,
+                // Nothing listens here, so refreshing would fail
+                issuer: 'http://127.0.0.1:1',
+                clientId: 'client',
+                accessToken: 'expired',
+                refreshToken: 'refresh',
+                expiresAt: 0,
+            };
+            const store = new RefreshedElsewhereStore(directory, {
+                ...expired,
+                accessToken: 'fresh',
+                expiresAt: null,
+            });
+            await store.save(expired);
+            refused.add('Bearer fresh');
+
+            const notes = await connect(store);
+            const result = await notes.call('listNotes', {});
+
+            expect(result.status).to.equal(401);
+            expect(tokens).to.deep.equal(['Bearer fresh']);
         }
     );
 });

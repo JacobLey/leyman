@@ -655,6 +655,7 @@ export const demos: readonly Demo[] = [
         files: [
             { label: 'Commands', path: 'demos/agents/cli/src/commands' },
             { label: 'OAuth', path: 'demos/agents/cli/src/lib/oauth.ts' },
+            { label: 'Request middleware', path: 'demos/agents/cli/src/lib/request' },
             { label: 'Session file', path: 'demos/agents/cli/src/lib/session.ts' },
             { label: 'Composition', path: 'demos/agents/cli/src/container.ts' },
             { label: 'Integration tests', path: 'demos/agents/cli/test/integration/cli.spec.ts' },

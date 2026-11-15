@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the notes API's spec documents them */
 import type { Command, NotesCommandInput } from './lib/types.js';
+import { randomUUID } from 'node:crypto';
 import { text } from 'node:stream/consumers';
 import { bind } from 'haywire';
 import { connect, refused } from '#internal/lib/notes.js';
@@ -34,6 +35,8 @@ export const noteAddCommand: Command<AddCommandExtendedInput> = {
     handler: async ({ configDir, json, title, body = '', stdin = false }) => {
         const notes = await connect(new SessionStore(configDir));
         const created = await notes.call('createNote', {
+            // So a retry can't add it twice
+            header: { 'Idempotency-Key': randomUUID() },
             body: { title, body: stdin ? await text(process.stdin) : body },
         });
         if (created.status !== 201) {

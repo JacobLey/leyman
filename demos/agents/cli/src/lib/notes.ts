@@ -2,14 +2,18 @@ import type { Session, SessionStore } from './session.js';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 import { refresh, requestTimeoutMs } from './oauth.js';
+import { bearer } from './request/bearer.js';
+import { compose } from './request/compose.js';
+import { retry } from './request/retry.js';
+import { timeout } from './request/timeout.js';
 
-const statusUnauthorized = 401;
 const notLoggedIn = 'Not logged in. Run notes login --api <url> first.';
 
 /**
  * The notes API, as the logged-in user: `NotesClient`'s `call`, with the login kept good. The access token is
  * refreshed (and the session saved) when it has expired, and once when the API refuses it, so a command never fails
- * for a token a refresh would fix. Every request times out.
+ * for a token a refresh would fix. Requests safe to send twice are retried when the network or the API fails for a
+ * moment. Every send times out.
  */
 export interface Notes {
     readonly call: NotesClient['call'];
@@ -47,32 +51,30 @@ export const connect = async (store: SessionStore): Promise<Notes> => {
             return fresh;
         });
     };
-    const client = new NotesClient({
+    return new NotesClient({
         baseUrl: session.api,
-        token: async () => {
-            if (current.expiresAt !== null && current.expiresAt <= Date.now()) {
-                await renew();
-            }
-            return current.accessToken;
-        },
-        fetch: async (input, init) =>
-            fetch(input, { ...init, signal: AbortSignal.timeout(requestTimeoutMs) }),
+        fetch: compose([
+            retry(),
+            bearer({
+                token: async () => {
+                    if (current.expiresAt !== null && current.expiresAt <= Date.now()) {
+                        await renew();
+                    }
+                    return current.accessToken;
+                },
+                // Refused before it expired (revoked, or the API's keys changed), or with no expiry to go by. A
+                // token renewed already is as good as it gets
+                renew: async () => {
+                    if (hasRenewed || current.refreshToken === null) {
+                        return null;
+                    }
+                    await renew();
+                    return current.accessToken;
+                },
+            }),
+            timeout(requestTimeoutMs),
+        ]),
     });
-    return {
-        call: async (operationId, input) => {
-            const result = await client.call(operationId, input);
-            // Refused before it expired (revoked, or the API's keys changed), or with no expiry to go by
-            if (
-                hasRenewed ||
-                result.status !== statusUnauthorized ||
-                current.refreshToken === null
-            ) {
-                return result;
-            }
-            await renew();
-            return client.call(operationId, input);
-        },
-    };
 };
 
 /**

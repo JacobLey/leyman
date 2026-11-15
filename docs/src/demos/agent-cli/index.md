@@ -4,7 +4,7 @@ description: A CLI that makes a REST API easy for AI agents with a shell. Each t
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:b74d8cf2cf17d8fb094a084e333ae653 Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:0375816976ac50e1cba8cc2366600e5f Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
 
 # CLI for agents
 
@@ -99,7 +99,7 @@ Only one command refreshes at a time, holding `session.lock`. A command that had
 
 `notes logout` revokes the refresh token (RFC 7009) at the issuer the login was made at, which ends the login there, so a copy of `session.json` can't be refreshed afterwards. The access token can't be revoked (it's a JWT that the API checks on its own), so it stays valid until it expires, minutes later. The login is forgotten locally even when revoking fails, and the CLI reports the failure. If the server can't revoke tokens at all (it names no revocation endpoint), the CLI says so on stderr.
 
-Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is a public client, since it can't keep a secret, so it has no client secret and relies on PKCE instead. The OAuth is done by [oauth4webapi](https://github.com/panva/oauth4webapi), which checks each of these steps. Plain HTTP is only allowed to this machine (`127.0.0.1`, `localhost`), for local development.
+Every request (discovery, tokens, the API) gives up after 10 seconds. A request to the API that's safe to send twice is sent up to three times when the network fails or the API answers `429`, `502`, `503` or `504`, waiting a little longer each time (or as long as `Retry-After` asks, up to 30 seconds). Reads are safe to repeat, and `notes add` sends an `Idempotency-Key`, so the API answers a repeat with the note it already made rather than making a second. Timeouts, retries and the token are each a middleware around `fetch` (in [`src/lib/request`](https://github.com/JacobLey/leyman/tree/main/demos/agents/cli/src/lib/request)), with [cockatiel](https://github.com/connor4312/cockatiel) doing the retrying. The CLI is a public client, since it can't keep a secret, so it has no client secret and relies on PKCE instead. The OAuth is done by [oauth4webapi](https://github.com/panva/oauth4webapi), which checks each of these steps. Plain HTTP is only allowed to this machine (`127.0.0.1`, `localhost`), for local development.
 
 ## Errors
 

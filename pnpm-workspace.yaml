@@ -191,6 +191,7 @@ catalog:
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
+  cockatiel: ^4.0.0
   comlink: ^4.4.2
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.4
