@@ -104,7 +104,7 @@ It needs ports 443 and 80 on loopback. If something else holds them, `ensure` sa
 LOCAL_INGRESS_HTTPS_PORT=8443 LOCAL_INGRESS_HTTP_PORT=8080 tools/local-ingress/ensure
 ```
 
-URLs then carry the port (`https://main.leyman.localhost:8443`), and redirects keep it. Set both variables in your shell profile, so that `ensure` keeps the ports when a devcontainer runs it.
+URLs then carry the port (`https://main.<repo>.localhost:8443`), and redirects keep it. Set both variables in your shell profile, so that `ensure` keeps the ports when a devcontainer runs it.
 
 ## Tunnels
 
@@ -119,10 +119,10 @@ The tunnel rewrites `Host` to the worktree's name, so the ingress needs nothing.
 ```sh
 docker run --rm --network local-ingress -v "$PWD/local-ingress-root.crt:/root.crt:ro" cloudflare/cloudflared \
   tunnel --no-autoupdate --url https://local-ingress:443 \
-  --origin-server-name feat-x.leyman.localhost --http-host-header feat-x.leyman.localhost --origin-ca-pool /root.crt
+  --origin-server-name feat-x.<repo>.localhost --http-host-header feat-x.<repo>.localhost --origin-ca-pool /root.crt
 ```
 
-It prints a random `https://<words>.trycloudflare.com`. The catch is that the app sees `Host: feat-x.leyman.localhost`, so absolute URLs it builds (redirects, OAuth redirect URIs) point at `.localhost`, which the phone can't load. A dev server alone, like Vite's, works.
+It prints a random `https://<words>.trycloudflare.com`. The catch is that the app sees `Host: feat-x.<repo>.localhost`, so absolute URLs it builds (redirects, OAuth redirect URIs) point at `.localhost`, which the phone can't load. A dev server alone, like Vite's, works.
 
 ### The tunnel's own host
 
@@ -133,7 +133,7 @@ For URLs the app gets right, the tunnel keeps its public `Host`, and the worktre
    ```sh
    TUNNEL_HOST="feat-x.example.com"
    ```
-2. Rebuild or reopen the devcontainer. The `caddy` label becomes `feat-x.leyman.localhost feat-x.example.com`, and `TUNNEL_HOST` reaches the container, where a dev server must accept the host (Vite's `server.allowedHosts`; see [the demo](../../demos/local-ingress)).
+2. Rebuild or reopen the devcontainer. The `caddy` label becomes `feat-x.<repo>.localhost feat-x.example.com`, and `TUNNEL_HOST` reaches the container, where a dev server must accept the host (Vite's `server.allowedHosts`; see leyman's [local-ingress demo](../../demos/local-ingress)).
 3. Start the tunnel with the `.localhost` name for TLS, and without rewriting `Host`:
    - **cloudflared**, a named tunnel: route the public hostname to `https://local-ingress:443` with these [origin settings](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/origin-parameters/), and run the tunnel as a container on the `local-ingress` network with the root mounted. In a locally managed tunnel's `config.yml`:
 
@@ -142,7 +142,7 @@ For URLs the app gets right, the tunnel keeps its public `Host`, and the worktre
        - hostname: feat-x.example.com
          service: https://local-ingress:443
          originRequest:
-           originServerName: feat-x.leyman.localhost
+           originServerName: feat-x.<repo>.localhost
            caPool: /root.crt
        - service: http_status:404
      ```
@@ -151,12 +151,12 @@ For URLs the app gets right, the tunnel keeps its public `Host`, and the worktre
    - **ngrok**, on the host, where the OS trust store already has the root (ngrok checks upstream certificates against it, or `SSL_CERT_FILE`):
 
      ```sh
-     ngrok http https://feat-x.leyman.localhost --url feat-x.ngrok-free.app
+     ngrok http https://feat-x.<repo>.localhost --url feat-x.ngrok-free.app
      ```
 
 The app then sees `Host: feat-x.example.com` and `X-Forwarded-Proto: https`, as in production.
 
-Without the devcontainer, [`demos/local-ingress/run`](../../demos/local-ingress/run) takes `TUNNEL_HOST` from the environment instead. Its container is cheap to recreate, so a quick tunnel's random host works there too: start the tunnel without `--http-host-header`, then `TUNNEL_HOST=<words>.trycloudflare.com demos/local-ingress/run`.
+Without the devcontainer, leyman's [`demos/local-ingress/run`](../../demos/local-ingress/run) takes `TUNNEL_HOST` from the environment instead. Its container is cheap to recreate, so a quick tunnel's random host works there too: start the tunnel without `--http-host-header`, then `TUNNEL_HOST=<words>.trycloudflare.com demos/local-ingress/run`.
 
 Checked with the demo: both cloudflared quick tunnel recipes (page, compiled modules and hot reload through the tunnel, and Vite refusing the tunnel's host until it was in `TUNNEL_HOST`). The named cloudflared tunnel and ngrok follow the same settings, unchecked.
 
