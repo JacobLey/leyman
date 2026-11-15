@@ -69,9 +69,9 @@ const (
 	// major version. Keep in sync with `POSTGRES_MAJOR` in `.devcontainer/Dockerfile`.
 	postgresMajor = "18"
 	// AWS Emulator, a local server for AWS APIs (DynamoDB...), for tests to spawn. Only bump to a release at least 7 days
-	// old, from https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.269.1` there is
-	// `1.0.269` here). Keep in sync with `AWS_EMULATOR_VERSION` in `.devcontainer/Dockerfile`.
-	awsEmulatorVersion = "1.0.269"
+	// old, from https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.290.1` there is
+	// `1.0.290` here). Keep in sync with `AWS_EMULATOR_VERSION` in `.devcontainer/Dockerfile`.
+	awsEmulatorVersion = "1.0.290"
 	// The fingerprint of the key AWS signs the emulator's packages with, from
 	// https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html. Keep in sync with
 	// `.devcontainer/Dockerfile`.

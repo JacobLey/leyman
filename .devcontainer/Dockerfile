@@ -129,14 +129,14 @@ RUN cd /tmp \
 # fork-manifest:when aws-emulator
 # AWS Emulator, a local server for AWS APIs (DynamoDB...), for tests to spawn. Only its binary and license are kept: the
 # package's only dependency is libc. Only bump to a release at least 7 days old, from
-# https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.269.1` there is `1.0.269` here).
+# https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.290.1` there is `1.0.290` here).
 # The signature is checked against the fingerprint of AWS's publishing key, from
 # https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html
 # fork-manifest:when dagger
 # The same version and key as `awsEmulatorVersion` and `awsEmulatorKeyFingerprint` in `dagger/main.go`
 # fork-manifest:end
 FROM base AS aws-emulator
-ARG AWS_EMULATOR_VERSION=1.0.269
+ARG AWS_EMULATOR_VERSION=1.0.290
 RUN cd /tmp \
     && package="aws-emulator_${AWS_EMULATOR_VERSION}-1_$(dpkg --print-architecture).deb" \
     && base_url="https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS" \
