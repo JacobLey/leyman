@@ -2327,12 +2327,6 @@ importers:
 
   demos/webhook-receiver:
     dependencies:
-      '@aws-sdk/client-dynamodb':
-        specifier: 'catalog:'
-        version: 3.1164.0
-      '@aws-sdk/client-sqs':
-        specifier: 'catalog:'
-        version: 3.1164.0
       idempotency-keys:
         specifier: workspace:^
         version: file:tools/idempotency-keys/ts
@@ -2340,6 +2334,12 @@ importers:
         specifier: workspace:^
         version: file:tools/iso-crypto
     devDependencies:
+      '@aws-sdk/client-dynamodb':
+        specifier: 'catalog:'
+        version: 3.1164.0
+      '@aws-sdk/client-sqs':
+        specifier: 'catalog:'
+        version: 3.1164.0
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
@@ -15023,8 +15023,6 @@ snapshots:
 
   '@leyman/demo-webhook-receiver@file:demos/webhook-receiver':
     dependencies:
-      '@aws-sdk/client-dynamodb': 3.1164.0
-      '@aws-sdk/client-sqs': 3.1164.0
       idempotency-keys: file:tools/idempotency-keys/ts
       iso-crypto: file:tools/iso-crypto
 

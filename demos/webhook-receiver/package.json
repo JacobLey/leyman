@@ -24,12 +24,12 @@
     ".": "./dist/webhook-receiver.js"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "catalog:",
-    "@aws-sdk/client-sqs": "catalog:",
     "idempotency-keys": "workspace:^",
     "iso-crypto": "workspace:^"
   },
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "catalog:",
+    "@aws-sdk/client-sqs": "catalog:",
     "@biomejs/biome": "catalog:",
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",

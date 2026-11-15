@@ -1,10 +1,9 @@
 import type { AwsEmulator } from 'aws-emulator-launch';
 import type { IdempotencyKeysOptions } from 'idempotency-keys';
 import { randomUUID } from 'node:crypto';
-import { Agent } from 'node:https';
 import { DynamoDB, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
 import { SQS } from '@aws-sdk/client-sqs';
-import { AwsEmulatorSpawnError, launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { IdempotencyKeys } from 'idempotency-keys';
 import { createTableInput, DynamoDbStore } from 'idempotency-keys/dynamodb';
 import { before } from 'mocha-chain';
@@ -21,7 +20,7 @@ const startEmulator = async (): Promise<AwsEmulator> => {
     try {
         return await launchAwsEmulator();
     } catch (error) {
-        if (error instanceof AwsEmulatorSpawnError) {
+        if (error instanceof AwsEmulatorNotRunError) {
             throw new Error(
                 'The tests need aws-emulator on PATH. The devcontainer and the Dagger test container install it: rebuild the devcontainer',
                 { cause: error }
@@ -32,25 +31,10 @@ const startEmulator = async (): Promise<AwsEmulator> => {
 };
 
 /**
- * What every client takes to reach the emulator, and nothing from the environment: the endpoint, region and this
- * run's keys, a handler trusting only the emulator's certificate authority, and no FIPS or dual-stack endpoints.
- *
- * @param emulator - The running emulator
- * @returns The client configuration
+ * How the SDK's waiter polls a new table, in seconds: often, as the emulator makes one active within seconds (the
+ * waiter's own minimum delay is 20 s), and only so long, so a table that never becomes active fails the run.
  */
-const clientConfig = (emulator: AwsEmulator) => ({
-    endpoint: emulator.endpoint,
-    region: emulator.region,
-    credentials: emulator.credentials,
-    requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-    useFipsEndpoint: false,
-    useDualstackEndpoint: false,
-});
-
-/**
- * How long to wait for a new table to be ready, in seconds.
- */
-const tableWaitSeconds = 30;
+const tableWaiter = { minDelay: 0.1, maxDelay: 0.5, maxWaitTime: 30 };
 
 interface AwsContext {
     readonly sqs: SQS;
@@ -67,16 +51,13 @@ const shared: { context?: AwsContext } = {};
  */
 const withAws = before(async () => {
     const emulator = await startEmulator();
-    const config = clientConfig(emulator);
-    const sqs = new SQS(config);
-    const dynamodb = new DynamoDB(config);
+    // Nothing from the environment or `~/.aws`: requests signed with this run's keys, HTTPS trusting only its CA
+    const sqs = new SQS(awsClientConfig(emulator));
+    const dynamodb = new DynamoDB(awsClientConfig(emulator));
     const table = `webhook_receiver_${randomUUID()}`;
     await dynamodb.createTable(createTableInput(table));
     // As on AWS, a new table takes a few seconds to be ready
-    await waitUntilTableExists(
-        { client: dynamodb, maxWaitTime: tableWaitSeconds },
-        { TableName: table }
-    );
+    await waitUntilTableExists({ client: dynamodb, ...tableWaiter }, { TableName: table });
     shared.context = { sqs, dynamodb, table };
     return { emulator, sqs, dynamodb };
 });
@@ -116,7 +97,7 @@ export const dynamoDbKeys = (
 ): IdempotencyKeys => {
     const { dynamodb, table } = shared.context!;
     return new IdempotencyKeys({
-        store: new DynamoDbStore({ connection: dynamodb, tableName: table }),
+        store: new DynamoDbStore({ connection: dynamodb, table }),
         ttlMs: 7 * 24 * 60 * 60 * 1000,
         leaseMs: 10_000,
         ...options,
