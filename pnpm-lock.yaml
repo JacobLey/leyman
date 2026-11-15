@@ -2427,6 +2427,9 @@ importers:
       '@leyman/demo-sqs-job-queue':
         specifier: workspace:^
         version: file:demos/sqs-job-queue
+      '@leyman/demo-webhook-receiver':
+        specifier: workspace:^
+        version: file:demos/webhook-receiver
       '@shikijs/vitepress-twoslash':
         specifier: 'catalog:'
         version: 4.5.0(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
@@ -6920,6 +6923,10 @@ packages:
 
   '@leyman/demo-sqs-job-queue@file:demos/sqs-job-queue':
     resolution: {directory: demos/sqs-job-queue, type: directory}
+    engines: {node: '>=26'}
+
+  '@leyman/demo-webhook-receiver@file:demos/webhook-receiver':
+    resolution: {directory: demos/webhook-receiver, type: directory}
     engines: {node: '>=26'}
 
   '@leyman/eslint-config@file:leyman/eslint-config':
@@ -15013,6 +15020,13 @@ snapshots:
     dependencies:
       '@aws-sdk/client-sqs': 3.1164.0
       idempotency-keys: file:tools/idempotency-keys/ts
+
+  '@leyman/demo-webhook-receiver@file:demos/webhook-receiver':
+    dependencies:
+      '@aws-sdk/client-dynamodb': 3.1164.0
+      '@aws-sdk/client-sqs': 3.1164.0
+      idempotency-keys: file:tools/idempotency-keys/ts
+      iso-crypto: file:tools/iso-crypto
 
   '@leyman/eslint-config@file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:

@@ -620,6 +620,23 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
+        slug: 'webhook-receiver',
+        title: 'Webhook receiver',
+        pitch: 'A Standard Webhooks receiver that checks signatures in constant time, refuses replays by a timestamp window, drops duplicate deliveries through idempotency-keys on DynamoDB, and answers a fast 202 with the work sent to SQS.',
+        source: 'demos/webhook-receiver',
+        files: [
+            { label: 'Signatures', path: 'demos/webhook-receiver/src/lib/signature.ts' },
+            { label: 'Receiver', path: 'demos/webhook-receiver/src/lib/receiver.ts' },
+            {
+                label: 'Integration tests',
+                path: 'demos/webhook-receiver/test/integration/receiver.spec.ts',
+            },
+            { label: 'AWS Emulator helper', path: 'demos/webhook-receiver/test/helpers/aws.ts' },
+        ],
+        uses: ['idempotency-keys', 'aws-emulator-launch', 'mocha-chain'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'outbox-relay',
         title: 'Outbox relay',
         pitch: 'A transactional outbox on Postgres, relayed to EventBridge by a relay that claims rows with a lease, retries only what EventBridge says is worth retrying, and wakes on NOTIFY.',

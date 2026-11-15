@@ -27,6 +27,7 @@
     "@leyman/demo-outbox-relay": "workspace:^",
     "@leyman/demo-read-through-cache": "workspace:^",
     "@leyman/demo-sqs-job-queue": "workspace:^",
+    "@leyman/demo-webhook-receiver": "workspace:^",
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
     "@tanstack/react-query": "catalog:",
