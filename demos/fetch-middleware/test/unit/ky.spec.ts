@@ -312,6 +312,34 @@ suite('kySend', () => {
         expect(sent).to.deep.equal([{ method: 'POST', body: 'note' }]);
     });
 
+    test('Sends a GET again after its first attempt times out, and returns the answer to the retry', async () => {
+        const sent: Request[] = [];
+        const send = kySend({
+            fetch: async (input, init) => {
+                const request = new Request(input, init);
+                sent.push(request);
+                if (sent.length > 1) {
+                    return new Response('done');
+                }
+                // Never answers the first attempt, until Ky's timeout aborts it
+                return new Promise((_resolve, reject) => {
+                    request.signal.addEventListener('abort', () => {
+                        reject(request.signal.reason as Error);
+                    });
+                });
+            },
+            timeout: 10,
+            retry: { limit: 1, delay: () => 0, statusCodes: [503], retryOnTimeout: true },
+        });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(response.status).to.equal(200);
+        expect(await response.text()).to.equal('done');
+        expect(sent.map(({ method }) => method)).to.deep.equal(['GET', 'GET']);
+        expect(sent[0]!.signal.aborted).to.equal(true);
+    });
+
     test('Rejects with the timeout at once for a POST without an Idempotency-Key', async () => {
         let attempts = 0;
         const send = kySend({
