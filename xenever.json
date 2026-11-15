@@ -1,0 +1,1844 @@
+{
+  "commit": "f5bb202c660a74b658195d0158eb600eb04261ea",
+  "generatedAt": "2026-11-15T17:23:58.922Z",
+  "probes": [
+    {
+      "feature": "One or many, from maxOccurs",
+      "description": "a repeatable element is an array when it occurs once",
+      "xsdOnly": false
+    },
+    {
+      "feature": "One or many, from maxOccurs",
+      "description": "a repeatable element keeps every occurrence",
+      "xsdOnly": false
+    },
+    {
+      "feature": "One or many, from maxOccurs",
+      "description": "an element that occurs at most once is not an array",
+      "xsdOnly": false
+    },
+    {
+      "feature": "One or many, from maxOccurs",
+      "description": "the type rejects a single item that is not in an array",
+      "xsdOnly": false
+    },
+    {
+      "feature": "One or many, from maxOccurs",
+      "description": "rejects more occurrences than maxOccurs",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Optional elements",
+      "description": "an absent optional element has no key",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Optional elements",
+      "description": "a present optional element has its value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Optional elements",
+      "description": "the type accepts the value without the optional element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Optional elements",
+      "description": "the type rejects the value without a required element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Optional elements",
+      "description": "rejects a missing required element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Attributes and children",
+      "description": "keeps an attribute and a child element of the same name",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Attributes and children",
+      "description": "keeps the attribute and text of a text-only element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Attributes and children",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Attributes and children",
+      "description": "rejects an undeclared attribute",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Attributes and children",
+      "description": "rejects a missing required attribute",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Namespaces and prefixes",
+      "description": "the same document with prefix inv:, prefix i: or a default namespace reads the same",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Namespaces and prefixes",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Namespaces and prefixes",
+      "description": "rejects the right local names in another namespace",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Namespaces and prefixes",
+      "description": "rejects the right local names in no namespace",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Mixed content",
+      "description": "keeps text and elements in document order",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Mixed content",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Mixed content",
+      "description": "rejects an undeclared element inside text",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Order and interleaving",
+      "description": "keeps interleaved elements in document order",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Order and interleaving",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Order and interleaving",
+      "description": "rejects an invalid duration",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "keeps every digit of a 22-digit decimal",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "keeps an integer past 2^53 exact",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "reads an xs:int as a number",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "reads the xs:boolean 1 as true",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "rejects an xs:int out of range",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Numbers",
+      "description": "rejects an invalid xs:boolean",
+      "xsdOnly": false
+    },
+    {
+      "feature": "DTDs and entities",
+      "description": "accepts a plain document",
+      "xsdOnly": false
+    },
+    {
+      "feature": "DTDs and entities",
+      "description": "rejects or doesn’t expand nested entities (billion laughs)",
+      "xsdOnly": false
+    },
+    {
+      "feature": "DTDs and entities",
+      "description": "rejects or doesn’t read an external entity (XXE)",
+      "xsdOnly": false
+    },
+    {
+      "feature": "DTDs and entities",
+      "description": "rejects or doesn’t load an external DTD",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "accepts the valid order",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects a missing required element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects an undeclared element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects an undeclared attribute",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects elements out of sequence order",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects text in a number",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects a number past maxExclusive",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects a value that misses its pattern",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects a missing required attribute",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects an invalid date",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Rejecting invalid documents",
+      "description": "rejects a document that isn’t well-formed",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Error locations",
+      "description": "gives the line of an invalid value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Error locations",
+      "description": "gives a column with that line",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Error locations",
+      "description": "gives the path to the second item",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Error locations",
+      "description": "gives the line of a mismatched end tag",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type rejects a string",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type rejects the value without a required element",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type rejects a decimal of another type",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type rejects a quantity of another type",
+      "xsdOnly": false
+    },
+    {
+      "feature": "Types match values",
+      "description": "the type rejects an attribute of another type",
+      "xsdOnly": false
+    },
+    {
+      "feature": "XSD: include and import",
+      "description": "reads elements from the imported and included files",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: include and import",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: include and import",
+      "description": "rejects a value outside an imported enumeration",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: include and import",
+      "description": "rejects a value outside an included type",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: extension",
+      "description": "reads the base type’s content and the extension’s",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: extension",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: extension",
+      "description": "rejects a missing element of the base type",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: extension",
+      "description": "rejects the extension’s elements before the base’s",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: restriction",
+      "description": "accepts a value inside the restriction",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: restriction",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: restriction",
+      "description": "rejects an element the restriction removed",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: restriction",
+      "description": "rejects a value past minExclusive",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: restriction",
+      "description": "rejects a value past fractionDigits",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: groups",
+      "description": "reads elements and attributes from groups",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: groups",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: groups",
+      "description": "rejects a missing element of a group",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: groups",
+      "description": "rejects a missing attribute of an attribute group",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: simpleContent",
+      "description": "reads the text and the attribute",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: simpleContent",
+      "description": "the type accepts the parsed value",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: simpleContent",
+      "description": "rejects an attribute past its length",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: simpleContent",
+      "description": "rejects text past its facets",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: lax wildcards",
+      "description": "accepts declared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: lax wildcards",
+      "description": "rejects invalid declared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: lax wildcards",
+      "description": "accepts undeclared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: strict wildcards",
+      "description": "accepts declared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: strict wildcards",
+      "description": "rejects invalid declared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: strict wildcards",
+      "description": "rejects undeclared content in the wildcard",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: date range facets",
+      "description": "accepts a value inside the facet",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: date range facets",
+      "description": "rejects a value outside the facet",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: list facets",
+      "description": "accepts a value inside the facet",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: list facets",
+      "description": "rejects a value outside the facet",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: xsi:type",
+      "description": "accepts a derived type named by xsi:type",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: xsi:type",
+      "description": "rejects invalid content of the derived type",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: substitution groups",
+      "description": "accepts a member of the substitution group",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: substitution groups",
+      "description": "rejects the abstract head of the group",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: identity constraints",
+      "description": "accepts distinct keys",
+      "xsdOnly": true
+    },
+    {
+      "feature": "XSD: identity constraints",
+      "description": "rejects a duplicate xs:unique key",
+      "xsdOnly": true
+    }
+  ],
+  "benchmark": {
+    "items": 1000,
+    "runs": 15,
+    "bytes": 144858
+  },
+  "tools": [
+    {
+      "name": "xenever",
+      "packageName": "xenever",
+      "version": "0.2.0",
+      "errors": [
+        {
+          "feature": "XSD: xsi:type",
+          "message": "Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
+        },
+        {
+          "feature": "XSD: substitution groups",
+          "message": "Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
+        },
+        {
+          "feature": "XSD: identity constraints",
+          "message": "Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
+        }
+      ],
+      "probes": [
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
+        },
+        {
+          "outcome": "fail",
+          "detail": "couldn't load the schema: Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
+        }
+      ],
+      "bundle": {
+        "minified": 64477,
+        "gzip": 22312,
+        "nodeBuiltins": []
+      },
+      "parse": {
+        "ms": 14.032972999999856
+      }
+    },
+    {
+      "name": "@abapify/ts-xsd",
+      "packageName": "@abapify/ts-xsd",
+      "version": "0.4.34",
+      "errors": [
+        {
+          "feature": "Attributes and children",
+          "message": "types don't compile: Duplicate identifier 'id'.; Duplicate identifier 'id'."
+        }
+      ],
+      "probes": [
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\",\"124 Maple Street\",\"125 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'string[]' is not assignable to type 'string'.; Type 'string' is not assignable to type 'number'.; Type 'string' is not assignable to type 'number'.; Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"isbn-0-15-601219-8\",\"en\",\"Le Petit Prince\",\"fr\"]"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Duplicate identifier 'id'.; Duplicate identifier 'id'."
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"book\":{\"id\":\"isbn-0-15-601219-8\",\"title\":{\"$value\":\"Le Petit Prince\"}}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"book\":{\"id\":\"isbn-0-15-601219-8\",\"title\":{\"$value\":\"Le Petit Prince\"}}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"invoice\":{\"number\":\"INV-7\",\"line\":[\"\"]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"invoice\":{\"number\":\"INV-7\",\"line\":[\"\"]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"now\",\"later\"]"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'string[]' is not assignable to type 'string'.; Type 'string[]' is not assignable to type 'string'."
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"para\":{}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"Depot\",\"Harbor\",\"PT10M\"]"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'string[]' is not assignable to type 'string'.; Type 'string[]' is not assignable to type 'string'."
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"route\":{\"stop\":[\"Depot\"],\"wait\":[\"ten minutes\"]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found 12345678901234567000"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found 9007199254740992"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"reading\":{\"amount\":1,\"total\":1,\"count\":3000000000,\"valid\":true}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"reading\":{\"amount\":1,\"total\":1,\"count\":1,\"valid\":false}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"two\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"100\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"2026-11-12\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"ABC\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"orderDate\":\"tomorrow\",\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":0}]}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'string[]' is not assignable to type 'string'.; Type 'string' is not assignable to type 'number'.; Type 'string' is not assignable to type 'number'.; Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"\",\"A-1\",\"2\"]"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"order\":{\"address\":\"\",\"line\":[{\"sku\":\"A-1\",\"qty\":2}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"order\":{\"address\":\"\",\"line\":[{\"sku\":\"A-1\",\"qty\":0}]}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"employee\":{\"id\":\"e-1\",\"department\":\"Research\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"employee\":{\"id\":\"e-1\",\"name\":\"Ada\",\"department\":\"Research\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"shipment\":{\"weight\":\"2.50\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"shipment\":{\"weight\":\"0\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"shipment\":{\"weight\":\"1.234\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Object literal may only specify known properties, and '\"created\"' does not exist in type 'CustomerType'."
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"customer\":{\"created\":\"2026-11-01\",\"name\":\"Lin\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"customer\":{\"name\":\"Lin\",\"email\":\"lin@example.com\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"price\":{\"$value\":\"19.99\",\"currency\":\"EURO\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"price\":{\"$value\":\"19.999\",\"currency\":\"EUR\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"envelope\":{\"b:ping\":{\"@xmlns:b\":\"urn:example:body\",\"b:seq\":\"one\"}}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"envelope\":{\"b:ping\":{\"@xmlns:b\":\"urn:example:body\",\"b:seq\":\"one\"}}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"envelope\":{\"b:pong\":{\"@xmlns:b\":\"urn:example:body\"}}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"record\":{\"value\":\"2025-12-31\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"record\":{\"value\":\"red green blue black\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"drawing\":{\"shape\":[{\"id\":\"c-1\"}]}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"zoo\":{}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"catalog\":{\"product\":[\"\",\"\"]}}"
+        }
+      ],
+      "bundle": {
+        "minified": 7168050,
+        "gzip": 1643388,
+        "nodeBuiltins": [
+          "crypto",
+          "fs",
+          "fs/promises",
+          "inspector",
+          "os",
+          "path",
+          "perf_hooks",
+          "source-map-support",
+          "url"
+        ]
+      },
+      "parse": {
+        "ms": 20.644524999999703
+      }
+    },
+    {
+      "name": "xml-xsd-engine",
+      "packageName": "xml-xsd-engine",
+      "version": "1.7.3",
+      "errors": [
+        {
+          "feature": "One or many, from maxOccurs",
+          "message": "types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Item' only refers to a type, but is being used as a value here.; An element access expression should take an argument.; Declaration or statement expected.; Cannot find name 'Po'.; 'SKU' only refers to a type, but is being used as a value here.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Quantity' only refers to a type, but is being used as a value here.; 'number' only refers to a type, but is being used as a value here.; Cannot find name 'shipDate'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Declaration or statement expected.; Cannot find name 'Po'.; Declaration or statement expected.; 'PurchaseOrderType' only refers to a type, but is being used as a value here."
+        },
+        {
+          "feature": "Optional elements",
+          "message": "types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Item' only refers to a type, but is being used as a value here.; An element access expression should take an argument.; Declaration or statement expected.; Cannot find name 'Po'.; 'SKU' only refers to a type, but is being used as a value here.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Quantity' only refers to a type, but is being used as a value here.; 'number' only refers to a type, but is being used as a value here.; Cannot find name 'shipDate'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Declaration or statement expected.; Cannot find name 'Po'.; Declaration or statement expected.; 'PurchaseOrderType' only refers to a type, but is being used as a value here."
+        },
+        {
+          "feature": "Attributes and children",
+          "message": "types don't compile: Duplicate identifier 'id'.; Duplicate identifier 'id'."
+        },
+        {
+          "feature": "Namespaces and prefixes",
+          "message": "types don't compile: Cannot find name 'Line'."
+        },
+        {
+          "feature": "Types match values",
+          "message": "types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Item' only refers to a type, but is being used as a value here.; An element access expression should take an argument.; Declaration or statement expected.; Cannot find name 'Po'.; 'SKU' only refers to a type, but is being used as a value here.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'Quantity' only refers to a type, but is being used as a value here.; 'number' only refers to a type, but is being used as a value here.; Cannot find name 'shipDate'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Declaration or statement expected.; Cannot find name 'Po'.; Declaration or statement expected.; 'PurchaseOrderType' only refers to a type, but is being used as a value here."
+        },
+        {
+          "feature": "XSD: include and import",
+          "message": "types don't compile: Cannot find name 'Common'.; 'Country' only refers to a type, but is being used as a value here.; Declaration or statement expected.; Cannot find name 'Shop'.; 'Line' only refers to a type, but is being used as a value here.; An element access expression should take an argument.; Declaration or statement expected."
+        }
+      ],
+      "probes": [
+        {
+          "outcome": "fail",
+          "detail": "found {\"partNum\":\"000-AB\",\"productName\":\"Product 0\",\"quantity\":1,\"price\":0}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"isbn-0-15-601219-8\",\"en\",\"fr\",\"Le Petit Prince\"]"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Duplicate identifier 'id'.; Duplicate identifier 'id'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Line'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"number\":\"INV-7\",\"line\":{\"qty\":2,\"sku\":\"A-1\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"now\",\"later\"]"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Object literal may only specify known properties, and '\"_text\"' does not exist in type 'Para'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found [\"Depot\",\"Harbor\",\"PT10M\"]"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'string[]' is not assignable to type 'string'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found 12345678901234567000"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found 9007199254740992"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found 1"
+        },
+        {
+          "outcome": "fail",
+          "detail": "Type 'number' is not assignable to type 'boolean'."
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Po'.; 'Address' only refers to a type, but is being used as a value here.; Cannot find name 'comment'.; Expression expected.; 'string' only refers to a type, but is being used as a value here.; Cannot find name 'Po'.; Declaration or statement expected.; 'I…"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "its types don't compile: Cannot find name 'Common'.; 'Country' only refers to a type, but is being used as a value here.; Declaration or statement expected.; Cannot find name 'Shop'.; 'Line' only refers to a type, but is being used as a value here.; An element access expression should take an argum…"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"ping\":{\"seq\":\"one\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"ping\":{\"seq\":\"one\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"pong\":null}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "rejected it: <value> text \"2026-06-01\": value \"2026-06-01\" is not numeric (required for minInclusive constraint)"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "rejected it: <value> text \"red green blue\": length must be <= 3, got 14"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "rejected it: Attribute \"id\" is not allowed on <shape>"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        }
+      ],
+      "bundle": {
+        "minified": 127870,
+        "gzip": 37416,
+        "nodeBuiltins": [
+          "fs",
+          "fs/promises",
+          "path"
+        ]
+      },
+      "parse": {
+        "ms": 16.586416999999983
+      }
+    },
+    {
+      "name": "fast-xml-parser",
+      "packageName": "fast-xml-parser",
+      "version": "5.12.0",
+      "errors": [],
+      "probes": [
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\",\"124 Maple Street\",\"125 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"book\":{\"id\":\"isbn-0-15-601219-8\",\"title\":\"Le Petit Prince\",\"@_id\":\"b-1\",\"@_color\":\"red\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"book\":{\"id\":\"isbn-0-15-601219-8\",\"title\":\"Le Petit Prince\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"invoice\":{\"number\":\"INV-7\",\"line\":[{\"sku\":\"A-1\",\"@_qty\":\"2\"}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"invoice\":{\"number\":\"INV-7\",\"line\":[{\"sku\":\"A-1\",\"@_qty\":\"2\"}]}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as [{\"para\":[{\"#text\":\"Call\"},{\"u\":[{\"#text\":\"now\"}]},{\"#text\":\".\"}]}]"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as [{\"route\":[{\"stop\":[{\"#text\":\"Depot\"}]},{\"wait\":[{\"#text\":\"ten minutes\"}]}]}]"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "found \"42\""
+        },
+        {
+          "outcome": "fail",
+          "detail": "found \"1\""
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"reading\":{\"amount\":\"1\",\"total\":\"1\",\"count\":\"3000000000\",\"valid\":\"true\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"reading\":{\"amount\":\"1\",\"total\":\"1\",\"count\":\"1\",\"valid\":\"yes\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"gift\":\"yes\",\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\",\"@_color\":\"red\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"zip\":\"90952\",\"street\":[\"123 Maple Street\"]},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"two\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"100\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"ABC\"}],\"@_orderDate\":\"2026-11-12\"}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}]}}"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it as {\"purchaseOrder\":{\"shipTo\":{\"name\":\"Alice Smith\",\"street\":[\"123 Maple Street\"],\"zip\":\"90952\"},\"item\":[{\"productName\":\"Product 0\",\"quantity\":\"1\",\"price\":\"0.00\",\"@_partNum\":\"000-AB\"}],\"@_orderDate\":\"tomorrow\"}}"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "fail",
+          "detail": "accepted it"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "pass"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        },
+        {
+          "outcome": "n/a"
+        }
+      ],
+      "bundle": {
+        "minified": 64632,
+        "gzip": 21727,
+        "nodeBuiltins": []
+      },
+      "parse": {
+        "ms": 11.51517899999999
+      }
+    }
+  ]
+}
