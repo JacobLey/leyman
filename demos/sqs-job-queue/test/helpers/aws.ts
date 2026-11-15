@@ -4,14 +4,17 @@
  */
 import type { IdempotencyStore } from 'idempotency-keys';
 import { randomUUID } from 'node:crypto';
-import { Agent } from 'node:https';
 import { DynamoDB, waitUntilTableExists } from '@aws-sdk/client-dynamodb';
 import { SQS } from '@aws-sdk/client-sqs';
-import { AwsEmulatorSpawnError, launchAwsEmulator } from 'aws-emulator-launch';
+import { awsClientConfig, AwsEmulatorNotRunError, launchAwsEmulator } from 'aws-emulator-launch';
 import { createTableInput, DynamoDbStore } from 'idempotency-keys/dynamodb';
 import { before } from 'mocha-chain';
 
-const tableWaitSeconds = 30;
+/**
+ * How the SDK's waiter polls a new table, in seconds: often, as the emulator makes one active within seconds (the
+ * waiter's own minimum delay is 20 s), and only so long, so a table that never becomes active fails the run.
+ */
+const tableWaiter = { minDelay: 0.1, maxDelay: 0.5, maxWaitTime: 30 };
 
 /**
  * Starts AWS Emulator, which the devcontainer and Dagger's test container install.
@@ -23,7 +26,7 @@ const startEmulator = async (): ReturnType<typeof launchAwsEmulator> => {
     try {
         return await launchAwsEmulator();
     } catch (error) {
-        if (error instanceof AwsEmulatorSpawnError) {
+        if (error instanceof AwsEmulatorNotRunError) {
             throw new Error(
                 'The tests need aws-emulator on PATH. The devcontainer and the Dagger test container install it: rebuild the devcontainer',
                 { cause: error }
@@ -45,22 +48,11 @@ export interface AwsContext {
  */
 export const withAws = before(async (): Promise<AwsContext & { stop: () => Promise<void> }> => {
     const emulator = await startEmulator();
-    const config = {
-        endpoint: emulator.endpoint,
-        region: emulator.region,
-        credentials: emulator.credentials,
-        requestHandler: { httpsAgent: new Agent({ ca: emulator.ca }) },
-        useFipsEndpoint: false,
-        useDualstackEndpoint: false,
-    };
-    const sqs = new SQS(config);
-    const dynamodb = new DynamoDB(config);
+    const sqs = new SQS(awsClientConfig(emulator));
+    const dynamodb = new DynamoDB(awsClientConfig(emulator));
     const table = `sqs_job_queue_${randomUUID()}`;
     await dynamodb.createTable(createTableInput(table));
-    await waitUntilTableExists(
-        { client: dynamodb, maxWaitTime: tableWaitSeconds },
-        { TableName: table }
-    );
+    await waitUntilTableExists({ client: dynamodb, ...tableWaiter }, { TableName: table });
     return {
         sqs,
         dynamodb,
@@ -83,7 +75,7 @@ withAws.after(async ({ stop }) => {
  * @returns A `DynamoDbStore`
  */
 export const createStore = ({ dynamodb, table }: AwsContext): IdempotencyStore =>
-    new DynamoDbStore({ connection: dynamodb, tableName: table });
+    new DynamoDbStore({ connection: dynamodb, table });
 
 /**
  * A queue name no other test uses.
