@@ -1,0 +1,54 @@
+{
+  "name": "@leyman/demo-webhook-receiver",
+  "version": "0.0.1",
+  "description": "A Standard Webhooks receiver: signatures checked in constant time, a timestamp window against replays, duplicate deliveries dropped through idempotency-keys on DynamoDB, and the work sent to SQS behind a fast 202.",
+  "engines": {
+    "node": ">=26"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/webhook-receiver#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/webhook-receiver.js",
+  "exports": {
+    ".": "./dist/webhook-receiver.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "catalog:",
+    "@aws-sdk/client-sqs": "catalog:",
+    "idempotency-keys": "workspace:^",
+    "iso-crypto": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*",
+    "#test/*": "./dist-test/*"
+  }
+}

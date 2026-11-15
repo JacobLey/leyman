@@ -180,6 +180,9 @@
     },
     {
       "path": "./demos/outbox-relay"
+    },
+    {
+      "path": "./demos/webhook-receiver"
     }
   ]
 }
