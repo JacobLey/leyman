@@ -194,7 +194,86 @@ suite('bearer', () => {
         ).to.deep.equal(['Bearer new', 'Bearer new', 'Bearer old', 'Bearer old']);
     });
 
-    test('Renews again for a refusal after the last renewal settled, even when it failed', async () => {
+    test('Reuses a renewal that settled for a later refusal of the same token', async () => {
+        const { send, sent } = api({ old: 401 });
+        let renewals = 0;
+        const fetch = compose(
+            [
+                bearer({
+                    token: async () => 'old',
+                    renew: async () => {
+                        renewals++;
+                        return 'new';
+                    },
+                }),
+            ],
+            send
+        );
+
+        await fetch('http://example.test');
+        const response = await fetch('http://example.test');
+
+        expect(await response.text()).to.equal('answered new');
+        expect(renewals).to.equal(1);
+        expect(sent.map(({ authorization }) => authorization)).to.deep.equal([
+            'Bearer old',
+            'Bearer new',
+            'Bearer old',
+            'Bearer new',
+        ]);
+    });
+
+    test('Keeps only the latest renewal', async () => {
+        const { send } = api({ first: 401, second: 401 });
+        const renewed: string[] = [];
+        let token = 'first';
+        const fetch = compose(
+            [
+                bearer({
+                    token: async () => token,
+                    renew: async refused => {
+                        renewed.push(refused);
+                        return 'new';
+                    },
+                }),
+            ],
+            send
+        );
+
+        await fetch('http://example.test');
+        token = 'second';
+        await fetch('http://example.test');
+        token = 'first';
+        await fetch('http://example.test');
+
+        expect(renewed).to.deep.equal(['first', 'second', 'first']);
+    });
+
+    test('Renews again for a refusal after a renewal that found no token', async () => {
+        const { send } = api({ old: 401 });
+        let renewals = 0;
+        const fetch = compose(
+            [
+                bearer({
+                    token: async () => 'old',
+                    renew: async () => {
+                        renewals++;
+                        return renewals === 1 ? null : 'new';
+                    },
+                }),
+            ],
+            send
+        );
+
+        const refused = await fetch('http://example.test');
+        const response = await fetch('http://example.test');
+
+        expect(refused.status).to.equal(401);
+        expect(response.status).to.equal(200);
+        expect(renewals).to.equal(2);
+    });
+
+    test('Renews again for a refusal after a renewal that failed', async () => {
         const { send } = api({ old: 401 });
         let renewals = 0;
         const fetch = compose(

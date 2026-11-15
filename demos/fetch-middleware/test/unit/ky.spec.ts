@@ -1,4 +1,4 @@
-import type { Send } from '@leyman/demo-fetch-middleware';
+import type { KySendOptions, Send } from '@leyman/demo-fetch-middleware';
 import { NetworkError, TimeoutError } from 'ky';
 import { kySend } from '@leyman/demo-fetch-middleware';
 import { expect } from '@leyman/expect';
@@ -25,8 +25,38 @@ const withKy = (
     return { send, sent };
 };
 
+/**
+ * A delay no test waits out: a test that waits for it fails on Mocha's timeout.
+ */
+const hang = 2_147_483_647;
+
+/**
+ * Sends with a Ky instance that retries a 503 once, which the fake `fetch` answers with the given `Retry-After`
+ * the first time and `done` after.
+ *
+ * @param retryAfter - The first response's `Retry-After`
+ * @param retry - Ky's other retry options
+ * @returns The send, and each request the fake `fetch` got
+ */
+const withRetryAfter = (
+    retryAfter: string,
+    retry: Omit<KySendOptions['retry'], 'limit' | 'statusCodes'>
+): { send: Send; sent: Request[] } => {
+    const sent: Request[] = [];
+    const send = kySend({
+        fetch: async (input, init) => {
+            sent.push(new Request(input, init));
+            return sent.length === 1
+                ? new Response('busy', { status: 503, headers: { 'retry-after': retryAfter } })
+                : new Response('done');
+        },
+        retry: { ...retry, limit: 1, statusCodes: [503] },
+    });
+    return { send, sent };
+};
+
 suite('kySend', () => {
-    test('Returns an error status Ky does not throw for as the response, body intact', async () => {
+    test('Returns an error status it does not retry as the response, body intact', async () => {
         const { send, sent } = withKy(async () => new Response('missing', { status: 404 }));
 
         const response = await send(new Request('http://example.test'));
@@ -48,17 +78,13 @@ suite('kySend', () => {
         expect(sent.map(({ method }) => method)).to.deep.equal(['GET', 'GET']);
     });
 
-    test('Returns the retried status out of retries, with its status text and headers but not its length or encoding', async () => {
+    test('Returns the retried status out of retries as it came, status text, headers and all', async () => {
         const { send, sent } = withKy(
             async () =>
                 new Response('busy', {
                     status: 503,
                     statusText: 'Service Unavailable',
-                    headers: {
-                        'content-encoding': 'identity',
-                        'content-length': '4',
-                        'retry-after': '1',
-                    },
+                    headers: { 'content-length': '4', 'x-request-id': 'id' },
                 })
         );
 
@@ -66,10 +92,50 @@ suite('kySend', () => {
 
         expect(response.status).to.equal(503);
         expect(response.statusText).to.equal('Service Unavailable');
-        expect(response.headers.get('retry-after')).to.equal('1');
-        expect(response.headers.has('content-encoding')).to.equal(false);
-        expect(response.headers.has('content-length')).to.equal(false);
+        expect(response.headers.get('content-length')).to.equal('4');
+        expect(response.headers.get('x-request-id')).to.equal('id');
+        expect(await response.text()).to.equal('busy');
         expect(sent).to.have.length(2);
+    });
+
+    test('Returns a JSON string body out of retries as JSON', async () => {
+        const { send } = withKy(async () => Response.json('busy', { status: 503 }));
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(response.headers.get('content-type')).to.equal('application/json');
+        expect(await response.json()).to.equal('busy');
+    });
+
+    test('Returns a body labelled JSON that is not out of retries as it came', async () => {
+        const { send } = withKy(
+            async () =>
+                new Response('<html>Bad Gateway</html>', {
+                    status: 503,
+                    headers: { 'content-type': 'application/json' },
+                })
+        );
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('<html>Bad Gateway</html>');
+    });
+
+    test('Returns a JSON body out of retries digit for digit, even with a parseJson of its own', async () => {
+        const body = '{"id":12345678901234567890}';
+        const send = kySend({
+            fetch: async () =>
+                new Response(body, {
+                    status: 503,
+                    headers: { 'content-type': 'application/json' },
+                }),
+            parseJson: text => BigInt(/\d+/v.exec(text)?.[0] ?? '0'),
+            retry: { limit: 1, delay: () => 0, statusCodes: [503] },
+        });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal(body);
     });
 
     test('Returns the same JSON out of retries on a JSON response', async () => {
@@ -147,6 +213,83 @@ suite('kySend', () => {
 
         expect(await response.text()).to.equal('done');
         expect(sent.map(({ method }) => method)).to.deep.equal(['PATCH', 'PATCH']);
+    });
+
+    test('Sends a QUERY again, as it is idempotent', async () => {
+        const { send, sent } = withKy(async attempt =>
+            attempt === 0 ? new Response('busy', { status: 503 }) : new Response('done')
+        );
+
+        const response = await send(
+            new Request('http://example.test', { method: 'QUERY', body: 'select' })
+        );
+
+        expect(await response.text()).to.equal('done');
+        expect(sent).to.deep.equal([
+            { method: 'QUERY', body: 'select' },
+            { method: 'QUERY', body: 'select' },
+        ]);
+    });
+
+    test('Waits as long as Retry-After asks, instead of its own delay', async () => {
+        const { send, sent } = withRetryAfter('0', { delay: () => hang });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('done');
+        expect(sent).to.have.length(2);
+    });
+
+    test('Waits as long as a Retry-After date asks, none once it passed', async () => {
+        const { send } = withRetryAfter('Thu, 01 Jan 1970 00:00:00 GMT', { delay: () => hang });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('done');
+    });
+
+    test('Cuts a Retry-After longer than maxRetryAfter to it', async () => {
+        const { send } = withRetryAfter('3600', { delay: () => 0, maxRetryAfter: 1 });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('done');
+    });
+
+    test('Uses its own delay for a Retry-After it cannot read', async () => {
+        const { send } = withRetryAfter('soon', { delay: () => 0 });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('done');
+    });
+
+    test('Uses its own delay for a status not in afterStatusCodes', async () => {
+        const { send } = withRetryAfter('3600', { delay: () => 0, afterStatusCodes: [429] });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(await response.text()).to.equal('done');
+    });
+
+    test('Keeps the hooks it is given, running them before its own', async () => {
+        const seen: number[] = [];
+        const send = kySend({
+            fetch: async () => new Response('busy', { status: 503 }),
+            hooks: {
+                afterResponse: [
+                    ({ response }) => {
+                        seen.push(response.status);
+                    },
+                ],
+            },
+            retry: { limit: 1, delay: () => 0, statusCodes: [503] },
+        });
+
+        const response = await send(new Request('http://example.test'));
+
+        expect(response.status).to.equal(503);
+        expect(seen).to.deep.equal([503, 503]);
     });
 
     test('Rejects with the network error once a GET is out of retries', async () => {
