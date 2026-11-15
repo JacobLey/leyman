@@ -888,6 +888,194 @@ suite('Dev authorization server', () => {
         });
     });
 
+    suite('Only this machine: names under localhost', () => {
+        test('Serves at a name under localhost, which is always this machine', async () => {
+            const server = await createDevAuthorizationServer({
+                issuer: 'https://app.localhost/idp',
+                resources: [],
+                clients: [],
+                services: [],
+                accountId: 'dev-user',
+            });
+
+            expect(server.issuer).to.equal('https://app.localhost/idp');
+        });
+
+        test('Refuses a name that only ends like localhost', async () => {
+            await expect(
+                createDevAuthorizationServer({
+                    issuer: 'https://notlocalhost',
+                    resources: [],
+                    clients: [],
+                    services: [],
+                    accountId: 'dev-user',
+                })
+            ).to.be.rejectedWith(DevAuthorizationServerNotLocalError);
+        });
+    });
+
+    suite('Served at a path, behind a proxy', () => {
+        const webClient = {
+            clientId: 'test-web',
+            clientSecret: 'web-secret',
+            redirectUris: ['http://127.0.0.1:5/login/callback'],
+        };
+
+        /**
+         * The server's metadata, as a client discovers it.
+         *
+         * @param issuer - Where it's served
+         * @param headers - Sent with the request, e.g. a proxy's
+         * @returns Its metadata
+         */
+        const discover = async (
+            issuer: string,
+            headers: Record<string, string> = {}
+        ): Promise<Metadata> => {
+            const response = await fetch(`${issuer}/.well-known/openid-configuration`, { headers });
+            return (await response.json()) as Metadata;
+        };
+        const basic = textEncoder
+            .encode(`${webClient.clientId}:${webClient.clientSecret}`)
+            .toBase64();
+        const forwarded = { 'x-forwarded-proto': 'https', 'x-forwarded-host': 'app.localhost' };
+
+        /**
+         * Serves a dev server under `/idp`, as a website mounting it would: the path taken off the request's URL and
+         * kept in its `originalUrl`.
+         *
+         * @param options - Whether it trusts a proxy's headers
+         * @param options.proxy - As the server's option
+         * @returns Its issuer, and how to stop it
+         */
+        const mounted = async (
+            options: { readonly proxy?: boolean } = {}
+        ): Promise<{ readonly issuer: string; readonly close: () => void }> => {
+            const http = createServer();
+            http.listen(0, '127.0.0.1');
+            await once(http, 'listening');
+            const { port } = http.address() as AddressInfo;
+            const issuer = `http://127.0.0.1:${port}/idp`;
+            const { listener } = await createDevAuthorizationServer({
+                issuer,
+                resources: [{ url: resource, scopes: ['notes:read'] }],
+                clients: [],
+                services: [],
+                webClients: [webClient],
+                accountId: 'dev-user',
+                ...options,
+            });
+            http.on('request', (request, response) => {
+                if (request.url!.startsWith('/idp/')) {
+                    (request as { originalUrl?: string }).originalUrl = request.url!;
+                    request.url = request.url!.slice('/idp'.length);
+                    listener(request, response);
+                } else {
+                    response.writeHead(404).end();
+                }
+            });
+            return {
+                issuer,
+                close: () => {
+                    http.close();
+                    http.closeAllConnections();
+                },
+            };
+        };
+
+        test('Signs a web client in with its secret, under the path', async () => {
+            const server = await mounted();
+            try {
+                const metadata = await discover(server.issuer);
+                expect(metadata.issuer).to.equal(server.issuer);
+                expect(metadata.token_endpoint).to.equal(`${server.issuer}/token`);
+
+                const { verifier, challenge } = pkce();
+                const authorization = new URL(metadata.authorization_endpoint);
+                const query = new URLSearchParams({
+                    client_id: webClient.clientId,
+                    response_type: 'code',
+                    redirect_uri: webClient.redirectUris[0]!,
+                    scope: 'openid',
+                    code_challenge: challenge,
+                    code_challenge_method: 'S256',
+                    login_hint: 'alice',
+                    nonce: 'n',
+                });
+                authorization.search = query.toString();
+                const callback = await followAuthorization(
+                    authorization,
+                    webClient.redirectUris[0]!
+                );
+                const response = await fetch(metadata.token_endpoint, {
+                    method: 'POST',
+                    headers: {
+                        authorization: `Basic ${basic}`,
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: callback.searchParams.get('code')!,
+                        redirect_uri: webClient.redirectUris[0]!,
+                        code_verifier: verifier,
+                    }),
+                });
+                const tokens = (await response.json()) as { readonly id_token: string };
+
+                expect(response.status).to.equal(200);
+                expect(decodeJwt(tokens.id_token)).to.include({
+                    iss: server.issuer,
+                    sub: 'alice',
+                    aud: webClient.clientId,
+                    nonce: 'n',
+                });
+            } finally {
+                server.close();
+            }
+        });
+
+        test('Refuses a web client without its secret', async () => {
+            const server = await mounted();
+            try {
+                const response = await fetch(`${server.issuer}/token`, {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: 'any',
+                        client_id: webClient.clientId,
+                        redirect_uri: webClient.redirectUris[0]!,
+                        code_verifier: 'v'.repeat(43),
+                    }),
+                });
+
+                expect(response.status).to.equal(401);
+            } finally {
+                server.close();
+            }
+        });
+
+        test("Builds its URLs from a trusted proxy's headers", async () => {
+            const server = await mounted({ proxy: true });
+            try {
+                const metadata = await discover(server.issuer, forwarded);
+
+                expect(metadata.token_endpoint).to.equal('https://app.localhost/idp/token');
+            } finally {
+                server.close();
+            }
+        });
+
+        test("Ignores a proxy's headers unless it trusts them", async () => {
+            const server = await mounted();
+            try {
+                const metadata = await discover(server.issuer, forwarded);
+
+                expect(metadata.token_endpoint).to.equal(`${server.issuer}/token`);
+            } finally {
+                server.close();
+            }
+        });
+    });
+
     suite('close', () => {
         test('Rejects once already closed', async () => {
             const server = await listenDevAuthorizationServer({

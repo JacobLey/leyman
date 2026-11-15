@@ -21,5 +21,6 @@ export {
     type PublicClient,
     type ResourceServer,
     type ServiceClient,
+    type WebClient,
 } from './lib/provider.js';
 export { type UserTokens, type UserTokensOptions, userTokens } from './lib/tokens.js';

@@ -12,11 +12,11 @@ Testing an OAuth client, or a resource server that accepts OAuth tokens, usually
 
 It is as strict as a real provider. Clients, redirect URIs, resources and scopes are registered up front, PKCE is required, and every token is for one resource (`aud`), so a client that gets the flow wrong fails here as it would in production.
 
-It supports the grants a native app or a service uses: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), along with revocation. Access tokens are JWTs (RFC 9068), signed with a key generated at startup, and a resource server verifies them against the server's JWKS as it would any provider's.
+It supports the grants a native app, a website or a service uses: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), along with revocation. Access tokens are JWTs (RFC 9068), signed with a key generated at startup, and a resource server verifies them against the server's JWKS as it would any provider's.
 
 It can play the user too. `userTokens` signs a user in and returns their tokens in one call, while `followAuthorization` and `approveDevice` act as the browser for a client under test, signing in as any account. For MCP, `oauth-dev-server/mcp` has an `OAuthClientProvider` that does the same for the SDK's client.
 
-Since it approves every login, `listenDevAuthorizationServer` refuses to listen anywhere but this machine unless told otherwise.
+Since it approves every login, `listenDevAuthorizationServer` refuses to listen anywhere but this machine (loopback, `localhost`, or a name under it such as `app.localhost`) unless told otherwise.
 
 It is private for now, so depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). It works with any test runner, since it is plain functions and a server to close.
 
@@ -32,6 +32,7 @@ It is private for now, so depend on it from the workspace (`"oauth-dev-server": 
   - [DevOAuthClientProvider (MCP)](#devoauthclientprovider-mcp)
   - [Errors](#errors)
 - [Clients](#clients)
+- [Serving it in an app](#serving-it-in-an-app)
 - [What's real](#whats-real)
 - [What's fake](#whats-fake)
 - [Replacing it](#replacing-it)
@@ -105,10 +106,10 @@ Starts a server on `node:http`, its issuer being wherever it listens.
 
 Those of [`createDevAuthorizationServer`](#createdevauthorizationserveroptions) but `issuer`, plus:
 
-| Option     | Type     | Default       | Description                                                                                                                                                             |
-| ---------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `port`     | `number` | `0`           | Port to listen on. `0` is any free port.                                                                                                                                |
-| `hostname` | `string` | `'127.0.0.1'` | Where to listen: `127.0.0.1`, `[::1]` or `localhost`, unless `dangerouslyAllowNonLocal`. An IPv6 address may be given without brackets; the issuer has them either way. |
+| Option     | Type     | Default       | Description                                                                                                                                                                              |
+| ---------- | -------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `port`     | `number` | `0`           | Port to listen on. `0` is any free port.                                                                                                                                                 |
+| `hostname` | `string` | `'127.0.0.1'` | Where to listen: `127.0.0.1`, `[::1]`, `localhost` or a name under it, unless `dangerouslyAllowNonLocal`. An IPv6 address may be given without brackets; the issuer has them either way. |
 
 ### `createDevAuthorizationServer(options)`
 
@@ -124,10 +125,12 @@ It checks only that the issuer names this machine, not where your server listens
 
 | Option                     | Type               | Default | Description                                                                                                                                                                             |
 | -------------------------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `issuer`                   | `string`           | —       | Required. Where it's served: its metadata, endpoints and every token's `iss` derive from it.                                                                                            |
+| `issuer`                   | `string`           | —       | Required. Where it's served: its metadata, endpoints and every token's `iss` derive from it. It may have a path, see [Serving it in an app](#serving-it-in-an-app).                     |
 | `resources`                | `ResourceServer[]` | —       | Required. `{ url, scopes }`: each server that accepts its tokens (RFC 8707), and every scope it understands. `url` is the `resource` a client asks for, and the `aud` of tokens for it. |
 | `clients`                  | `PublicClient[]`   | —       | Required. Native apps, see [Clients](#clients).                                                                                                                                         |
 | `services`                 | `ServiceClient[]`  | —       | Required. Confidential clients, see [Clients](#clients).                                                                                                                                |
+| `webClients`               | `WebClient[]`      | `[]`    | Websites signing their users in, see [Clients](#clients).                                                                                                                               |
+| `proxy`                    | `boolean`          | `false` | Served behind a reverse proxy that terminates TLS: trust its `X-Forwarded-Proto` and `X-Forwarded-Host` headers for the URLs it builds and its cookies.                                 |
 | `accountId`                | `string`           | —       | Required. The account a login signs in as, unless the authorization request names another (`login_hint`).                                                                               |
 | `accessTokenTtl`           | `number`           | `600`   | How long an access token lasts, in seconds.                                                                                                                                             |
 | `deviceInterval`           | `number`           | `5`     | Seconds a device waits between polls (the device authorization response's `interval`). `1` makes tests quicker.                                                                         |
@@ -232,7 +235,7 @@ The same applies when a tool call needs more scopes (`403 insufficient_scope`): 
 
 ### Errors
 
-Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `UserTokensOptions`, `DevOAuthClientProviderOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
+Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `WebClient`, `UserTokensOptions`, `DevOAuthClientProviderOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
 
 | Error                                 | When                                                                                                   |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -241,20 +244,28 @@ Every error extends `DevAuthorizationError`. The types `ListenOptions`, `Listeni
 
 ## Clients
 
-|                    | Public client (`clients`)                                                                       | Service (`services`)                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| For                | A CLI, a desktop agent: runs on the user's machine, so it can't keep a secret                   | A server calling another server as itself                                        |
-| Options            | `clientId`, `redirectUris`, `refreshTokens?`, `deviceAuthorization?`                            | `clientId`, `clientSecret`, `scopes`, `tokenExchange?`                           |
-| Grant              | Authorization code + PKCE, then refresh token; device authorization, with `deviceAuthorization` | Client credentials; token exchange, with `tokenExchange`                         |
-| Authenticates with | Nothing (PKCE protects the code)                                                                | Its secret (HTTP Basic)                                                          |
-| Redirect           | Loopback, any port (RFC 8252): `http://127.0.0.1/callback` matches every port                   | None                                                                             |
-| Token's subject    | The user who logged in                                                                          | The client itself (`sub` is its `client_id`, RFC 9068); the user, when exchanged |
+|                    | Public client (`clients`)                                                                       | Web client (`webClients`)                                    | Service (`services`)                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| For                | A CLI, a desktop agent: runs on the user's machine, so it can't keep a secret                   | A website's server signing its users in (OpenID Connect)     | A server calling another server as itself                                        |
+| Options            | `clientId`, `redirectUris`, `refreshTokens?`, `deviceAuthorization?`                            | `clientId`, `clientSecret`, `redirectUris`                   | `clientId`, `clientSecret`, `scopes`, `tokenExchange?`                           |
+| Grant              | Authorization code + PKCE, then refresh token; device authorization, with `deviceAuthorization` | Authorization code + PKCE, no refresh token                  | Client credentials; token exchange, with `tokenExchange`                         |
+| Authenticates with | Nothing (PKCE protects the code)                                                                | Its secret (HTTP Basic)                                      | Its secret (HTTP Basic)                                                          |
+| Redirect           | Loopback, any port (RFC 8252): `http://127.0.0.1/callback` matches every port                   | Exactly as registered                                        | None                                                                             |
+| Token's subject    | The user who logged in                                                                          | The user who logged in (the ID token's `sub`, with `openid`) | The client itself (`sub` is its `client_id`, RFC 9068); the user, when exchanged |
 
 A public client may opt out of refresh tokens (`refreshTokens: false`): its login then lasts as long as one access token. It may opt in to the device grant (`deviceAuthorization: true`). That is off by default because a device code can be phished (someone starts a login, and asks you to approve their code), so a client should have it only when it runs where there's no browser.
 
 A service's `scopes` are the most it may be granted. `tokenExchange: { subjectAudience }` lets it trade a user's token issued for `subjectAudience` (the service itself, as a resource) for one for another resource, as that user.
 
 A resource server should tell a service's own token from a user's. Both have a `sub`, and a service's is its `client_id`.
+
+## Serving it in an app
+
+A website that signs its users in usually has one origin in development, and the login has to live somewhere on it. `createDevAuthorizationServer`'s listener can be mounted under a path of a server you already have, such as `https://app.localhost/idp`. Give that as the issuer, take the path off each request's `url` before passing it on, and keep the whole path in its `originalUrl`, as Express's `app.use('/idp', ...)` does. Every URL it builds (its metadata, the login's redirects) then stays under the path.
+
+When a reverse proxy terminates TLS in front of it (a local Caddy, say), set `proxy`. The URLs it builds are then the proxy's (`https://...`), and its cookies are `Secure`. Leave it off otherwise, since anyone can send those headers.
+
+A name under `localhost` (`app.localhost`) counts as this machine. It always resolves to loopback (RFC 6761), so it's served without `dangerouslyAllowNonLocal`.
 
 ## What's real
 

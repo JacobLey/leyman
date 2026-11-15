@@ -68,14 +68,40 @@ export interface ServiceClient {
     readonly tokenExchange?: { readonly subjectAudience: string } | undefined;
 }
 
+/**
+ * A pre-registered confidential web app: a website's server signing its users in (OpenID Connect), with the
+ * authorization code flow, PKCE and its secret. Its redirect URIs match exactly.
+ */
+export interface WebClient {
+    readonly clientId: string;
+    readonly clientSecret: string;
+    /**
+     * Where an authorization may send the user back, matched exactly.
+     */
+    readonly redirectUris: readonly string[];
+}
+
 export interface DevAuthorizationServerOptions {
     /**
-     * Where the server is served. Its metadata, endpoints and the `iss` of every token derive from it.
+     * Where the server is served. Its metadata, endpoints and the `iss` of every token derive from it. It may have a
+     * path (`https://app.localhost/idp`) when it's served there, with that path left in the request's `originalUrl`
+     * and taken off its `url` (as a server mounting it at the path does).
      */
     readonly issuer: string;
     readonly resources: readonly ResourceServer[];
     readonly clients: readonly PublicClient[];
     readonly services: readonly ServiceClient[];
+    /**
+     * Websites whose servers sign their users in with OpenID Connect: none when left out.
+     */
+    readonly webClients?: readonly WebClient[] | undefined;
+    /**
+     * Whether it's served behind a reverse proxy terminating TLS, whose `X-Forwarded-Proto` and `X-Forwarded-Host`
+     * headers it trusts for the URLs it builds and its cookies.
+     *
+     * @default false
+     */
+    readonly proxy?: boolean | undefined;
     /**
      * The account a login signs in as, unless the authorization request names another (`login_hint`). A stand-in
      * for a real login page, so there are no passwords: a request is signed in as whichever account it asks for.
@@ -95,8 +121,8 @@ export interface DevAuthorizationServerOptions {
      */
     readonly deviceInterval?: number | undefined;
     /**
-     * Serves at an issuer that isn't this machine (`127.0.0.1`, `[::1]`, `localhost`). The server approves every
-     * login, so anyone who can reach it gets tokens: never set this outside an isolated network.
+     * Serves at an issuer that isn't this machine (`127.0.0.1`, `[::1]`, `localhost` or a name under it). The server
+     * approves every login, so anyone who can reach it gets tokens: never set this outside an isolated network.
      *
      * @default false
      */
@@ -106,6 +132,16 @@ export interface DevAuthorizationServerOptions {
 const localHostnames: ReadonlySet<string> = new Set(['127.0.0.1', '[::1]', 'localhost']);
 
 /**
+ * Whether a hostname is this machine's: a loopback address, `localhost`, or a name under it, which always resolves to
+ * loopback (RFC 6761 §6.3).
+ *
+ * @param hostname - Where the server would serve
+ * @returns Whether it's this machine
+ */
+const isLocal = (hostname: string): boolean =>
+    localHostnames.has(hostname) || hostname.endsWith('.localhost');
+
+/**
  * Refuses a hostname other machines could reach, unless asked for knowingly.
  *
  * @param hostname - Where the server would serve
@@ -113,7 +149,7 @@ const localHostnames: ReadonlySet<string> = new Set(['127.0.0.1', '[::1]', 'loca
  * @throws {DevAuthorizationServerNotLocalError} When the hostname isn't this machine's
  */
 export const assertLocal = (hostname: string, isNonLocalAllowed = false): void => {
-    if (!isNonLocalAllowed && !localHostnames.has(hostname)) {
+    if (!isNonLocalAllowed && !isLocal(hostname)) {
         throw new DevAuthorizationServerNotLocalError(hostname);
     }
 };
@@ -284,6 +320,7 @@ export const createDevAuthorizationServer = async (
         use: 'sig',
     };
     const resources = new Map(options.resources.map(resource => [resource.url, resource]));
+    const issuerPath = issuer.pathname.replace(/\/$/v, '');
     const accessTokenTtl = options.accessTokenTtl ?? defaultAccessTokenTtl;
     const deviceInterval = options.deviceInterval ?? defaultDeviceInterval;
 
@@ -299,6 +336,17 @@ export const createDevAuthorizationServer = async (
                     ...(client.refreshTokens === false ? [] : ['refresh_token']),
                     ...(client.deviceAuthorization === true ? [deviceCodeGrantType] : []),
                 ],
+                response_types: ['code'],
+            })
+        ),
+        ...(options.webClients ?? []).map(
+            (client): ClientMetadata => ({
+                client_id: client.clientId,
+                client_secret: client.clientSecret,
+                application_type: 'web',
+                redirect_uris: [...client.redirectUris],
+                token_endpoint_auth_method: 'client_secret_basic',
+                grant_types: ['authorization_code'],
                 response_types: ['code'],
             })
         ),
@@ -332,7 +380,8 @@ export const createDevAuthorizationServer = async (
         findAccount: (_ctx, sub) => ({ accountId: sub, claims: () => ({ sub }) }),
         scopes: [...new Set(options.resources.flatMap(resource => resource.scopes))],
         interactions: {
-            url: (_ctx, interaction) => `/interaction/${interaction.uid}`,
+            // Under the issuer's path, wherever it's served
+            url: (_ctx, interaction) => `${issuerPath}/interaction/${interaction.uid}`,
         },
         pkce: { required: () => true },
         ttl: {
@@ -415,6 +464,7 @@ export const createDevAuthorizationServer = async (
         },
     };
     const provider = new OidcProvider(options.issuer, configuration);
+    provider.proxy = options.proxy === true;
     const services = new Map(options.services.map(service => [service.clientId, service]));
     provider.registerGrantType(
         tokenExchangeGrantType,
