@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "catalog:",
+    "@aws-sdk/client-sqs": "catalog:",
     "@biomejs/biome": "catalog:",
     "@hono/node-server": "catalog:",
     "@leyman/demo-agents-mcp": "workspace:^",
@@ -23,6 +24,7 @@
     "@leyman/demo-openapi-client": "workspace:^",
     "@leyman/demo-openapi-server": "workspace:^",
     "@leyman/demo-read-through-cache": "workspace:^",
+    "@leyman/demo-sqs-job-queue": "workspace:^",
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
     "@tanstack/react-query": "catalog:",

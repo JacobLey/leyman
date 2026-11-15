@@ -2260,6 +2260,9 @@ importers:
       '@aws-sdk/client-dynamodb':
         specifier: 'catalog:'
         version: 3.1164.0
+      '@aws-sdk/client-sqs':
+        specifier: 'catalog:'
+        version: 3.1164.0
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
@@ -2281,6 +2284,9 @@ importers:
       '@leyman/demo-read-through-cache':
         specifier: workspace:^
         version: file:demos/read-through-cache(@aws-sdk/client-dynamodb@3.1164.0)(supports-color@8.1.1)
+      '@leyman/demo-sqs-job-queue':
+        specifier: workspace:^
+        version: file:demos/sqs-job-queue
       '@shikijs/vitepress-twoslash':
         specifier: 'catalog:'
         version: 4.5.0(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
@@ -6762,6 +6768,10 @@ packages:
 
   '@leyman/demo-read-through-cache@file:demos/read-through-cache':
     resolution: {directory: demos/read-through-cache, type: directory}
+    engines: {node: '>=26'}
+
+  '@leyman/demo-sqs-job-queue@file:demos/sqs-job-queue':
+    resolution: {directory: demos/sqs-job-queue, type: directory}
     engines: {node: '>=26'}
 
   '@leyman/eslint-config@file:leyman/eslint-config':
@@ -14831,6 +14841,11 @@ snapshots:
       - kysely
       - orchid-orm
       - supports-color
+
+  '@leyman/demo-sqs-job-queue@file:demos/sqs-job-queue':
+    dependencies:
+      '@aws-sdk/client-sqs': 3.1164.0
+      idempotency-keys: file:tools/idempotency-keys/ts
 
   '@leyman/eslint-config@file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:

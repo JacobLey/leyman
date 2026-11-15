@@ -602,6 +602,24 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
+        slug: 'sqs-job-queue',
+        title: 'SQS job queue',
+        pitch: 'A job queue on SQS, with retries by visibility timeout and a heartbeat for long jobs, a dead-letter queue and redrive, FIFO order per group, and duplicate deliveries skipped through idempotency-keys on DynamoDB.',
+        source: 'demos/sqs-job-queue',
+        files: [
+            { label: 'Worker', path: 'demos/sqs-job-queue/src/lib/worker.ts' },
+            { label: 'Batched sends', path: 'demos/sqs-job-queue/src/lib/send.ts' },
+            { label: 'Redrive', path: 'demos/sqs-job-queue/src/lib/redrive.ts' },
+            {
+                label: 'Worker integration tests',
+                path: 'demos/sqs-job-queue/test/integration/worker.spec.ts',
+            },
+            { label: 'AWS Emulator helper', path: 'demos/sqs-job-queue/test/helpers/aws.ts' },
+        ],
+        uses: ['idempotency-keys', 'aws-emulator-launch', 'mocha-chain'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'openapi',
         title: 'OpenAPI',
         pitch: 'A small notes API built properly from the spec down to the database, with an OpenAPI 3.1 document written with Juniper, genever types for a typed client and a Hono server that validates every request and response, Drizzle on Postgres with a database per test, and a Go client and server from the same document, each tested against the other.',
