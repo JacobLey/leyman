@@ -1,5 +1,5 @@
 import type { Linter, Rule } from 'eslint';
-import type { Suite } from 'mocha';
+import type { Context, Suite } from 'mocha';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
@@ -71,6 +71,13 @@ const reactPluginsOf = async (packageJson: object) => {
 };
 
 suite('configGenerator React', () => {
+    // The first React config imports the React plugins, about a thousand modules, which on a loaded CI runner under c8
+    // outlasts a test's timeout. Only this load gets the longer timeout, so the tests still hold the config to it
+    before(async function (this: Context) {
+        this.timeout(10_000);
+        await configOf({ dependencies: { react: '^19' } });
+    });
+
     test('Detects the installed React when the package depends on it', async () => {
         expect(await reactVersionOf({ peerDependencies: { react: '^19' } })).to.equal('detect');
     });
