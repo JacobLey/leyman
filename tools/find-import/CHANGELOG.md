@@ -1,5 +1,14 @@
 # find-import
 
+## 2.2.3
+
+### Patch Changes
+
+- fcf2459: `findImport` returns `null` when `cwd` is not inside `startAt`, as documented. It used to still search `cwd` itself.
+- aa84269: A directory whose name starts with `..` (such as `..cache`) no longer stops the search as if it were outside `startAt`.
+- Updated dependencies [61f7f7d]
+  - parse-cwd@2.1.3
+
 ## 2.2.2
 
 ### Patch Changes

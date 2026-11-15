@@ -1,5 +1,14 @@
 # juniper-arbitrary
 
+## 0.2.3
+
+### Patch Changes
+
+- 677ed00: Generate numbers past the safe integers when a schema's bounds or `multipleOf` call for them, such as `{ type: 'integer', minimum: 2 ** 60 }` or `{ multipleOf: 1e20, minimum: 1e20 }`, instead of throwing `UnsatisfiableSchemaError`. Multiples stay exact products of the step where the bounds allow. A tiny bound next to a large step no longer produces values outside it.
+- 56df079: `makeArbitrary` no longer compiles the JSON Schema meta-schemas on every call, which made each call about 3 ms slower than compiling the schema itself. Schemas the meta-schema rejects still throw the same `UnsupportedSchemaError`.
+- Updated dependencies [5d33e46]
+  - juniper@2.8.2
+
 ## 0.2.2
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # pg-dolly-schema
 
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [b250760]
+- Updated dependencies [d3786ed]
+- Updated dependencies [d3462ff]
+- Updated dependencies [1939de1]
+  - populate-files@2.0.0
+  - pg-dolly@0.4.0
+
 ## 0.1.5
 
 ### Patch Changes

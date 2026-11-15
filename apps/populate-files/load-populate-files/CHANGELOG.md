@@ -1,5 +1,29 @@
 # load-populate-files
 
+## 2.0.0
+
+### Major Changes
+
+- b250760: `clean` without a `manifest` now throws a `TypeError` (the CLI's `--clean` without `--manifest` fails), instead of removing every file in `targetDir` that the run didn't write. With the default `targetDir` of `.`, that was the whole project, `.git` and `node_modules` included.
+  
+  To migrate, add a `manifest`: the first run adopts every file that is already up to date, without `force`, and from then on `clean` only removes files it wrote. Or pass `unsafeCleanUnlisted: true` (`--unsafe-clean-unlisted`) to keep the old behaviour on a directory that holds nothing but generated files. `unsafeCleanUnlisted` without `clean`, or with a `manifest`, also throws a `TypeError`.
+
+### Patch Changes
+
+- ad17037: Load the config file by its file URL, so an absolute Windows path (`C:\...`) or a path containing `#` or `%` loads instead of failing as "JS file not found".
+- f9fdfe6: Only report "JS file not found" when the config file itself is missing. A config file that imports a missing module now fails with Node's own error, which names that module.
+- d3786ed: Reword the `not-owned` ownership error so it fits both of its causes: `File <path> exists but is not marked as generated (not signed)` for a `signed` file, and `(not listed in the manifest)` for an unsigned file with a `manifest`. The CLI's `--force` help now covers files tracked by `--manifest` too.
+- Updated dependencies [5d33e46]
+- Updated dependencies [2da2f30]
+- Updated dependencies [61f7f7d]
+- Updated dependencies [b250760]
+- Updated dependencies [d3786ed]
+- Updated dependencies [d3462ff]
+  - juniper@2.8.2
+  - juniper-validator@0.6.2
+  - parse-cwd@2.1.3
+  - populate-files@2.0.0
+
 ## 1.1.6
 
 ### Patch Changes

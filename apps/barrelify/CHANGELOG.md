@@ -1,5 +1,21 @@
 # barrelify
 
+## 2.3.0
+
+### Minor Changes
+
+- ea09c61: The CLI accepts `--check` as an alias of `--ci`, as xenever, load-populate-files and nx-lifecycle do.
+
+### Patch Changes
+
+- 510b86e: Sort barrel exports and the list of changed barrels by UTF-16 code unit (`Zeta.js` before `alpha.js`, `a-b.js` before `a_b.js`). Exports were sorted by English collation, which depends on the ICU data Node ships with, and the changed barrels came back in the order the filesystem listed them. Both are now the same on every machine. A barrel whose names sort differently under the two orders is rewritten on the next run.
+- Updated dependencies [61f7f7d]
+- Updated dependencies [b250760]
+- Updated dependencies [d3786ed]
+- Updated dependencies [d3462ff]
+  - parse-cwd@2.1.3
+  - populate-files@2.0.0
+
 ## 2.2.6
 
 ### Patch Changes

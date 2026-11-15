@@ -1,5 +1,13 @@
 # juniper-validator
 
+## 0.6.2
+
+### Patch Changes
+
+- 2da2f30: `assert` names what failed: its error message lists each issue `validate` returns, one per line as `<path>: <message>`, with the path as a JSON Pointer (`(root)` for the value itself). It was only `Value does not match schema`, with the details in `cause`, which still holds Ajv's error objects.
+- Updated dependencies [5d33e46]
+  - juniper@2.8.2
+
 ## 0.6.1
 
 ### Patch Changes

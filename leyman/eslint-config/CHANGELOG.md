@@ -1,5 +1,21 @@
 # @leyman/eslint-config
 
+## 0.5.0
+
+### Minor Changes
+
+- e478481: `curly` (in its `all` style), `no-unexpected-multiline` and `unicorn/template-indent` are on. eslint-config-prettier, which the config applies last, turned them off along with the formatting rules, though a formatter doesn't fight them, so `unicorn/template-indent`'s `{ indent: 4 }` never applied.
+- 6a8d4c4: Replace the deprecated rules still on with their maintained successors. `multiline-comment-style` and `spaced-comment` become `@stylistic/multiline-comment-style` and `@stylistic/spaced-comment` from `@stylistic/eslint-plugin`, with the same options. `@typescript-eslint/sort-type-constituents` becomes `perfectionist/sort-union-types` and `perfectionist/sort-intersection-types` from `eslint-plugin-perfectionist`, with the same order of kinds. Within a kind, members now sort naturally ignoring whitespace, so some unions need reordering: number literals come before string literals (`0 | ''`), a string before the longer strings it starts (`'date' | 'date-time'`), and a multi-line object or tuple type no longer sorts first for its line break. An intersection with a function or constructor type keeps its order, which can change the type, where the old rule sorted it too. Only these four rules of the two plugins are on.
+
+### Patch Changes
+
+- 4d43fed: `capitalized-comments` no longer reports Biome 2's suppression comments: `biome-ignore lint/<group>/<rule>: ...`, `biome-ignore-all`, `biome-ignore-start` and `biome-ignore-end`.
+- d4bcc10: CommonJS files (`.cjs`, `.cts`) may use `require`, as the README says: `import-x/no-commonjs`, `sonarjs/no-require-or-define` and `n/prefer-process-get-builtin-module` no longer report it there.
+- 564f4bf: JavaScript files are linted without type information, wherever they are: a `.js` file outside the package root and outside `tsconfig.json` no longer fails to parse. Where a type-aware typescript-eslint rule is off for JavaScript, the core rule it replaces now takes its setting rather than a bare `'error'`: `require-await` stays off, and `prefer-destructuring` keeps `array: false` for assignments. `@typescript-eslint/explicit-function-return-type`, `explicit-module-boundary-types` and `explicit-member-accessibility`, which JavaScript can't satisfy, are off for it.
+- 91e6dea: eslint-plugin-n's rules (`n/no-unsupported-features/*`...) check against the same Node.js floor as the rest of the config. For a package without `engines`, that is the running Node.js and newer, where eslint-plugin-n fell back to Node.js 16 and reported APIs the package can use.
+- 0cff1ac: `baseNamingConvention` drops a second public `typeProperty` entry allowing PascalCase, which never applied: the entry before it has the same selector and modifiers, and `@typescript-eslint/naming-convention` uses the first match. Type properties stay camelCase or snake_case, as they were.
+- af9772a: The React, React Hooks and JSX accessibility rules are off for JavaScript files too, as for `.ts`: only `.tsx` files get them.
+
 ## 0.4.1
 
 ### Patch Changes

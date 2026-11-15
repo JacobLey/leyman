@@ -1,5 +1,17 @@
 # @leyman/nx-plugin
 
+## 0.4.2
+
+### Patch Changes
+
+- bf92cac: The bins print their usage with `--help` and exit with code 2 on an argument they don't take, instead of ignoring it: `leyman-biome-format --help` used to format every file under the current directory.
+- b6d5a6e: `check-package` is inferred for every package that isn't `private`, not only those with a `tsc` target, so a package of config files is checked too.
+- 7459b09: `dependency-files` hashes a dependency's root `*.sql` files, so a schema a package exports for its dependents to load (for example with `import.meta.resolve`) invalidates their cached results when it changes.
+- Updated dependencies [5d33e46]
+- Updated dependencies [2da2f30]
+  - juniper@2.8.2
+  - juniper-validator@0.6.2
+
 ## 0.4.1
 
 ### Patch Changes

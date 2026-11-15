@@ -1,5 +1,14 @@
 # haywire
 
+## 2.0.8
+
+### Patch Changes
+
+- 67434a9: Keep `describe()` and `toMermaid()` in a stable order after a container factory's `bindInstance()`: an instance bound for an id the module depends on takes its placeholder's place, rather than moving to the end.
+- c2fe089: Document the order of a list's elements, which was always kept: the order their bindings were added, with `mergeModule(other)` putting `other`'s bindings after the module's, and a container factory's `bindInstance()` elements after the module's.
+- f7504e3: Fix an async list request failing with a raw `TypeError` when one element is async and another was already created synchronously (an eager singleton, a `withInstance()` or `bindInstance()` element, or a singleton first created for a dependent). Each element of a list is now created on its own sync or async path.
+- 81ec46e: Fix an async container never settling a request when a supplier is called back to a singleton (or a request-scoped value, with a propagating supplier) while that value's deferred dependency is still being created. `container.check()` accepts these cycles, and they already resolved in a sync container. The supplier now gets the value as soon as its provider returns, while any other request for it still waits for its deferred dependencies.
+
 ## 2.0.7
 
 ### Patch Changes

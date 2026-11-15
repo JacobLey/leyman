@@ -1,5 +1,27 @@
 # nx-lifecycle
 
+## 1.4.2
+
+### Patch Changes
+
+- d3be6ec: Reject hook and stage names that generate the same target twice: a hook listed twice, a hook named `_` (which is the stage's anchor), or a stage named like another stage's target (`build:run` beside `build`'s hook `run`). Previously the later target silently replaced the earlier one, so a repeated hook depended on itself. Empty hook names are rejected too, and the schema now requires hooks to be unique, non-empty and not `_`.
+- Updated dependencies [7951a62]
+- Updated dependencies [76a52d7]
+- Updated dependencies [67434a9]
+- Updated dependencies [4fd0570]
+- Updated dependencies [c2fe089]
+- Updated dependencies [f7504e3]
+- Updated dependencies [81ec46e]
+- Updated dependencies [5d33e46]
+- Updated dependencies [2da2f30]
+- Updated dependencies [61f7f7d]
+  - format-file@2.0.0
+  - haywire@2.0.8
+  - haywire-launcher@1.1.3
+  - juniper@2.8.2
+  - juniper-validator@0.6.2
+  - parse-cwd@2.1.3
+
 ## 1.4.1
 
 ### Patch Changes
