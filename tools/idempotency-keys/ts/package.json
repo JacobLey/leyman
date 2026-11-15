@@ -60,6 +60,7 @@
     "@types/node": "catalog:node-22",
     "@types/pg": "catalog:",
     "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",

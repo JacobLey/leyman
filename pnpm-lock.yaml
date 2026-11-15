@@ -2584,6 +2584,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      aws-emulator-launch:
+        specifier: workspace:^
+        version: file:tools/aws-emulator-launch/ts
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -4354,6 +4357,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      aws-emulator-launch:
+        specifier: workspace:^
+        version: file:tools/aws-emulator-launch/ts
       c8:
         specifier: 'catalog:'
         version: 12.0.0

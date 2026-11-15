@@ -16,6 +16,9 @@
       "path": "../../test-chain/mocha-chain"
     },
     {
+      "path": "../../aws-emulator-launch/ts"
+    },
+    {
       "path": "../../../leyman/expect"
     },
     {

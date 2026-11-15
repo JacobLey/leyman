@@ -35,7 +35,7 @@ The services, at the same hostnames in the devcontainer and in Dagger's `Test`:
 | Valkey | `valkey:6379` | A unique key prefix per test |
 | Postgres | `DATABASE_URL` (`postgres://postgres:postgres@postgres:5432/postgres`) | A database of its own per test, never the shared `postgres` database. Keep each test's pool small (a few connections): tests across parallel Nx tasks share the server's `max_connections` |
 
-AWS Emulator (DynamoDB and other AWS APIs) is no sidecar: it serves only HTTPS with a certificate for `localhost`, so each test process spawns its own `aws-emulator` from `PATH` (`-p 0 -t off --idle-timeout <seconds>`), reads its endpoint, CA file and credentials from its startup line, and stops it when done (e.g. [`idempotency-keys`' helper](../../../tools/idempotency-keys/ts/test/helpers/dynamodb.ts)). It holds everything in memory, so a test run creates the tables it uses.
+AWS Emulator (DynamoDB and other AWS APIs) is no sidecar: it serves only HTTPS with a certificate for `localhost`, so each test process starts its own with [`aws-emulator-launch`](../../../tools/aws-emulator-launch/) (a dev dependency in TypeScript, a `require` with a `replace` in Go), which returns its endpoint, region, keys and CA, and stops it when done (e.g. [`idempotency-keys`' helper](../../../tools/idempotency-keys/ts/test/helpers/dynamodb.ts)). The helper catches its "could not run" error to say to rebuild the devcontainer. Add the `aws-emulator` named input to the test target, so it reruns when the emulator's version changes. It holds everything in memory, so a test run creates the tables it uses.
 
 Without the service a test needs, it fails rather than skipping. Neither service keeps data across restarts, so a test sets up everything it relies on.
 

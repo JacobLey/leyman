@@ -15,8 +15,8 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "@aws-sdk/client-dynamodb": "catalog:",
+    "@biomejs/biome": "catalog:",
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
@@ -27,6 +27,7 @@
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
     "@typescript/native": "catalog:",
+    "aws-emulator-launch": "workspace:^",
     "c8": "catalog:",
     "eslint": "catalog:",
     "idempotency-keys": "workspace:^",

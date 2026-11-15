@@ -3,6 +3,7 @@ module github.com/JacobLey/leyman/tools/idempotency-keys/go
 go 1.25.0
 
 require (
+	github.com/JacobLey/leyman/tools/aws-emulator-launch/go v0.1.0
 	github.com/aws/aws-sdk-go-v2 v1.47.8
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.73.2
 	github.com/aws/smithy-go v1.28.8
@@ -22,3 +23,5 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 )
+
+replace github.com/JacobLey/leyman/tools/aws-emulator-launch/go => ../../aws-emulator-launch/go
