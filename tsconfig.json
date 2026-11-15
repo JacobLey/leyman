@@ -168,6 +168,9 @@
     },
     {
       "path": "./e2e/xenever-comparison"
+    },
+    {
+      "path": "./demos/fetch-middleware"
     }
   ]
 }

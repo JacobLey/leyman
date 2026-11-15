@@ -32,11 +32,11 @@
     "#test/*": "./dist-test/*"
   },
   "dependencies": {
+    "@leyman/demo-fetch-middleware": "workspace:^",
     "@leyman/demo-openapi-client": "workspace:^",
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
-    "ky": "catalog:",
     "oauth4webapi": "catalog:",
     "yargs": "catalog:"
   },

@@ -1,9 +1,8 @@
-import type { Send } from '#internal/lib/request/compose.js';
+import type { Send } from '@leyman/demo-fetch-middleware';
 import { setImmediate } from 'node:timers/promises';
+import { bearer, compose } from '@leyman/demo-fetch-middleware';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { bearer } from '#internal/lib/request/bearer.js';
-import { compose } from '#internal/lib/request/compose.js';
 
 /**
  * A send that refuses some tokens, and records what it was sent.

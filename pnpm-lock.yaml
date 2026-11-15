@@ -1437,6 +1437,9 @@ importers:
 
   demos/agents/cli:
     dependencies:
+      '@leyman/demo-fetch-middleware':
+        specifier: workspace:^
+        version: file:demos/fetch-middleware
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.14.0(supports-color@8.1.1))
@@ -1449,9 +1452,6 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      ky:
-        specifier: 'catalog:'
-        version: 2.2.0
       oauth4webapi:
         specifier: 'catalog:'
         version: 3.8.8
@@ -1695,6 +1695,55 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)
+
+  demos/fetch-middleware:
+    dependencies:
+      ky:
+        specifier: 'catalog:'
+        version: 2.2.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.14.0(supports-color@10.2.2)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   demos/local-ingress:
     dependencies:
@@ -2133,6 +2182,9 @@ importers:
       '@leyman/demo-agents-mcp':
         specifier: workspace:^
         version: file:demos/agents/mcp(eslint@10.14.0(supports-color@8.1.1))
+      '@leyman/demo-fetch-middleware':
+        specifier: workspace:^
+        version: file:demos/fetch-middleware
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.14.0(supports-color@8.1.1))
@@ -6447,6 +6499,10 @@ packages:
 
   '@leyman/demo-blake3-wasm-rust@file:demos/blake3-wasm/rust':
     resolution: {directory: demos/blake3-wasm/rust, type: directory}
+
+  '@leyman/demo-fetch-middleware@file:demos/fetch-middleware':
+    resolution: {directory: demos/fetch-middleware, type: directory}
+    engines: {node: '>=26'}
 
   '@leyman/demo-openapi-client@file:demos/openapi/client':
     resolution: {directory: demos/openapi/client, type: directory}
@@ -14188,6 +14244,10 @@ snapshots:
       - eslint
 
   '@leyman/demo-blake3-wasm-rust@file:demos/blake3-wasm/rust': {}
+
+  '@leyman/demo-fetch-middleware@file:demos/fetch-middleware':
+    dependencies:
+      ky: 2.2.0
 
   '@leyman/demo-openapi-client@file:demos/openapi/client(eslint@10.14.0(supports-color@8.1.1))':
     dependencies:

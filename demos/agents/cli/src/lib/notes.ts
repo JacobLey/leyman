@@ -1,10 +1,8 @@
 import type { Session, SessionStore } from './session.js';
+import { bearer, compose, kySend } from '@leyman/demo-fetch-middleware';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 import { refresh, requestTimeoutMs } from './oauth.js';
-import { bearer } from './request/bearer.js';
-import { compose } from './request/compose.js';
-import { kySend } from './request/ky.js';
 
 const notLoggedIn = 'Not logged in. Run notes login --api <url> first.';
 

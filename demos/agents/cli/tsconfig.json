@@ -23,7 +23,13 @@
       "path": "../../openapi/client"
     },
     {
+      "path": "../../fetch-middleware"
+    },
+    {
       "path": "../../../tools/pg-dolly"
+    },
+    {
+      "path": "../../../tools/oauth-dev-server"
     },
     {
       "path": "../../../tools/test-chain/mocha-chain"
@@ -39,9 +45,6 @@
     },
     {
       "path": "../../openapi/database"
-    },
-    {
-      "path": "../../../tools/oauth-dev-server"
     }
   ]
 }

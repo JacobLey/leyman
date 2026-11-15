@@ -1,8 +1,8 @@
-import type { Send } from '#internal/lib/request/compose.js';
+import type { Send } from '@leyman/demo-fetch-middleware';
 import { NetworkError } from 'ky';
+import { kySend } from '@leyman/demo-fetch-middleware';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { kySend } from '#internal/lib/request/ky.js';
 
 /**
  * Sends with a Ky instance that retries a 503 once, and throws only for 503, over a fake `fetch`.

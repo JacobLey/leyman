@@ -648,6 +648,21 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
+        slug: 'fetch-middleware',
+        title: 'Fetch middleware',
+        pitch: 'Middleware around fetch, in the shape of Go’s RoundTripper: each concern of sending a request (auth, retries, limits) is a plugin, with a bearer token renewed once for a burst of refusals, and Ky retrying only what’s safe to send again.',
+        source: 'demos/fetch-middleware',
+        files: [
+            { label: 'Compose', path: 'demos/fetch-middleware/src/lib/compose.ts' },
+            { label: 'Bearer token', path: 'demos/fetch-middleware/src/lib/bearer.ts' },
+            { label: 'Ky as the sender', path: 'demos/fetch-middleware/src/lib/ky.ts' },
+            { label: 'Tests', path: 'demos/fetch-middleware/test/unit' },
+        ],
+        uses: ['mocha-chain'],
+        related: ['agent-cli', 'mcp-server'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'agent-cli',
         title: 'CLI for agents',
         pitch: 'A CLI that makes the notes API easy for AI agents with a shell, with one short command per task and a login that starts from nothing but the API’s URL.',
@@ -655,7 +670,7 @@ export const demos: readonly Demo[] = [
         files: [
             { label: 'Commands', path: 'demos/agents/cli/src/commands' },
             { label: 'OAuth', path: 'demos/agents/cli/src/lib/oauth.ts' },
-            { label: 'Request middleware', path: 'demos/agents/cli/src/lib/request' },
+            { label: 'API client', path: 'demos/agents/cli/src/lib/notes.ts' },
             { label: 'Session file', path: 'demos/agents/cli/src/lib/session.ts' },
             { label: 'Composition', path: 'demos/agents/cli/src/container.ts' },
             { label: 'Integration tests', path: 'demos/agents/cli/test/integration/cli.spec.ts' },

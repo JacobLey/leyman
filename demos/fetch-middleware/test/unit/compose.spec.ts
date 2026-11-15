@@ -1,7 +1,7 @@
-import type { Middleware } from '#internal/lib/request/compose.js';
+import type { Middleware } from '@leyman/demo-fetch-middleware';
+import { compose } from '@leyman/demo-fetch-middleware';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { compose } from '#internal/lib/request/compose.js';
 
 suite('compose', () => {
     test('Sends each request through the middlewares, the first outermost', async () => {
