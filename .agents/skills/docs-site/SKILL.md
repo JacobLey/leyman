@@ -81,7 +81,7 @@ Infrastructure ([`infra/`](../../../infra/)) is documented the same way as demos
 | [`infra/nx-cache/`](../../../infra/nx-cache/) | [`docs/src/infrastructure/nx-cache/index.md`](../../../docs/src/infrastructure/nx-cache/index.md) |
 
 <!-- @manual-start rest -->
-**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), then run `nx run @leyman/docs:populate-files`.** It regenerates the tables above, the lists in the root README and `docs/README.md`, and the paths of [`.claude/rules/docs-site-sync.md`](../../../.claude/rules/docs-site-sync.md) (from each source's `src/`, README and `WHY-*.md`; add other paths in its manual section). **Point the package's `homepage` at its overview page, link that page from its README (see [writing-readmes](../writing-readmes/SKILL.md#links)), and add the package to `docs/package.json`'s `devDependencies` (`workspace:^`), which is how Nx hashes the README and changelog the build reads: the build checks all three. When a demo starts using a documented package, add it to the demo's `uses`.**
+**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), then run `nx run @leyman/docs:populate-files`.** It regenerates the tables above, each package's `why.md`, the lists in the root README and `docs/README.md`, and the paths of [`.claude/rules/docs-site-sync.md`](../../../.claude/rules/docs-site-sync.md) (from each source's `src/`, README and `WHY-*.md`; add other paths in its manual section). **Point the package's `homepage` at its overview page, link that page from its README (see [writing-readmes](../writing-readmes/SKILL.md#links)), and add the package to `docs/package.json`'s `devDependencies` (`workspace:^`), which is how Nx hashes the README and changelog the build reads: the build checks all three. When a demo starts using a documented package, add it to the demo's `uses`.**
 
 ## Keeping pages in sync
 
@@ -105,7 +105,7 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 | `getting-started.md` | Install (npm/pnpm/yarn `code-group`), the smallest working setup, Next steps. |
 | `guides/*.md` | One topic each, for users who have the basics. |
 | `reference/*.md` | Every option, flag and export, in tables. |
-| `why.md` | Only when the package has a `WHY-<PACKAGE>.md`. |
+| `why.md` | Exactly when the package has a `WHY-<PACKAGE>.md`, and generated from it (see [Why pages](#why-pages)). |
 
 - Every page has a `description` in frontmatter.
 - Write plainly: see [Prose](../writing-readmes/SKILL.md#prose).
@@ -114,6 +114,14 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 - Link between pages with site paths (`/packages/haywire/guides/scopes`, `/demos/openapi/`), and to other documented packages' pages rather than npm. Dead links fail the build.
 - Every `ts` block is type-checked. Use `// ---cut---` to hide setup, `// ^?` to show a type, and `// @errors: <code>` for an example that must fail. Use `// @noErrors` only for code that can't compile in isolation, like generated files that import their siblings.
 - Use `json` or `sh` blocks for config and commands. They aren't checked, so where a config has a TypeScript type, also show it in a `ts` block with `satisfies` (see [nx-lifecycle's configuration](../../../docs/src/packages/nx-lifecycle/reference/configuration.md)).
+
+## Why pages
+
+A package's `why.md` is generated from its `WHY-<PACKAGE>.md` by `nx run @leyman/docs:populate-files`, so the WHY file is the only place to edit that text (see [writing-readmes](../writing-readmes/SKILL.md#readme-vs-why-file) for how to write one). Only the `description` in the page's frontmatter is a manual section. The generator:
+
+- Rewrites links: docs site URLs become site paths, a documented package's npm page becomes its overview, a repo path with a page (a documented package's directory or README, its WHY file, a demo's directory) becomes that page, and any other relative link becomes its GitHub URL. Anchors are kept only on a link to another WHY file, whose page has the same headings.
+- Turns a `<!-- twoslash ... -->` comment right above a `ts` fence into the block's hidden setup, above `// ---cut---`.
+- Fails when a package's WHY file and the `why` entry in its `pages` don't match, on a malformed twoslash comment, and on a relative link to a missing file.
 
 ## Blog posts
 

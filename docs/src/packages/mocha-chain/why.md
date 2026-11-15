@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: Why mocha-chain exists - Mocha's beforeEach forces nullable variables, or shared state between tests.
+# @manual-end frontmatter
 ---
 
-# Why mocha-chain
+<!-- @generated-signature v1:273cd82f64ad9c6bdc96f578eaa2f21c Generated from tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md instead, and the description only here. -->
 
-## The Problem
+# Why mocha-chain?
+
+## The problem
 
 Mocha's `beforeEach` hook is the standard way to set up fresh state before each test. With TypeScript, though, it makes you choose between type safety and test isolation.
 
@@ -14,6 +18,7 @@ The natural pattern is to declare a variable in the suite scope, assign it in `b
 
 ```ts
 // @noErrors
+// ---cut---
 suite('Division.divide', () => {
 
     let division: Division | null = null;
@@ -36,6 +41,7 @@ The obvious fix is to construct once and share:
 
 ```ts
 // @noErrors
+// ---cut---
 const division = new Division();
 ```
 
@@ -47,6 +53,7 @@ You could construct inside each test body:
 
 ```ts
 // @noErrors
+// ---cut---
 test('success', () => {
     const division = new Division();
     expect(division.divide(12, 3)).to.equal(4);
@@ -55,13 +62,13 @@ test('success', () => {
 
 But this gives up what hooks are for. A hook keeps shared setup in one place and runs it once per context, and teardown hooks run even when a test fails.
 
-
-## The Solution
+## The solution
 
 `mocha-chain` lets hooks return values that are passed forward as typed context. Instead of a shared mutable variable in the outer scope, each hook returns an object and the next hook or test receives it as a parameter:
 
 ```ts
 // @noErrors
+// ---cut---
 const withDivision = beforeEach(() => {
     return { division: new Division() };
 });

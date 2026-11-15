@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: Why each test gets a Postgres database of its own, why templates and SQL, how runs share a server safely, and how pg-dolly compares.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:8b3055c79d0d782b7bf6c4acffec15a1 Generated from tools/pg-dolly/WHY-PG-DOLLY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/pg-dolly/WHY-PG-DOLLY.md instead, and the description only here. -->
 
 # Why pg-dolly?
 
@@ -48,10 +52,9 @@ Tests usually run against the same server as a developer's own databases, and ma
 - What a crashed run left behind is dropped by the next run to connect, since the crashed run's lock is free. `DROP DATABASE … WITH (FORCE)` also ends connections the crashed process left open.
 - Templates no run has used for `retainMs` are dropped, so changing the schema over and over doesn't fill the server with old templates.
 
-
 ## Non-goals
 
-- It doesn't run migrations, since each ORM has its own way (Drizzle's `migrate`, Prisma's `migrate deploy`, Kysely's `Migrator`). `template('')` gives an empty database to run them in, and [pg-dolly-schema](/packages/pg-dolly-schema/) runs a project's own migrate command in one to keep its `schema.sql`.
+- It doesn't run migrations, since each ORM has its own way (Drizzle's `migrate`, Prisma's `migrate deploy`, Kysely's `Migrator`). `template('')` gives an empty database to run them in, and [`pg-dolly-schema`](/packages/pg-dolly-schema/) runs a project's own migrate command in one to keep its `schema.sql`.
 - It doesn't provide the server. It takes `DATABASE_URL`, and fails without it, so integration tests are only left out when you choose which tests to run.
 - It has no fixtures. Data only some tests need is inserted by those tests, after cloning, so it's visible next to the test that uses it. Data every test needs can be a seed, run into the template once, but only as SQL, because pg-dolly has to hash it to know when to build again.
 

@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: The stampede and invalidation race in read-through caches, how leases solve both, why one token check is enough, and how lease-cache compares.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:bbba0bb5c25728c42c06b9de9b483e3e Generated from tools/lease-cache/WHY-LEASE-CACHE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/lease-cache/WHY-LEASE-CACHE.md instead, and the description only here. -->
 
 # Why lease-cache?
 
-## The Problem
+## The problem
 
 A read-through cache returns the cached value, or loads it on a miss and caches it. Two things go wrong once several instances (processes, pods) share the cache.
 

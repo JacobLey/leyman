@@ -3,7 +3,8 @@
  * projects skill's tables, the docs-site skill's tables, `docs/README.md`'s list of documented
  * packages, the paths of the docs-site rule, and the package dropdowns of the issue templates.
  * Also the principles skill `@leyman/configs` ships, from the principles page, and the skills
- * table of `AGENTS.md`, from each skill's frontmatter.
+ * table of `AGENTS.md`, from each skill's frontmatter. And each documented package's `why` page,
+ * from its `WHY-<PACKAGE>.md`.
  *
  * Data comes from each project's `package.json` (or `project.json` `metadata.description` for a
  * project with none), from `docs/.vitepress/projects.ts`, and from the skills' `SKILL.md` files. Prose lives in manual sections, kept
@@ -11,7 +12,7 @@
  * (`CI` set) a file that would change fails it. `--force` overwrites edited or unsigned files.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { manualSection, signatureToken } from 'generated-signature';
 import { populateFiles } from 'populate-files';
@@ -414,6 +415,215 @@ ${header()}
 ${body}`;
 };
 
+const githubRepo = 'https://github.com/JacobLey/leyman';
+
+/**
+ * The site page generated from each repo path, or standing for it: a documented package's
+ * directory and README map to its overview, its WHY file to its `why` page, and a demo's or
+ * infrastructure entry's directory and README to its page. Only a page generated from the file
+ * itself (`fromSource`) keeps a link's anchor, since only there do the headings match.
+ */
+const sitePages = new Map([
+    ...packages.flatMap(({ slug, sources }) =>
+        sources.flatMap(source => [
+            [source, { page: `/packages/${slug}/` }],
+            [`${source}/README.md`, { page: `/packages/${slug}/` }],
+            ...whyFiles(source).map(file => [
+                file,
+                { page: `/packages/${slug}/why`, fromSource: true },
+            ]),
+        ])
+    ),
+    ...[
+        ...demos.map(demo => ['demos', demo]),
+        ...infrastructure.map(entry => ['infrastructure', entry]),
+    ].flatMap(([kind, { slug, source }]) => [
+        [source, { page: `/${kind}/${slug}/` }],
+        [`${source}/README.md`, { page: `/${kind}/${slug}/` }],
+    ]),
+]);
+const npmPages = new Map(
+    documented.map(({ slug, project }) => [project.npmName, `/packages/${slug}/`])
+);
+
+/**
+ * Rewrites a link in a repo file for the site page generated from it. Links into the site become
+ * site paths; a link to a documented package's npm page, or to a repo path with a site page,
+ * becomes that page; any other relative link becomes its GitHub URL. Everything else is kept.
+ *
+ * @param target - the link's target, as written
+ * @param fromFile - the repo file it's in, from the root
+ * @returns the target for the page
+ * @throws when a relative link leaves the repo or names a missing file
+ */
+const siteLink = (target, fromFile) => {
+    const hashIndex = target.indexOf('#');
+    const href = hashIndex === -1 ? target : target.slice(0, hashIndex);
+    const anchor = hashIndex === -1 ? '' : target.slice(hashIndex);
+    if (href.startsWith(`${docsSite}/`)) {
+        return target.slice(docsSite.length);
+    }
+    const npm = /^https:\/\/www\.npmjs\.com\/package\/(?<name>[^\/]+(?:\/[^\/]+)?)$/v.exec(href);
+    if (npm && !anchor && npmPages.has(npm.groups.name)) {
+        return npmPages.get(npm.groups.name);
+    }
+    const github = new RegExp(`^${githubRepo}/(?:blob|tree)/main/(?<path>.+?)/?$`, 'v').exec(href);
+    const relative = href !== '' && !/^[a-z][a-z\d+.\-]*:|^\//iv.test(href);
+    if (!github && !relative) {
+        return target;
+    }
+    const repoPath = github
+        ? github.groups.path
+        : path.posix
+              .normalize(path.posix.join(path.posix.dirname(fromFile), href))
+              .replace(/\/$/v, '');
+    if (repoPath.startsWith('../')) {
+        throw new Error(`${fromFile}: link ${target} leaves the repository`);
+    }
+    const site = sitePages.get(repoPath);
+    if (site && (!anchor || site.fromSource)) {
+        return `${site.page}${anchor}`;
+    }
+    if (github) {
+        return target;
+    }
+    if (!existsSync(path.join(root, repoPath))) {
+        throw new Error(`${fromFile}: link ${target} names a missing file`);
+    }
+    const kind = statSync(path.join(root, repoPath)).isDirectory() ? 'tree' : 'blob';
+    return `${githubRepo}/${kind}/main/${repoPath}${anchor}`;
+};
+
+/**
+ * Turns a repo Markdown file (a WHY file) into the body of its site page: links are rewritten by
+ * `siteLink`, and a twoslash comment, hidden on GitHub and npm, becomes the setup of the code
+ * block under it. A twoslash comment is exactly these lines, right above a `ts` fence:
+ *
+ * ```md
+ * <!-- twoslash
+ * declare const container: Container;
+ * // @errors: 2554
+ * -->
+ * ```
+ *
+ * Its lines are compiled above `// ---cut---`, so they're checked but not shown, and directives
+ * such as `// @errors` and `// @noErrors` apply to the block. Since the block itself is shown on
+ * GitHub, a cut or a directive in it fails, as does any malformed twoslash comment.
+ *
+ * @param filePath - the file, from the root
+ * @returns the page's body
+ * @throws on a malformed twoslash comment, or a twoslash directive in a shown block
+ */
+const sitePage = filePath => {
+    const lines = readFileSync(path.join(root, filePath), 'utf8').split('\n');
+    const fail = (index, reason) => {
+        throw new Error(`${filePath}:${index + 1}: ${reason}`);
+    };
+    const output = [];
+    let fence = null;
+    for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
+        if (fence) {
+            output.push(line);
+            if (line.trimStart().startsWith(fence.marker) && line.trim() === fence.marker) {
+                fence = null;
+            } else if (
+                fence.language === 'ts' &&
+                /^\s*\/\/\s*(?:-{3}cut|@(?:errors|noErrors|filename|showEmit)\b)/v.test(line)
+            ) {
+                fail(index, 'a twoslash directive belongs in a twoslash comment above the block');
+            }
+            continue;
+        }
+        const opening = /^(?<marker>`{3,}|~{3,})(?<language>\S*)/v.exec(line.trim());
+        if (opening) {
+            fence = opening.groups;
+            output.push(line);
+            continue;
+        }
+        if (/^<!--\s*twoslash/v.test(line)) {
+            if (line !== '<!-- twoslash') {
+                fail(index, 'a twoslash comment opens with a line that is exactly "<!-- twoslash"');
+            }
+            const setup = [];
+            index++;
+            for (; lines[index] !== '-->'; index++) {
+                if (index >= lines.length) {
+                    fail(index - 1, 'a twoslash comment closes with a line that is exactly "-->"');
+                }
+                if (lines[index].includes('-->')) {
+                    fail(index, 'a twoslash comment closes with a line that is exactly "-->"');
+                }
+                setup.push(lines[index]);
+            }
+            if (lines[index + 1] !== '```ts') {
+                fail(index + 1, 'a twoslash comment is followed directly by a ```ts fence');
+            }
+            index++;
+            fence = { marker: '```', language: 'ts' };
+            output.push('```ts', ...setup, '// ---cut---');
+            continue;
+        }
+        output.push(
+            line
+                .split(/(`+[^`]*`+)/v)
+                .map((part, partIndex) =>
+                    partIndex % 2 === 1
+                        ? part
+                        : part.replaceAll(
+                              /\]\((?<target>[^\)\s]+)\)/gv,
+                              (_match, target) => `](${siteLink(target, filePath)})`
+                          )
+                )
+                .join('')
+        );
+    }
+    if (fence) {
+        fail(lines.length - 1, 'a code block is never closed');
+    }
+    return output.join('\n');
+};
+
+/**
+ * The `why` page of each documented package with a WHY file, which is the page's single source.
+ * The page's `description` is its manual section. A package lists a `why` page exactly when one
+ * of its sources has a WHY file.
+ */
+const whyPages = packages.flatMap(({ slug, sources, pages }) => {
+    const files = sources.flatMap(source => whyFiles(source));
+    const listed = pages.some(page => 'link' in page && page.link === 'why');
+    const filePath = `docs/src/packages/${slug}/why.md`;
+    if (files.length > 1) {
+        throw new Error(`Package ${slug} has more than one WHY file: ${files.join(', ')}`);
+    }
+    if (listed !== (files.length === 1)) {
+        throw new Error(
+            listed
+                ? `Package ${slug} lists a why page in projects.ts, but none of its sources has a WHY-*.md`
+                : `Package ${slug} has ${files[0]}, but lists no why page in projects.ts`
+        );
+    }
+    if (files.length === 0) {
+        if (existsSync(path.join(root, filePath))) {
+            throw new Error(`${filePath} has no WHY-*.md to be generated from: delete it`);
+        }
+        return [];
+    }
+    const [source] = files;
+    return [
+        {
+            filePath,
+            content: () => `---
+${manualSection({ id: 'frontmatter', comment: { start: '#' }, body: 'description:' })}
+---
+
+<!-- ${signatureToken()} Generated from ${source} by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit ${source} instead, and the description only here. -->
+
+${sitePage(source)}`,
+        },
+    ];
+});
+
 /**
  * A skill's `name` and `description`, from the frontmatter of its `SKILL.md`. Only plain one-line
  * values are read, which every skill here uses; anything else fails, rather than being misread.
@@ -520,6 +730,7 @@ const files = [
             'Which package is this for?'
         ),
     },
+    ...whyPages,
 ];
 const results = await populateFiles(
     files
@@ -531,4 +742,12 @@ for (const result of results) {
     if (result.updated) {
         console.log(`Wrote ${path.relative(root, result.filePath)} (${result.reason})`);
     }
+}
+const undescribed = whyPages
+    .map(({ filePath }) => filePath)
+    .filter(filePath =>
+        /^description:\s*$/mv.test(readFileSync(path.join(root, filePath), 'utf8'))
+    );
+if (undescribed.length > 0) {
+    throw new Error(`Fill in the description in the frontmatter of ${undescribed.join(', ')}`);
 }

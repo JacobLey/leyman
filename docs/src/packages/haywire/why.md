@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: The problems Haywire solves, its requirements, how its type checks work, and how it compares to alternatives.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:b44188e94ce5f9fed0e9d74a86b49362 Generated from tools/haywire/WHY-HAYWIRE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/haywire/WHY-HAYWIRE.md instead, and the description only here. -->
 
 # Why Haywire?
 
-## The Problem
+## The problem
 
 Most JavaScript DI libraries leave wiring mistakes to be found at runtime. These are the mistakes that motivated Haywire.
 
@@ -95,7 +99,7 @@ Haywire encodes the relationships between dependencies in TypeScript's type syst
 - A nullable value injected into a parameter that isn't nullable.
 - The wrong id passed to `container.get()`.
 
-So when the code compiles, the container has a binding for everything it needs, and it works apart from problems outside it like bad credentials or network failures. The checks that types can't do, like detecting circular dependencies, are done by `container.check()`, which is meant to be called in your test suite.
+So when the code compiles, the container has a binding for everything it needs, and it works apart from problems outside it like bad credentials or network failures. The checks that types can't do, like detecting circular dependencies and validating sync suppliers, are done by `container.check()`, which is meant to be called in your test suite.
 
 ## How the checks work
 
@@ -112,6 +116,7 @@ A few checks have no argument to attach a message to, like `identifier<unknown>(
 
 ```ts
 // @errors: 2554
+// ---cut---
 // A value that never exists, so callers can't pass it
 declare const impossible: unique symbol;
 

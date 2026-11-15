@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: The problems with hand-written error conversion, where existing libraries fall short, and the design of unknown-error.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:d4a7e0737b83e6905159d67387c1465a Generated from tools/unknown-error/WHY-UNKNOWN-ERROR.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/unknown-error/WHY-UNKNOWN-ERROR.md instead, and the description only here. -->
 
 # Why unknown-error?
 
-## The Problem
+## The problem
 
 In TypeScript's `strict` mode, a `catch` variable is `unknown`, because JavaScript can throw anything. To log it, report it or wrap it, you need an Error, so nearly every codebase ends up with something like this:
 
@@ -87,5 +91,3 @@ From the [comparison suite](https://github.com/JacobLey/leyman/blob/main/e2e/unk
 - It doesn't serialize errors. To send an error over JSON, use [`serialize-error`](https://www.npmjs.com/package/serialize-error). unknown-error rebuilds what it receives on the other side.
 - It doesn't define error class hierarchies. It converts and inspects errors, and has no opinion on how you define them.
 - It can't recover where a non-Error was thrown. A thrown string has no stack. A `NonError`'s stack points at the `toError` call, the closest place that is known.
-
-Back to the [overview](/packages/unknown-error/).

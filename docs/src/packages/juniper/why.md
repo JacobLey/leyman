@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: The problems Juniper solves, its design goals and non-goals, and how it compares to alternatives.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:26093ca40b39afb9dbf03301f8de2ab3 Generated from apps/juniper/WHY-JUNIPER.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit apps/juniper/WHY-JUNIPER.md instead, and the description only here. -->
 
 # Why Juniper?
 
-## The Problem
+## The problem
 
 [JSON Schema](https://json-schema.org/) is a powerful vocabulary for describing data formats that is both human and machine readable. It is widely supported, and it is the basis of tools like OpenAPI.
 
@@ -81,7 +85,7 @@ Juniper has the following goals for generating JSON Schema:
 - The rendered JSON Schema isn't meant to be predictable. Juniper applies internal optimizations to keep schemas correct and strict, so the exact structure of the output is not guaranteed. Treat it as opaque, and pass it to a validator or serializer rather than inspecting or modifying it by hand.
 - Juniper doesn't apply sensible defaults. JSON Schema does not apply defaults to properties that are not explicitly required, and neither does Juniper, so keywords like `required`, `additionalProperties` and `unevaluatedProperties` must be set explicitly. The one exception is `TupleSchema`, which handles some values internally to ensure a strict tuple.
 - Juniper favors correctness over speed when generating schemas, so schemas should be generated once, at startup.
-  - _Validation_ (with [juniper-validator](https://www.npmjs.com/package/juniper-validator) or just plain [Ajv](https://www.npmjs.com/package/ajv)) should still be very fast, _because_ the generation happens outside the critical path.
+  - _Validation_ (with [juniper-validator](/packages/juniper-validator/) or just plain [Ajv](https://www.npmjs.com/package/ajv)) should still be very fast, _because_ the generation happens outside the critical path.
 
 ## Limitations
 

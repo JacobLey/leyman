@@ -1,10 +1,14 @@
 ---
+# @manual-start frontmatter
 description: Why normalized-react-query exists - keys and fetchers that drift apart, and request waterfalls.
+# @manual-end frontmatter
 ---
 
-# Why normalized-react-query
+<!-- @generated-signature v1:15724234c05b66939c8744524a203606 Generated from tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md instead, and the description only here. -->
 
-## The Problem
+# Why normalized-react-query?
+
+## The problem
 
 [TanStack Query](https://tanstack.com/query/latest) (React Query) pairs "keys" (unique identifiers for a specific API call and its params) with query functions. React Query handles caching, deduplication and subscriptions behind the scenes.
 
@@ -15,6 +19,7 @@ The problem with pairing keys to functions by hand is that nothing keeps them co
 
 ```ts
 // @noErrors
+// ---cut---
 import { useQuery } from '@tanstack/react-query';
 import { getUsers } from './api/users.js';
 
@@ -46,7 +51,6 @@ const useExample = () => {
 
 `normalized-react-query` solves this by having you define the key and query function together in one place, then reuse them as a singleton. Every call site uses the same key and the same function, so they can't diverge. Call sites pass typed params instead of building keys, and the cache helpers (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
 
-
 ## Request Waterfalls
 
 Data is often related (a book has an author, a list page has users). Fetching the related data in the component that renders it creates a waterfall, because the child's request can't start until the parent's data has loaded _and_ the child has rendered. On the server, rendering has to wait for each level in turn.
@@ -55,6 +59,7 @@ Data is often related (a book has an author, a list page has users). Fetching th
 
 ```ts
 // @noErrors
+// ---cut---
 const books = resource<{ bookId: number }, Book>({
     key: ({ bookId }) => ['books', bookId],
     queryFn: ({ params }) => getBook(params.bookId),
@@ -66,11 +71,9 @@ const books = resource<{ bookId: number }, Book>({
 
 As soon as a book loads, its author starts prefetching, and the component receives a `Linked` reference to pass to `useNormalizedPrefetchedQuery`. For server-side rendering, `.query(queryClient, params, { awaitLinks: true })` loads the book and everything it links to before the cache is dehydrated.
 
-
 ## Infinite Queries
 
 TanStack stores infinite (paginated) queries in a different shape from regular queries, so they need their own hooks and cache helpers. `infinite()` does for them what `resource()` does for regular queries, with one definition of the key, the query function and the page params, reused everywhere. It wraps TanStack's own `useInfiniteQuery` and `useSuspenseInfiniteQuery`, and supports `.propagate()`, so each page can link to the resources it contains.
-
 
 ## Comparisons
 

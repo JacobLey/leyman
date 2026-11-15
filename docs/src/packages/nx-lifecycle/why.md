@@ -1,6 +1,10 @@
 ---
+# @manual-start frontmatter
 description: Why hand-written dependsOn doesn't scale in an Nx monorepo, and how lifecycle stages fix it.
+# @manual-end frontmatter
 ---
+
+<!-- @generated-signature v1:fdce96710bc7231e474463e2f26c85df Generated from apps/nx-lifecycle/WHY-NX-LIFECYCLE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit apps/nx-lifecycle/WHY-NX-LIFECYCLE.md instead, and the description only here. -->
 
 # Why nx-lifecycle?
 
@@ -44,7 +48,7 @@ The `dependsOn` fields end up describing how each project happens to be built, a
 
 nx-lifecycle splits the configuration into two parts.
 
-[Stages](/packages/nx-lifecycle/guides/stages-and-hooks) declare the workflow once, such as `build` with hooks `pre`, `run` and `post`, then `test` with hooks `run` and `report`. They state the intended order, independent of any tool.
+[Stages](/packages/nx-lifecycle/guides/stages-and-hooks) declare the workflow once, such as `build` with hooks `pre`, `run` and `post`, then `test` with hooks `run` and `report`. They state the intended order, independent of any tool, and not every project has to implement every step.
 
 Bindings declare once which concrete targets (`tsc`, `eslint`) run in which hook, and each project opts in by declaring those targets. Each binding is written once, next to the tool, instead of in every target that depends on it.
 

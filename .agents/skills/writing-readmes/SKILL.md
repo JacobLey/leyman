@@ -23,6 +23,20 @@ The README is also how the package is found and judged. npm search, web search, 
 
 See leyman's [`tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
 
+A WHY file is plain Markdown that reads the same on GitHub, on npm and as a page: a `# Why <package>?` title and `##` sections, with no centered `<div>`, Contents list, `---` rules or "Back to README" link. For a package on the [docs site](../docs-site/SKILL.md#documented-packages), its `why` page is generated from it, so it is the only place to edit that text. Its links follow [Links](#links) (absolute npm, GitHub and docs site URLs), and the generator turns those into site links. A `ts` block is type-checked on the site. The setup it needs to compile, and directives such as `// @errors: 2554` or `// @noErrors`, go in a twoslash comment right above the fence, which GitHub and npm hide:
+
+````markdown
+<!-- twoslash
+interface Logger {}
+declare const container: { get<T>(token: string): T };
+-->
+```ts
+container.get<Logger>('Logger');
+```
+````
+
+The comment opens with a line that is exactly `<!-- twoslash` and closes with one that is exactly `-->`. The generator fails on a malformed one, and on a `// ---cut---` or twoslash directive in the block itself, since that would show on GitHub. `// ^?` can't be hidden, so leave it out of WHY files.
+
 ## Spelling
 
 American spelling ("behavior"), like most published text and the npm ecosystem's docs.
