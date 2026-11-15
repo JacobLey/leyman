@@ -142,9 +142,6 @@ catalogs:
     ci-info:
       specifier: ^4.4.0
       version: 4.4.0
-    cockatiel:
-      specifier: ^4.0.0
-      version: 4.0.0
     comlink:
       specifier: ^4.4.2
       version: 4.4.2
@@ -217,6 +214,9 @@ catalogs:
     json-schema-to-zod:
       specifier: ^2.8.1
       version: 2.8.1
+    ky:
+      specifier: ^2.2.0
+      version: 2.2.0
     lru-cache:
       specifier: ^11.5.3
       version: 11.5.3
@@ -1440,9 +1440,6 @@ importers:
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.14.0(supports-color@8.1.1))
-      cockatiel:
-        specifier: 'catalog:'
-        version: 4.0.0
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
@@ -1452,6 +1449,9 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      ky:
+        specifier: 'catalog:'
+        version: 2.2.0
       oauth4webapi:
         specifier: 'catalog:'
         version: 3.8.8
@@ -8482,10 +8482,6 @@ packages:
     resolution: {integrity: sha512-rwHwUfXL40Chm1r08yrhU3qpUvdVlgkKNeyeGPOxnW8/SyVDvgRaed/Uz54AqWNaTCAThlj6QAs3TZcKI0xDEw==}
     engines: {node: '>=0.10.0'}
 
-  cockatiel@4.0.0:
-    resolution: {integrity: sha512-XpUZJnogsd03BGB19T9sv7Xb8SwvD8JddZV2Tlp0LNspopZ6Idv24ZwCl8vAGJ6JwODZ0zLRYVj3NWvmRcUDqA==}
-    engines: {node: '>=22'}
-
   code-block-writer@13.0.3:
     resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
 
@@ -9906,6 +9902,10 @@ packages:
   koa@3.2.1:
     resolution: {integrity: sha512-e7IpWJrnanNUroVK2taAgMxoEZvHLXdQiNjeExSu/DEIWm83jaKGBgb7tLmu2rMYpA027qFB3iLR/k3AVpFRnA==}
     engines: {node: '>= 18'}
+
+  ky@2.2.0:
+    resolution: {integrity: sha512-4+B63kyZt+Y8snQiUGydK1vgY9xYQJZEh9K/nIAIEts+gYJzy1EiAw3BbK8xpWRuWUpN70SNCMjqRGTm75xxIA==}
+    engines: {node: '>=22'}
 
   language-subtag-registry@0.3.23:
     resolution: {integrity: sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ==}
@@ -16501,8 +16501,6 @@ snapshots:
 
   cluster-key-slot@1.1.1: {}
 
-  cockatiel@4.0.0: {}
-
   code-block-writer@13.0.3: {}
 
   collection-utils@1.0.1: {}
@@ -18356,6 +18354,8 @@ snapshots:
       statuses: 2.0.2
       type-is: 2.1.0
       vary: 1.1.2
+
+  ky@2.2.0: {}
 
   language-subtag-registry@0.3.23: {}
 

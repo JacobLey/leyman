@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "@leyman/demo-openapi-client": "workspace:^",
-    "cockatiel": "catalog:",
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
+    "ky": "catalog:",
     "oauth4webapi": "catalog:",
     "yargs": "catalog:"
   },

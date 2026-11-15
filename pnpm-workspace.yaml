@@ -191,7 +191,6 @@ catalog:
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
-  cockatiel: ^4.0.0
   comlink: ^4.4.2
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.4
@@ -214,6 +213,7 @@ catalog:
   ioredis: ^5.11.1
   iovalkey: ^0.4.0
   jose: ^6.2.14
+  ky: ^2.2.0
   lru-cache: ^11.5.3
   # The stable line, for tests. wrangler 4 ships a 5.x prerelease of its own, whose options are still changing
   miniflare: ^4.20260730.0

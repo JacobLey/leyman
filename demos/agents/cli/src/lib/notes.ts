@@ -1,13 +1,21 @@
 import type { Session, SessionStore } from './session.js';
+import ky from 'ky';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 import { refresh, requestTimeoutMs } from './oauth.js';
 import { bearer } from './request/bearer.js';
 import { compose } from './request/compose.js';
-import { retry } from './request/retry.js';
-import { timeout } from './request/timeout.js';
+import { kySend } from './request/ky.js';
 
 const notLoggedIn = 'Not logged in. Run notes login --api <url> first.';
+
+/**
+ * The statuses worth sending a request again for: the API is busy or a gateway failed for a moment.
+ */
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- HTTP statuses
+const retryStatuses: readonly number[] = [429, 502, 503, 504];
+
+const maxRetryAfterMs = 30_000;
 
 /**
  * The notes API, as the logged-in user: `NotesClient`'s `call`, with the login kept good. The access token is
@@ -51,29 +59,43 @@ export const connect = async (store: SessionStore): Promise<Notes> => {
             return fresh;
         });
     };
+    const api = ky.create({
+        timeout: requestTimeoutMs,
+        retry: {
+            limit: 2,
+            // `kySend` sends a POST again only with an `Idempotency-Key`
+            methods: ['delete', 'get', 'head', 'options', 'post', 'put', 'trace'],
+            statusCodes: retryStatuses,
+            afterStatusCodes: retryStatuses,
+            maxRetryAfter: maxRetryAfterMs,
+            jitter: true,
+        },
+        throwHttpErrors: status => retryStatuses.includes(status),
+    });
     return new NotesClient({
         baseUrl: session.api,
-        fetch: compose([
-            retry(),
-            bearer({
-                token: async () => {
-                    if (current.expiresAt !== null && current.expiresAt <= Date.now()) {
+        fetch: compose(
+            [
+                bearer({
+                    token: async () => {
+                        if (current.expiresAt !== null && current.expiresAt <= Date.now()) {
+                            await renew();
+                        }
+                        return current.accessToken;
+                    },
+                    // Refused before it expired (revoked, or the API's keys changed), or with no expiry to go by.
+                    // A token renewed already is as good as it gets
+                    renew: async () => {
+                        if (hasRenewed || current.refreshToken === null) {
+                            return null;
+                        }
                         await renew();
-                    }
-                    return current.accessToken;
-                },
-                // Refused before it expired (revoked, or the API's keys changed), or with no expiry to go by. A
-                // token renewed already is as good as it gets
-                renew: async () => {
-                    if (hasRenewed || current.refreshToken === null) {
-                        return null;
-                    }
-                    await renew();
-                    return current.accessToken;
-                },
-            }),
-            timeout(requestTimeoutMs),
-        ]),
+                        return current.accessToken;
+                    },
+                }),
+            ],
+            kySend(api)
+        ),
     });
 };
 

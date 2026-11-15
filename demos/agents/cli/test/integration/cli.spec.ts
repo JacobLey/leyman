@@ -650,7 +650,9 @@ suite('notes', () => {
             const { code, stderr } = await notes(configDir, ['list']);
 
             expect(code).to.equal(1);
-            expect(stderr).to.equal('Failed: fetch failed\n');
+            expect(stderr).to.equal(
+                `Failed: Request failed due to a network error: GET ${served.url}/notes?limit=10\n`
+            );
         });
 
         suite('logout', () => {
