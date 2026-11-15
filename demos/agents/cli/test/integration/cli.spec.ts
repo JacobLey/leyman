@@ -547,6 +547,69 @@ suite('notes', () => {
         );
 
         withLogin.test(
+            'Adds one note when a gateway fails while the API is still adding it, the API holding the retry until then',
+            async ({ app, configDir, db, pool, served }) => {
+                // The first attempt reached the note's INSERT, so it claimed the Idempotency-Key
+                const firstAdding = Promise.withResolvers<undefined>();
+                // The retry's claim found the key running, with its own fingerprint, so the API waits on the first
+                const retryHeld = Promise.withResolvers<undefined>();
+                // The pool both the handlers and the idempotency store query through: holds the note's INSERT until
+                // the retry is held, and sees the store read the running key
+                const query = pool.query.bind(pool) as (
+                    config: string | { readonly text: string },
+                    values?: readonly unknown[]
+                ) => Promise<{ readonly rows: readonly { readonly status?: unknown }[] }>;
+                pool.query = (async (
+                    config: string | { readonly text: string },
+                    values?: readonly unknown[]
+                ) => {
+                    const text = typeof config === 'string' ? config : config.text;
+                    if (text.startsWith('insert into "notes"')) {
+                        firstAdding.resolve(undefined);
+                        await retryHeld.promise;
+                    }
+                    const result = await query(config, values);
+                    if (
+                        text.startsWith('SELECT fingerprint, status') &&
+                        result.rows[0]?.status === null
+                    ) {
+                        retryHeld.resolve(undefined);
+                    }
+                    return result;
+                }) as unknown as typeof pool.query;
+
+                let first: Promise<Response> | undefined;
+                const retries: { status: number; replayed: string | null }[] = [];
+                served.use(async request => {
+                    if (request.method !== 'POST') {
+                        return app.fetch(request);
+                    }
+                    if (first === undefined) {
+                        first = app.fetch(request) as Promise<Response>;
+                        // The API is adding it, and the gateway in front of it gives up
+                        await firstAdding.promise;
+                        return new Response('Bad gateway', { status: 502 });
+                    }
+                    const response = await app.fetch(request);
+                    retries.push({
+                        status: response.status,
+                        replayed: response.headers.get('idempotent-replayed'),
+                    });
+                    return response;
+                });
+
+                const { code, stdout } = await notes(configDir, ['add', '--title', 'Dolly']);
+
+                const rows = await db.select().from(notesTable);
+                const firstResponse = await first!;
+                expect(code).to.equal(0);
+                expect(firstResponse.status).to.equal(201);
+                expect(retries).to.deep.equal([{ status: 201, replayed: 'true' }]);
+                expect(rows.map(({ id }) => id)).to.deep.equal([stdout.trim()]);
+            }
+        );
+
+        withLogin.test(
             'Says to check the list when the API is still adding the note after every retry',
             async ({ app, configDir, served }) => {
                 let attempts = 0;
