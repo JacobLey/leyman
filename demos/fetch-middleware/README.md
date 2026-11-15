@@ -74,7 +74,7 @@ Sends with Ky, as the last `Send`: Ky retries and times out as it's set up to, a
 - [cockatiel](https://github.com/connor4312/cockatiel) was the first retrier tried. It needed a wrapper to honor `Retry-After`, its `maxAttempts` counts retries rather than sends, and its wait between retries doesn't stop when the request is aborted. Ky does all of that itself, so it replaced both the wrapper and the timeout middleware.
 - Ky's hooks fit some concerns badly. A rate limiter has to take a slot before every attempt and give it back after every outcome, which no pair of hooks covers. As a middleware it's one `await`.
 - Where a middleware goes decides what it counts. Composed in front of `kySend`, it sees a whole call, retries and their delays included: right for a token, which a retry should reuse. Composed into Ky's own `fetch` (`kySend({ fetch: compose([...]) })`), it sees each attempt: right for a concurrency cap, so a request waiting out a retry's delay holds no slot. The MCP demo's limiter goes there.
-- Ky retries only statuses it throws for, and doesn't give `shouldRetry` the request. `kySend` works around both, which two small changes to Ky would make unnecessary.
+- Ky retries only statuses it throws for, so `kySend` turns the last `HTTPError` back into a response. And Ky decides by method alone whether a request may be retried, so `kySend` turns retries off for a request that isn't safe to send twice. One maintainer has proposed letting an `Idempotency-Key` allow retries ([ky#692](https://github.com/sindresorhus/ky/issues/692)), which would make that part unnecessary.
 
 ## Not covered
 
