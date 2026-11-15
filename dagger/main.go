@@ -68,6 +68,14 @@ const (
 	// Client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository: `pg_dump` must be at least the server's
 	// major version. Keep in sync with `POSTGRES_MAJOR` in `.devcontainer/Dockerfile`.
 	postgresMajor = "18"
+	// AWS Emulator, a local server for AWS APIs (DynamoDB...), for tests to spawn. Only bump to a release at least 7 days
+	// old, from https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.269.1` there is
+	// `1.0.269` here). Keep in sync with `AWS_EMULATOR_VERSION` in `.devcontainer/Dockerfile`.
+	awsEmulatorVersion = "1.0.269"
+	// The fingerprint of the key AWS signs the emulator's packages with, from
+	// https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html. Keep in sync with
+	// `.devcontainer/Dockerfile`.
+	awsEmulatorKeyFingerprint = "98BCF336A3BE53B734E967C52E5BF49BD940F624"
 )
 
 // One image per support floor: the exact oldest Node.js a published package's `engines.node` allows (`>=24` is
@@ -96,16 +104,18 @@ func goFloorImages() []struct{ version, image string } {
 }
 
 const (
-	workdir     = "/workspace"
-	storeDir    = "/pnpm-store"
-	goModCache  = "/go-mod-cache"
-	cacheDir    = "/pnpm-cache"
-	tarballDir  = "/tarballs"
-	goRoot      = "/usr/local/go"
-	rustupHome  = "/usr/local/rustup"
-	cargoHome   = "/usr/local/cargo"
-	pnpmDir     = "/usr/local/pnpm"
-	npmRegistry = "https://registry.npmjs.org"
+	workdir    = "/workspace"
+	storeDir   = "/pnpm-store"
+	goModCache = "/go-mod-cache"
+	cacheDir   = "/pnpm-cache"
+	tarballDir = "/tarballs"
+	goRoot     = "/usr/local/go"
+	rustupHome = "/usr/local/rustup"
+	cargoHome  = "/usr/local/cargo"
+	pnpmDir    = "/usr/local/pnpm"
+	// Where the devcontainer installs AWS Emulator too.
+	awsEmulatorDir = "/opt/aws-emulator"
+	npmRegistry    = "https://registry.npmjs.org"
 	// Same as the devcontainer's. A fixed password: the service only lives as long as the test run.
 	//nolint:gosec // Not a secret, as above
 	databaseURL = "postgres://postgres:postgres@postgres:5432/postgres"
@@ -1009,8 +1019,27 @@ tar --extract --gzip --file /tmp/wasm-bindgen.tar.gz --directory ` + cargoHome +
 rm /tmp/llvm-cov.tar.gz /tmp/wasm-bindgen.tar.gz`})
 }
 
-// Adds Go, Rust, pnpm, Node and OpenTofu, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
-// devcontainer), so nothing silently depends on it.
+// AWS Emulator's `/opt/aws-emulator`, from its Debian package, once its signature is checked. Only its binary and license
+// are kept: the package's only dependency is libc.
+func awsEmulator() *dagger.Directory {
+	return dag.Container().
+		From(debianImage).
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends ca-certificates curl gpg"}).
+		WithExec([]string{"sh", "-c", `set -e
+cd /tmp
+package="aws-emulator_` + awsEmulatorVersion + `-1_$(dpkg --print-architecture).deb"
+base_url="https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS"
+curl --fail --silent --show-error --location --retry 3 --remote-name "$base_url/$package" --remote-name "$base_url/$package.sig"
+export GNUPGHOME="$(mktemp -d)"
+curl --fail --silent --show-error --location --retry 3 https://downloads.aws.com/keys/gpg/current.asc | gpg --batch --quiet --import
+gpg --batch --status-fd 1 --verify "$package.sig" "$package" 2>/dev/null \
+	| grep --quiet '^\[GNUPG:\] VALIDSIG .* ` + awsEmulatorKeyFingerprint + `$'
+dpkg-deb --extract "$package" /tmp/aws-emulator`}).
+		Directory("/tmp/aws-emulator/opt/aws-emulator")
+}
+
+// Adds Go, Rust, pnpm, Node, OpenTofu and AWS Emulator, matching the devcontainer: last, so bumping one reruns only
+// these copies. No npm (as in the devcontainer), so nothing silently depends on it.
 func withTools(ctr *dagger.Container) *dagger.Container {
 	// pnpm is a native binary, installed with npm and copied in with its package
 	pnpm := dag.Container().
@@ -1035,13 +1064,16 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		WithDirectory(pnpmDir, pnpm).
 		WithFile("/usr/local/bin/node", dag.Container().From(nodeImage).File("/usr/local/bin/node")).
 		WithFile("/usr/local/bin/tofu", dag.Container().From(tofuImage).File("/usr/local/bin/tofu")).
-		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+cargoHome+"/bin:"+pnpmDir, dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		WithDirectory(awsEmulatorDir, awsEmulator()).
+		// Never report usage from tests
+		WithEnvVariable("EMULATOR_TELEMETRY", "off").
+		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+cargoHome+"/bin:"+pnpmDir+":"+awsEmulatorDir+"/bin", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("pnpm_config_store_dir", storeDir).
 		WithEnvVariable("pnpm_config_cache_dir", cacheDir).
 		WithWorkdir(workdir)
 }
 
-// Node + pnpm + Go + Rust + Postgres client tools, matching the devcontainer.
+// Node + pnpm + Go + Rust + AWS Emulator + Postgres client tools, matching the devcontainer.
 func (m *Ci) base() *dagger.Container {
 	return withTools(system())
 }

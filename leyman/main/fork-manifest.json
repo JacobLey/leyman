@@ -1,5 +1,6 @@
 {
   "conditions": {
+    "aws-emulator": "has packages tested against AWS Emulator",
     "ci": "runs CI on GitHub Actions",
     "cli": "has packages with a command line interface",
     "dagger": "runs CI through the Dagger module",
@@ -548,6 +549,9 @@
       ]
     },
     "namedInputs": {
+      "aws-emulator": [
+        "aws-emulator"
+      ],
       "postgres": [
         "postgres"
       ],

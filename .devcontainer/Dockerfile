@@ -126,6 +126,30 @@ RUN cd /tmp \
     && rm "$release.tar.gz" "golangci-lint-${GOLANGCI_LINT_VERSION}-checksums.txt"
 # fork-manifest:end
 
+# fork-manifest:when aws-emulator
+# AWS Emulator, a local server for AWS APIs (DynamoDB...), for tests to spawn. Only its binary and license are kept: the
+# package's only dependency is libc. Only bump to a release at least 7 days old, from
+# https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/versions.json (`1.0.269.1` there is `1.0.269` here).
+# The signature is checked against the fingerprint of AWS's publishing key, from
+# https://docs.aws.amazon.com/emulator/latest/userguide/getting-started-linux.html
+# fork-manifest:when dagger
+# The same version and key as `awsEmulatorVersion` and `awsEmulatorKeyFingerprint` in `dagger/main.go`
+# fork-manifest:end
+FROM base AS aws-emulator
+ARG AWS_EMULATOR_VERSION=1.0.269
+RUN cd /tmp \
+    && package="aws-emulator_${AWS_EMULATOR_VERSION}-1_$(dpkg --print-architecture).deb" \
+    && base_url="https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS" \
+    && curl --fail --silent --show-error --location --remote-name "$base_url/$package" --remote-name "$base_url/$package.sig" \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && curl --fail --silent --show-error --location https://downloads.aws.com/keys/gpg/current.asc | gpg --batch --quiet --import \
+    && gpg --batch --status-fd 1 --verify "$package.sig" "$package" 2>/dev/null \
+        | grep --quiet '^\[GNUPG:\] VALIDSIG .* 98BCF336A3BE53B734E967C52E5BF49BD940F624$' \
+    && dpkg-deb --extract "$package" /tmp/aws-emulator \
+    && mv /tmp/aws-emulator/opt/aws-emulator /opt/aws-emulator \
+    && rm -rf "$package" "$package.sig" /tmp/aws-emulator "$GNUPGHOME"
+# fork-manifest:end
+
 # fork-manifest:when dagger
 FROM base AS dagger
 ARG DAGGER_VERSION=0.21.11
@@ -183,6 +207,12 @@ COPY --from=tofu /usr/local/bin/tofu /usr/local/bin/tofu
 # fork-manifest:end
 # fork-manifest:when dagger
 COPY --from=dagger --chown=$USER:$USER /opt/dagger/dagger $HOME/.local/bin/dagger
+# fork-manifest:end
+# fork-manifest:when aws-emulator
+COPY --from=aws-emulator /opt/aws-emulator /opt/aws-emulator
+ENV PATH=$PATH:/opt/aws-emulator/bin
+# Never report usage from tests
+ENV EMULATOR_TELEMETRY=off
 # fork-manifest:end
 COPY --from=python --chown=$USER:$USER $HOME/.python $HOME/.python
 ENV PATH=$PATH:$HOME/.python/bin

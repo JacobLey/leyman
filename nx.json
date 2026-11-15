@@ -22,6 +22,11 @@
         "runtime": "node --version"
       }
     ],
+    "aws-emulator": [
+      {
+        "runtime": "aws-emulator --version"
+      }
+    ],
     "postgres": [
       {
         "runtime": "pg_dump --version"

@@ -120,6 +120,11 @@ const checks = () => ({
     ],
     'Valkey image': [composeImage('valkey'), daggerConst('valkeyImage')],
     'Postgres image': [composeImage('postgres'), daggerConst('postgresImage')],
+    'AWS Emulator': [dockerArg('AWS_EMULATOR_VERSION'), daggerConst('awsEmulatorVersion')],
+    'AWS Emulator signing key': [
+        read(dockerfile, /VALIDSIG \.\* (?<value>[\dA-F]{40})\$/v, 'AWS Emulator signing key'),
+        daggerConst('awsEmulatorKeyFingerprint'),
+    ],
     'Postgres major': [
         dockerArg('POSTGRES_MAJOR'),
         daggerConst('postgresMajor'),
