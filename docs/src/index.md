@@ -1,9 +1,9 @@
 ---
 layout: home
-description: TypeScript libraries and tools for Node.js ESM environments, and worked examples of putting open-source projects together well.
+description: Libraries in TypeScript, Go and Rust, the framework that builds and checks them, and demos tested against real services.
 hero:
   name: Leyman
-  tagline: TypeScript libraries and tools for Node.js ESM environments, and worked examples of putting open-source projects together well.
+  tagline: Libraries in TypeScript, Go and Rust, the framework that builds and checks them, and demos tested against real services.
   actions:
     - theme: brand
       text: Packages

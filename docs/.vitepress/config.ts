@@ -381,7 +381,7 @@ const writeLlmsTxt = (outDir: string): void => {
     const lines = [
         '# Leyman',
         '',
-        '> TypeScript libraries and tools for Node.js ESM environments, and worked examples of putting open-source projects together well.',
+        '> Libraries in TypeScript, Go and Rust, the framework that builds and checks them, and demos tested against real services.',
         '',
         'Packages are published to npm. Each ships its README and `.d.ts` files (with JSDoc) in the tarball, matching the installed version; the pages below document the latest release. Demos are never published: each is a small package tested against real services.',
         ...categories.flatMap(category => [
@@ -460,7 +460,8 @@ const nav: DefaultTheme.NavItem[] = [
 
 export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     title: 'Leyman',
-    description: 'TypeScript libraries and tools for Node.js ESM environments.',
+    description:
+        'Libraries in TypeScript, Go and Rust, the framework that builds and checks them, and demos tested against real services.',
     base: '/leyman/',
     // Tracked pages live in `src/` and the build in `dist/`, like every other project (see the
     // nx-tasks-reference skill)
