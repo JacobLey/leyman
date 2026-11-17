@@ -44,6 +44,7 @@ const keysCooldown = 30 * time.Second
 // be reached (its discovery, or its keys) is an AuthorizationServerError (a 500, reported), since it says nothing
 // about the token.
 type JWTAuthenticator struct {
+	// fetchedAt is when the keys were last fetched, or tried to be
 	fetchedAt time.Time
 	keys      jwk.Set
 	options   JWTOptions
@@ -212,8 +213,8 @@ func (a *JWTAuthenticator) discover(ctx context.Context) (string, error) {
 	return jwksURI, nil
 }
 
-// keySet is the issuer's keys, discovered and fetched on first use. With refresh, they are fetched again, unless they
-// were fetched in the last 30 seconds.
+// keySet is the issuer's keys, discovered and fetched on first use. With refresh, they are fetched again, unless a
+// fetch was tried in the last 30 seconds, whether or not it worked.
 func (a *JWTAuthenticator) keySet(ctx context.Context, refresh bool) (jwk.Set, error) { //nolint:ireturn // jwx's
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -232,12 +233,15 @@ func (a *JWTAuthenticator) keySet(ctx context.Context, refresh bool) (jwk.Set, e
 	}
 
 	keys, err := jwk.Fetch(ctx, a.jwksURI, jwk.WithHTTPClient(a.options.HTTPClient))
+	// A failed fetch starts the cooldown too, so tokens with made-up kids can't make it fetch from an issuer that's
+	// down on every request either. Until then, the keys it has are used
+	a.fetchedAt = a.options.Now()
+
 	if err != nil {
 		return nil, &AuthorizationServerError{Err: err, Issuer: a.options.Issuer}
 	}
 
 	a.keys = keys
-	a.fetchedAt = a.options.Now()
 
 	return keys, nil
 }

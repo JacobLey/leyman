@@ -268,8 +268,23 @@ func TestJWTKeyRotation(t *testing.T) {
 	if fetches := served.fetches.Load(); fetches != 4 {
 		t.Fatalf("%d fetches", fetches)
 	}
+}
 
-	// Keys that can't be fetched again are the issuer's failure, not the token's
+// Keys that can't be fetched again are the issuer's failure, not the token's. A failed fetch starts the cooldown too:
+// until it passes, the keys it has are used, without asking the issuer.
+func TestJWTFailedFetchCooldown(t *testing.T) {
+	t.Parallel()
+
+	served := newIssuer(t)
+	now := time.Now()
+	authenticator := served.authenticator(func() time.Time { return now })
+	ctx := context.Background()
+	first := served.keys[0]
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, first, "at+jwt", nil), nil); err != nil {
+		t.Fatal(err)
+	}
+
 	served.mu.Lock()
 	served.jwks = func(w http.ResponseWriter) { w.WriteHeader(http.StatusBadGateway) }
 	served.mu.Unlock()
@@ -279,6 +294,18 @@ func TestJWTKeyRotation(t *testing.T) {
 	var issuerError *server.AuthorizationServerError
 	if _, err := authenticator.Authenticate(ctx, served.sign(t, newKey(t, "later"), "at+jwt", nil), nil); !errors.As(err, &issuerError) {
 		t.Fatalf("refetch failed: %v", err)
+	}
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, newKey(t, "made-up"), "at+jwt", nil), nil); !errors.Is(err, server.ErrInvalidToken) {
+		t.Fatalf("within the cooldown of a failure: %v", err)
+	}
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, first, "at+jwt", nil), nil); err != nil {
+		t.Fatalf("a known key, within the cooldown of a failure: %v", err)
+	}
+
+	if fetches := served.fetches.Load(); fetches != 2 {
+		t.Fatalf("%d fetches", fetches)
 	}
 }
 
