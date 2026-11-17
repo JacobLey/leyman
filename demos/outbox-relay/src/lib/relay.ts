@@ -111,11 +111,12 @@ export interface RelayResult {
  * Claims up to 10 rows, sends them in one `PutEvents` call, and records each entry's outcome: sent, retried after a
  * delay (retryable codes), or parked (any other code).
  *
- * If the call itself fails (network, a whole-request error) it rejects and records nothing: the rows come back when
- * their lease expires.
+ * If the call itself fails (network, a whole-request error), or returns a result count other than the entries sent, it
+ * rejects and records nothing: the rows come back when their lease expires.
  *
  * @param options - Outbox, client and bus
  * @returns Outbox ids by outcome. Fewer than 10 in all means the outbox was drained when it ran.
+ * @rejects {Error} When `PutEvents` fails or returns a result count other than the entries sent, recording nothing
  */
 export const relayOnce = async ({
     pool,
@@ -131,13 +132,18 @@ export const relayOnce = async ({
     const { Entries: results = [] } = await eventBridge.putEvents({
         Entries: rows.map(row => toEntry(row, busName)),
     });
+    // Results line up with entries by position, so without one each it's unknown which rows were sent
+    if (results.length !== rows.length) {
+        throw new Error(
+            `PutEvents returned ${results.length} results for ${rows.length} entries: recording nothing`
+        );
+    }
 
     const sent: string[] = [];
     const retries: (Failure & { delayMs: number })[] = [];
     const parked: Failure[] = [];
-    // Results line up with entries by position
     for (const [index, row] of rows.entries()) {
-        const code = results[index]?.ErrorCode;
+        const code = results[index]!.ErrorCode;
         if (code === undefined) {
             sent.push(row.id);
         } else if (retryableCodes.has(code) && row.attempts < maxAttempts) {

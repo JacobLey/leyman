@@ -103,3 +103,17 @@ export const holdFirst = (
         },
     };
 };
+
+/**
+ * FAKE: sends for real, then reports one result fewer than the entries sent, which EventBridge never does: results
+ * line up with entries by position.
+ *
+ * @param client - Real client
+ * @returns Client whose responses miss their last result
+ */
+export const dropLastResult = (client: PutEventsClient): PutEventsClient => ({
+    putEvents: async input => {
+        const output = await client.putEvents(input);
+        return { ...output, Entries: output.Entries!.slice(0, -1) };
+    },
+});

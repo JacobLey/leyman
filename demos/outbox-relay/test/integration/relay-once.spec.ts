@@ -4,7 +4,12 @@ import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
 import { aws, createBus, queueDepth, receiveEvents, subscribeQueue } from '#test/helpers/aws.js';
 import { expireLeases, outboxRows, withDatabase } from '#test/helpers/database.js';
-import { sendThenFail, throttleAll, throttleFirst } from '#test/helpers/fake-event-bridge.js';
+import {
+    dropLastResult,
+    sendThenFail,
+    throttleAll,
+    throttleFirst,
+} from '#test/helpers/fake-event-bridge.js';
 
 /**
  * Writes `count` outbox rows in one statement, as another service sharing the outbox might.
@@ -177,6 +182,22 @@ suite('relayOnce', () => {
             ).to.be.rejected;
         });
     });
+
+    withBus.test(
+        'Records nothing when PutEvents returns fewer results than entries',
+        async ({ pool, busName }) => {
+            await insertEvents(pool, 2);
+
+            await expect(
+                relayOnce({ pool, busName, eventBridge: dropLastResult(aws().eventBridge) })
+            ).to.be.rejectedWith('PutEvents returned 1 results for 2 entries: recording nothing');
+
+            expect(await outboxRows(pool)).to.deep.equal([
+                { id: '1', attempts: 1, sent: false, failed: false, lastError: null },
+                { id: '2', attempts: 1, sent: false, failed: false, lastError: null },
+            ]);
+        }
+    );
 
     withBus.test('Never claims a parked row again', async ({ pool, busName }) => {
         await pool.query(
