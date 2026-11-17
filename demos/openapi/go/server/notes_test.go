@@ -116,6 +116,36 @@ func TestListMatchesTitles(t *testing.T) {
 	}
 }
 
+// The query is read as URLSearchParams reads it, as the TypeScript server reads it.
+func TestListReadsQueryAsURLSearchParams(t *testing.T) {
+	t.Parallel()
+
+	api := serve(t)
+
+	for _, title := range []string{"100%zz wool", "a b", "Dolly"} {
+		api.createNote(t, aliceToken, title, "")
+	}
+
+	for query, want := range map[string]string{
+		"q=%zz+wool":   "100%zz wool",
+		"q=%7A%7a":     "100%zz wool",
+		"q=0%":         "100%zz wool",
+		"q=a+b":        "a b",
+		"q=Dolly&q=a":  "Dolly",
+		"=x&q=Dolly":   "Dolly",
+		"q=Dolly&":     "Dolly",
+		"%71=Dolly":    "Dolly",
+		"q=%44olly&=x": "Dolly",
+	} {
+		res := api.request(t, http.MethodGet, "/notes?"+query, aliceToken, "")
+		expectStatus(t, res, http.StatusOK)
+
+		if list := decode[notes.NoteList](t, res); len(list.Items) != 1 || list.Items[0].Title != want {
+			t.Errorf("%s: %+v, want %q", query, list.Items, want)
+		}
+	}
+}
+
 func TestNotesAreTheCallers(t *testing.T) {
 	t.Parallel()
 
@@ -287,7 +317,7 @@ func TestRequestValidation(t *testing.T) {
 
 	for _, query := range []string{
 		"?limit=0", "?limit=101", "?limit=abc", "?limit=1.5", "?limit=", "?limit=Infinity", "?limit=%20", "?q=", "?other=1",
-		"?q=" + url.QueryEscape("\x00"),
+		"?q=" + url.QueryEscape("\x00"), "?limit=1;x=1",
 	} {
 		res := api.request(t, http.MethodGet, "/notes"+query, aliceToken, "")
 		problem := expectProblem(t, res, http.StatusBadRequest, "invalid_request")

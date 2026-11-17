@@ -437,6 +437,50 @@ for (const implementation of implementations) {
                 }
             );
 
+            // https://url.spec.whatwg.org/#urlencoded-parsing: pairs are split on & alone
+            withServer.test('Reads a ; as part of the value', async ({ served }) => {
+                const response = await fetch(`${served.url}/notes?limit=1;x=1`, {
+                    headers: { authorization: `Bearer ${token}` },
+                });
+
+                expect(response.status).to.equal(400);
+                expect(await response.json()).to.include({ code: 'invalid_request' });
+            });
+
+            // https://url.spec.whatwg.org/#percent-decode: a % without two hex digits after it is kept as it is
+            withServer.test('Reads a % that is not an escape as itself', async ({ served, db }) => {
+                await db.insert(notes).values([
+                    { owner, title: '100%zz wool', body: '' },
+                    { owner, title: 'Sheep', body: '' },
+                ]);
+
+                const response = await fetch(`${served.url}/notes?q=%zz+wool`, {
+                    headers: { authorization: `Bearer ${token}` },
+                });
+
+                expect(response.status).to.equal(200);
+                const { items } = (await response.json()) as {
+                    items: { title: string }[];
+                };
+                expect(items.map(({ title }) => title)).to.deep.equal(['100%zz wool']);
+            });
+
+            withServer.test('Ignores a query parameter without a name', async ({ served, db }) => {
+                await db.insert(notes).values([
+                    { owner, title: 'Dolly', body: '' },
+                    { owner, title: 'Sheep', body: '' },
+                ]);
+
+                const response = await fetch(`${served.url}/notes?=x&limit=1`, {
+                    headers: { authorization: `Bearer ${token}` },
+                });
+
+                expect(response.status).to.equal(200);
+                expect(await response.json())
+                    .to.have.property('items')
+                    .with.length(1);
+            });
+
             // A suite of their own, as the hook runs before every test of the suite it's in
             suite('With notes', () => {
                 /**

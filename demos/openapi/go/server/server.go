@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
@@ -527,6 +528,55 @@ func readJSON(request *http.Request) (json.RawMessage, any, error) {
 	return data, value, nil
 }
 
+// parseQuery reads a query string as a browser's URLSearchParams does
+// (https://url.spec.whatwg.org/#urlencoded-parsing), and Hono with it: pairs are split on & alone, so a ; is part of
+// a value, + is a space, and a % without two hex digits after it is kept as it is
+// (https://url.spec.whatwg.org/#percent-decode). url.ParseQuery would instead drop a pair with a ; or a bad escape.
+// Each name keeps its first value, as Hono reads a repeated parameter. A pair without a name is left out, as Hono
+// leaves it out, rather than refused as a parameter the operation doesn't have.
+func parseQuery(raw string) map[string]string {
+	values := map[string]string{}
+
+	for pair := range strings.SplitSeq(raw, "&") {
+		name, value, _ := strings.Cut(pair, "=")
+
+		name = decodeQueryComponent(name)
+		if name == "" {
+			continue
+		}
+
+		if _, ok := values[name]; !ok {
+			values[name] = decodeQueryComponent(value)
+		}
+	}
+
+	return values
+}
+
+// decodeQueryComponent replaces + with a space, then percent-decodes, keeping a % that doesn't start an escape.
+func decodeQueryComponent(text string) string {
+	text = strings.ReplaceAll(text, "+", " ")
+	if !strings.Contains(text, "%") {
+		return text
+	}
+
+	decoded := make([]byte, 0, len(text))
+
+	for index := 0; index < len(text); index++ {
+		if text[index] == '%' && index+3 <= len(text) && isHex(text[index+1:index+3]) {
+			octet, _ := strconv.ParseUint(text[index+1:index+3], 16, 8)
+			decoded = append(decoded, byte(octet))
+			index += 2
+
+			continue
+		}
+
+		decoded = append(decoded, text[index])
+	}
+
+	return string(decoded)
+}
+
 // operationInput is what a handler's request type is decoded from: its parameters, coerced and with their defaults,
 // and its body.
 type operationInput struct {
@@ -543,21 +593,17 @@ func readInput(request *http.Request, compiled *route) (operationInput, error) {
 		return request.PathValue(name), true
 	})
 
-	queryValues := request.URL.Query()
+	queryValues := parseQuery(request.URL.RawQuery)
 	query := parameterValues(operation, "query", func(name string) (string, bool) {
-		values, ok := queryValues[name]
-		if !ok {
-			return "", false
-		}
+		value, ok := queryValues[name]
 
-		// The first of a repeated parameter, as Hono reads it
-		return values[0], true
+		return value, ok
 	})
 
 	// Names the operation doesn't have, for validation to refuse
-	for name, values := range queryValues {
-		if _, ok := query[name]; !ok && name != "" {
-			query[name] = values[0]
+	for name, value := range queryValues {
+		if _, ok := query[name]; !ok {
+			query[name] = value
 		}
 	}
 
