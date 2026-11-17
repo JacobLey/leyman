@@ -73,17 +73,17 @@ var reasonPhrases = map[int]string{
 }
 
 // statusField is the field name of a key of `responses`, as ResultField.Name describes it, and where it goes in status
-// order. It is false for a key that is no status, such as `600`, `0404`, `4xx` or an `x-` extension: no response can
-// have it, so it has no field.
+// order: a code at twice itself, a range just after its last code (`4XX` after `499`), and default after them all, so
+// no two keys share a place and the order never depends on the sort. It is false for a key that is no status, such as
+// `600`, `0404`, `4xx` or an `x-` extension: no response can have it, so it has no field.
 func statusField(key string) (string, int, bool) {
 	switch {
 	case key == keyDefault:
-		return "Default", maxStatus + 1, true
+		return "Default", (maxStatus + 1) * 2, true //nolint:mnd // After the last range
 	case len(key) != 3: //nolint:mnd // Codes and ranges are three characters, so `0404` and `+42` are neither
 		return "", 0, false
 	case key[1:] == rangeSuffix && key[0] >= '1' && key[0] <= '5':
-		// After every code of the range
-		return "Status" + key, int(key[0]-'0')*100 + 99, true //nolint:mnd // The last code of the range
+		return "Status" + key, (int(key[0]-'0')*100+99)*2 + 1, true //nolint:mnd // Just after the range's last code
 	}
 
 	code, err := strconv.Atoi(key)
@@ -92,10 +92,10 @@ func statusField(key string) (string, int, bool) {
 	}
 
 	if phrase, hasPhrase := reasonPhrases[code]; hasPhrase {
-		return phrase, code, true
+		return phrase, code * 2, true //nolint:mnd // Room for the ranges between codes
 	}
 
-	return "Status" + key, code, true
+	return "Status" + key, code * 2, true //nolint:mnd // Room for the ranges between codes
 }
 
 // resultType is the `<Id>Result` of an operation, with bodies the names of its responses' JSON bodies, as responseTypes

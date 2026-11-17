@@ -406,3 +406,23 @@ func TestOperationResults(t *testing.T) {
 		t.Errorf("got\n%s", strings.Join(got, "\n"))
 	}
 }
+
+// A code sorts before its range's field even where the range's place is the code itself (499 and 4XX, 599 and 5XX),
+// whatever the sort: enough responses that it isn't an insertion sort.
+func TestOperationResultsCodeBeforeItsRange(t *testing.T) {
+	t.Parallel()
+
+	types := namedTypes(t, operationsDocument(`{"/notes": {"get": {"operationId": "getNote", "responses": {
+		"default": {}, "5XX": {}, "4XX": {}, "3XX": {}, "2XX": {}, "1XX": {},
+		"599": {}, "499": {}, "399": {}, "299": {}, "199": {}, "200": {}, "400": {}, "500": {}
+	}}}}`, ``))
+
+	got := make([]string, len(types["GetNoteResult"].Result.Fields))
+	for index, each := range types["GetNoteResult"].Result.Fields {
+		got[index] = each.Status
+	}
+
+	if strings.Join(got, " ") != "199 1XX 200 299 2XX 399 3XX 400 499 4XX 500 599 5XX default" {
+		t.Errorf("got %v", got)
+	}
+}
