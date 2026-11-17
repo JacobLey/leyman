@@ -15,6 +15,7 @@ Like genever, it loads what a schema references: files and URLs (with a host all
 - [API](#api)
 - [Types](#types)
   - [Operations](#operations)
+    - [Results](#results)
 - [Compared to genever](#compared-to-genever)
 - [Development](#development)
 
@@ -103,10 +104,44 @@ Each operation of an OpenAPI document has these types, named after its `operatio
 | `<Id>Request`, e.g. `GetUserRequest`, only with `--parameter-defaults`      | What a handler gets, once a validator filled in parameters' defaults: the input, with each parameter whose schema has a `default` always set. An alias of `<Id>Input` when none has one                            |
 | `<Id>Body`, e.g. `UpdateUserBody`                                           | The `application/json` request body, when the operation has one                                                                                                                                                    |
 | `<Id>Response<Status>`, e.g. `GetUserResponse200`, `GetUserResponseDefault` | The `application/json` body of each response that has one                                                                                                                                                          |
+| `<Id>Result`, e.g. `GetUserResult`                                          | What a handler answers with, or a client gets back: a pointer field per response, of which exactly one is set. See [Results](#results)                                                                             |
 
-They are the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult`, as Go can't key a type by an `operationId`. A path item's parameters apply to each of its operations, and an operation's own parameter replaces one of the same name and location. Other media types and response headers have no types, but their schemas are checked like any other.
+They are the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult`, as Go can't key a type by an `operationId`. Results are named after every other type, so another type never takes a numbered name (`GetUserInput2`) because of one. A path item's parameters apply to each of its operations, and an operation's own parameter replaces one of the same name and location. Other media types and response headers have no types, but their schemas are checked like any other.
 
 The types only decide which Go value holds a JSON value. They don't validate: check values against the schema with a validator.
+
+#### Results
+
+`<Id>Result` has a field for each response the operation documents, in status order: each range after the codes in it, and `default` last. A field is named after its status's reason phrase, as the [IANA registry](https://www.iana.org/assignments/http-status-codes) gives it ([RFC 9110 §15](https://www.rfc-editor.org/rfc/rfc9110#section-15)'s names, such as `ContentTooLarge`, not those of older RFCs that `net/http`'s `StatusText` keeps). A status without one is `Status<Code>`, a range `Status4XX` and `default` `Default`. Each field is tagged with its status:
+
+```go
+type GetUserResult struct {
+	OK        *GetUserResponse200   `status:"200"`
+	NoContent *struct{}             `status:"204"`
+	NotFound  *GetUserResponse404   `status:"404"`
+	Status4XX *GetUserResult4XX     `status:"4XX"`
+	Default   *GetUserResultDefault `status:"default"`
+}
+
+// A range or default could be any of several statuses, so its field holds the one answered with
+type GetUserResultDefault struct {
+	Status int
+	Body   GetUserResponseDefault
+}
+```
+
+A response without `application/json` content has no body type, so its field is a `*struct{}`, and a range's or default's struct has only `Status`. A key of `responses` that is no status, such as `600`, `4xx` or an `x-` extension, has no field, as no response can have it.
+
+A server answers with `Response()`, and a client reads what it got with `UnmarshalResponse`, so neither needs reflection:
+
+```go
+status, body, ok := api.GetUserResult{NotFound: &problem}.Response() // 404, problem, true
+
+var result api.GetUserResult
+ok, err := result.UnmarshalResponse(response.StatusCode, data)
+```
+
+`Response` returns the status and body of the one field set, the body `nil` for a response without JSON content. `ok` is false when no field or more than one is set, or the `Status` of a range or default is not one its field documents: outside the range, outside RFC 9110's 100 to 599, or a status another field documents, as OpenAPI picks the most specific of a code, its range and `default`. `UnmarshalResponse` sets the field of that same pick, and only it, decoding the body into it (the data of a response without JSON content isn't read). It returns false, leaving the result as it was, when no field documents the status or the body doesn't decode, with the error of decoding.
 
 ## Compared to genever
 
@@ -117,6 +152,7 @@ Go can't express every type TypeScript can, so some types are wider:
 - `encoding/json` matches keys case-insensitively, so `{"A": 1}` fills the field for `"a"`.
 - A JSON string with an escaped lone surrogate, such as `"\ud800"`, fails with `ErrSyntax`, as a Go string can't hold one: `encoding/json` would read it as U+FFFD, merging keys that differ only there. genever reads it, though I-JSON ([RFC 7493 §2.1](https://www.rfc-editor.org/rfc/rfc7493#section-2.1)) forbids it.
 - An OpenAPI document has no `Paths` or `Operations` types, only each operation's types (see [Operations](#operations)), and `--typed-min-items` doesn't apply.
+- `OperationResult` is a union of `{ status, body }`, with a member for any key of `responses`. Go has no unions, so `<Id>Result` is a struct with a field per response, of which one is set, and a key that is no status has none (see [Results](#results)).
 - Manifests record the generator as `genever-go`, so the Go and TypeScript genever never take each other's output as up to date. They are written unformatted.
 
 ## Development

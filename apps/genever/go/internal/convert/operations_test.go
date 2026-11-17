@@ -100,11 +100,11 @@ func TestOperationTypes(t *testing.T) {
 
 	expectDocumentTypes(t, operationsDocument(usersPaths, usersComponents), []string{
 		"Page", "User",
-		"GetUserInput", "GetUserResponse200", "GetUserResponseDefault",
-		"UpdateUserInput", "UpdateUserBody", "UpdateUserResponse2XX",
+		"GetUserInput", "GetUserResponse200", "GetUserResponseDefault", "GetUserResult",
+		"UpdateUserInput", "UpdateUserBody", "UpdateUserResponse2XX", "UpdateUserResult",
 		// Without an operationId, or with one that is not a string
-		"PostUsersIdInput", "PostUsersIdResponse201", "DeleteUsersIdInput",
-		"UploadInput", "AddNoteInput", "AddNoteBody",
+		"PostUsersIdInput", "PostUsersIdResponse201", "PostUsersIdResult", "DeleteUsersIdInput", "DeleteUsersIdResult",
+		"UploadInput", "UploadResult", "AddNoteInput", "AddNoteBody", "AddNoteResult",
 	}, map[string]*model.Type{
 		"GetUserInput": object(
 			field("path", object(field("id", model.StringType, false)), false),
@@ -186,7 +186,7 @@ func TestOperationNames(t *testing.T) {
 	}`, `"schemas": {"GetAResponse200": {"type": "string"}}`)
 
 	expectDocumentTypes(t, strings.TrimSuffix(text, "}")+`, "$defs": {"GetAInput": {"type": "number"}}}`, []string{
-		"GetAInput", "GetAResponse200", "GetAInput2", "GetAResponse2002", "GetAInput3",
+		"GetAInput", "GetAResponse200", "GetAInput2", "GetAResponse2002", "GetAResult", "GetAInput3", "GetAResult2",
 	}, nil)
 }
 
@@ -198,7 +198,7 @@ func TestOperationParameterReferences(t *testing.T) {
 		{"name": "a", "in": "query", "schema": {"$ref": "#/components/schemas/A"}},
 		{"name": "b", "in": "query", "schema": {"$ref": "#/components/schemas/B"}}
 	]}}}`, `"schemas": {"A": {"$ref": "#/components/schemas/True"}, "True": true, "B": {"type": "string"}}`), []string{
-		"A", "B", "True", "AInput",
+		"A", "B", "True", "AInput", "AResult",
 	}, nil)
 
 	// References that only refer to each other are reported where the schema is converted
@@ -335,7 +335,7 @@ func TestOperationIDPrecedence(t *testing.T) {
 		t.Errorf("got %s", pointer)
 	}
 
-	if len(types) != 2 {
+	if len(types) != 4 {
 		t.Errorf("got %v", types)
 	}
 }
@@ -351,10 +351,58 @@ func TestOperationWithoutID(t *testing.T) {
 	}
 
 	expectDocumentTypes(t, operationsDocument(`{"/a": {"get": {"operationId": ""}}, "/": {"get": {}}}`, `"schemas": {}`),
-		[]string{"GetAInput", "GetInput"}, nil)
+		[]string{"GetAInput", "GetAResult", "GetInput", "GetResult"}, nil)
 
 	_, err := convertDocument(t, operationsDocument(`{"/a": {"get": {"operationId": ""}, "put": {"operationId": ""}}}`, `"schemas": {}`))
 	if !errors.Is(err, gerr.ErrInvalidSchema) {
 		t.Errorf("got %v", err)
+	}
+}
+
+// An operation's result has a field per response with a status, in status order, named after the status's reason
+// phrase. A range's and default's field have a wrapper type, named after the other types.
+func TestOperationResults(t *testing.T) {
+	t.Parallel()
+
+	types := namedTypes(t, operationsDocument(`{"/notes": {"get": {"operationId": "getNote", "responses": {
+		"default": {"description": "A problem", "content": {"application/json": {"schema": {"type": "string"}}}},
+		"5XX": {"description": "Down"},
+		"x-internal": {}, "600": {}, "099": {}, "+42": {}, "4xx": {}, "2X": {}, "6XX": {}, "0XX": {},
+		"422": {}, "4XX": {"$ref": "#/components/responses/Client"}, "306": {}, "299": {},
+		"200": {"summary": "Found", "content": {"application/json": {"schema": {"type": "number"}}}},
+		"204": {"content": {"text/plain": {}}}
+	}}}}`, `"schemas": {"GetNoteResult": {"type": "string"}}, "responses": {"Client": {"description": "Wrong"}}`))
+
+	result := types["GetNoteResult2"]
+	if result.Type != nil || result.Pointer != "#/paths/~1notes/get" || result.Doc.Title != `GetNoteResult2 is a `+
+		`response of operation "getNote": exactly one field is set, that of the status answered with.` {
+		t.Errorf("got %+v", result)
+	}
+
+	got := make([]string, len(result.Result.Fields))
+	for index, each := range result.Result.Fields {
+		description := ""
+		if each.Doc != nil {
+			description = each.Doc.Title + each.Doc.Description
+		}
+
+		got[index] = strings.Join([]string{
+			each.Name, each.Status, each.Body, each.Wrapper, strings.TrimPrefix(each.Pointer, "#/paths/~1notes/get"),
+			description,
+		}, " ")
+	}
+
+	expected := []string{
+		"OK 200 GetNoteResponse200  /responses/200 Found",
+		"NoContent 204   /responses/204 ",
+		"Status299 299   /responses/299 ",
+		"Status306 306   /responses/306 ",
+		"UnprocessableContent 422   /responses/422 ",
+		"Status4XX 4XX  GetNoteResult4XX #/components/responses/Client Wrong",
+		"Status5XX 5XX  GetNoteResult5XX /responses/5XX Down",
+		"Default default GetNoteResponseDefault GetNoteResultDefault /responses/default A problem",
+	}
+	if strings.Join(got, "\n") != strings.Join(expected, "\n") {
+		t.Errorf("got\n%s", strings.Join(got, "\n"))
 	}
 }

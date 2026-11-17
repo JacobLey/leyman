@@ -27,6 +27,7 @@ const (
 	helperPick     = "geneverPick"
 	helperTuple    = "geneverTuple"
 	helperNoMatch  = "geneverNoMatch"
+	helperStatus   = "geneverStatusKey"
 )
 
 //nolint:gochecknoglobals // Never changed, and only read to write files
@@ -235,6 +236,24 @@ func geneverTuple(data []byte, min, max int) ([]json.RawMessage, error) {
 		code: `// geneverNoMatch is the error of a union no variant of which can hold a value.
 func geneverNoMatch(union string) error {
 	return fmt.Errorf("genever: no variant of %s holds the value", union)
+}`,
+	},
+	helperStatus: {
+		imports: []string{"slices", "strconv"},
+		code: `// geneverStatusKey is the key of an operation's responses that documents the response of a status, of keys: the
+// status itself, such as "404", else its range, such as "4XX", else "default", as OpenAPI picks one
+// (https://spec.openapis.org/oas/v3.1.1.html#responses-object). It is "" when none does, or the status is not 100 to
+// 599, the codes RFC 9110 defines (https://www.rfc-editor.org/rfc/rfc9110#section-15).
+func geneverStatusKey(status int, keys ...string) string {
+	if status < 100 || status > 599 {
+		return ""
+	}
+	for _, key := range []string{strconv.Itoa(status), strconv.Itoa(status/100) + "XX", "default"} {
+		if slices.Contains(keys, key) {
+			return key
+		}
+	}
+	return ""
 }`,
 	},
 }

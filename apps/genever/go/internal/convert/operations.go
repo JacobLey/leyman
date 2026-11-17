@@ -587,20 +587,30 @@ func (o operation) baseName() string {
 }
 
 // operationTypes are the named types of operations: for each, what a call to it sends (`<Id>Input`), with
-// parameterDefaults what its handler gets (`<Id>Request`), the JSON body of its request (`<Id>Body`), and that of
-// each of its responses (`<Id>Response<Status>`), in the operations' order. An operation without an `operationId`
-// is named after its method and path, e.g. `GetUsersIdInput`. Operations with one are named first, so their names
-// never depend on those without.
+// parameterDefaults what its handler gets (`<Id>Request`), the JSON body of its request (`<Id>Body`), that of each of
+// its responses (`<Id>Response<Status>`), and the response a handler answers with or a client gets back
+// (`<Id>Result`), in the operations' order. An operation without an `operationId` is named after its method and
+// path, e.g. `GetUsersIdInput`. Operations with one are named first, so their names never depend on those without.
+// Results, and the types of their fields, are named after every other type, so no other type's name depends on them.
 //
 // They are what the TypeScript genever's `OperationInput`, `OperationRequest` and `OperationResult` give for an
 // operation, as Go can't key a type by an `operationId`.
 func operationTypes(names *typeNames, operations []operation, parameterDefaults bool) []NamedType {
 	byOperation := make([][]NamedType, len(operations))
+	bodies := make([][]string, len(operations))
 
 	for _, named := range []bool{true, false} {
 		for index, item := range operations {
 			if item.isNamed() == named {
-				byOperation[index] = typesOf(names, item, parameterDefaults)
+				byOperation[index], bodies[index] = typesOf(names, item, parameterDefaults)
+			}
+		}
+	}
+
+	for _, named := range []bool{true, false} {
+		for index, item := range operations {
+			if item.isNamed() == named {
+				byOperation[index] = append(byOperation[index], resultType(names, item, bodies[index]))
 			}
 		}
 	}
@@ -608,8 +618,9 @@ func operationTypes(names *typeNames, operations []operation, parameterDefaults 
 	return slices.Concat(byOperation...)
 }
 
-// typesOf are the named types of one operation, as operationTypes describes them.
-func typesOf(names *typeNames, item operation, parameterDefaults bool) []NamedType {
+// typesOf are the named types of one operation but its result, as operationTypes describes them, and the names of its
+// responses' JSON bodies, as responseTypes returns them.
+func typesOf(names *typeNames, item operation, parameterDefaults bool) ([]NamedType, []string) {
 	label := item.label()
 	inputName := names.reserve(item.baseName() + " Input")
 
@@ -628,6 +639,7 @@ func typesOf(names *typeNames, item operation, parameterDefaults bool) []NamedTy
 		Type:    input,
 		Name:    inputName,
 		Pointer: item.pointer,
+		Result:  nil,
 	}}
 
 	if parameterDefaults {
@@ -646,6 +658,7 @@ func typesOf(names *typeNames, item operation, parameterDefaults bool) []NamedTy
 			Type:    request,
 			Name:    requestName,
 			Pointer: item.pointer,
+			Result:  nil,
 		})
 	}
 
@@ -657,22 +670,29 @@ func typesOf(names *typeNames, item operation, parameterDefaults bool) []NamedTy
 			Type:    item.requestBody.json,
 			Name:    bodyName,
 			Pointer: item.requestBody.pointer,
+			Result:  nil,
 		})
 	}
 
-	return append(types, responseTypes(names, item)...)
+	responses, bodies := responseTypes(names, item)
+
+	return append(types, responses...), bodies
 }
 
-// responseTypes are the types of the JSON bodies of an operation's responses.
-func responseTypes(names *typeNames, item operation) []NamedType {
+// responseTypes are the types of the JSON bodies of an operation's responses, and their names, one per response in
+// order: "" for one without JSON content.
+func responseTypes(names *typeNames, item operation) ([]NamedType, []string) {
 	var types []NamedType
 
-	for _, each := range item.responses {
+	bodies := make([]string, len(item.responses))
+
+	for index, each := range item.responses {
 		if each.json == nil {
 			continue
 		}
 
 		name := names.reserve(item.baseName() + " Response " + each.status)
+		bodies[index] = name
 		types = append(types, NamedType{
 			Doc: operationTypeDoc(
 				name+" is the JSON body of operation "+quote(item.label())+"'s "+each.status+" response.", each.doc,
@@ -680,10 +700,11 @@ func responseTypes(names *typeNames, item operation) []NamedType {
 			Type:    each.json,
 			Name:    name,
 			Pointer: each.pointer,
+			Result:  nil,
 		})
 	}
 
-	return types
+	return types, bodies
 }
 
 // operationTypeDoc is the documentation of an operation's type: what it is, then the operation's or response's own.

@@ -1,5 +1,9 @@
 # genever-go
 
+## 0.3.0
+
+- Each operation of an OpenAPI document also gets `<Id>Result`, what a handler answers with or a client gets back, as the TypeScript genever's `OperationResult`: a pointer field per documented response, named after its status's reason phrase (`OK`, `NotFound`, `Status4XX`, `Default`) and tagged with its status, of which exactly one is set. A range's or default's field holds the status with the body. Its `Response()` method gives the status and body a server answers with, and `UnmarshalResponse(status, data)` reads the response a client got into the field OpenAPI picks for its status. Results are named after every other type, so no existing type's name changes.
+
 ## 0.2.1
 
 - Requires populate-files/go v0.2.0. GenerateFile never cleans, so its new UnsafeCleanUnlisted option changes nothing here.

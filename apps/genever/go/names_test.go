@@ -114,6 +114,7 @@ func TestGenerateSourceOperationNames(t *testing.T) {
 		{Name: "AddNoteBody", Pointer: "#/paths/~1notes/post/requestBody", Offset: 0},
 		{Name: "Text", Pointer: "#/paths/~1notes/post/requestBody/content/application~1json/schema/properties/text", Offset: 0},
 		{Name: "AddNoteResponse201", Pointer: "#/paths/~1notes/post/responses/201", Offset: 0},
+		{Name: "AddNoteResult", Pointer: "#/paths/~1notes/post", Offset: 0},
 	})
 }
 

@@ -29,7 +29,7 @@ type testCase struct {
 }
 
 func named(name string, typ *model.Type) convert.NamedType {
-	return convert.NamedType{Doc: nil, Type: typ, Name: name, Pointer: ""}
+	return convert.NamedType{Doc: nil, Type: typ, Name: name, Pointer: "", Result: nil}
 }
 
 func prop(name string, typ *model.Type, optional bool) model.Property {

@@ -47,13 +47,26 @@ Every type holds every value the schema accepts, and can tell apart the values t
 | `oneOf`/`anyOf`, several `type`s            | a struct holding one of its variants                                                                        |
 | `true`, `false`                             | `json.RawMessage`, `Never`                                                                                  |
 
-Each operation gets `<Id>Input`, what a call sends (its JSON body, `<Id>Body`, and its path, query, header and cookie parameters), and `<Id>Response<Status>`, each JSON response body. With `--parameter-defaults`, it also gets `<Id>Request`, what a handler gets once a validator filled in defaults. An operation without an `operationId` is named after its method and path: `post /users/{id}` is `PostUsersIdInput`.
+Each operation gets `<Id>Input`, what a call sends (its JSON body, `<Id>Body`, and its path, query, header and cookie parameters), `<Id>Response<Status>`, each JSON response body, and `<Id>Result`, what a handler answers with or a client gets back. With `--parameter-defaults`, it also gets `<Id>Request`, what a handler gets once a validator filled in defaults. An operation without an `operationId` is named after its method and path: `post /users/{id}` is `PostUsersIdInput`.
+
+`<Id>Result` is the Go form of genever's `OperationResult`: a pointer field per documented response, of which exactly one is set, named after its status's reason phrase from RFC 9110 and tagged with the status. A range's or `default`'s field holds the status with the body, as it could be any of several:
+
+```go
+type GetUserResult struct {
+	OK        *GetUserResponse200   `status:"200"`
+	NoContent *struct{}             `status:"204"` // no JSON content
+	NotFound  *GetUserResponse404   `status:"404"`
+	Default   *GetUserResultDefault `status:"default"` // {Status int; Body GetUserResponseDefault}
+}
+```
+
+A server answers with `result.Response()`, the status and body of the field set, and a client reads a response into the field of its status with `result.UnmarshalResponse(status, data)`, so neither needs reflection. The full rules are in the [README](https://github.com/JacobLey/leyman/tree/main/apps/genever/go#results).
 
 Decoding fails only when a value's shape doesn't fit, such as the wrong JSON kind or no branch of a union. Like genever, it doesn't validate: `pattern`, bounds and lengths are a validator's job.
 
 ## Compared to genever
 
-Go can't say everything TypeScript can, so some types are wider: a `pattern` is a `string`, an enum's constants don't restrict its type, and `encoding/json` matches keys case-insensitively. The full list is in the [README](https://github.com/JacobLey/leyman/tree/main/apps/genever/go#compared-to-genever).
+Go can't say everything TypeScript can, so some types are wider: a `pattern` is a `string`, an enum's constants don't restrict its type, and `encoding/json` matches keys case-insensitively. Without unions, a result is a struct of which one field is set, rather than a union of `{ status, body }`. The full list is in the [README](https://github.com/JacobLey/leyman/tree/main/apps/genever/go#compared-to-genever).
 
 Its output is kept in sync the same way, through the Go implementations of [populate-files](/packages/populate-files/guides/go) and [generated-signature](/packages/generated-signature/guides/go). Manifests record it as `genever-go`, so the two genevers never take each other's output as up to date.
 

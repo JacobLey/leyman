@@ -86,17 +86,35 @@ func Generate(types []convert.NamedType, pkg string) (Output, error) {
 	}
 
 	for _, named := range types {
-		gen.named[named.Name] = named.Type
 		gen.names.used[named.Name] = true
 		gen.pointers[named.Name] = named.Pointer
+
+		if named.Result == nil {
+			gen.named[named.Name] = named.Type
+
+			continue
+		}
+
+		for _, field := range named.Result.Fields {
+			if field.Wrapper != "" {
+				gen.names.used[field.Wrapper] = true
+				gen.pointers[field.Wrapper] = field.Pointer
+			}
+		}
 	}
 
 	for _, named := range types {
-		gen.aliases[named.Name] = gen.isAliasForm(named.Type)
+		if named.Result == nil {
+			gen.aliases[named.Name] = gen.isAliasForm(named.Type)
+		}
 	}
 
 	for _, named := range types {
-		gen.declareNamed(named.Name, named.Doc, named.Type)
+		if named.Result == nil {
+			gen.declareNamed(named.Name, named.Doc, named.Type)
+		} else {
+			gen.declareResult(named.Name, named.Doc, named.Result)
+		}
 	}
 
 	source := gen.file(pkg)

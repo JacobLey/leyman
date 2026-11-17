@@ -594,8 +594,12 @@ func loadAndConvert(t *testing.T, input, baseURI string) map[string]string {
 	}
 
 	result := map[string]string{}
+
 	for _, named := range types {
-		result[named.Name] = named.Type.Key()
+		// An operation's result has no type, only fields
+		if named.Result == nil {
+			result[named.Name] = named.Type.Key()
+		}
 	}
 
 	return result

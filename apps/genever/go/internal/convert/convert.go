@@ -173,6 +173,7 @@ func (c *converter) convertPending() ([]NamedType, error) {
 
 		types = append(types, NamedType{
 			Doc: readDoc(pending.schema), Name: pending.name, Pointer: pending.pointer, Type: converted,
+			Result: nil,
 		})
 	}
 

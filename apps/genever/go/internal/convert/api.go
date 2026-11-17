@@ -53,8 +53,11 @@ type OpenAPIFile struct {
 
 // A NamedType is a type to generate, with its name.
 type NamedType struct {
-	Doc  *model.Doc
+	Doc *model.Doc
+	// Type is nil for an operation's result, which Result describes instead.
 	Type *model.Type
+	// Result is the fields of an operation's `<Id>Result`, or nil for any other type.
+	Result *Result
 	// Name is unique among the types of the document, and a valid identifier in PascalCase.
 	Name string
 	// Pointer is the JSON Pointer to the schema the type is generated from.

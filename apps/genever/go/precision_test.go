@@ -342,7 +342,8 @@ func TestDocumentPrecision(t *testing.T) {
 	}
 }
 
-// An OpenAPI document's operations each have a struct of what a call sends, and a type for each JSON response body.
+// An OpenAPI document's operations each have a struct of what a call sends, a type for each JSON response body, and a
+// struct of the responses.
 func TestOperationPrecision(t *testing.T) {
 	t.Parallel()
 
@@ -388,6 +389,9 @@ func TestOperationPrecision(t *testing.T) {
 		"UpdateUserRequestHeader":   "{XTrace string}",
 		"UpdateUserResponse200":     "= User",
 		"UpdateUserResponseDefault": "string",
+		// default could be any status, so its field holds the status with the body
+		"UpdateUserResult":        "{OK *UpdateUserResponse200; Default *UpdateUserResultDefault}",
+		"UpdateUserResultDefault": "{Status int; Body UpdateUserResponseDefault}",
 	}
 
 	got := declarations(checkSource(t, source))
