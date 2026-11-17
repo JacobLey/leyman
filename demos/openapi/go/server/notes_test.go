@@ -379,6 +379,10 @@ func brokenListNotes(_ context.Context, _ server.Caller, request notes.ListNotes
 	switch *request.Query.Q {
 	case "fail":
 		return notes.ListNotesResult{}, errHandler
+	case "panic":
+		panic(errHandler)
+	case "abort":
+		panic(http.ErrAbortHandler)
 	case "none":
 		return notes.ListNotesResult{}, nil
 	case "both":
@@ -389,16 +393,41 @@ func brokenListNotes(_ context.Context, _ server.Caller, request notes.ListNotes
 	}
 }
 
+func TestHandlerAborts(t *testing.T) {
+	t.Parallel()
+
+	api := serve(t, withHandlers(stubHandlers{Handlers: nil, listNotes: brokenListNotes, createNote: nil}))
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, api.url+"/notes?q=abort", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+aliceToken)
+
+	// http.ErrAbortHandler drops the connection, as net/http does with it, and isn't reported as an error
+	res, err := http.DefaultClient.Do(req)
+	if err == nil {
+		_ = res.Body.Close()
+		t.Fatalf("answered %d", res.StatusCode)
+	}
+
+	if logged := api.errors.all(); len(logged) != 0 {
+		t.Errorf("reported %v", logged)
+	}
+}
+
 func TestHandlerErrors(t *testing.T) {
 	t.Parallel()
 
 	api := serve(t, withHandlers(stubHandlers{Handlers: nil, listNotes: brokenListNotes, createNote: nil}))
 
 	for query, want := range map[string]string{
-		"fail": "handler failed",
-		"none": "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets no response",
-		"both": "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets more than one response",
-		"null": "listNotes answered 200, which the spec does not allow: body/items got null, want array",
+		"fail":  "handler failed",
+		"panic": "handler panicked: handler failed",
+		"none":  "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets no response",
+		"both":  "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets more than one response",
+		"null":  "listNotes answered 200, which the spec does not allow: body/items got null, want array",
 	} {
 		expectProblem(t, api.request(t, http.MethodGet, "/notes?q="+query, aliceToken, ""), http.StatusInternalServerError, "internal_error")
 

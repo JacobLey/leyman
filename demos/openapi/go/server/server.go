@@ -76,8 +76,34 @@ func dispatch[Request, Result any](call func(Handlers, context.Context, Caller, 
 			return nil, fmt.Errorf("decoding the request: %w", err)
 		}
 
-		return call(handlers, ctx, caller, request)
+		return recovering(func() (any, error) { return call(handlers, ctx, caller, request) })
 	}
+}
+
+// recovering calls a handler. One that panics is a 500 reported to OnError, like one that returns an error, rather
+// than net/http's own recovery, which drops the connection without a response. http.ErrAbortHandler is net/http's way
+// to drop it on purpose, so it is passed on.
+func recovering(call func() (any, error)) (any, error) {
+	var (
+		result any
+		err    error
+	)
+
+	func() {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				if recovered == http.ErrAbortHandler { //nolint:errorlint,err113 // net/http panics with this exact value
+					panic(recovered)
+				}
+
+				err = &PanicError{Value: recovered}
+			}
+		}()
+
+		result, err = call()
+	}()
+
+	return result, err
 }
 
 // dispatchers call each operation's handler, by operationId.

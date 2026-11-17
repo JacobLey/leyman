@@ -41,3 +41,20 @@ func (e *AuthorizationServerError) Error() string {
 func (e *AuthorizationServerError) Unwrap() error {
 	return e.Err
 }
+
+// PanicError is a handler that panicked. The client gets a 500, and OnError gets this.
+type PanicError struct {
+	// Value is what the handler panicked with.
+	Value any
+}
+
+func (e *PanicError) Error() string {
+	return fmt.Sprintf("handler panicked: %v", e.Value)
+}
+
+// Unwrap is the error the handler panicked with, if it panicked with one.
+func (e *PanicError) Unwrap() error {
+	err, _ := e.Value.(error)
+
+	return err
+}
