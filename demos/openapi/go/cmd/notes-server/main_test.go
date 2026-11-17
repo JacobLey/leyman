@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/JacobLey/leyman/demos/openapi/go/internal/pgtest"
 )
@@ -228,6 +230,75 @@ func TestJWTFetchTimeout(t *testing.T) {
 	}
 }
 
+func TestServerLimits(t *testing.T) {
+	t.Parallel()
+
+	static := []string{"--database-url", "postgres://", "--static-token", "alice=secret"}
+
+	for name, test := range map[string]struct {
+		env                         map[string]string
+		args                        []string
+		readHeader, read, idle, end time.Duration
+	}{
+		"defaults": {env: nil, args: static, readHeader: 10 * time.Second, read: 30 * time.Second, idle: time.Minute, end: 30 * time.Second},
+		"flags": {
+			env:        map[string]string{"NOTES_READ_TIMEOUT": "1h", "NOTES_IDLE_TIMEOUT": "1h", "NOTES_SHUTDOWN_TIMEOUT": "1h"},
+			args:       append(static, "--read-timeout", "2s", "--idle-timeout", "3s", "--shutdown-timeout", "4s"),
+			readHeader: 2 * time.Second, read: 2 * time.Second, idle: 3 * time.Second, end: 4 * time.Second,
+		},
+	} {
+		parsed, err := parse(test.args, func(name string) string { return test.env[name] }, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		httpServer := parsed.httpServer(nil)
+		if httpServer.ReadHeaderTimeout != test.readHeader || httpServer.ReadTimeout != test.read ||
+			httpServer.IdleTimeout != test.idle || parsed.shutdownTimeout != test.end {
+			t.Errorf("%s: %+v", name, parsed)
+		}
+	}
+}
+
+// A request still running when the shutdown deadline passes is dropped, and the server exits with an error.
+func TestShutdownDeadline(t *testing.T) {
+	t.Parallel()
+
+	server := start(t, []string{"--listen", "127.0.0.1:0", "--static-token", "alice=secret", "--read-timeout", "1h", "--shutdown-timeout", "1ms"},
+		map[string]string{"DATABASE_URL": newDatabaseURL(t)})
+
+	// A body that never finishes arriving: its request runs until the server drops it. The 100 Continue is sent once
+	// the handler reads the body, so the request is known to be running before the server is stopped
+	conn, err := (&net.Dialer{}).DialContext(context.Background(), "tcp", strings.TrimPrefix(server.url, "http://")) //nolint:exhaustruct_v5 // Defaults
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	if _, err := io.WriteString(conn, "POST /notes HTTP/1.1\r\nHost: notes\r\nAuthorization: Bearer secret\r\n"+
+		"Content-Type: application/json\r\nContent-Length: 100\r\nExpect: 100-continue\r\n\r\n"); err != nil {
+		t.Fatal(err)
+	}
+
+	reader := bufio.NewReader(conn)
+
+	status, err := reader.ReadString('\n')
+	if err != nil || status != "HTTP/1.1 100 Continue\r\n" {
+		t.Fatalf("%q %v", status, err)
+	}
+
+	server.stop()
+
+	if code := <-server.code; code != exitError || !strings.Contains(server.stderr.String(), "requests still running after 1ms were dropped") {
+		t.Fatalf("exited %d: %s", code, server.stderr.String())
+	}
+
+	// Closed without a response
+	if response, err := io.ReadAll(reader); err != nil || len(bytes.TrimSpace(response)) != 0 {
+		t.Fatalf("%q %v", response, err)
+	}
+}
+
 func TestExitCodes(t *testing.T) {
 	t.Parallel()
 
@@ -251,6 +322,8 @@ func TestExitCodes(t *testing.T) {
 		"negative wait":   {env: nil, args: append(static, "--idempotency-wait", "-1s"), code: exitError},
 		"bad fetch time":  {env: map[string]string{"NOTES_JWT_FETCH_TIMEOUT": "soon"}, args: static, code: exitUsage},
 		"no fetch time":   {env: nil, args: append(static, "--jwt-fetch-timeout", "0s"), code: exitUsage},
+		"bad read time":   {env: map[string]string{"NOTES_READ_TIMEOUT": "soon"}, args: static, code: exitUsage},
+		"no idle time":    {env: nil, args: append(static, "--idle-timeout", "-1s"), code: exitUsage},
 		"bad resource":    {env: nil, args: append(static, "--resource", "/notes"), code: exitError},
 		"bad database":    {env: nil, args: []string{"--database-url", "://", "--static-token", "a=b"}, code: exitError},
 		"bad listen":      {env: nil, args: append(static, "--listen", "nowhere"), code: exitError},

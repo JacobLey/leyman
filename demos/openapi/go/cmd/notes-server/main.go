@@ -6,7 +6,8 @@
 //
 // Every flag can also be set by an environment variable, which the flag overrides: run it with --help for the list.
 // It prints the URL it listens on to stdout once it does (useful with --listen 127.0.0.1:0, for a free port), each
-// error a request ends in to stderr, and shuts down on SIGTERM or SIGINT, letting running requests finish.
+// error a request ends in to stderr, and shuts down on SIGTERM or SIGINT, letting running requests finish (up to
+// --shutdown-timeout).
 package main
 
 import (
@@ -47,7 +48,8 @@ const (
 	exitUsage = 2
 )
 
-// readHeaderTimeout bounds how long a client may take to send its headers, so a slow one can't hold a connection.
+// readHeaderTimeout bounds how long a client may take to send its headers (unless --read-timeout is shorter), so a slow
+// one can't hold a connection.
 const readHeaderTimeout = 10 * time.Second
 
 var errUsage = errors.New("invalid flags")
@@ -97,6 +99,9 @@ type options struct {
 	authorizationServers listFlag
 	idempotencyWait      time.Duration
 	jwtFetchTimeout      time.Duration
+	readTimeout          time.Duration
+	idleTimeout          time.Duration
+	shutdownTimeout      time.Duration
 }
 
 // parse reads the flags, each defaulting to its environment variable.
@@ -119,6 +124,9 @@ func parse(args []string, getenv func(string) string, stderr io.Writer) (options
 	for name, fallback := range map[string]string{
 		"NOTES_IDEMPOTENCY_WAIT":  "10s",
 		"NOTES_JWT_FETCH_TIMEOUT": "5s",
+		"NOTES_READ_TIMEOUT":      "30s",
+		"NOTES_IDLE_TIMEOUT":      "1m",
+		"NOTES_SHUTDOWN_TIMEOUT":  "30s",
 	} {
 		duration, err := time.ParseDuration(env(name, fallback))
 		if err != nil {
@@ -134,6 +142,9 @@ func parse(args []string, getenv func(string) string, stderr io.Writer) (options
 	set.StringVar(&parsed.jwtAudience, "jwt-audience", getenv("NOTES_JWT_AUDIENCE"), "The API's audience, with --jwt-issuer (env NOTES_JWT_AUDIENCE)")
 	set.StringVar(&parsed.resource, "resource", getenv("NOTES_RESOURCE"), "The API's URL, to serve its Protected Resource Metadata (env NOTES_RESOURCE)")
 	set.DurationVar(&parsed.idempotencyWait, "idempotency-wait", durations["NOTES_IDEMPOTENCY_WAIT"], "How long a retry waits for a running request with its key (env NOTES_IDEMPOTENCY_WAIT)")
+	set.DurationVar(&parsed.readTimeout, "read-timeout", durations["NOTES_READ_TIMEOUT"], "How long a client may take to send a whole request, so a slow one can't hold a connection (env NOTES_READ_TIMEOUT)")
+	set.DurationVar(&parsed.idleTimeout, "idle-timeout", durations["NOTES_IDLE_TIMEOUT"], "How long a kept-alive connection may wait for its next request (env NOTES_IDLE_TIMEOUT)")
+	set.DurationVar(&parsed.shutdownTimeout, "shutdown-timeout", durations["NOTES_SHUTDOWN_TIMEOUT"], "How long running requests may take to finish on SIGTERM, before they're dropped (env NOTES_SHUTDOWN_TIMEOUT)")
 	set.DurationVar(&parsed.jwtFetchTimeout, "jwt-fetch-timeout", durations["NOTES_JWT_FETCH_TIMEOUT"], "How long finding and fetching the issuer's keys may take, after which requests that need them fail (env NOTES_JWT_FETCH_TIMEOUT)")
 
 	parsed.staticTokens.values = strings.Fields(getenv("NOTES_STATIC_TOKENS"))
@@ -166,8 +177,18 @@ func (o options) check() error {
 		return fmt.Errorf("%w: give either --static-token or --jwt-issuer", errUsage)
 	case o.jwtIssuer != "" && o.jwtAudience == "":
 		return fmt.Errorf("%w: --jwt-issuer needs --jwt-audience", errUsage)
-	case o.jwtFetchTimeout <= 0:
-		return fmt.Errorf("%w: --jwt-fetch-timeout must be positive", errUsage)
+	}
+
+	// Zero is no limit to net/http, which is what these are for
+	for name, duration := range map[string]time.Duration{
+		"--jwt-fetch-timeout": o.jwtFetchTimeout,
+		"--read-timeout":      o.readTimeout,
+		"--idle-timeout":      o.idleTimeout,
+		"--shutdown-timeout":  o.shutdownTimeout,
+	} {
+		if duration <= 0 {
+			return fmt.Errorf("%w: %s must be positive", errUsage, name)
+		}
 	}
 
 	return nil
@@ -248,6 +269,35 @@ func (o options) handler(ctx context.Context, logger *lockedWriter) (http.Handle
 	return handler, pool, nil
 }
 
+// httpServer serves the handler, with limits on how long a client may hold a connection without making progress.
+func (o options) httpServer(handler http.Handler) *http.Server {
+	//nolint:exhaustruct_v5 // net/http's defaults for the rest
+	return &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: min(readHeaderTimeout, o.readTimeout),
+		// The body too: at most 128 KiB, so a client still sending it after this is too slow to wait for
+		ReadTimeout: o.readTimeout,
+		IdleTimeout: o.idleTimeout,
+	}
+}
+
+// shutdown stops accepting requests and waits for running ones to finish, up to --shutdown-timeout, then drops what
+// is left. A dropped request that held an Idempotency-Key keeps it held until its lease runs out, as when a server
+// stops without warning.
+func (o options) shutdown(ctx context.Context, httpServer *http.Server) error {
+	ctx, cancel := context.WithTimeout(ctx, o.shutdownTimeout)
+	defer cancel()
+
+	err := httpServer.Shutdown(ctx)
+	if errors.Is(err, context.DeadlineExceeded) {
+		_ = httpServer.Close()
+
+		return fmt.Errorf("requests still running after %s were dropped: %w", o.shutdownTimeout, err)
+	}
+
+	return err //nolint:wrapcheck // The listener's own error
+}
+
 // run serves the API until ctx is done, then waits for running requests to finish.
 func run(ctx context.Context, args []string, getenv func(string) string, stdout, stderr io.Writer) int {
 	logger := &lockedWriter{writer: stderr, mu: sync.Mutex{}}
@@ -285,13 +335,13 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		return exitError
 	}
 
-	httpServer := &http.Server{Handler: handler, ReadHeaderTimeout: readHeaderTimeout} //nolint:exhaustruct_v5 // Defaults
+	httpServer := parsed.httpServer(handler)
 	shutdown := make(chan error, 1)
 
 	go func() {
 		<-ctx.Done()
-		// No deadline: running requests finish, as a retry of an unfinished one would wait for its key anyway
-		shutdown <- httpServer.Shutdown(context.WithoutCancel(ctx))
+
+		shutdown <- parsed.shutdown(context.WithoutCancel(ctx), httpServer)
 	}()
 
 	_, _ = fmt.Fprintln(stdout, "http://"+listener.Addr().String())
