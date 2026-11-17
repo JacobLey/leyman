@@ -24,7 +24,6 @@ It is the config of the [leyman](https://github.com/JacobLey/leyman) monorepo, p
 - [Usage](#usage)
 - [API](#api)
 - [Versioning](#versioning)
-- [Known issues](#known-issues)
 
 ## Install
 
@@ -109,7 +108,3 @@ The options passed to `@typescript-eslint/naming-convention`, the second only in
 Before 1.0, a release that can make passing code fail (a new rule, a stricter option) is a minor, and other changes are patches.
 
 Every rule a plugin ships is on, so the plugins (and `@eslint/js`, typescript-eslint, ESLint Stylistic and Perfectionist) are dependencies with `~` ranges: a plugin's patch releases reach you, but its minors, which add rules, only come with a release of this package, once each new rule is decided. Other dependencies take `^`.
-
-## Known issues
-
-- In typescript-eslint 8.72, `@typescript-eslint/prefer-string-starts-ends-with` misreads regular expressions with the `v` flag, and its autofix can change behavior. For example, `/^\p{N}/v.test(s)` becomes `s.startsWith('p{N}')`. Since `regexp/require-unicode-sets-regexp` (which is on) moves every regular expression to the `v` flag, you are likely to run into it. The fix ([typescript-eslint#13102](https://github.com/typescript-eslint/typescript-eslint/pull/13102)) is merged but not yet released. Until it is, leyman applies [a patch](https://github.com/JacobLey/leyman/blob/main/patches/@typescript-eslint__eslint-plugin@8.72.1.patch) (pnpm's `patchedDependencies`); run `--fix` with care on `v`-flag expressions, or apply the same patch.

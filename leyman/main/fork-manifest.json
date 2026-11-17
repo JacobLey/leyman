@@ -222,10 +222,6 @@
       "why": "infers a crate's Nx targets"
     },
     {
-      "path": "patches/@typescript-eslint__eslint-plugin@8.72.1.patch",
-      "why": "a wrong autofix under the v flag, which the eslint config's rules reach"
-    },
-    {
       "path": "patches/fast-check@4.10.2.patch",
       "why": "fast-check's first Unicode or web string fills a Map of every code point (~0.5s), timing out property tests"
     },

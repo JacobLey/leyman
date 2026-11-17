@@ -278,9 +278,9 @@ catalogs:
     '@eslint-community/eslint-plugin-eslint-comments': ~4.8.1
     '@eslint/js': ~10.0.1
     '@stylistic/eslint-plugin': ~5.10.0
-    '@typescript-eslint/eslint-plugin': ~8.72.1
-    '@typescript-eslint/parser': ~8.72.1
-    '@typescript-eslint/utils': ~8.72.1
+    '@typescript-eslint/eslint-plugin': ~8.72.2
+    '@typescript-eslint/parser': ~8.72.2
+    '@typescript-eslint/utils': ~8.72.2
     eslint-plugin-import-x: ~4.18.0
     eslint-plugin-jsdoc: ~65.4.2
     'eslint-plugin-jsx-a11y': ~6.10.2
@@ -300,9 +300,6 @@ catalogs:
     '@types/node': ^24.19.2
 # Each patch fixes a bug that a release doesn't yet. Delete it once a release with the fix is at least 7 days old.
 patchedDependencies:
-  # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`
-  # to `s.startsWith('p{N}')`
-  '@typescript-eslint/eslint-plugin@8.72.1': patches/@typescript-eslint__eslint-plugin@8.72.1.patch
   # The first string of a unit made of code point ranges (`binary`, and so `webUrl`, `webPath` and the other web
   # arbitraries) fills a Map with all 1.1 million code points to unmap it: ~0.5s and 85MB per process, which times out
   # the first property test on CI. Unmaps from the ranges instead. Drop once a release fixing
