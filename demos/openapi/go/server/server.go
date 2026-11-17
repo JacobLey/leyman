@@ -185,7 +185,18 @@ func (s *server) mux(routes []*route, operations []openapi.Operation) (*http.Ser
 		}
 
 		s.metadata = metadata.String()
-		mux.Handle(metadata.EscapedPath(), s.serveMetadata(operations))
+
+		pattern := metadata.EscapedPath()
+		// A pattern ending in / would match every path under it, and ServeMux redirects the path without the / to
+		// one ending in it: {$} matches the path alone, and the path without the / is a 404 of its own, as with the
+		// TypeScript server's route
+		if trimmed, ok := strings.CutSuffix(pattern, "/"); ok {
+			pattern += "{$}"
+
+			mux.Handle(trimmed, notFound)
+		}
+
+		mux.Handle(pattern, s.serveMetadata(operations))
 	}
 
 	byPath := map[string][]*route{}
@@ -198,12 +209,17 @@ func (s *server) mux(routes []*route, operations []openapi.Operation) (*http.Ser
 		mux.Handle(path, s.servePath(pathRoutes))
 	}
 
-	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		writeProblem(w, http.StatusNotFound, "not_found", "No such path")
-	}))
+	mux.Handle("/", notFound)
 
 	return mux, nil
 }
+
+// notFound answers a path the API doesn't have.
+//
+//nolint:gochecknoglobals // Never changed
+var notFound = http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+	writeProblem(writer, http.StatusNotFound, "not_found", "No such path")
+})
 
 // compileRoutes compiles every operation's validators, with its handler.
 func compileRoutes(document []byte, operations []openapi.Operation) ([]*route, error) {

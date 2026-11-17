@@ -261,6 +261,35 @@ for (const implementation of implementations) {
             });
         });
 
+        suite('Protected Resource Metadata of a resource ending in /', () => {
+            const withMetadata = withDatabase().beforeEach(async ({ database }) => {
+                const served = await implementation.start({
+                    databaseUrl: database.url,
+                    authentication: { tokens: [{ token: 'token', subject: 'dev-user' }] },
+                    protectedResource: {
+                        resource: `${audience}/api/`,
+                        authorizationServers: ['https://issuer.test'],
+                    },
+                });
+                return { served };
+            });
+            withMetadata.afterEach(async ({ served }) => {
+                await served.close();
+            });
+
+            withMetadata.test('Is served at that path alone', async ({ served }) => {
+                const metadata = `${served.url}/.well-known/oauth-protected-resource/api`;
+                const statuses = await Promise.all(
+                    [`${metadata}/`, metadata, `${metadata}/anything`].map(async url => {
+                        const response = await fetch(url, { redirect: 'manual' });
+                        return response.status;
+                    })
+                );
+
+                expect(statuses).to.deep.equal([200, 404, 404]);
+            });
+        });
+
         suite('Claims', () => {
             /**
              * The app, trusting an issuer of the test's own, which signs whatever claims a test gives it.

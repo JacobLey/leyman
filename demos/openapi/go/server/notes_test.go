@@ -297,6 +297,13 @@ func TestProtectedResource(t *testing.T) {
 
 		expectProblem(t, api.request(t, http.MethodPost, path, "", ""), http.StatusNotFound, "not_found")
 
+		// The path alone, not those under it or (for a path ending in /) without its /
+		for _, other := range []string{strings.TrimSuffix(path, "/") + "/more", strings.TrimSuffix(path, "/")} {
+			if other != path {
+				expectProblem(t, api.request(t, http.MethodGet, other, "", ""), http.StatusNotFound, "not_found")
+			}
+		}
+
 		res = api.request(t, http.MethodGet, "/notes", "", "")
 		if challenge := res.header.Get("WWW-Authenticate"); challenge != `Bearer resource_metadata="https://notes.example`+path+`"` {
 			t.Errorf("challenge %q", challenge)
