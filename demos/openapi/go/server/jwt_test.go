@@ -282,6 +282,64 @@ func TestJWTKeyRotation(t *testing.T) {
 	}
 }
 
+// An issuer with one key and no kid, as some publish, rotating it: a token no key verifies fetches the keys again.
+func TestJWTKeyRotationWithoutKid(t *testing.T) {
+	t.Parallel()
+
+	served := newIssuer(t)
+	now := time.Now()
+	authenticator := served.authenticator(func() time.Time { return now })
+	ctx := context.Background()
+
+	first := newKey(t, "")
+	served.setKeys(t, first)
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, first, "at+jwt", nil), nil); err != nil {
+		t.Fatal(err)
+	}
+
+	second := newKey(t, "")
+	served.setKeys(t, second)
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, second, "at+jwt", nil), nil); !errors.Is(err, server.ErrInvalidToken) {
+		t.Fatalf("within the cooldown: %v", err)
+	}
+
+	now = now.Add(30 * time.Second)
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, second, "at+jwt", nil), nil); err != nil {
+		t.Fatalf("after the cooldown: %v", err)
+	}
+
+	if fetches := served.fetches.Load(); fetches != 2 {
+		t.Fatalf("%d fetches", fetches)
+	}
+}
+
+// A kid the issuer has, whose key doesn't verify the token, is a bad signature: the keys aren't fetched again.
+func TestJWTKnownKidBadSignature(t *testing.T) {
+	t.Parallel()
+
+	served := newIssuer(t)
+	now := time.Now()
+	authenticator := served.authenticator(func() time.Time { return now })
+	ctx := context.Background()
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, served.keys[0], "at+jwt", nil), nil); err != nil {
+		t.Fatal(err)
+	}
+
+	now = now.Add(time.Minute)
+
+	if _, err := authenticator.Authenticate(ctx, served.sign(t, newKey(t, "first"), "at+jwt", nil), nil); !errors.Is(err, server.ErrInvalidToken) {
+		t.Fatalf("forged: %v", err)
+	}
+
+	if fetches := served.fetches.Load(); fetches != 1 {
+		t.Fatalf("%d fetches", fetches)
+	}
+}
+
 func TestJWTIssuerFailures(t *testing.T) {
 	t.Parallel()
 

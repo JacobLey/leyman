@@ -40,7 +40,7 @@ const keysCooldown = 30 * time.Second
 // JWTAuthenticator accepts JWT access tokens (RFC 9068) from an authorization server: signed by one of its keys,
 // issued by it, for this API, not expired, and with every scope the operation needs, as its subject (sub), which must
 // be a user. The keys are discovered on the first request, and again after a discovery fails, and fetched again for a
-// key it doesn't know (at most every 30 seconds). Only a token that's wrong is ErrInvalidToken: an issuer that can't
+// token signed with a key it doesn't know (at most every 30 seconds). Only a token that's wrong is ErrInvalidToken: an issuer that can't
 // be reached (its discovery, or its keys) is an AuthorizationServerError (a 500, reported), since it says nothing
 // about the token.
 type JWTAuthenticator struct {
@@ -118,17 +118,14 @@ func (a *JWTAuthenticator) verify(ctx context.Context, token string) (jwt.Token,
 		return nil, ErrInvalidToken
 	}
 
-	// A key the issuer didn't have when last fetched: it may have rotated its keys since
-	if kid, ok := message.Signatures()[0].ProtectedHeaders().KeyID(); ok {
-		if _, found := keys.LookupKeyID(kid); !found {
-			if keys, err = a.keySet(ctx, true); err != nil {
-				return nil, err
-			}
-		}
+	payload, err := a.verifySignature(ctx, []byte(token), message, keys)
+	if err != nil {
+		return nil, err
 	}
 
-	parsed, err := jwt.Parse([]byte(token),
-		jwt.WithKeySet(keys, jws.WithInferAlgorithmFromKey(true), jws.WithRequireKid(false)),
+	parsed, err := jwt.Parse(payload,
+		// Verified above
+		jwt.WithVerify(false),
 		jwt.WithValidate(true),
 		jwt.WithIssuer(a.options.Issuer),
 		jwt.WithAudience(a.options.Audience),
@@ -140,6 +137,41 @@ func (a *JWTAuthenticator) verify(ctx context.Context, token string) (jwt.Token,
 	}
 
 	return parsed, nil
+}
+
+// verifySignature is a token's payload, once one of the issuer's keys verifies its signature. A token signed with a
+// key the issuer didn't have when its keys were last fetched may be signed with one it has rotated in since: its kid
+// isn't among them, or it has no kid and none of them verifies it. Then the keys are fetched again (unless that was
+// done within the cooldown) and tried once more, as jose's createRemoteJWKSet does for a token no key matches
+// (JWKSNoMatchingKey). A kid among the keys whose key doesn't verify the token is a bad signature, not a new key.
+func (a *JWTAuthenticator) verifySignature(ctx context.Context, token []byte, message *jws.Message, keys jwk.Set) ([]byte, error) {
+	kid, hasKid := message.Signatures()[0].ProtectedHeaders().KeyID()
+
+	_, known := keys.LookupKeyID(kid)
+	if known || !hasKid {
+		payload, err := verifyWith(token, keys)
+		if err == nil || known {
+			return payload, err
+		}
+	}
+
+	keys, err := a.keySet(ctx, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return verifyWith(token, keys)
+}
+
+// verifyWith is a token's payload, when one of the keys verifies its signature.
+func verifyWith(token []byte, keys jwk.Set) ([]byte, error) {
+	// jwx requires a kid by default, while jose tries every key that fits
+	payload, err := jws.Verify(token, jws.WithKeySet(keys, jws.WithInferAlgorithmFromKey(true), jws.WithRequireKid(false)))
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	return payload, nil
 }
 
 // discover finds the issuer's jwks_uri, from its discovery document.
