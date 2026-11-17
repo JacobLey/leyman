@@ -35,7 +35,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
 go get github.com/JacobLey/leyman/tools/idempotency-keys/go@latest
 ```
 
-It needs Go 1.25 or later, and versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies. The `postgres` package uses [pgx](https://github.com/jackc/pgx) v5, because `database/sql` can't `LISTEN`, the `valkey` package uses [valkey-go](https://github.com/valkey-io/valkey-go), and the `dynamodb` package uses the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2). Each package only brings in its own client, so you only download what you import.
+It needs Go 1.25 or later, and versions are listed in the [changelog](./CHANGELOG.md). The core package has no dependencies. The `postgres` package uses [pgx](https://github.com/jackc/pgx) v5, because `database/sql` can't `LISTEN`, the `valkey` package uses [valkey-go](https://github.com/valkey-io/valkey-go), and the `dynamodb` package uses the [AWS SDK for Go v2](https://github.com/aws/aws-sdk-go-v2). Each package only brings in its own client, so you only download what you import. This module also requires [aws-emulator-launch](../../aws-emulator-launch/go/), which only the `dynamodb` package's tests use: Go has no test-only requirements, so it shows in your module graph (`go mod graph`, and its `go.mod` in `go.sum`), but none of its code is compiled into your builds.
 
 ## Example
 
@@ -199,7 +199,7 @@ A response a replay couldn't send, with a status outside 200 to 599 or a body on
 
 ### Writing a store
 
-`New` takes any `Store`, so you can keep records somewhere other than Postgres or Valkey. A store only keeps records: the module does the hashing, waiting, policy and notifying. It has to meet the spec's [store contract](../SPEC.md#the-store-contract): each operation is atomic for its identity, an expired record counts as absent, a running record is only taken over by a request with the same fingerprint, `Complete` and `Release` only change a record that still holds their token, and a failure is an error rather than an answer.
+`New` takes any `Store`, so you can keep records somewhere other than Postgres, Valkey or DynamoDB. A store only keeps records: the module does the hashing, waiting, policy and notifying. It has to meet the spec's [store contract](../SPEC.md#the-store-contract): each operation is atomic for its identity, an expired record counts as absent, a running record is only taken over by a request with the same fingerprint, `Complete` and `Release` only change a record that still holds their token, and a failure is an error rather than an answer.
 
 Renewing is optional: a store with a `Renew` method too (the `Renewer` interface) can renew attempts, under the same rules as `Complete`. A store that wraps another has to forward `Renew` itself, as embedding the `Store` interface hides it.
 
