@@ -4,7 +4,7 @@ description: A Standard Webhooks receiver that checks signatures in constant tim
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:083b8ded824b9fea53ae253f75a5b0a0 Generated from demos/webhook-receiver/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/webhook-receiver/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:aa638d0f2ccb84fcb76fcf10b26539b8 Generated from demos/webhook-receiver/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/webhook-receiver/README.md instead, and the description only here. -->
 
 # Webhook receiver
 
@@ -64,8 +64,9 @@ POST ─▶ read the body once, as bytes
           ├─ conflict ──▶ 409                    (being sent right now: the retry replays)
           ├─ mismatch ──▶ 422                    (same id, another body: a sender bug)
           └─ run      ─▶ SendMessage
-                           ├─ ok   ─▶ store 202 ─▶ 202
-                           └─ fail ─▶ release   ─▶ 503   (the retry sends it)
+                           ├─ ok      ─▶ store 202 ─▶ 202
+                           ├─ refused ─▶ store 422 ─▶ 422   (a body SQS can't carry: the retry replays)
+                           └─ fail    ─▶ release   ─▶ 503   (the retry sends it)
 ```
 
 | Status | When                                                                                                                        |
@@ -74,10 +75,10 @@ POST ─▶ read the body once, as bytes
 | `400`  | A `webhook-id`, `webhook-timestamp` or `webhook-signature` header missing or empty, or a timestamp that isn't whole seconds |
 | `401`  | No signature matches, or the timestamp is more than 5 minutes off (`toleranceMs`)                                           |
 | `409`  | The same event is being sent by another request                                                                             |
-| `422`  | An event id seen before with a different body                                                                               |
-| `503`  | SQS refused the message                                                                                                     |
+| `422`  | An event id seen before with a different body, or a body SQS refuses to carry (`InvalidMessageContents`)                    |
+| `503`  | SQS failed to take the message for any other reason                                                                         |
 
-A failure of DynamoDB rejects, and so does a release that fails after SQS refused (its lease then runs out, and the retry after it sends). Fetch servers answer a rejection with `500`, which the sender retries like any other failure.
+A failure of DynamoDB rejects, and so does a release that fails after SQS failed (its lease then runs out, and the retry after it sends). Fetch servers answer a rejection with `500`, which the sender retries like any other failure.
 
 ## Each step, and its pitfall
 
@@ -113,7 +114,9 @@ The event id (`webhook-id`) is the same on every retry. The receiver claims it w
 
 ### Send to SQS, then answer
 
-The work happens later, on a worker: the receiver only sends the body to the queue, with the event id and sender as message attributes, stores its `202` and answers. When SQS refuses, the receiver releases the id before answering `503`. Otherwise the stored claim would drop the sender's retry, and the event with it.
+The work happens later, on a worker: the receiver only sends the body to the queue, with the event id and sender as message attributes, stores its `202` and answers. When SQS fails, the receiver releases the id before answering `503`. Otherwise the stored claim would drop the sender's retry, and the event with it.
+
+One refusal is different: SQS allows [only some Unicode characters](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html) in a body, and refuses a body with others as `InvalidMessageContents`. Every retry carries the same body, so `503` would have the sender retry for days, each time failing at SQS. The receiver stores `422` for it instead, like a reused id: a sender bug. [Standard Webhooks](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md) senders retry every answer but `2xx`, so the retries still come, but each replays `422` from the store without calling SQS, and the failure shows in the sender's delivery log. Answering `2xx` would stop them, and lose the event without a trace.
 
 ## At least once, not exactly once
 
@@ -133,4 +136,4 @@ The tests run against AWS Emulator, started once per test process through [aws-e
 - The run creates one idempotency table, and each test a queue of its own and event ids of its own, so tests never see each other's messages.
 - The clock is injected, so the timestamp window is tested at its exact edges without waiting. The signature tests also check Standard Webhooks' published test vector.
 - The concurrent duplicate is ordered, not raced: an SQS client wrapped by the test holds the first delivery inside `SendMessage` while the second arrives, so the second gets `409` every time, and a retry after the first finishes replays.
-- SQS refusing is a real refusal: a queue URL that doesn't exist.
+- SQS refusing is a real refusal: a queue URL that doesn't exist, and a body with U+FFFF, which the emulator refuses as `InvalidMessageContents` like SQS.

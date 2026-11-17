@@ -202,6 +202,30 @@ suite('createWebhookReceiver', () => {
         );
 
         withQueue.test(
+            'Answers 422 to a body SQS refuses, and replays it to the retry without sending',
+            async ({ queueUrl, id }) => {
+                // SQS allows only some Unicode characters in a body, and refuses others (here U+FFFF) as the
+                // sender's fault: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
+                let sends = 0;
+                const counted: SqsConnection = {
+                    sendMessage: async input => {
+                        sends++;
+                        return sqs().sendMessage(input);
+                    },
+                };
+                const handle = receiver(queueUrl, { sqsConnection: counted });
+                const body = '{"type":"\u{FFFF}"}';
+
+                const refused = await handle(await deliver({ id, body }));
+                const retry = await handle(await deliver({ id, body, timestamp: timestamp + 60 }));
+
+                expect([refused.status, retry.status]).to.deep.equal([422, 422]);
+                expect(sends).to.equal(1);
+                expect(await received(queueUrl)).to.deep.equal([]);
+            }
+        );
+
+        withQueue.test(
             'Answers 409 to a duplicate while the first is sending, then replays',
             async ({ queueUrl, id }) => {
                 // Holds the first delivery inside SendMessage, so the duplicate arrives while it runs

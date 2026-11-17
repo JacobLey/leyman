@@ -81,6 +81,16 @@ const refusalStatus: Readonly<Record<WebhookRefusal, number>> = {
 const decoder = new TextDecoder();
 
 /**
+ * Whether SQS refused the body itself, which it does the same way on every retry: it allows only some Unicode
+ * characters ([SendMessage](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html)).
+ *
+ * @param error - What `sendMessage` rejected with
+ * @returns `true` for the SDK's `InvalidMessageContents`
+ */
+const isRefusedBody = (error: unknown): boolean =>
+    Error.isError(error) && error.name === 'InvalidMessageContents';
+
+/**
  * The fixed operation every event is claimed under, within its sender's scope.
  */
 const operation = 'webhook';
@@ -92,8 +102,9 @@ const operation = 'webhook';
  * - `400`/`401`: missing headers, or a bad signature or timestamp. Nothing is claimed.
  * - `202`: sent now, or a duplicate of an event already sent (replayed, not sent again).
  * - `409`: the same event is being handled right now; the sender's retry replays.
- * - `422`: the same id with another body, a sender bug.
- * - `503`: SQS refused the message. The id is released, so the sender's retry sends it.
+ * - `422`: the same id with another body, or a body SQS refuses to carry (`InvalidMessageContents`): sender bugs. A
+ *   refused body is stored as `422`, so the sender's retries replay it without calling SQS again.
+ * - `503`: SQS failed otherwise. The id is released, so the sender's retry sends it.
  *
  * A failure of the store rejects, as does a release that fails after `503`'s send failure (its lease then runs out).
  *
@@ -158,7 +169,16 @@ export const createWebhookReceiver = (
                     'webhook-source': { DataType: 'String', StringValue: source },
                 },
             });
-        } catch {
+        } catch (error) {
+            if (isRefusedBody(error)) {
+                // Every retry carries the same body, so stored: the retries replay it rather than fail at SQS again
+                await begun.attempt.respond({
+                    status: mismatch,
+                    headers: [],
+                    body: new Uint8Array(),
+                });
+                return new Response(null, { status: mismatch });
+            }
             // Otherwise the stored id would drop the sender's retry, and the event with it
             await begun.attempt.release();
             return new Response(null, { status: unavailable });
