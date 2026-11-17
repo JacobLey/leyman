@@ -21,6 +21,8 @@ import { IdempotencyKeys } from 'idempotency-keys';
 import { PostgresStore } from 'idempotency-keys/postgres';
 import { suite } from 'mocha-chain';
 import { withDatabase } from '#test/helpers/database.js';
+import { implementations } from '#test/helpers/implementations.js';
+import { postNote } from '#test/helpers/post.js';
 import { listen } from '#test/helpers/serve.js';
 import { expectStatus } from '#test/helpers/status.js';
 
@@ -33,7 +35,147 @@ const tokens = [
 ];
 const dolly = { title: 'Dolly', body: 'A sheep' };
 
-suite('Idempotency keys', () => {
+// Black-box tests, through HTTP alone, so each server is held to the same expectations
+for (const implementation of implementations) {
+    suite(`Idempotency keys on ${implementation.name}`, () => {
+        /**
+         * The server on its own database.
+         */
+        const withServer = withDatabase().beforeEach(async ({ database }) => {
+            // The test's own connection, to read rows directly
+            const pool = new Pool({ connectionString: database.url, max: 1 });
+            const served = await implementation.start({
+                databaseUrl: database.url,
+                authentication: { tokens },
+            });
+            return {
+                pool,
+                served,
+                post: async ({
+                    key,
+                    body = dolly,
+                    as = token,
+                }: {
+                    readonly key?: string;
+                    readonly body?: unknown;
+                    readonly as?: string;
+                }): Promise<Response> => postNote(served.url, { key, body, token: as }),
+                client: new NotesClient({ baseUrl: served.url, token }),
+                count: async (): Promise<number> => {
+                    const { rows } = await pool.query('SELECT * FROM notes');
+                    return rows.length;
+                },
+            };
+        });
+        withServer.afterEach(async ({ pool, served }) => {
+            await served.close();
+            await pool.end();
+        });
+
+        withServer.test(
+            'Adds the note once, and replays it to a retry',
+            async ({ post, count }) => {
+                const first = await post({ key: 'key-1' });
+                const retry = await post({ key: 'key-1' });
+
+                expect(first.status).to.equal(201);
+                expect(first.headers.get('idempotent-replayed')).to.equal(null);
+                expect(retry.status).to.equal(201);
+                expect(retry.headers.get('idempotent-replayed')).to.equal('true');
+                expect(retry.headers.get('content-type')).to.equal(
+                    first.headers.get('content-type')
+                );
+                expect(await retry.json()).to.deep.equal(await first.json());
+                expect(await count()).to.equal(1);
+            }
+        );
+
+        withServer.test(
+            'Answers a key reused on a different note with a 422',
+            async ({ client, count }) => {
+                const header = { 'Idempotency-Key': 'key-1' };
+                await client.call('createNote', { body: dolly, header });
+
+                const reused = await client.call('createNote', {
+                    body: { title: 'Polly', body: 'A sheep' },
+                    header,
+                });
+
+                expect(reused).to.deep.equal({
+                    status: 422,
+                    body: {
+                        code: 'idempotency_key_reused',
+                        message: 'This Idempotency-Key was already used on a different request',
+                    },
+                });
+                expect(await count()).to.equal(1);
+            }
+        );
+
+        withServer.test("Keeps each caller's keys apart", async ({ post, count }) => {
+            const alice = await post({ key: 'key-1' });
+            const bob = await post({ key: 'key-1', as: otherToken });
+
+            expect(bob.status).to.equal(201);
+            expect(bob.headers.get('idempotent-replayed')).to.equal(null);
+            const [aliceNote, bobNote] = (await Promise.all([alice.json(), bob.json()])) as {
+                readonly id: string;
+            }[];
+            expect(bobNote?.id).not.to.equal(aliceNote?.id);
+            expect(await count()).to.equal(2);
+        });
+
+        withServer.test('Adds a note for every request without a key', async ({ post, count }) => {
+            const first = await post({});
+            const second = await post({});
+
+            expect(first.status).to.equal(201);
+            expect(second.status).to.equal(201);
+            expect(second.headers.get('idempotent-replayed')).to.equal(null);
+            expect(await count()).to.equal(2);
+        });
+
+        withServer.test('Answers a key it cannot read with a 400', async ({ client, count }) => {
+            const created = await client.call('createNote', {
+                body: dolly,
+                header: { 'Idempotency-Key': 'k'.repeat(256) },
+            });
+
+            expect(expectStatus(created, 400).body).to.include({ code: 'invalid_request' });
+            expect(await count()).to.equal(0);
+        });
+
+        withServer.test(
+            'Replays a request it rejected, rather than checking it again',
+            async ({ post }) => {
+                const invalid = { title: '', body: 'A sheep' };
+
+                await post({ key: 'key-1', body: invalid });
+                const retry = await post({ key: 'key-1', body: invalid });
+
+                expect(retry.status).to.equal(400);
+                expect(retry.headers.get('idempotent-replayed')).to.equal('true');
+            }
+        );
+
+        withServer.test(
+            'Refuses a body larger than any note before keeping its key',
+            async ({ post, pool }) => {
+                const created = await post({
+                    key: 'key-1',
+                    body: { title: 'Dolly', body: 'A sheep'.repeat(20_000) },
+                });
+
+                expect(created.status).to.equal(413);
+                const { rows } = await pool.query('SELECT * FROM idempotency_keys');
+                expect(rows).to.deep.equal([]);
+            }
+        );
+    });
+}
+
+// Tests of what only the TypeScript server's internals can set up: handlers and stores swapped in through haywire
+suite('Idempotency keys on TypeScript alone', () => {
     /**
      * The app on its own database, with bindings swapped in by each test, served on a free port.
      */
@@ -66,15 +208,6 @@ suite('Idempotency keys', () => {
             }
             const served = await listen(createContainer(module).get(notesAppId));
             closing.push(served.close);
-            /**
-             * Posts a note as plain `fetch`, to see the response's headers.
-             *
-             * @param init - The key, the body, and whose token
-             * @param init.key - `Idempotency-Key`, if any
-             * @param init.body - The note
-             * @param init.as - Bearer token
-             * @returns The response
-             */
             const post = async ({
                 key,
                 body = dolly,
@@ -83,16 +216,7 @@ suite('Idempotency keys', () => {
                 readonly key?: string;
                 readonly body?: unknown;
                 readonly as?: string;
-            }): Promise<Response> =>
-                fetch(`${served.url}/notes`, {
-                    method: 'POST',
-                    headers: {
-                        authorization: `Bearer ${as}`,
-                        'content-type': 'application/json',
-                        ...(key !== undefined && { 'idempotency-key': key }),
-                    },
-                    body: JSON.stringify(body),
-                });
+            }): Promise<Response> => postNote(served.url, { key, body, token: as });
             return {
                 post,
                 client: new NotesClient({ baseUrl: served.url, token }),
@@ -129,44 +253,6 @@ suite('Idempotency keys', () => {
         await Promise.all(closing.map(async close => close()));
         await pool.end();
     });
-
-    withApp.test('Adds the note once, and replays it to a retry', async ({ serveWith, count }) => {
-        const { post } = await serveWith();
-
-        const first = await post({ key: 'key-1' });
-        const retry = await post({ key: 'key-1' });
-
-        expect(first.status).to.equal(201);
-        expect(first.headers.get('idempotent-replayed')).to.equal(null);
-        expect(retry.status).to.equal(201);
-        expect(retry.headers.get('idempotent-replayed')).to.equal('true');
-        expect(retry.headers.get('content-type')).to.equal(first.headers.get('content-type'));
-        expect(await retry.json()).to.deep.equal(await first.json());
-        expect(await count()).to.equal(1);
-    });
-
-    withApp.test(
-        'Answers a key reused on a different note with a 422',
-        async ({ serveWith, count }) => {
-            const { client } = await serveWith();
-            const header = { 'Idempotency-Key': 'key-1' };
-            await client.call('createNote', { body: dolly, header });
-
-            const reused = await client.call('createNote', {
-                body: { title: 'Polly', body: 'A sheep' },
-                header,
-            });
-
-            expect(reused).to.deep.equal({
-                status: 422,
-                body: {
-                    code: 'idempotency_key_reused',
-                    message: 'This Idempotency-Key was already used on a different request',
-                },
-            });
-            expect(await count()).to.equal(1);
-        }
-    );
 
     withApp.test(
         'Holds a duplicate until the first is done, then replays it',
@@ -236,75 +322,6 @@ suite('Idempotency keys', () => {
             });
             const ran = await first;
             expect(ran.status).to.equal(201);
-        }
-    );
-
-    withApp.test("Keeps each caller's keys apart", async ({ serveWith, count }) => {
-        const { post } = await serveWith();
-
-        const alice = await post({ key: 'key-1' });
-        const bob = await post({ key: 'key-1', as: otherToken });
-
-        expect(bob.status).to.equal(201);
-        expect(bob.headers.get('idempotent-replayed')).to.equal(null);
-        const [aliceNote, bobNote] = (await Promise.all([alice.json(), bob.json()])) as {
-            readonly id: string;
-        }[];
-        expect(bobNote?.id).not.to.equal(aliceNote?.id);
-        expect(await count()).to.equal(2);
-    });
-
-    withApp.test('Adds a note for every request without a key', async ({ serveWith, count }) => {
-        const { post } = await serveWith();
-
-        const first = await post({});
-        const second = await post({});
-
-        expect(first.status).to.equal(201);
-        expect(second.status).to.equal(201);
-        expect(second.headers.get('idempotent-replayed')).to.equal(null);
-        expect(await count()).to.equal(2);
-    });
-
-    withApp.test('Answers a key it cannot read with a 400', async ({ serveWith, count }) => {
-        const { client } = await serveWith();
-
-        const created = await client.call('createNote', {
-            body: dolly,
-            header: { 'Idempotency-Key': 'k'.repeat(256) },
-        });
-
-        expect(expectStatus(created, 400).body).to.include({ code: 'invalid_request' });
-        expect(await count()).to.equal(0);
-    });
-
-    withApp.test(
-        'Replays a request it rejected, rather than checking it again',
-        async ({ serveWith }) => {
-            const { post } = await serveWith();
-            const invalid = { title: '', body: 'A sheep' };
-
-            await post({ key: 'key-1', body: invalid });
-            const retry = await post({ key: 'key-1', body: invalid });
-
-            expect(retry.status).to.equal(400);
-            expect(retry.headers.get('idempotent-replayed')).to.equal('true');
-        }
-    );
-
-    withApp.test(
-        'Refuses a body larger than any note before keeping its key',
-        async ({ serveWith, pool }) => {
-            const { post } = await serveWith();
-
-            const created = await post({
-                key: 'key-1',
-                body: { title: 'Dolly', body: 'A sheep'.repeat(20_000) },
-            });
-
-            expect(created.status).to.equal(413);
-            const { rows } = await pool.query('SELECT * FROM idempotency_keys');
-            expect(rows).to.deep.equal([]);
         }
     );
 

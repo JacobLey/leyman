@@ -7,24 +7,12 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { decodeJwt } from 'jose';
 import { Pool } from 'pg';
 import { NotesClient } from '@leyman/demo-openapi-client';
-import {
-    appConfigId,
-    createNotesApp,
-    databaseId,
-    jwtAuthenticator,
-    jwtAuthenticatorBinding,
-    notes,
-    notesAppId,
-    NotesAuthorizationServerError,
-    notesModule,
-    staticTokens,
-} from '@leyman/demo-openapi-server';
+import { notes, NotesAuthorizationServerError } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
-import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
 import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
 import { withDatabase } from '#test/helpers/database.js';
-import { listen } from '#test/helpers/serve.js';
+import { implementations } from '#test/helpers/implementations.js';
 
 const textEncoder = new TextEncoder();
 
@@ -85,333 +73,337 @@ const serviceToken = async (server: ListeningAuthorizationServer): Promise<strin
     return token;
 };
 
-suite('JWT authentication', () => {
-    /**
-     * The app on its own database, accepting tokens from a dev authorization server.
-     */
-    const withServer = withDatabase().beforeEach(async ({ database }) => {
-        const authorization = await listenDevAuthorizationServer({
-            resources: [
-                { url: audience, scopes: ['notes:read', 'notes:write'] },
-                { url: 'https://other.test', scopes: ['notes:read'] },
-            ],
-            clients: [app],
-            services: [service],
-            accountId: 'dev-user',
-        });
-        const pool = new Pool({ connectionString: database.url, max: 2 });
-        const db = drizzle({ client: pool });
-        const errors: Error[] = [];
-        const served = await listen(
-            createContainer(
-                notesModule
-                    .addBinding(bind(databaseId).withInstance(db))
-                    .addBinding(jwtAuthenticatorBinding({ issuer: authorization.issuer, audience }))
-                    .addBinding(
-                        bind(appConfigId).withInstance({
-                            onError: error => {
-                                errors.push(error);
-                            },
-                        })
-                    )
-            ).get(notesAppId)
-        );
+// Black-box tests, through HTTP alone, so each server is held to the same expectations
+for (const implementation of implementations) {
+    suite(`JWT authentication on ${implementation.name}`, () => {
         /**
-         * A client with a token.
-         *
-         * @param token - Its bearer token
-         * @returns A client that sends it
+         * The app on its own database, accepting tokens from a dev authorization server.
          */
-        const clientWith = (token: string): NotesClient =>
-            new NotesClient({ baseUrl: served.url, token });
-        return { authorization, db, pool, served, errors, clientWith };
-    });
-    withServer.afterEach(async ({ authorization, pool, served }) => {
-        await served.close();
-        await authorization.close();
-        await pool.end();
-    });
-
-    withServer.test('Accepts a token with the scope', async ({ authorization, clientWith }) => {
-        const client = clientWith(await userToken(authorization));
-
-        expect(await client.call('listNotes', {})).to.deep.equal({
-            status: 200,
-            body: { items: [] },
-        });
-    });
-
-    withServer.test('Accepts a token with every scope', async ({ authorization, clientWith }) => {
-        const client = clientWith(
-            await userToken(authorization, { scope: 'notes:read notes:write' })
-        );
-
-        const created = await client.call('createNote', { body: { title: 'Dolly', body: '' } });
-
-        expect(created.status).to.equal(201);
-    });
-
-    withServer.test("Acts as the token's subject", async ({ authorization, clientWith, db }) => {
-        const token = await userToken(authorization, { scope: 'notes:write' });
-        const client = clientWith(token);
-
-        await client.call('createNote', { body: { title: 'Dolly', body: '' } });
-
-        const [row] = await db.select().from(notes);
-        expect(decodeJwt(token).sub).to.equal('dolly');
-        expect(row).to.include({ owner: 'dolly' });
-    });
-
-    withServer.test(
-        'Refuses a token without the scope, naming it',
-        async ({ authorization, served }) => {
-            const token = await userToken(authorization);
-
-            const response = await fetch(`${served.url}/notes`, {
-                method: 'POST',
-                headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-                body: JSON.stringify({ title: 'Dolly', body: '' }),
-            });
-
-            expect(response.status).to.equal(403);
-            expect(response.headers.get('www-authenticate')).to.equal(
-                'Bearer error="insufficient_scope", scope="notes:write"'
-            );
-            expect(await response.json()).to.include({ code: 'insufficient_scope' });
-        }
-    );
-
-    withServer.test('Refuses a token with no scope', async ({ authorization, clientWith }) => {
-        // Signed in, with none of the API's scopes: a login asks for at least one scope
-        const client = clientWith(await userToken(authorization, { scope: 'openid' }));
-
-        const listed = await client.call('listNotes', {});
-
-        expect(listed.status).to.equal(403);
-    });
-
-    withServer.test(
-        'Refuses a token for another audience, from the same issuer',
-        async ({ authorization, clientWith }) => {
-            const client = clientWith(
-                await userToken(authorization, { resource: 'https://other.test' })
-            );
-
-            const listed = await client.call('listNotes', {});
-
-            expect(listed.status).to.equal(401);
-        }
-    );
-
-    withServer.test(
-        "Refuses a service's own token, which is no user's",
-        async ({ authorization, clientWith }) => {
-            // Its subject is the service (RFC 9068): accepting it would act as a user named after it
-            const client = clientWith(await serviceToken(authorization));
-
-            const listed = await client.call('listNotes', {});
-
-            expect(listed.status).to.equal(401);
-        }
-    );
-
-    withServer.test('Refuses a token that is not a JWT', async ({ clientWith }) => {
-        const listed = await clientWith('not-a-jwt').call('listNotes', {});
-
-        expect(listed.status).to.equal(401);
-    });
-
-    suite('Protected Resource Metadata', () => {
-        /**
-         * The app, saying who issues its tokens.
-         */
-        const withMetadata = withDatabase().beforeEach(async ({ database }) => {
-            const pool = new Pool({ connectionString: database.url, max: 2 });
-            const served = await listen(
-                createNotesApp({
-                    db: drizzle({ client: pool }),
-                    // Any authenticator: the metadata and challenges don't depend on it
-                    authenticate: staticTokens([{ token: 'token', subject: 'dev-user' }]),
-                    protectedResource: {
-                        resource: `${audience}/api`,
-                        authorizationServers: ['https://issuer.test'],
-                    },
-                    onError: () => {},
-                })
-            );
-            return { pool, served };
-        });
-        withMetadata.afterEach(async ({ pool, served }) => {
-            await served.close();
-            await pool.end();
-        });
-
-        withMetadata.test('Is served where RFC 9728 puts it', async ({ served }) => {
-            const response = await fetch(`${served.url}/.well-known/oauth-protected-resource/api`);
-
-            expect(await response.json()).to.deep.equal({
-                resource: `${audience}/api`,
-                authorization_servers: ['https://issuer.test'],
-                scopes_supported: ['notes:read', 'notes:write'],
-                bearer_methods_supported: ['header'],
-            });
-        });
-
-        withMetadata.test('Is pointed to by every challenge', async ({ served }) => {
-            const missing = await fetch(`${served.url}/notes`);
-            const invalid = await fetch(`${served.url}/notes`, {
-                headers: { authorization: 'Bearer not-a-jwt' },
-            });
-
-            expect([
-                missing.headers.get('www-authenticate'),
-                invalid.headers.get('www-authenticate'),
-            ]).to.deep.equal([
-                `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api"`,
-                `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api", error="invalid_token"`,
-            ]);
-        });
-    });
-
-    suite('Discovery', () => {
-        /**
-         * The app, trusting an issuer whose discovery fails.
-         */
-        const withIssuer = withDatabase().beforeEach(async ({ database }) => {
+        const withServer = withDatabase().beforeEach(async ({ database }) => {
             const authorization = await listenDevAuthorizationServer({
-                resources: [{ url: audience, scopes: ['notes:read'] }],
+                resources: [
+                    { url: audience, scopes: ['notes:read', 'notes:write'] },
+                    { url: 'https://other.test', scopes: ['notes:read'] },
+                ],
                 clients: [app],
-                services: [],
+                services: [service],
                 accountId: 'dev-user',
             });
-            const pool = new Pool({ connectionString: database.url, max: 2 });
-            const errors: Error[] = [];
-            const serveWith = async (issuer: string) =>
-                listen(
-                    createNotesApp({
-                        db: drizzle({ client: pool }),
-                        authenticate: jwtAuthenticator({ issuer, audience }),
-                        onError: error => {
-                            errors.push(error);
-                        },
-                    })
-                );
-            return { authorization, pool, errors, serveWith };
+            // The test's own connection, to read rows directly
+            const pool = new Pool({ connectionString: database.url, max: 1 });
+            const db = drizzle({ client: pool });
+            const served = await implementation.start({
+                databaseUrl: database.url,
+                authentication: { issuer: authorization.issuer, audience },
+            });
+            /**
+             * A client with a token.
+             *
+             * @param token - Its bearer token
+             * @returns A client that sends it
+             */
+            const clientWith = (token: string): NotesClient =>
+                new NotesClient({ baseUrl: served.url, token });
+            return { authorization, db, pool, served, clientWith };
         });
-        withIssuer.afterEach(async ({ authorization, pool }) => {
+        withServer.afterEach(async ({ authorization, pool, served }) => {
+            await served.close();
             await authorization.close();
             await pool.end();
         });
 
-        withIssuer.test(
-            'Fails, and tries again, when the issuer has no discovery document',
-            async ({ authorization, errors, serveWith }) => {
-                // Nothing is served there: a 404
-                const served = await serveWith(`${authorization.issuer}/nowhere`);
-                try {
-                    const list = async (): Promise<number> => {
+        withServer.test('Accepts a token with the scope', async ({ authorization, clientWith }) => {
+            const client = clientWith(await userToken(authorization));
+
+            expect(await client.call('listNotes', {})).to.deep.equal({
+                status: 200,
+                body: { items: [] },
+            });
+        });
+
+        withServer.test(
+            'Accepts a token with every scope',
+            async ({ authorization, clientWith }) => {
+                const client = clientWith(
+                    await userToken(authorization, { scope: 'notes:read notes:write' })
+                );
+
+                const created = await client.call('createNote', {
+                    body: { title: 'Dolly', body: '' },
+                });
+
+                expect(created.status).to.equal(201);
+            }
+        );
+
+        withServer.test(
+            "Acts as the token's subject",
+            async ({ authorization, clientWith, db }) => {
+                const token = await userToken(authorization, { scope: 'notes:write' });
+                const client = clientWith(token);
+
+                await client.call('createNote', { body: { title: 'Dolly', body: '' } });
+
+                const [row] = await db.select().from(notes);
+                expect(decodeJwt(token).sub).to.equal('dolly');
+                expect(row).to.include({ owner: 'dolly' });
+            }
+        );
+
+        withServer.test(
+            'Refuses a token without the scope, naming it',
+            async ({ authorization, served }) => {
+                const token = await userToken(authorization);
+
+                const response = await fetch(`${served.url}/notes`, {
+                    method: 'POST',
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify({ title: 'Dolly', body: '' }),
+                });
+
+                expect(response.status).to.equal(403);
+                expect(response.headers.get('www-authenticate')).to.equal(
+                    'Bearer error="insufficient_scope", scope="notes:write"'
+                );
+                expect(await response.json()).to.include({ code: 'insufficient_scope' });
+            }
+        );
+
+        withServer.test('Refuses a token with no scope', async ({ authorization, clientWith }) => {
+            // Signed in, with none of the API's scopes: a login asks for at least one scope
+            const client = clientWith(await userToken(authorization, { scope: 'openid' }));
+
+            const listed = await client.call('listNotes', {});
+
+            expect(listed.status).to.equal(403);
+        });
+
+        withServer.test(
+            'Refuses a token for another audience, from the same issuer',
+            async ({ authorization, clientWith }) => {
+                const client = clientWith(
+                    await userToken(authorization, { resource: 'https://other.test' })
+                );
+
+                const listed = await client.call('listNotes', {});
+
+                expect(listed.status).to.equal(401);
+            }
+        );
+
+        withServer.test(
+            "Refuses a service's own token, which is no user's",
+            async ({ authorization, clientWith }) => {
+                // Its subject is the service (RFC 9068): accepting it would act as a user named after it
+                const client = clientWith(await serviceToken(authorization));
+
+                const listed = await client.call('listNotes', {});
+
+                expect(listed.status).to.equal(401);
+            }
+        );
+
+        withServer.test('Refuses a token that is not a JWT', async ({ clientWith }) => {
+            const listed = await clientWith('not-a-jwt').call('listNotes', {});
+
+            expect(listed.status).to.equal(401);
+        });
+
+        suite('Protected Resource Metadata', () => {
+            /**
+             * The app, saying who issues its tokens.
+             */
+            const withMetadata = withDatabase().beforeEach(async ({ database }) => {
+                const served = await implementation.start({
+                    databaseUrl: database.url,
+                    // Any authentication: the metadata and challenges don't depend on it
+                    authentication: { tokens: [{ token: 'token', subject: 'dev-user' }] },
+                    protectedResource: {
+                        resource: `${audience}/api`,
+                        authorizationServers: ['https://issuer.test'],
+                    },
+                });
+                return { served };
+            });
+            withMetadata.afterEach(async ({ served }) => {
+                await served.close();
+            });
+
+            withMetadata.test('Is served where RFC 9728 puts it', async ({ served }) => {
+                const response = await fetch(
+                    `${served.url}/.well-known/oauth-protected-resource/api`
+                );
+
+                expect(await response.json()).to.deep.equal({
+                    resource: `${audience}/api`,
+                    authorization_servers: ['https://issuer.test'],
+                    scopes_supported: ['notes:read', 'notes:write'],
+                    bearer_methods_supported: ['header'],
+                });
+            });
+
+            withMetadata.test('Is pointed to by every challenge', async ({ served }) => {
+                const missing = await fetch(`${served.url}/notes`);
+                const invalid = await fetch(`${served.url}/notes`, {
+                    headers: { authorization: 'Bearer not-a-jwt' },
+                });
+
+                expect([
+                    missing.headers.get('www-authenticate'),
+                    invalid.headers.get('www-authenticate'),
+                ]).to.deep.equal([
+                    `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api"`,
+                    `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api", error="invalid_token"`,
+                ]);
+            });
+        });
+
+        suite('Discovery', () => {
+            /**
+             * The app, trusting an issuer whose discovery fails.
+             */
+            const withIssuer = withDatabase().beforeEach(async ({ database }) => {
+                const authorization = await listenDevAuthorizationServer({
+                    resources: [{ url: audience, scopes: ['notes:read'] }],
+                    clients: [app],
+                    services: [],
+                    accountId: 'dev-user',
+                });
+                const serveWith = async (issuer: string) =>
+                    implementation.start({
+                        databaseUrl: database.url,
+                        authentication: { issuer, audience },
+                    });
+                return { authorization, serveWith };
+            });
+            withIssuer.afterEach(async ({ authorization }) => {
+                await authorization.close();
+            });
+
+            withIssuer.test(
+                'Fails, and tries again, when the issuer has no discovery document',
+                async ({ authorization, serveWith }) => {
+                    // Nothing is served there: a 404
+                    const served = await serveWith(`${authorization.issuer}/nowhere`);
+                    try {
+                        const list = async (): Promise<number> => {
+                            const response = await fetch(`${served.url}/notes`, {
+                                headers: {
+                                    authorization: `Bearer ${await userToken(authorization)}`,
+                                },
+                            });
+                            return response.status;
+                        };
+
+                        expect(await list()).to.equal(500);
+                        expect(await list()).to.equal(500);
+                        const errors = await served.close();
+                        expect(errors).to.have.length(2);
+                        expect(errors[0]?.message).to.include('discovery answered 404');
+                        if (implementation.name === 'TypeScript') {
+                            expect(errors[0]).to.be.instanceOf(NotesAuthorizationServerError);
+                        }
+                    } finally {
+                        await served.close();
+                    }
+                }
+            );
+
+            withIssuer.test(
+                'Fails when the discovery document names another issuer',
+                async ({ authorization, serveWith }) => {
+                    // The document is found (the trailing slash is dropped to find it), but names the issuer without it
+                    const served = await serveWith(`${authorization.issuer}/`);
+                    try {
                         const response = await fetch(`${served.url}/notes`, {
                             headers: {
                                 authorization: `Bearer ${await userToken(authorization)}`,
                             },
                         });
-                        return response.status;
-                    };
 
-                    expect(await list()).to.equal(500);
-                    expect(await list()).to.equal(500);
-                    expect(errors).to.have.length(2);
-                    expect(errors[0]).to.be.instanceOf(NotesAuthorizationServerError);
-                    expect(errors[0]?.message).to.include('discovery answered 404');
-                } finally {
-                    await served.close();
-                }
-            }
-        );
-
-        withIssuer.test(
-            'Fails when the discovery document names another issuer',
-            async ({ authorization, errors, serveWith }) => {
-                // The document is found (the trailing slash is dropped to find it), but names the issuer without it
-                const served = await serveWith(`${authorization.issuer}/`);
-                try {
-                    const response = await fetch(`${served.url}/notes`, {
-                        headers: {
-                            authorization: `Bearer ${await userToken(authorization)}`,
-                        },
-                    });
-
-                    expect(response.status).to.equal(500);
-                    expect(errors[0]?.message).to.include('named another issuer');
-                } finally {
-                    await served.close();
-                }
-            }
-        );
-
-        withIssuer.test(
-            "Fails when the issuer's keys can't be fetched",
-            async ({ authorization, errors, serveWith }) => {
-                // A discovery document of its own, naming keys where nothing listens
-                const issuer = createServer();
-                issuer.listen(0, '127.0.0.1');
-                await once(issuer, 'listening');
-                const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
-                issuer.on('request', (_request, response: ServerResponse) => {
-                    response
-                        .writeHead(200, { 'content-type': 'application/json' })
-                        .end(JSON.stringify({ issuer: url, jwks_uri: 'http://127.0.0.1:1/jwks' }));
-                });
-                const served = await serveWith(url);
-                try {
-                    const response = await fetch(`${served.url}/notes`, {
-                        headers: {
-                            authorization: `Bearer ${await userToken(authorization)}`,
-                        },
-                    });
-
-                    expect(response.status).to.equal(500);
-                    expect(errors[0]).to.be.instanceOf(TypeError);
-                } finally {
-                    await served.close();
-                    issuer.close();
-                    issuer.closeAllConnections();
-                }
-            }
-        );
-        withIssuer.test(
-            'Fails, rather than refusing the token, when its keys answer an error',
-            async ({ authorization, errors, serveWith }) => {
-                // Discovery works, but the keys answer 503: the issuer is down, the token may well be fine
-                const issuer = createServer();
-                issuer.listen(0, '127.0.0.1');
-                await once(issuer, 'listening');
-                const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
-                issuer.on('request', (request, response: ServerResponse) => {
-                    if (request.url === '/jwks') {
-                        response.writeHead(503).end();
-                        return;
+                        expect(response.status).to.equal(500);
+                        const errors = await served.close();
+                        expect(errors[0]?.message).to.include('named another issuer');
+                    } finally {
+                        await served.close();
                     }
-                    response
-                        .writeHead(200, { 'content-type': 'application/json' })
-                        .end(JSON.stringify({ issuer: url, jwks_uri: `${url}/jwks` }));
-                });
-                const served = await serveWith(url);
-                try {
-                    const response = await fetch(`${served.url}/notes`, {
-                        headers: {
-                            authorization: `Bearer ${await userToken(authorization)}`,
-                        },
-                    });
-
-                    expect(response.status).to.equal(500);
-                    expect(errors).to.have.length(1);
-                } finally {
-                    await served.close();
-                    issuer.close();
-                    issuer.closeAllConnections();
                 }
-            }
-        );
+            );
+
+            withIssuer.test(
+                "Fails when the issuer's keys can't be fetched",
+                async ({ authorization, serveWith }) => {
+                    // A discovery document of its own, naming keys where nothing listens
+                    const issuer = createServer();
+                    issuer.listen(0, '127.0.0.1');
+                    await once(issuer, 'listening');
+                    const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
+                    issuer.on('request', (_request, response: ServerResponse) => {
+                        response
+                            .writeHead(200, { 'content-type': 'application/json' })
+                            .end(
+                                JSON.stringify({ issuer: url, jwks_uri: 'http://127.0.0.1:1/jwks' })
+                            );
+                    });
+                    const served = await serveWith(url);
+                    try {
+                        const response = await fetch(`${served.url}/notes`, {
+                            headers: {
+                                authorization: `Bearer ${await userToken(authorization)}`,
+                            },
+                        });
+
+                        expect(response.status).to.equal(500);
+                        const errors = await served.close();
+                        expect(errors).to.have.length(1);
+                        if (implementation.name === 'TypeScript') {
+                            // Fetch's, for a connection refused
+                            expect(errors[0]).to.be.instanceOf(TypeError);
+                        }
+                    } finally {
+                        await served.close();
+                        issuer.close();
+                        issuer.closeAllConnections();
+                    }
+                }
+            );
+            withIssuer.test(
+                'Fails, rather than refusing the token, when its keys answer an error',
+                async ({ authorization, serveWith }) => {
+                    // Discovery works, but the keys answer 503: the issuer is down, the token may well be fine
+                    const issuer = createServer();
+                    issuer.listen(0, '127.0.0.1');
+                    await once(issuer, 'listening');
+                    const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
+                    issuer.on('request', (request, response: ServerResponse) => {
+                        if (request.url === '/jwks') {
+                            response.writeHead(503).end();
+                            return;
+                        }
+                        response
+                            .writeHead(200, { 'content-type': 'application/json' })
+                            .end(JSON.stringify({ issuer: url, jwks_uri: `${url}/jwks` }));
+                    });
+                    const served = await serveWith(url);
+                    try {
+                        const response = await fetch(`${served.url}/notes`, {
+                            headers: {
+                                authorization: `Bearer ${await userToken(authorization)}`,
+                            },
+                        });
+
+                        expect(response.status).to.equal(500);
+                        expect(await served.close()).to.have.length(1);
+                    } finally {
+                        await served.close();
+                        issuer.close();
+                        issuer.closeAllConnections();
+                    }
+                }
+            );
+        });
     });
-});
+}
