@@ -34,13 +34,14 @@ type vectorRequest struct {
 type step struct {
 	Sleep    *int            `json:"sleep"`
 	Response *vectorResponse `json:"response"`
-	// Expect is an outcome, a respond result, or (for a release) a boolean
+	// Expect is an outcome, a respond result, or (for a release or renew) a boolean
 	Expect  any    `json:"expect"`
 	Begin   string `json:"begin"`
 	Start   string `json:"start"`
 	Await   string `json:"await"`
 	Respond string `json:"respond"`
 	Release string `json:"release"`
+	Renew   string `json:"renew"`
 	Request string `json:"request"`
 }
 
@@ -353,6 +354,11 @@ func runScenario(t *testing.T, scenario scenario, keys *idempotencykeys.Keys) {
 			checkOutcome(t, step, done.result, done.err)
 
 			attempts[step.Await] = done.result.Attempt
+		case step.Renew != "":
+			renewed, err := attempts[step.Renew].Renew(t.Context())
+			if err != nil || renewed != step.Expect {
+				t.Fatalf("renew %s: got %v, %v; want %v", step.Renew, renewed, err, step.Expect)
+			}
 		default:
 			endAttempt(t, step, attempts)
 		}

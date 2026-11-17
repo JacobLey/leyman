@@ -10,6 +10,9 @@ var (
 	ErrKeyHeader = errors.New("idempotency-keys: invalid Idempotency-Key header")
 	// ErrOption matches every [*OptionError].
 	ErrOption = errors.New("idempotency-keys: invalid option")
+	// ErrRenewUnsupported is an [Attempt.Renew] on a store that isn't a [Renewer], such as one a server wrote before
+	// renewal existed.
+	ErrRenewUnsupported = errors.New("idempotency-keys: the store can't renew a lease")
 	// ErrStoredRecord is a record a store can't read: a reply or row that isn't what the spec stores, which only a
 	// store written to by something else holds.
 	ErrStoredRecord = errors.New("idempotency-keys: unreadable stored record")

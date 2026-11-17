@@ -24,6 +24,8 @@ const (
 	millisecond = 1000
 	// The value every condition compares expiries with.
 	nowValue = ":now"
+	// The value a token condition compares the item's token with.
+	tokenValue = ":token"
 )
 
 // The item's attributes, as the spec's "DynamoDB" section names them. Expressions refer to them through
@@ -45,6 +47,7 @@ const (
 		" OR (#lease_expires_at <= :now AND #fingerprint = :fingerprint)"
 	holdsTokenCondition = "#token = :token AND #expires_at > :now" //nolint:gosec // A condition, not a credential
 	completeUpdate      = "SET #status = :status, #headers = :headers, #body = :body REMOVE #token, #lease_expires_at"
+	renewUpdate         = "SET #lease_expires_at = :lease_expires_at, #expires_at = :expires_at, #ttl = :ttl"
 )
 
 // Client is what the store needs from a DynamoDB client. A [*dynamodb.Client] fits as is.
@@ -112,7 +115,10 @@ type Store struct {
 	table  *string
 }
 
-var _ idempotencykeys.Store = (*Store)(nil)
+var (
+	_ idempotencykeys.Store   = (*Store)(nil)
+	_ idempotencykeys.Renewer = (*Store)(nil)
+)
 
 // NewStore is the DynamoDB store on a client.
 func NewStore(client Client, options StoreOptions) *Store {
@@ -171,8 +177,7 @@ func (s *Store) Claim(ctx context.Context, params idempotencykeys.ClaimParams) (
 			attrToken:          &types.AttributeValueMemberS{Value: params.Token},
 			attrLeaseExpiresAt: number(start + params.Lease.Milliseconds()),
 			attrExpiresAt:      number(expiresAt),
-			// Seconds, rounded up, so DynamoDB never deletes an item before it expires
-			attrTTL: number((expiresAt + millisecond - 1) / millisecond),
+			attrTTL:            ttlSeconds(expiresAt),
 		},
 		ConditionExpression:      aws.String(claimCondition),
 		ExpressionAttributeNames: names(attrIdentity, attrExpiresAt, attrLeaseExpiresAt, attrFingerprint),
@@ -263,7 +268,13 @@ func storedResponse(
 	return &idempotencykeys.StoredResponse{Headers: decoded, Body: value, Status: code}, nil
 }
 
-// conditionFailed is whether err is a failed condition, which Complete and Release answer with false.
+// ttlSeconds is the ttl attribute of an expiry: seconds, rounded up, so DynamoDB never deletes an item before it
+// expires.
+func ttlSeconds(expiresAt int64) *types.AttributeValueMemberN {
+	return number((expiresAt + millisecond - 1) / millisecond)
+}
+
+// conditionFailed is whether err is a failed condition, which Complete, Release and Renew answer with false.
 func conditionFailed(operation string, err error) (bool, error) {
 	var failed *types.ConditionalCheckFailedException
 	if errors.As(err, &failed) {
@@ -300,7 +311,7 @@ func (s *Store) Complete(
 			":status":  number(int64(response.Status)),
 			":headers": &types.AttributeValueMemberS{Value: wire.EncodeHeaders(response.Headers)},
 			":body":    &types.AttributeValueMemberB{Value: body},
-			":token":   &types.AttributeValueMemberS{Value: token},
+			tokenValue: &types.AttributeValueMemberS{Value: token},
 			nowValue:   number(now()),
 		},
 	})
@@ -324,12 +335,44 @@ func (s *Store) Release(ctx context.Context, identity, token string) (bool, erro
 		ConditionExpression:      aws.String(holdsTokenCondition),
 		ExpressionAttributeNames: names(attrToken, attrExpiresAt),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":token": &types.AttributeValueMemberS{Value: token},
-			nowValue: number(now()),
+			tokenValue: &types.AttributeValueMemberS{Value: token},
+			nowValue:   number(now()),
 		},
 	})
 	if err != nil {
 		return conditionFailed("release", err)
+	}
+
+	return true, nil
+}
+
+// Renew moves the item's lease and expiry (with its ttl) forward in one UpdateItem, if it still holds the token and
+// the key hasn't expired.
+func (s *Store) Renew(ctx context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	record, err := digest("identity", identity)
+	if err != nil {
+		return false, err
+	}
+
+	start := now()
+	expiresAt := start + ttl.Milliseconds()
+
+	_, err = s.client.UpdateItem(ctx, &dynamodb.UpdateItemInput{ //nolint:exhaustruct_v5 // Fields left out are unused
+		TableName:                s.table,
+		Key:                      map[string]types.AttributeValue{attrIdentity: &types.AttributeValueMemberB{Value: record}},
+		UpdateExpression:         aws.String(renewUpdate),
+		ConditionExpression:      aws.String(holdsTokenCondition),
+		ExpressionAttributeNames: names(attrLeaseExpiresAt, attrExpiresAt, attrTTL, attrToken),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":lease_expires_at": number(start + lease.Milliseconds()),
+			":expires_at":       number(expiresAt),
+			":ttl":              ttlSeconds(expiresAt),
+			tokenValue:          &types.AttributeValueMemberS{Value: token},
+			nowValue:            number(start),
+		},
+	})
+	if err != nil {
+		return conditionFailed("renew", err)
 	}
 
 	return true, nil

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/valkey-io/valkey-go"
 
@@ -36,7 +37,10 @@ type Store struct {
 	prefix string
 }
 
-var _ idempotencykeys.Store = (*Store)(nil)
+var (
+	_ idempotencykeys.Store   = (*Store)(nil)
+	_ idempotencykeys.Renewer = (*Store)(nil)
+)
 
 // NewStore is the Valkey store on a client, which it never closes.
 func NewStore(client Client, options StoreOptions) *Store {
@@ -126,7 +130,17 @@ func (s *Store) Release(ctx context.Context, identity, token string) (bool, erro
 	return s.changed(s.eval(ctx, releaseScript, identity, token), "release")
 }
 
-// changed reads the 1 or 0 of the complete and release scripts.
+// Renew runs the renew script.
+func (s *Store) Renew(ctx context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	return s.changed(s.eval(
+		ctx, renewScript, identity,
+		token,
+		strconv.FormatInt(lease.Milliseconds(), 10),
+		strconv.FormatInt(ttl.Milliseconds(), 10),
+	), "renew")
+}
+
+// changed reads the 1 or 0 of the complete, release and renew scripts.
 func (*Store) changed(result valkey.ValkeyResult, operation string) (bool, error) {
 	if err := result.Error(); err != nil {
 		return false, fmt.Errorf("idempotency-keys: Valkey %s: %w", operation, err)

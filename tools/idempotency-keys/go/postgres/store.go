@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -91,10 +92,14 @@ type Store struct {
 	readSQL     string
 	completeSQL string
 	releaseSQL  string
+	renewSQL    string
 	expiredSQL  string
 }
 
-var _ idempotencykeys.Store = (*Store)(nil)
+var (
+	_ idempotencykeys.Store   = (*Store)(nil)
+	_ idempotencykeys.Renewer = (*Store)(nil)
+)
 
 // NewStore is the Postgres store on a connection, usually a pool, which it never closes. The error is an
 // [*idempotencykeys.OptionError] for a table name over 63 bytes.
@@ -120,6 +125,9 @@ WHERE identity = $1 AND expires_at > clock_timestamp()`,
 		completeSQL: `UPDATE ` + table + ` SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
 WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`,
 		releaseSQL: `DELETE FROM ` + table + ` WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`,
+		renewSQL: `UPDATE ` + table + `
+SET lease_expires_at = clock_timestamp() + $3 * interval '1 millisecond', expires_at = clock_timestamp() + $4 * interval '1 millisecond'
+WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`,
 		expiredSQL: `DELETE FROM ` + table + ` WHERE expires_at <= clock_timestamp()`,
 	}, nil
 }
@@ -202,6 +210,21 @@ func (s *Store) Release(ctx context.Context, identity, token string) (bool, erro
 	tag, err := s.db.Exec(ctx, s.releaseSQL, record, token)
 	if err != nil {
 		return false, fmt.Errorf("idempotency-keys: Postgres release: %w", err)
+	}
+
+	return tag.RowsAffected() == 1, nil
+}
+
+// Renew moves the row's lease and expiry forward if it still holds the token and the key hasn't expired.
+func (s *Store) Renew(ctx context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	record, err := digest("identity", identity)
+	if err != nil {
+		return false, err
+	}
+
+	tag, err := s.db.Exec(ctx, s.renewSQL, record, token, lease.Milliseconds(), ttl.Milliseconds())
+	if err != nil {
+		return false, fmt.Errorf("idempotency-keys: Postgres renew: %w", err)
 	}
 
 	return tag.RowsAffected() == 1, nil

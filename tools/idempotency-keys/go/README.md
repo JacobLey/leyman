@@ -22,6 +22,7 @@ Guides, including one [for Go](https://jacobley.github.io/leyman/packages/idempo
   - [Valkey](#valkey)
   - [DynamoDB](#dynamodb)
   - [Without net/http](#without-nethttp)
+  - [Renewing a lease](#renewing-a-lease)
   - [Which responses are stored](#which-responses-are-stored)
   - [Writing a store](#writing-a-store)
 - [API](#api)
@@ -168,6 +169,19 @@ case idempotencykeys.OutcomeMismatch:
 
 If an attempt never ends, because its server crashed or the handler panicked, it holds the key until its lease runs out. After that, the next request with the key runs.
 
+### Renewing a lease
+
+A request that can run longer than the lease, such as a job, keeps its key by renewing it more often than the lease runs out, from a heartbeat, say. `Attempt.Renew(ctx)` moves the lease forward by `WithLease` and the key's expiry by `WithTTL`, both from now, so the lease only has to cover the time between renewals:
+
+```go
+renewed, err := result.Attempt.Renew(ctx)
+if err == nil && !renewed {
+	// another request took over: stop, as this one's response won't be stored
+}
+```
+
+It returns false when the attempt no longer holds the key: another request took over after its lease ran out, the attempt already ended, or the key expired. A lease that ran out still renews if nobody took over. The built-in stores all renew. On a store of your own without a `Renew` method, it returns an error matching `ErrRenewUnsupported` (see [Writing a store](#writing-a-store)).
+
 ### Which responses are stored
 
 By default every response is stored except a `429` (Too Many Requests), since that status says nothing was done. That includes `5xx` responses, because a handler that failed halfway may already have written something, and running it again could write it twice. If your handlers are transactional, you can release `5xx` responses too, so that a retry runs again:
@@ -187,6 +201,8 @@ A response a replay couldn't send, with a status outside 200 to 599 or a body on
 
 `New` takes any `Store`, so you can keep records somewhere other than Postgres or Valkey. A store only keeps records: the module does the hashing, waiting, policy and notifying. It has to meet the spec's [store contract](../SPEC.md#the-store-contract): each operation is atomic for its identity, an expired record counts as absent, a running record is only taken over by a request with the same fingerprint, `Complete` and `Release` only change a record that still holds their token, and a failure is an error rather than an answer.
 
+Renewing is optional: a store with a `Renew` method too (the `Renewer` interface) can renew attempts, under the same rules as `Complete`. A store that wraps another has to forward `Renew` itself, as embedding the `Store` interface hides it.
+
 The built-in stores measure leases on their own clock. A store without a clock may use the servers' (`time.Now()`), but then a server whose clock runs ahead can take over a lease early, so the lease has to cover your slowest handler plus the worst drift between servers. A store's layout is its own, so only servers that implement it share its keys.
 
 [`example_test.go`](./example_test.go) has a small in-memory store written to the contract, which the tests run against every scenario in the test vectors, as they do the built-in stores. It only serves one process, so it is an example, not something to deploy.
@@ -201,6 +217,7 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 | `keys.handle(request, options, run)`             | `keys.Handle(w, r, HandleOptions, next)`, or `keys.Middleware(func(*http.Request) HandleOptions)`                                                                            |
 | `keys.begin(params)`                             | `keys.Begin(ctx, BeginParams)`, a `BeginResult` with its `Outcome`, `Attempt` and `Response`                                                                                 |
 | `attempt.respond(response)`, `attempt.release()` | `Attempt.Respond(ctx, StoredResponse)`, `Attempt.Release(ctx)`                                                                                                               |
+| `attempt.renew()`, a store's optional `renew`    | `Attempt.Renew(ctx)`, a store's optional `Renewer`                                                                                                                           |
 | `parseIdempotencyKey(values)`                    | `ParseKey(values)`, `""` without a header                                                                                                                                    |
 | `computeIdentity`, `computeFingerprint`          | `ComputeIdentity(IdentityInput)`, `ComputeFingerprint(FingerprintInput)`, with `Headers` an `http.Header`                                                                    |
 | `requestTarget(url)`                             | `RequestTarget(rawTarget)`                                                                                                                                                   |
@@ -216,7 +233,7 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 
 Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 
-Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, `ErrUnsendableResponse` is a response `Respond` can't store, and `ErrStoredRecord` means the store holds a record that no implementation writes.
+Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, `ErrUnsendableResponse` is a response `Respond` can't store, `ErrRenewUnsupported` is a `Renew` on a store that isn't a `Renewer`, and `ErrStoredRecord` means the store holds a record that no implementation writes.
 
 If a Postgres listening connection fails, or a Valkey subscription drops, the error is reported to `NotifierOptions.OnError`. Waiting requests then fall back to polling, so to get notifications back, listen again on a new connection.
 
@@ -227,7 +244,7 @@ Go strings are bytes, so a header value is hashed and stored as the bytes receiv
 - **Responses are buffered** so they can be stored. `next` writes to a recorder, which means it can't flush, hijack the connection or send informational (`1xx`) responses, and the response is only sent once `next` returns.
 - **Headers are stored by name, in byte order of their lower-case names.** Go's `http.Header` is a map, so there is no other order to keep. Names differing only in case, which a handler can only set by writing to the map directly, are in byte order of the names as set. The values under each name keep their order.
 - **A request with an empty `RequestURI`** (one built to call a handler directly, rather than read by a server) is hashed by `r.URL.RequestURI()`, which Go has already escaped in its own way.
-- **No lease renewal.** Set the lease above your slowest handler, since a request that runs longer can be taken over and run twice.
+- **`Handle` never renews.** Behind the middleware, set the lease above your slowest handler, since a request that runs longer can be taken over and run twice. Use `Begin` and `Attempt.Renew` for longer work.
 - **DynamoDB uses the servers' clocks**, so on that store the lease also has to cover clock drift between servers, and a stored response is limited to what fits in a 400 KB item.
 
 ## Development

@@ -51,8 +51,9 @@ func isSendable(response StoredResponse) bool {
 }
 
 // Attempt is a request that holds its key, and runs. End it with [Attempt.Respond] or [Attempt.Release]. One that
-// never ends (it crashed) holds the key until its lease runs out. The store only changes the record while it still
-// holds the attempt's token.
+// never ends (it crashed) holds the key until its lease runs out. One that runs longer than the lease keeps its key
+// with [Attempt.Renew], called more often than the lease runs out (from a job's heartbeat, say). The store only
+// changes the record while it still holds the attempt's token.
 type Attempt struct {
 	keys     *Keys
 	identity string
@@ -134,6 +135,27 @@ func (a *Attempt) Release(ctx context.Context) (bool, error) {
 	a.announce(ctx, released)
 
 	return released, nil
+}
+
+// Renew renews the attempt's lease, so it runs out a lease from now, and the key expires a TTL from now, as at a
+// takeover. A lease that ran out still renews if nobody took over. It returns whether it renewed, false when the
+// attempt no longer holds the key (another request took over, the attempt ended, or the key expired): the request
+// should then stop, as whatever it responds won't be stored.
+//
+// On a store that isn't a [Renewer] the error matches [ErrRenewUnsupported], and the store isn't touched. Any other
+// error is the store's.
+func (a *Attempt) Renew(ctx context.Context) (bool, error) {
+	renewer, ok := a.keys.store.(Renewer)
+	if !ok {
+		return false, fmt.Errorf("%w: %T", ErrRenewUnsupported, a.keys.store)
+	}
+
+	renewed, err := renewer.Renew(ctx, a.identity, a.token, a.keys.lease, a.keys.ttl)
+	if err != nil {
+		return false, err //nolint:wrapcheck // A store's errors say what failed
+	}
+
+	return renewed, nil
 }
 
 // announce tells other waiting requests that the record changed. Only an optimization, so a failure goes to the error

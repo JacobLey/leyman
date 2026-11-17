@@ -116,13 +116,14 @@ func WithNotifier(notifier Notifier) Option {
 	return func(k *Keys) { k.notifier = notifier }
 }
 
-// WithTTL is how long a key lasts from when it was claimed, a whole number of milliseconds. 24 hours by default.
+// WithTTL is how long a key lasts from when it was last claimed or renewed, a whole number of milliseconds. 24 hours by default.
 func WithTTL(ttl time.Duration) Option {
 	return func(k *Keys) { k.ttl = ttl }
 }
 
-// WithLease is how long a request may run before another may take over, a whole number of milliseconds below the
-// TTL: longer than the slowest handler, so a slow request never runs twice. 60 seconds by default.
+// WithLease is how long a request may run, from its claim or last [Attempt.Renew], before another may take over, a
+// whole number of milliseconds below the TTL: longer than the slowest handler (or, for one that renews, the longest
+// time between renewals), so a slow request never runs twice. 60 seconds by default.
 func WithLease(lease time.Duration) Option {
 	return func(k *Keys) { k.lease = lease }
 }

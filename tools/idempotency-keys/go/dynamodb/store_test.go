@@ -101,7 +101,7 @@ func expectClaim(t *testing.T, store *dynamodbstore.Store, params idempotencykey
 	}
 }
 
-// expectChanged checks the result of a complete or release.
+// expectChanged checks the result of a complete, release or renew.
 func expectChanged(t *testing.T, what string, want bool) func(changed bool, err error) {
 	t.Helper()
 
@@ -238,6 +238,29 @@ func TestStoreWritesTheSpecsItem(t *testing.T) {
 	}
 }
 
+func TestStoreRenewsTheSpecsItem(t *testing.T) {
+	t.Parallel()
+
+	store := newStore()
+	identity := newIdentity()
+	claim(t, store, claimParams(identity, fingerprint, "t1", 50*time.Millisecond))
+
+	expectChanged(t, "renewed with another token", false)(store.Renew(t.Context(), identity, "t2", time.Minute, time.Hour))
+	time.Sleep(100 * time.Millisecond)
+
+	before := time.Now().UnixMilli()
+
+	expectChanged(t, "renewed once the lease ran out", true)(
+		store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour+time.Millisecond),
+	)
+	checkClaimedItem(t, identity, before, time.Now().UnixMilli())
+	expectClaim(t, store, claimParams(identity, fingerprint, "t3", time.Minute), running())
+
+	response := idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200}
+	expectChanged(t, "completed", true)(store.Complete(t.Context(), identity, "t1", response))
+	expectChanged(t, "renewed a completed record", false)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
+}
+
 func TestStoreStoresAnEmptyBody(t *testing.T) {
 	t.Parallel()
 
@@ -304,6 +327,7 @@ func TestStoreForgetsAnExpiredKey(t *testing.T) {
 
 	expectChanged(t, "completed once expired", false)(store.Complete(t.Context(), runningKey, "t1", response))
 	expectChanged(t, "released once expired", false)(store.Release(t.Context(), runningKey, "t1"))
+	expectChanged(t, "renewed once expired", false)(store.Renew(t.Context(), runningKey, "t1", time.Minute, time.Hour))
 
 	for _, identity := range []string{runningKey, completedKey} {
 		expectClaim(t, store, claimParams(identity, other, "t2", time.Minute), claimed())
@@ -459,8 +483,9 @@ func TestStoreFailsWhenDynamoDBDoes(t *testing.T) {
 	_, claimErr := store.Claim(t.Context(), claimParams(identity, fingerprint, "t1", time.Minute))
 	_, completeErr := store.Complete(t.Context(), identity, "t1", idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200})
 	_, releaseErr := store.Release(t.Context(), identity, "t1")
+	_, renewErr := store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour)
 
-	for _, err := range []error{claimErr, completeErr, releaseErr} {
+	for _, err := range []error{claimErr, completeErr, releaseErr, renewErr} {
 		var missing *types.ResourceNotFoundException
 		if !errors.As(err, &missing) || errors.Is(err, idempotencykeys.ErrStoredRecord) {
 			t.Errorf("got %v", err)
@@ -479,8 +504,9 @@ func TestStoreRejectsAnIdentityOrFingerprintThatIsntHex(t *testing.T) {
 	_, badFingerprint := store.Claim(t.Context(), claimParams(identity, "not hex", "t1", time.Minute))
 	_, badComplete := store.Complete(t.Context(), "not hex", "t1", response)
 	_, badRelease := store.Release(t.Context(), "not hex", "t1")
+	_, badRenew := store.Renew(t.Context(), "not hex", "t1", time.Minute, time.Hour)
 
-	for _, err := range []error{badIdentity, badFingerprint, badComplete, badRelease} {
+	for _, err := range []error{badIdentity, badFingerprint, badComplete, badRelease, badRenew} {
 		if err == nil {
 			t.Error("got no error")
 		}

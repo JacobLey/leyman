@@ -36,3 +36,14 @@ end
 redis.call('DEL', KEYS[1])
 return 1
 `
+
+// renewScript: KEYS[1] record; ARGV token, leaseMs, ttlMs. Replies 1 if it renewed the record.
+const renewScript = `if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then
+    return 0
+end
+local time = redis.call('TIME')
+local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
+redis.call('HSET', KEYS[1], 'lease', string.format('%d', now + tonumber(ARGV[2])))
+redis.call('PEXPIRE', KEYS[1], ARGV[3])
+return 1
+`

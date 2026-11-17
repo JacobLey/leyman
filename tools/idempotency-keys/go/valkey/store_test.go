@@ -77,7 +77,7 @@ func expectClaim(t *testing.T, store *valkeystore.Store, params idempotencykeys.
 	}
 }
 
-// expectChanged checks the result of a complete or release.
+// expectChanged checks the result of a complete, release or renew.
 func expectChanged(t *testing.T, what string, want bool) func(changed bool, err error) {
 	t.Helper()
 
@@ -145,15 +145,16 @@ func TestStoreRejectsReplies(t *testing.T) {
 	}
 
 	for name, script := range map[string]string{"not a number": "return 'x'", "a number but 0 or 1": "return 2"} {
-		t.Run("rejects a complete or release reply of "+name, func(t *testing.T) {
+		t.Run("rejects a complete, release or renew reply of "+name, func(t *testing.T) {
 			t.Parallel()
 
 			store := newStore(replyClient{Client: client, script: script})
 
 			_, completeErr := store.Complete(t.Context(), identity, "t1", idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200})
 			_, releaseErr := store.Release(t.Context(), identity, "t1")
+			_, renewErr := store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour)
 
-			for _, err := range []error{completeErr, releaseErr} {
+			for _, err := range []error{completeErr, releaseErr, renewErr} {
 				if !errors.Is(err, idempotencykeys.ErrStoredRecord) {
 					t.Fatalf("got %v", err)
 				}
@@ -207,6 +208,24 @@ func TestStoreReleasesOnlyWithTheToken(t *testing.T) {
 	}
 }
 
+func TestStoreRenewsOnlyWithTheToken(t *testing.T) {
+	t.Parallel()
+
+	store := newTestStore()
+	claim(t, store, claimParams(fingerprint, "t1", 50*time.Millisecond))
+
+	expectChanged(t, "renewed with another token", false)(store.Renew(t.Context(), identity, "t2", time.Minute, time.Hour))
+	time.Sleep(100 * time.Millisecond)
+	expectChanged(t, "renewed once the lease ran out", true)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
+
+	running := idempotencykeys.ClaimResult{Response: nil, State: idempotencykeys.ClaimRunning, Fingerprint: fingerprint}
+	expectClaim(t, store, claimParams(fingerprint, "t3", time.Minute), running)
+
+	response := idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200}
+	expectChanged(t, "completed", true)(store.Complete(t.Context(), identity, "t1", response))
+	expectChanged(t, "renewed a completed record", false)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
+}
+
 func TestStoreTakesOverALeaseThatRanOutOnlyWithTheSameFingerprint(t *testing.T) {
 	t.Parallel()
 
@@ -251,8 +270,9 @@ func TestStoreFailsWhenValkeyDoes(t *testing.T) {
 		_, claimErr := store.Claim(t.Context(), claimParams(fingerprint, "t1", time.Minute))
 		_, completeErr := store.Complete(t.Context(), identity, "t1", idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200})
 		_, releaseErr := store.Release(t.Context(), identity, "t1")
+		_, renewErr := store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour)
 
-		for _, err := range []error{claimErr, completeErr, releaseErr} {
+		for _, err := range []error{claimErr, completeErr, releaseErr, renewErr} {
 			if err == nil || errors.Is(err, idempotencykeys.ErrStoredRecord) {
 				t.Errorf("got %v", err)
 			}

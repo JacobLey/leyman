@@ -3,7 +3,9 @@ package idempotencykeys_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -51,6 +53,28 @@ func (s failingStore) Release(ctx context.Context, identity, token string) (bool
 	}
 
 	return s.Store.Release(ctx, identity, token) //nolint:wrapcheck // The store's errors, as they are
+}
+
+// failingRenewer runs a store's operations, and fails to renew.
+type failingRenewer struct {
+	idempotencykeys.Store
+}
+
+func (failingRenewer) Renew(context.Context, string, string, time.Duration, time.Duration) (bool, error) {
+	return false, errStoreDown
+}
+
+// recordingRenewer runs a store's operations, and records what it was asked to renew instead of renewing.
+type recordingRenewer struct {
+	idempotencykeys.Store
+
+	renewed *[]string
+}
+
+func (s recordingRenewer) Renew(_ context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	*s.renewed = append(*s.renewed, fmt.Sprintf("%s %d %s %s", identity, len(token), lease, ttl))
+
+	return true, nil
 }
 
 // failingNotifier subscribes through a notifier, and fails to publish.
@@ -416,6 +440,51 @@ func TestAttemptReportsAFailedAnnouncementAndStillEndsTheAttempt(t *testing.T) {
 
 	if len(reported) != 1 || reported[0] != attempt.Identity() {
 		t.Fatalf("reported %q", reported)
+	}
+}
+
+func TestAttemptRenewsWithTheLeaseAndTTL(t *testing.T) {
+	t.Parallel()
+
+	var renewed []string
+
+	keys := newKeys(t, recordingRenewer{Store: testEnv.valkeyStore(), renewed: &renewed},
+		idempotencykeys.WithLease(3*time.Second), idempotencykeys.WithTTL(time.Minute))
+	attempt := begin(t, keys, params()).Attempt
+
+	if ok, err := attempt.Renew(t.Context()); err != nil || !ok {
+		t.Fatalf("got %v, %v", ok, err)
+	}
+
+	if want := []string{attempt.Identity() + " 32 3s 1m0s"}; !slices.Equal(renewed, want) {
+		t.Fatalf("renewed %q, want %q", renewed, want)
+	}
+}
+
+func TestAttemptFailsToRenewOnAStoreThatCant(t *testing.T) {
+	t.Parallel()
+
+	// failingStore has only the three operations of Store
+	keys := newKeys(t, failingStore{Store: testEnv.valkeyStore(), failClaim: false, failComplete: false, failRelease: false})
+	attempt := begin(t, keys, params()).Attempt
+
+	renewed, err := attempt.Renew(t.Context())
+	if !errors.Is(err, idempotencykeys.ErrRenewUnsupported) || renewed {
+		t.Fatalf("got %v, %v", renewed, err)
+	}
+
+	if err.Error() != "idempotency-keys: the store can't renew a lease: idempotencykeys_test.failingStore" {
+		t.Errorf("got %v", err)
+	}
+}
+
+func TestAttemptFailsWhenTheStoreFailsToRenew(t *testing.T) {
+	t.Parallel()
+
+	keys := newKeys(t, failingRenewer{Store: testEnv.valkeyStore()})
+
+	if renewed, err := begin(t, keys, params()).Attempt.Renew(t.Context()); !errors.Is(err, errStoreDown) || renewed {
+		t.Fatalf("got %v, %v", renewed, err)
 	}
 }
 

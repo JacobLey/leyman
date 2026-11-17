@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -170,7 +171,7 @@ func (e env) dynamodbStore() saltedStore {
 // saltedStore keeps a store's records apart from every other test's in a shared table, by hashing each identity with a
 // salt of its own.
 type saltedStore struct {
-	idempotencykeys.Store
+	*dynamodbstore.Store
 
 	salt string
 }
@@ -191,6 +192,10 @@ func (s saltedStore) Complete(
 
 func (s saltedStore) Release(ctx context.Context, identity, token string) (bool, error) {
 	return s.Store.Release(ctx, s.identity(identity), token) //nolint:wrapcheck // Only a test's
+}
+
+func (s saltedStore) Renew(ctx context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	return s.Store.Renew(ctx, s.identity(identity), token, lease, ttl) //nolint:wrapcheck // Only a test's
 }
 
 func (s saltedStore) identity(identity string) string {

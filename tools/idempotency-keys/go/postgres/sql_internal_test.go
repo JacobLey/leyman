@@ -46,7 +46,7 @@ func TestStatementsAreTheSpecs(t *testing.T) {
 	}
 
 	statements := specStatements(t)
-	want := []string{strings.TrimSuffix(create, "\n"), store.claimSQL, store.readSQL, store.completeSQL, store.releaseSQL}
+	want := []string{strings.TrimSuffix(create, "\n"), store.claimSQL, store.readSQL, store.completeSQL, store.releaseSQL, store.renewSQL}
 
 	if len(statements) != len(want) {
 		t.Fatalf("the spec has %d statements: %q", len(statements), statements)

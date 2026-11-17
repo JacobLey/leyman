@@ -131,9 +131,18 @@ keys, _ := idempotencykeys.New(store, idempotencykeys.WithRespondPolicy(func(r i
 
 `Respond` returns an error matching `ErrUnsendableResponse` for a response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`), before asking the policy or touching the store, so the attempt still holds the key to respond again or release. `Handle` sends such a response to its caller anyway and reports the error to `WithOnError`.
 
+A run that can outlast the lease, such as a job, keeps its key with `Attempt.Renew(ctx)`, called more often than the lease runs out (from a heartbeat, say), as `renew()` is in TypeScript. The lease then runs out `WithLease` from the renewal and the key expires `WithTTL` from it, so the lease only has to cover the time between renewals. It returns `false` once the attempt no longer holds the key (another request took over, the attempt ended, or the key expired), and the run should stop, as its response won't be stored. `Handle` never renews, so behind the middleware the lease still has to cover the slowest handler.
+
+```go
+renewed, err := result.Attempt.Renew(ctx)
+if err == nil && !renewed {
+	return // another request took over
+}
+```
+
 ## Writing a store
 
-`New` takes any `Store` (`Claim`, `Complete`, `Release`), so records can live somewhere other than Postgres, Valkey or DynamoDB. A store written to the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) works with everything else: each operation is atomic for its identity, an expired record counts as absent, a takeover needs a matching fingerprint, `Complete` and `Release` check the token, and a failure is an error, never an answer. A store without a clock of its own may use the servers', with the lease covering the worst drift between them too. Its layout is its own, so a TypeScript server shares it only if it implements the same one.
+`New` takes any `Store` (`Claim`, `Complete`, `Release`), so records can live somewhere other than Postgres, Valkey or DynamoDB. Renewing is optional: a store that also has `Renew` (the `Renewer` interface) can renew attempts, and on one without it `Attempt.Renew` returns an error matching `ErrRenewUnsupported`. A store that wraps another has to forward `Renew` itself, since embedding the `Store` interface hides it. A store written to the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) works with everything else: each operation is atomic for its identity, an expired record counts as absent, a takeover needs a matching fingerprint, `Complete` and `Release` check the token, and a failure is an error, never an answer. A store without a clock of its own may use the servers', with the lease covering the worst drift between them too. Its layout is its own, so a TypeScript server shares it only if it implements the same one.
 
 The module's [`example_test.go`](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/go/example_test.go) has an in-memory store written to the contract, which the tests run through every scenario of the test vectors, and which the package docs show as the `Store` example.
 

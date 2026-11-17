@@ -21,13 +21,13 @@ func TestScriptsAreTheVectors(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for name, script := range map[string]string{"claim": claimScript, "complete": completeScript, "release": releaseScript} {
+	for name, script := range map[string]string{"claim": claimScript, "complete": completeScript, "release": releaseScript, "renew": renewScript} {
 		if vectors.ValkeyScripts[name] != script {
 			t.Errorf("the %s script isn't the vectors'", name)
 		}
 	}
 
-	if len(vectors.ValkeyScripts) != 3 {
+	if len(vectors.ValkeyScripts) != 4 {
 		t.Errorf("the vectors have %d scripts", len(vectors.ValkeyScripts))
 	}
 }

@@ -23,9 +23,10 @@ type memoryRecord struct {
 	Status       int         `json:"status"`
 }
 
-// memoryStore is a store written to the spec's store contract, as an example of one: it keeps records in one process,
-// so it serves a single server, and loses them when it exits. One mutex makes each operation atomic, each record is
-// kept as JSON so nothing is shared by reference, and it uses the server's clock, as it has none of its own.
+// memoryStore is a store written to the spec's store contract, as an example of one, renewal included: it keeps
+// records in one process, so it serves a single server, and loses them when it exits. One mutex makes each operation
+// atomic, each record is kept as JSON so nothing is shared by reference, and it uses the server's clock, as it has
+// none of its own.
 type memoryStore struct {
 	records map[string][]byte
 	mutex   sync.Mutex
@@ -92,6 +93,21 @@ func (s *memoryStore) Release(_ context.Context, identity, token string) (bool, 
 	}
 
 	delete(s.records, identity)
+
+	return true, nil
+}
+
+func (s *memoryStore) Renew(_ context.Context, identity, token string, lease, ttl time.Duration) (bool, error) {
+	s.lock()
+	defer s.mutex.Unlock()
+
+	record, now, err := s.read(identity)
+	if err != nil || record == nil || record.Token != token {
+		return false, err
+	}
+
+	record.LeaseExpires, record.Expires = now.Add(lease), now.Add(ttl)
+	s.save(identity, *record)
 
 	return true, nil
 }

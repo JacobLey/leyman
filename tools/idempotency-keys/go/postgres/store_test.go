@@ -113,7 +113,7 @@ func expectClaim(t *testing.T, store *postgres.Store, params idempotencykeys.Cla
 	}
 }
 
-// expectChanged checks the result of a complete or release.
+// expectChanged checks the result of a complete, release or renew.
 func expectChanged(t *testing.T, what string, want bool) func(changed bool, err error) {
 	t.Helper()
 
@@ -234,6 +234,24 @@ func TestStoreTakesOverALeaseThatRanOutOnlyWithTheSameFingerprint(t *testing.T) 
 	}
 }
 
+func TestStoreRenewsOnlyWithTheToken(t *testing.T) {
+	t.Parallel()
+
+	store := newTestStore(t)
+	claim(t, store, claimParams(fingerprint, "t1", 50*time.Millisecond))
+
+	expectChanged(t, "renewed with another token", false)(store.Renew(t.Context(), identity, "t2", time.Minute, time.Hour))
+	time.Sleep(100 * time.Millisecond)
+	expectChanged(t, "renewed once the lease ran out", true)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
+
+	running := idempotencykeys.ClaimResult{Response: nil, State: idempotencykeys.ClaimRunning, Fingerprint: fingerprint}
+	expectClaim(t, store, claimParams(fingerprint, "t3", time.Minute), running)
+
+	response := idempotencykeys.StoredResponse{Headers: nil, Body: nil, Status: 200}
+	expectChanged(t, "completed", true)(store.Complete(t.Context(), identity, "t1", response))
+	expectChanged(t, "renewed a completed record", false)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
+}
+
 func TestStoreForgetsAnExpiredKeyAndDeletesIt(t *testing.T) {
 	t.Parallel()
 
@@ -250,6 +268,8 @@ func TestStoreForgetsAnExpiredKeyAndDeletesIt(t *testing.T) {
 	if released, err := store.Release(t.Context(), identity, "t1"); err != nil || released {
 		t.Fatalf("released an expired key: %v, %v", released, err)
 	}
+
+	expectChanged(t, "renewed an expired key", false)(store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour))
 
 	if deleted, err := store.DeleteExpired(t.Context()); err != nil || deleted != 1 {
 		t.Fatalf("got %d, %v", deleted, err)
@@ -328,6 +348,7 @@ func TestStoreFailsWhenPostgresDoes(t *testing.T) {
 	_, claimErr := store.Claim(t.Context(), claimParams(fingerprint, "t1", time.Minute))
 	_, completeErr := store.Complete(t.Context(), identity, "t1", response)
 	_, releaseErr := store.Release(t.Context(), identity, "t1")
+	_, renewErr := store.Renew(t.Context(), identity, "t1", time.Minute, time.Hour)
 	_, deleteErr := store.DeleteExpired(t.Context())
 
 	// A claim that returns no row, then a read that fails
@@ -337,7 +358,7 @@ func TestStoreFailsWhenPostgresDoes(t *testing.T) {
 		t.Context(), claimParams(fingerprint, "t2", time.Minute),
 	)
 
-	for _, err := range []error{claimErr, completeErr, releaseErr, deleteErr, readErr} {
+	for _, err := range []error{claimErr, completeErr, releaseErr, renewErr, deleteErr, readErr} {
 		if !errors.Is(err, errDown) {
 			t.Errorf("got %v", err)
 		}
@@ -356,8 +377,9 @@ func TestStoreRejectsAnIdentityOrFingerprintThatIsntHex(t *testing.T) {
 	_, fingerprintErr := store.Claim(t.Context(), claimParams("zz", "t1", time.Minute))
 	_, completeErr := store.Complete(t.Context(), "zz", "t1", response)
 	_, releaseErr := store.Release(t.Context(), "zz", "t1")
+	_, renewErr := store.Renew(t.Context(), "zz", "t1", time.Minute, time.Hour)
 
-	for _, err := range []error{identityErr, fingerprintErr, completeErr, releaseErr} {
+	for _, err := range []error{identityErr, fingerprintErr, completeErr, releaseErr, renewErr} {
 		if err == nil || !strings.Contains(err.Error(), `"zz"`) {
 			t.Errorf("got %v", err)
 		}

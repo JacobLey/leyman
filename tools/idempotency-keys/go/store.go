@@ -49,8 +49,8 @@ type ClaimResult struct {
 	Fingerprint string
 }
 
-// Store is where records live, as the spec's three operations. The postgres and valkey packages hold the spec's
-// stores, and a server may bring its own: implement Store to the spec's store contract
+// Store is where records live, as three of the spec's four operations: the fourth, renew, is the optional [Renewer].
+// The postgres, valkey and dynamodb packages hold the spec's stores, and a server may bring its own: implement Store to the spec's store contract
 // (https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract).
 //
 // In short: each operation is atomic for its identity, reads see every completed write, a record past its TTL counts
@@ -67,6 +67,15 @@ type Store interface {
 	Complete(ctx context.Context, identity, token string, response StoredResponse) (bool, error)
 	// Release deletes the record if it still holds the token, and says whether it did.
 	Release(ctx context.Context, identity, token string) (bool, error)
+}
+
+// Renewer is a [Store] that can renew a lease, the spec's optional fourth operation, which [Attempt.Renew] needs. It is
+// apart from Store so a store written to three operations still fits; the built-in stores implement it. Like Complete
+// and Release, it only changes a record that holds its token and hasn't expired, and a failure is an error.
+type Renewer interface {
+	// Renew sets the record's lease to run out lease from now, and its key to expire ttl from now (both whole numbers
+	// of milliseconds), if the record still holds the token, and says whether it did.
+	Renew(ctx context.Context, identity, token string, lease, ttl time.Duration) (bool, error)
 }
 
 // Notifier tells other servers that an identity's record changed, so their waiting requests claim again sooner. Only
