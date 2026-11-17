@@ -4,7 +4,7 @@ description: A small notes API built properly from the spec down to the database
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:98765213fe8a0b639d2a9ffeba92491c Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:ac9d44fc005ec902a9675247fd21483e Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
 
 # OpenAPI
 
@@ -502,7 +502,11 @@ One method per operation, taking genever-go's `<Id>Input` and returning the oper
 
 ### Interchangeable by construction
 
-Nothing on the Go side lists the API by hand. Routes, the scopes each operation needs, which operations take an `Idempotency-Key` (and whether they must), every parameter and schema, and the statuses each operation documents are all read from the embedded `openapi.json`, as the TypeScript server and client read them. The types are generated from it, and CI fails if they're stale. So a change to the spec reaches all four packages together, and the Go and TypeScript sides can only disagree where their validators read a schema differently, or where a handler does something the document doesn't describe.
+Neither side lists the API itself by hand. Routes, the scopes each operation needs, which operations take an `Idempotency-Key` (and whether they must), every parameter and schema, and the statuses each operation documents are all read from the embedded `openapi.json`, as the TypeScript server and client read them. Operations are read in the document's order, as JavaScript keeps an object's keys, so a `405`'s `Allow` header and the metadata's `scopes_supported` list them as the TypeScript server does. The types are generated from the document, and CI fails if they're stale.
+
+What a server answers on its own, around the handler, comes from RFCs and drafts rather than from the document, so it's fixed in code on both sides: `401` and `403` from bearer authentication ([RFC 6750](https://www.rfc-editor.org/rfc/rfc6750#section-3.1)), `400` for a request that doesn't match the document, `413` for a body over the limit, `409` and `422` from the [Idempotency-Key draft](https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/), `404` and `405` for a path or method the document doesn't have, and `500` when something fails. The spec package's tests check the document documents each one an operation can get: `400`, `401` and `403` on every operation, `413` on every one with a body, and `409` and `422` on every one that takes an `Idempotency-Key`. A `404` or `405` for a path or method belongs to no operation (`getNote`'s `404` is its handler's), and a `500` is never documented, so a client gets it as an `*UnexpectedStatusError`.
+
+So a change to the spec reaches all four packages together, and the Go and TypeScript sides can only disagree where their validators read a schema differently, where their fixed answers differ, or where a handler does something the document doesn't describe.
 
 The tests check that anyway, because those are exactly the places a contract doesn't cover:
 
@@ -532,4 +536,4 @@ nx run @leyman/demo-openapi-go:verify
 - Everything the TypeScript server doesn't cover either (see [its README](/demos/openapi/#not-covered)).
 - Parameter schemas that are `$ref`s: validation follows them, but coercion reads `type` and `default` from the parameter's own schema, and every parameter in this spec has them inline.
 - jwx also refuses a token whose `iat` is in the future, which jose doesn't check.
-- Go's `ServeMux` redirects a path that isn't clean (`/notes/../notes`) with a `301`, where Hono answers it as the path it is.
+- Go's `ServeMux` answers a path that isn't clean (`/notes/../notes`, `//notes`) with a `307` to the cleaned path (with a short HTML body for a `GET`), before authentication. The TypeScript server resolves dot segments as the URL spec does, so `/notes/../notes` is `/notes`, and answers `//notes` with a `404`.

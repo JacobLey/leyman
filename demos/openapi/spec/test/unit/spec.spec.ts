@@ -13,6 +13,7 @@ interface Operation {
     readonly operationId?: string;
     readonly parameters?: readonly { readonly name: string; readonly in: string }[];
     readonly security?: readonly Record<string, readonly string[]>[];
+    readonly requestBody?: unknown;
     readonly responses: Record<string, unknown>;
 }
 
@@ -62,6 +63,17 @@ suite('spec', () => {
     test('Answers a request that does not match with 400', () => {
         for (const { operation } of operations()) {
             expect(operation.responses).to.have.property('400');
+        }
+    });
+
+    test('Documents 413 on every operation with a body, which the servers limit', () => {
+        const withBody = operations().filter(
+            ({ operation }) => operation.requestBody !== undefined
+        );
+
+        expect(withBody).to.have.length.greaterThan(0);
+        for (const { operation } of withBody) {
+            expect(operation.responses).to.have.property('413');
         }
     });
 
