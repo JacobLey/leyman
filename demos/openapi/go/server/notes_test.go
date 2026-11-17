@@ -425,8 +425,8 @@ func TestHandlerErrors(t *testing.T) {
 	for query, want := range map[string]string{
 		"fail":  "handler failed",
 		"panic": "handler panicked: handler failed",
-		"none":  "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets no response",
-		"both":  "listNotes answered 0, which the spec does not allow: openapi: invalid result: notes.ListNotesResult sets more than one response",
+		"none":  "listNotes answered 0, which the spec does not allow: the result sets no response, or more than one",
+		"both":  "listNotes answered 0, which the spec does not allow: the result sets no response, or more than one",
 		"null":  "listNotes answered 200, which the spec does not allow: body/items got null, want array",
 	} {
 		expectProblem(t, api.request(t, http.MethodGet, "/notes?q="+query, aliceToken, ""), http.StatusInternalServerError, "internal_error")

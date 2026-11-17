@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"testing"
 
 	idempotencykeys "github.com/JacobLey/leyman/tools/idempotency-keys/go"
@@ -154,6 +155,13 @@ func TestCompileRoutesErrors(t *testing.T) {
 	}
 }
 
+// teapot answers 418, whatever the operation.
+type teapot struct{}
+
+func (teapot) Response() (int, any, bool) {
+	return http.StatusTeapot, notes.ApiError{Code: "teapot", Message: "I'm a teapot"}, true
+}
+
 func TestUndocumentedStatus(t *testing.T) {
 	t.Parallel()
 
@@ -162,9 +170,8 @@ func TestUndocumentedStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := struct {
-		Teapot *notes.ApiError `status:"418"`
-	}{Teapot: &notes.ApiError{Code: "teapot", Message: "I'm a teapot"}}
+	// A result type answering a status the document doesn't give the operation, which genever-go never generates
+	result := teapot{}
 
 	var responseError *ResponseError
 

@@ -28,7 +28,7 @@ The spec package's `openapi.json` is the contract for both languages. Rather tha
 
 The types come from the same document. The `notes` package is written by [genever-go](../../../apps/genever/go) (`--parameter-defaults --signed`), from a `//go:generate go tool genever` directive that the `genever-go` target runs in `prepare`. The file is committed and signed, so an edit to it fails, and CI fails if it's stale. Each operation gets an `<Id>Input` (what a call sends), an `<Id>Request` (what a handler gets, with `limit` filled in) and an `<Id>Response<Status>` per response.
 
-genever-go only writes response bodies, not which status goes with which, so each operation's result (`ListNotesResult` and so on) is a struct written by hand in `notes/results.go`: one pointer per documented response, tagged with its status, of which exactly one is set. A handler sets one to answer with it, and the client sets the one the server answered with. A test checks that each struct has a field for every status the document gives the operation, and nothing else, so the hand-written part can't drift from the document either.
+Each operation's result (`ListNotesResult` and so on) is generated too: one pointer per documented response, of which exactly one is set. A handler sets one to answer with it, and the client gets the one the server answered with. Its `Response()` gives the server the status and body to check against the document, and `UnmarshalResponse` decodes a response into the field for its status, so neither side needs reflection, and neither has a hand-written list of statuses that could drift from the document.
 
 ## The server
 

@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/JacobLey/leyman/demos/openapi/go/internal/openapi"
-	"github.com/JacobLey/leyman/demos/openapi/go/notes"
 )
 
 func TestOperations(t *testing.T) {
@@ -41,81 +39,6 @@ func TestOperations(t *testing.T) {
 	createNote, _ := openapi.ByID("createNote")
 	if createNote.BodyPointer != "/paths/~1notes/post/requestBody/content/application~1json/schema" {
 		t.Fatalf("body %q", createNote.BodyPointer)
-	}
-}
-
-// TestResults checks each hand-written result struct against the document: a field for every documented status,
-// and nothing else.
-func TestResults(t *testing.T) {
-	t.Parallel()
-
-	for operationID, result := range map[string]any{
-		"listNotes":  notes.ListNotesResult{},
-		"createNote": notes.CreateNoteResult{},
-		"getNote":    notes.GetNoteResult{},
-	} {
-		operation, _ := openapi.ByID(operationID)
-
-		statuses, err := openapi.ResultStatuses(reflect.TypeOf(result))
-		if err != nil || fmt.Sprint(statuses) != fmt.Sprint(operation.Statuses()) {
-			t.Errorf("%s: %v %v, want %v", operationID, statuses, err, operation.Statuses())
-		}
-	}
-
-	if len(openapi.Operations) != 3 {
-		t.Fatal("an operation without a result")
-	}
-}
-
-func TestResultResponse(t *testing.T) {
-	t.Parallel()
-
-	note := &notes.Note{ID: "id", Title: "t", Body: "b", CreatedAt: "c"}
-
-	status, body, err := openapi.ResultResponse(notes.GetNoteResult{OK: note})
-	if err != nil || status != 200 || body != note {
-		t.Fatalf("%d %v %v", status, body, err)
-	}
-
-	for name, result := range map[string]any{
-		"none":       notes.GetNoteResult{},
-		"two":        notes.GetNoteResult{OK: note, NotFound: &notes.ApiError{Code: "", Message: ""}},
-		"not struct": 5,
-		"untagged":   struct{ OK *notes.Note }{OK: nil},
-		"no pointer": struct {
-			OK notes.Note `status:"200"`
-		}{OK: notes.Note{ID: "", Title: "", Body: "", CreatedAt: ""}},
-	} {
-		if _, _, err := openapi.ResultResponse(result); !errors.Is(err, openapi.ErrResult) {
-			t.Errorf("%s: %v", name, err)
-		}
-	}
-
-	if _, err := openapi.ResultStatuses(reflect.TypeFor[int]()); !errors.Is(err, openapi.ErrResult) {
-		t.Errorf("statuses of int: %v", err)
-	}
-}
-
-func TestSetResult(t *testing.T) {
-	t.Parallel()
-
-	var result notes.GetNoteResult
-
-	ok, err := openapi.SetResult(&result, 404, []byte(`{"code":"not_found","message":"No"}`))
-	if !ok || err != nil || result.NotFound.Code != "not_found" || result.OK != nil {
-		t.Fatalf("%v %v %+v", ok, err, result)
-	}
-
-	if ok, err := openapi.SetResult(&result, 500, []byte(`{}`)); ok || err != nil {
-		t.Fatalf("500: %v %v", ok, err)
-	}
-
-	if _, err := openapi.SetResult(&result, 200, []byte(`[]`)); err == nil {
-		t.Fatal("decoded an array as a note")
-	}
-
-	if _, err := openapi.SetResult(new(int), 200, nil); !errors.Is(err, openapi.ErrResult) {
-		t.Fatalf("int: %v", err)
 	}
 }
 

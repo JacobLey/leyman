@@ -168,10 +168,16 @@ func (c *Client) request(ctx context.Context, operation openapi.Operation, opera
 	return request, nil
 }
 
+// result is a genever-go <Id>Result, which decodes a response into its field for the status.
+type result[Result any] interface {
+	*Result
+	UnmarshalResponse(status int, data []byte) (bool, error)
+}
+
 // call calls an operation, and decodes its response into the result's field for its status.
 //
 //nolint:ireturn // The result type each method names
-func call[Result any](
+func call[Result any, Target result[Result]](
 	ctx context.Context,
 	notesClient *Client,
 	operationID string,
@@ -201,9 +207,9 @@ func call[Result any](
 		return result, &UnexpectedStatusError{OperationID: operationID, Status: response.StatusCode}
 	}
 
-	// Each result has a field for every documented status, as the tests check
-	if _, err := openapi.SetResult(&result, response.StatusCode, data); err != nil {
-		return result, fmt.Errorf("%s: %w", operationID, err)
+	// genever-go generates a field for every status the document gives the operation
+	if _, err := Target(&result).UnmarshalResponse(response.StatusCode, data); err != nil {
+		return result, fmt.Errorf("%s: decoding the %d response: %w", operationID, response.StatusCode, err)
 	}
 
 	return result, nil

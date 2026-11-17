@@ -66,26 +66,33 @@ type apiError struct {
 	Message string `json:"message"`
 }
 
-type dispatcher func(ctx context.Context, handlers Handlers, caller Caller, input []byte) (any, error)
+// responder is a genever-go <Id>Result: the status and body of the one response it sets.
+type responder interface {
+	Response() (status int, body any, ok bool)
+}
+
+type dispatcher func(ctx context.Context, handlers Handlers, caller Caller, input []byte) (responder, error)
 
 // dispatch decodes an operation's input, which already matched the document, into its handler's request type.
-func dispatch[Request, Result any](call func(Handlers, context.Context, Caller, Request) (Result, error)) dispatcher {
-	return func(ctx context.Context, handlers Handlers, caller Caller, input []byte) (any, error) {
+func dispatch[Request any, Result responder](call func(Handlers, context.Context, Caller, Request) (Result, error)) dispatcher {
+	return func(ctx context.Context, handlers Handlers, caller Caller, input []byte) (responder, error) {
 		var request Request
 		if err := json.Unmarshal(input, &request); err != nil {
 			return nil, fmt.Errorf("decoding the request: %w", err)
 		}
 
-		return recovering(func() (any, error) { return call(handlers, ctx, caller, request) })
+		return recovering(func() (Result, error) { return call(handlers, ctx, caller, request) })
 	}
 }
 
 // recovering calls a handler. One that panics is a 500 reported to OnError, like one that returns an error, rather
 // than net/http's own recovery, which drops the connection without a response. http.ErrAbortHandler is net/http's way
 // to drop it on purpose, so it is passed on.
-func recovering(call func() (any, error)) (any, error) {
+//
+//nolint:ireturn // The handler's own result type
+func recovering[Result responder](call func() (Result, error)) (Result, error) {
 	var (
-		result any
+		result Result
 		err    error
 	)
 
@@ -621,12 +628,12 @@ func (s *server) serve(writer http.ResponseWriter, request *http.Request, compil
 
 // checkResponse is the status and JSON body of a handler's result, or a ResponseError when the document doesn't allow
 // them.
-func checkResponse(compiled *route, result any) (int, []byte, error) {
+func checkResponse(compiled *route, result responder) (int, []byte, error) {
 	operation := compiled.operation
 
-	status, body, err := openapi.ResultResponse(result)
-	if err != nil {
-		return 0, nil, &ResponseError{OperationID: operation.ID, Reason: err.Error(), Status: 0}
+	status, body, answered := result.Response()
+	if !answered {
+		return 0, nil, &ResponseError{OperationID: operation.ID, Reason: "the result sets no response, or more than one", Status: 0}
 	}
 
 	schema, ok := compiled.validators.responses[status]
