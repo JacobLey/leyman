@@ -152,9 +152,9 @@ export const defaultRetryDelayMs = (receiveCount: number): number =>
  *
  * While a job runs, a heartbeat extends its visibility, so a long job isn't delivered again, and renews its lease, so
  * a duplicate delivery can't take it over. A heartbeat that fails at either, or finds the lease lost, stops the job,
- * since another worker may have it. A job that rejects is
- * released, and comes back after `retryDelayMs`, until the queue moves it to its dead-letter queue. On a FIFO queue,
- * jobs of one group run in order, and other groups aren't held up.
+ * since another worker may have it. A job that rejects is released, and comes back after `retryDelayMs`, until the
+ * queue moves it to its dead-letter queue. On a FIFO queue, jobs of one group run in order, and other groups aren't
+ * held up: the heartbeat of a group's running job keeps the jobs after it hidden too, as they were received with it.
  *
  * @param options - Queue, store, handler and timings
  * @returns `poll()` to receive once, and `run()` to receive until stopped
@@ -197,18 +197,33 @@ export const createWorker = ({
         });
     };
 
+    /**
+     * Runs a job's handler, with a heartbeat that extends the visibility of its message and of `followers`, and renews
+     * its lease.
+     *
+     * @param message - What SQS delivered the job in, which the heartbeat keeps hidden
+     * @param followers - On a FIFO queue, the messages after it in its group that this receive took. They were
+     * received with it, so their visibility runs out with its own: if it weren't extended too, a long job would leave
+     * them out of flight by the time they run, and SQS refuses to change the visibility of a message that isn't in
+     * flight (`MessageNotInflight`, https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ChangeMessageVisibility.html)
+     * @param job - The job, as the handler gets it
+     * @param attempt - The job's claim on its id
+     */
     const runJob = async (
         message: Message,
+        followers: readonly Message[],
         job: ReceivedJob,
         attempt: IdempotencyAttempt
     ): Promise<void> => {
         const controller = new AbortController();
         const extend = async (): Promise<void> => {
-            try {
-                await setVisibility(message, visibilityTimeoutMs);
-            } catch (error) {
+            const extended = await Promise.allSettled(
+                [message, ...followers].map(async held => setVisibility(held, visibilityTimeoutMs))
+            );
+            const failed = extended.find(result => result.status === 'rejected');
+            if (failed) {
                 // Visible again, so another worker may receive it: the job stops rather than race it
-                controller.abort(error);
+                controller.abort(failed.reason);
             }
         };
         const renew = async (): Promise<void> => {
@@ -246,7 +261,14 @@ export const createWorker = ({
         }
     };
 
-    const process = async (message: Message): Promise<JobResult> => {
+    /**
+     * Handles one message.
+     *
+     * @param message - Message to handle
+     * @param followers - The messages after it in its group, which its heartbeat keeps hidden too
+     * @returns What became of it
+     */
+    const process = async (message: Message, followers: readonly Message[]): Promise<JobResult> => {
         const messageId = message.MessageId!;
         const receiveCount = Number(message.Attributes!.ApproximateReceiveCount);
         const retry = async (
@@ -279,7 +301,7 @@ export const createWorker = ({
         }
         if (result.outcome === 'run') {
             try {
-                await runJob(message, { ...job, receiveCount }, result.attempt);
+                await runJob(message, followers, { ...job, receiveCount }, result.attempt);
             } catch (error) {
                 await result.attempt.release();
                 return retry('failed', job.id, error);
@@ -303,7 +325,7 @@ export const createWorker = ({
      */
     const processGroup = async (messages: readonly Message[]): Promise<JobResult[]> => {
         const results: JobResult[] = [];
-        for (const message of messages) {
+        for (const [index, message] of messages.entries()) {
             const isBlocked = results.some(
                 ({ outcome }) => outcome !== 'done' && outcome !== 'duplicate'
             );
@@ -315,7 +337,7 @@ export const createWorker = ({
                     outcome: 'deferred',
                 });
             } else {
-                results.push(await process(message));
+                results.push(await process(message, messages.slice(index + 1)));
             }
         }
         return results;
