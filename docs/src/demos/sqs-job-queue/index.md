@@ -4,7 +4,7 @@ description: A job queue on SQS, with retries by visibility timeout, a heartbeat
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:77c92e699aae47608f4febcd7361e0e6 Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:d90b518abd39a65b1f3bbaa53c69bedd Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
 
 # SQS job queue
 
@@ -74,11 +74,12 @@ await worker.run(signal);
 - FIFO deduplication lasts 5 minutes, and only for one queue; the idempotency key lasts `ttlMs` (24 hours by default), which covers standard queues and late retries.
 - The heartbeat renews the idempotency lease as well as SQS visibility, so `leaseMs` only covers the time between heartbeats, plus a slow call and clock drift between workers, not the longest job. A worker that crashes stops renewing, so its job is taken over a lease later rather than a longest job later. `createWorker()` throws a `WorkerOptionError` for a `leaseMs` no longer than one heartbeat's interval, or a store without `renew`.
 - A renewal that finds the job's token gone means another delivery took the job over, after a heartbeat ran so late that the lease ran out, so the worker stops the job. One that fails stops it too: the lease may run out before the next heartbeat.
+- The worker waits for a job's heartbeat calls before it reports the job, so its SQS client needs a request timeout (the SDK has none by default): a call that never answers would otherwise hold up the job and its group.
 - A heartbeat that fails stops the job, since another worker may have it by then. But the worker doesn't count on a heartbeat noticing that it lost the message: the emulator accepts an expired receipt handle (below), and AWS only documents that the latest handle is the one to use. The lease is what keeps two runs apart.
 - On FIFO, a receive takes the rest of a group with its head, so the jobs after a failing head are received, and deferred, as often as it is. Their receive counts climb with its own, and they go to the dead-letter queue with it without having run, as SQS counts every receive towards `maxReceiveCount` ([dead-letter queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)). Once the cause is fixed, a redrive brings the group back in order.
 - For the same reason, the heartbeat of a group's running job extends the visibility of the jobs after it too. Otherwise a job that ran past the visibility timeout would leave them out of flight by the time they ran, and SQS refuses to change the visibility of a message that isn't in flight (`MessageNotInflight`, [ChangeMessageVisibility](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ChangeMessageVisibility.html)). The emulator accepts such a stale receipt handle (below), so the tests record the calls instead.
 - A heartbeat still running when the handler ends is waited for, so its extension can't land after the visibility the job's outcome sets, which would hide a failed job for the whole visibility timeout rather than its retry delay.
-- A job can run to its end and still find, as it records that it ran, that its lease ran out and another delivery took it over. Its message is deleted, as the job ran, but the outcome is `lost` rather than `done`, since that delivery may be running the job too, and on FIFO the rest of its group is deferred, as that delivery has the group.
+- A job can run to its end and still find, as it records that it ran, that its lease ran out and another delivery took it over. Its message is deleted (if this delivery still holds it), as the job ran, but the outcome is `lost` rather than `done`, since that delivery may be running the job too, and on FIFO the rest of its group is deferred, as that delivery has the group.
 - A job id reused with another body (`reused`) and a body that isn't a job (`invalid`) can never succeed, so they are left to reach the dead-letter queue rather than deleted, where someone can look at them.
 - The emulator can't fail a message on its side or fail a move task, and a lease can't be taken over without waiting it out, so those paths (a renewal or a response that finds the job taken over), and a renewal that fails, are tested through thin fakes, labelled as such.
 

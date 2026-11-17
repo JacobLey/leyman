@@ -32,6 +32,10 @@ export interface WorkerSqs {
 export type JobHandler = (job: ReceivedJob, signal: AbortSignal) => Promise<void>;
 
 export interface WorkerOptions {
+    /**
+     * The client, with a request timeout (the SDK has none by default): a job's result waits for its heartbeat's
+     * calls, so one that never answers would hold up the job, its group and `poll()`.
+     */
     readonly sqs: WorkerSqs;
     readonly queueUrl: string;
     /**
@@ -87,8 +91,8 @@ export interface WorkerOptions {
  * - `failed`: the handler rejected (with `error`), so it waits to come again
  * - `reused`: the job's id already ran with another body, so it waits, and ends up in the dead-letter queue
  * - `invalid`: the body isn't a job, so it waits, and ends up in the dead-letter queue
- * - `lost`: the job ran, and the message was deleted, but its lease had run out and another delivery took the job
- *   over, so the job may run twice. On a FIFO queue, the rest of its group is deferred, as that delivery has the group
+ * - `lost`: the job ran, and the message was deleted if this delivery still held it, but its lease had run out and
+ *   another delivery took the job over, so the job may run twice. On a FIFO queue, the rest of its group is deferred, as that delivery has the group
  * - `deferred`: on a FIFO queue, a job before it in its group didn't finish, so it's left for after that one
  */
 export type JobOutcome =
@@ -332,7 +336,12 @@ export const createWorker = ({
                 ({ outcome }) => outcome !== 'done' && outcome !== 'duplicate'
             );
             if (isBlocked) {
-                await setVisibility(message, 0);
+                try {
+                    await setVisibility(message, 0);
+                } catch {
+                    // Its receipt handle may be stale, as after a `lost` job, whose group another delivery has: it
+                    // shows again once its visibility runs out instead, still after the one before it
+                }
                 results.push({
                     messageId: message.MessageId!,
                     jobId: null,

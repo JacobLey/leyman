@@ -128,6 +128,39 @@ suite('FIFO queue', () => {
         expect(ran).to.deep.equal(['a-1', 'a-2']);
     });
 
+    withQueue.test('Defers the rest of a group even when SQS refuses to show it', async context => {
+        const { sqs, queue } = context;
+        const store = createStore(context);
+        const worker = createWorker({
+            ...options(context, queue.queueUrl, async () => {}),
+            // A fake: SQS refuses the deferral's visibility change, as it may for a stale receipt handle
+            sqs: {
+                receiveMessage: async (input, requestOptions) =>
+                    sqs.receiveMessage(input, requestOptions),
+                deleteMessage: async input => sqs.deleteMessage(input),
+                changeMessageVisibility: async input => {
+                    if (input.VisibilityTimeout === 0) {
+                        throw new Error('MessageNotInflight');
+                    }
+                    return sqs.changeMessageVisibility(input);
+                },
+            },
+            store: {
+                claim: async params => store.claim(params),
+                release: async (identity, token) => store.release(identity, token),
+                renew: async params => store.renew!(params),
+                // A fake: the record no longer holds the token, as after another delivery took the job over
+                complete: async () => false,
+            },
+        });
+        await sendJobs(sqs, queue, groupA);
+
+        expect(await pollJobs(worker)).to.deep.equal([
+            { jobId: 'a-1', outcome: 'lost' },
+            { jobId: null, outcome: 'deferred' },
+        ]);
+    });
+
     suite('Heartbeat', () => {
         // Only the heartbeat's interval is faked: the SDK's own timers and clock stay real
         const withClock = withQueue.beforeEach(() => ({
