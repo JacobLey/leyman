@@ -168,7 +168,7 @@ func isRunning(t *testing.T, pidFile string) bool {
 
 // options runs the binary given, with every other option's default.
 func options(binary string) awsemulator.Options {
-	return awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 0}
+	return awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 0, StopTimeout: 0}
 }
 
 func launch(t *testing.T, options awsemulator.Options) *awsemulator.Emulator {
@@ -249,14 +249,36 @@ func TestLaunchRunsOnAFreePortWithAuthenticationOnAndTelemetryOff(t *testing.T) 
 	}
 }
 
-func TestLaunchRoundsTheIdleTimeoutUp(t *testing.T) { //nolint:paralleltest // See fakes
+func TestLaunchPassesTheIdleTimeoutInSeconds(t *testing.T) { //nolint:paralleltest // See fakes
 	fake := newFakes(t)
 	binary, argsFile, _ := fake.serving("options", fake.writeFiles("options", nil))
 
-	launch(t, awsemulator.Options{Binary: binary, IdleTimeout: 1500 * time.Millisecond, StartTimeout: 0}).Stop()
+	idle := options(binary)
+	idle.IdleTimeout = 2 * time.Second
+	launch(t, idle).Stop()
 
 	if args := readText(t, argsFile); args != "-b 127.0.0.1 -p 0 -a on --idle-timeout 2 -t off\n" {
 		t.Errorf("got %q", args)
+	}
+}
+
+// Runs in parallel, since nothing is written or run.
+func TestLaunchRefusesAnIdleTimeoutThatIsNotWholeSeconds(t *testing.T) {
+	t.Parallel()
+
+	for _, idleTimeout := range []time.Duration{500 * time.Millisecond, 1500 * time.Millisecond, -time.Second} {
+		t.Run(idleTimeout.String(), func(t *testing.T) {
+			t.Parallel()
+
+			// Never run
+			idle := options(filepath.Join(t.TempDir(), "missing"))
+			idle.IdleTimeout = idleTimeout
+
+			_, err := awsemulator.Launch(t.Context(), idle)
+			if !errors.Is(err, awsemulator.ErrOption) || !strings.Contains(err.Error(), idleTimeout.String()) {
+				t.Errorf("got %v", err)
+			}
+		})
 	}
 }
 
@@ -268,6 +290,61 @@ func TestStopWaitsUntilItHasExited(t *testing.T) { //nolint:paralleltest // See 
 
 	if isRunning(t, pidFile) {
 		t.Error("still running")
+	}
+}
+
+func TestStopKillsItWhenItIgnoresSIGTERM(t *testing.T) { //nolint:paralleltest // See fakes
+	fake := newFakes(t)
+	line := fake.writeFiles("stubborn", nil)
+	pidFile := filepath.Join(fake.dir, "stubborn.pid")
+	// An ignored signal stays ignored across exec
+	binary := fake.write("stubborn", strings.Join([]string{
+		"trap '' TERM",
+		"echo $$ > " + shellQuote(pidFile),
+		"echo " + shellQuote(line),
+		"exec sleep 30",
+	}, "\n"))
+
+	stubborn := options(binary)
+	stubborn.StopTimeout = 200 * time.Millisecond
+	launch(t, stubborn).Stop()
+
+	if isRunning(t, pidFile) {
+		t.Error("still running")
+	}
+}
+
+func TestStopReturnsWhenAProcessItStartedHoldsItsOutput(t *testing.T) { //nolint:paralleltest // See fakes
+	fake := newFakes(t)
+	line := fake.writeFiles("orphans", nil)
+	pidFile := filepath.Join(fake.dir, "orphans.pid")
+	// The background sleep keeps the emulator's output open after the emulator exits
+	binary := fake.write("orphans", strings.Join([]string{
+		"sleep 30 &",
+		"echo $! > " + shellQuote(pidFile),
+		"echo " + shellQuote(line),
+		"trap 'exit 0' TERM",
+		"wait",
+	}, "\n"))
+
+	emulator := launch(t, options(binary))
+	t.Cleanup(func() {
+		pid, err := strconv.Atoi(strings.TrimSpace(readText(t, pidFile)))
+		if err == nil {
+			_ = syscall.Kill(pid, syscall.SIGKILL)
+		}
+	})
+
+	start := time.Now()
+
+	emulator.Stop()
+
+	if elapsed := time.Since(start); elapsed > 5*time.Second {
+		t.Errorf("took %s", elapsed)
+	}
+
+	if !isRunning(t, pidFile) {
+		t.Error("the process holding its output should still run")
 	}
 }
 
@@ -300,7 +377,9 @@ func TestLaunchFailsWhenItExitsBeforeTheStartupLine(t *testing.T) { //nolint:par
 func TestLaunchKillsItWhenTheStartupLineNeverComes(t *testing.T) { //nolint:paralleltest // See fakes
 	binary, _, pidFile := newFakes(t).serving("silent", `{"fields":{"message":"listening on 9297"}}`)
 
-	_, err := awsemulator.Launch(t.Context(), awsemulator.Options{Binary: binary, IdleTimeout: 0, StartTimeout: 200 * time.Millisecond})
+	_, err := awsemulator.Launch(t.Context(), awsemulator.Options{
+		Binary: binary, IdleTimeout: 0, StartTimeout: 200 * time.Millisecond, StopTimeout: 0,
+	})
 	if !errors.Is(err, awsemulator.ErrStartTimeout) || !strings.Contains(err.Error(), "1.0.290") ||
 		!strings.Contains(err.Error(), "listening on 9297") {
 		t.Errorf("got %v", err)

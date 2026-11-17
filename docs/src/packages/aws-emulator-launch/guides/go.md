@@ -28,6 +28,6 @@ client := dynamodb.New(dynamodb.Options{
 })
 ```
 
-`HTTPClient()` returns a client that trusts the emulator's certificate authority and no other. Cancelling the context passed to `Launch` stops the start, but not an emulator that already started, which runs until `Stop`. Errors match with `errors.Is`: `ErrNotRun`, `ErrExited`, `ErrStartTimeout` and `ErrFile`.
+`HTTPClient()` returns a client that trusts the emulator's certificate authority and no other. Cancelling the context passed to `Launch` stops the start, but not an emulator that already started, which runs until `Stop`. `Stop` kills an emulator still running after `StopTimeout` (10 seconds by default). Errors match with `errors.Is`: `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile` and `ErrOption`.
 
 The full API is in the [README](https://github.com/JacobLey/leyman/tree/main/tools/aws-emulator-launch/go), and versions are in its [changelog](https://github.com/JacobLey/leyman/blob/main/tools/aws-emulator-launch/go/CHANGELOG.md).

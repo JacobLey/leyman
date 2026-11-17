@@ -13,7 +13,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"os/exec"
@@ -31,7 +30,12 @@ const (
 	DefaultBinary       = "aws-emulator"
 	DefaultIdleTimeout  = 10 * time.Minute
 	DefaultStartTimeout = 10 * time.Second
+	DefaultStopTimeout  = 10 * time.Second
 )
+
+// waitDelay is how long the emulator's output is still read once it has exited, before its pipes are closed: a
+// process it started could otherwise hold them open, and keep Stop waiting, as long as that process runs.
+const waitDelay = time.Second
 
 // Errors, each matched with errors.Is. Their messages include the emulator's output where it has any.
 var (
@@ -46,19 +50,25 @@ var (
 	// ErrFile is a file the startup line named that couldn't be read, or lacks what it should hold (the region, the
 	// keys, a certificate), so the emulator was stopped.
 	ErrFile = errors.New("could not read a file of AWS Emulator")
+	// ErrOption is an option Launch can't pass to the emulator, such as an IdleTimeout that isn't whole seconds. The
+	// emulator isn't started.
+	ErrOption = errors.New("invalid option for AWS Emulator")
 )
 
 // Options are how to start the emulator. The zero value of each field is its default.
 type Options struct {
 	// Binary is the emulator's executable, a path or a name looked up on PATH: DefaultBinary by default.
 	Binary string
-	// IdleTimeout is how long the emulator runs without an API call before it exits on its own (--idle-timeout,
-	// rounded up to whole seconds), so one whose process died before calling Stop doesn't run forever:
-	// DefaultIdleTimeout by default.
+	// IdleTimeout is how long the emulator runs without an API call before it exits on its own (--idle-timeout), so
+	// one whose process died before calling Stop doesn't run forever: DefaultIdleTimeout by default. The emulator
+	// takes whole seconds, so any other value (or a negative one) is an ErrOption.
 	IdleTimeout time.Duration
 	// StartTimeout is how long to wait for the startup line, after which the emulator is killed:
 	// DefaultStartTimeout by default.
 	StartTimeout time.Duration
+	// StopTimeout is how long Stop waits for the emulator to exit after SIGTERM, after which it is killed:
+	// DefaultStopTimeout by default.
+	StopTimeout time.Duration
 }
 
 // Credentials are an emulator run's keys, which requests are signed with, since authentication is on.
@@ -80,10 +90,11 @@ type Emulator struct {
 	// the emulator stops.
 	CAFile string
 
-	cmd      *exec.Cmd
-	exited   <-chan struct{}
-	client   *http.Client
-	stopOnce sync.Once
+	cmd         *exec.Cmd
+	exited      <-chan struct{}
+	stopTimeout time.Duration
+	client      *http.Client
+	stopOnce    sync.Once
 }
 
 // HTTPClient is a client that trusts the emulator's certificate authority, and no other, to pass to an AWS SDK
@@ -92,15 +103,32 @@ func (e *Emulator) HTTPClient() *http.Client {
 	return e.client
 }
 
-// Stop stops the emulator (SIGTERM), which deletes its files, and returns once it has exited. Calling it again, or
-// after the emulator exited on its own, just waits for that exit.
+// Stop stops the emulator (SIGTERM), which deletes its files, and returns once it has exited. One that hasn't exited
+// within Options.StopTimeout is killed (SIGKILL), leaving its files behind. Calling it again, or after the emulator
+// exited on its own, just waits for that exit.
 func (e *Emulator) Stop() {
 	e.stopOnce.Do(func() {
-		// Fails only once it has exited
-		_ = e.cmd.Process.Signal(syscall.SIGTERM)
+		stop(e.cmd, e.exited, e.stopTimeout)
 	})
 	<-e.exited
 	e.client.CloseIdleConnections()
+}
+
+// stop sends SIGTERM, and SIGKILL if the process hasn't exited within the timeout, and returns once it has exited.
+func stop(cmd *exec.Cmd, exited <-chan struct{}, timeout time.Duration) {
+	// Each fails only once it has exited
+	_ = cmd.Process.Signal(syscall.SIGTERM)
+
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	select {
+	case <-exited:
+	case <-timer.C:
+		_ = cmd.Process.Kill()
+
+		<-exited
+	}
 }
 
 // startResult is the first of the emulator's startup line or its exit, sent in that order.
@@ -115,10 +143,12 @@ type startResult struct {
 func Launch(ctx context.Context, options Options) (*Emulator, error) {
 	binary := cmp.Or(options.Binary, DefaultBinary)
 	startTimeout := cmp.Or(options.StartTimeout, DefaultStartTimeout)
+	stopTimeout := cmp.Or(options.StopTimeout, DefaultStopTimeout)
 
-	// Its lifetime is Stop's, not ctx's, which only bounds the start
-	//nolint:gosec,noctx // The binary the caller chose, as a shell would run it
-	cmd := exec.Command(binary, arguments(options)...)
+	cmd, err := command(binary, options)
+	if err != nil {
+		return nil, err
+	}
 
 	// One send from the output's watcher, one from the exit
 	results := make(chan startResult, 2) //nolint:mnd // Counted above
@@ -134,7 +164,8 @@ func Launch(ctx context.Context, options Options) (*Emulator, error) {
 	exited := make(chan struct{})
 
 	go func() {
-		// Returns only once the output is written, so a startup line is always sent first
+		// Returns only once the output is written (or waitDelay has passed since the exit), so a startup line it
+		// printed is sent first
 		err := cmd.Wait()
 		results <- startResult{line: noStartupLine, exitErr: err, exited: true}
 
@@ -156,11 +187,9 @@ func Launch(ctx context.Context, options Options) (*Emulator, error) {
 			return nil, fmt.Errorf("%w: %w; its output:\n%s", ErrExited, result.exitErr, output.text())
 		}
 
-		emulator, err := newEmulator(result.line, cmd, exited)
+		emulator, err := newEmulator(result.line, cmd, exited, stopTimeout)
 		if err != nil {
-			_ = cmd.Process.Signal(syscall.SIGTERM)
-
-			<-exited
+			stop(cmd, exited, stopTimeout)
 
 			return nil, err
 		}
@@ -179,17 +208,37 @@ func Launch(ctx context.Context, options Options) (*Emulator, error) {
 	}
 }
 
-// arguments are the emulator's command line arguments: a free port of the address its certificate covers, whatever
-// EMULATOR_BIND_ADDRESS says; authentication on; an idle timeout, rounded up to whole seconds; and telemetry off,
-// which always wins over EMULATOR_TELEMETRY and the config file, while on can't override them (aws-emulator --help).
-func arguments(options Options) []string {
-	idleSeconds := int(math.Ceil(cmp.Or(options.IdleTimeout, DefaultIdleTimeout).Seconds()))
+// command is the emulator's command, its lifetime Stop's rather than a context's.
+func command(binary string, options Options) (*exec.Cmd, error) {
+	args, err := arguments(options)
+	if err != nil {
+		return nil, err
+	}
 
-	return []string{"-b", "127.0.0.1", "-p", "0", "-a", "on", "--idle-timeout", strconv.Itoa(idleSeconds), "-t", "off"}
+	//nolint:gosec,noctx // The binary the caller chose, as a shell would run it
+	cmd := exec.Command(binary, args...)
+	cmd.WaitDelay = waitDelay
+
+	return cmd, nil
+}
+
+// arguments are the emulator's command line arguments: a free port of the address its certificate covers, whatever
+// EMULATOR_BIND_ADDRESS says; authentication on; the idle timeout, in the whole seconds the emulator takes; and
+// telemetry off, which always wins over EMULATOR_TELEMETRY and the config file, while on can't override them
+// (aws-emulator --help).
+func arguments(options Options) ([]string, error) {
+	idleTimeout := cmp.Or(options.IdleTimeout, DefaultIdleTimeout)
+	if idleTimeout < 0 || idleTimeout%time.Second != 0 {
+		return nil, fmt.Errorf("%w: IdleTimeout %s isn't a whole number of seconds", ErrOption, idleTimeout)
+	}
+
+	idleSeconds := strconv.FormatInt(int64(idleTimeout/time.Second), 10)
+
+	return []string{"-b", "127.0.0.1", "-p", "0", "-a", "on", "--idle-timeout", idleSeconds, "-t", "off"}, nil
 }
 
 // newEmulator reads the files a startup line names: the certificate authority, the config, and the keys beside it.
-func newEmulator(line startupLine, cmd *exec.Cmd, exited <-chan struct{}) (*Emulator, error) {
+func newEmulator(line startupLine, cmd *exec.Cmd, exited <-chan struct{}, stopTimeout time.Duration) (*Emulator, error) {
 	caPEM, err := readFile(line.CAFile)
 	if err != nil {
 		return nil, err
@@ -225,6 +274,7 @@ func newEmulator(line startupLine, cmd *exec.Cmd, exited <-chan struct{}) (*Emul
 		CAFile:      line.CAFile,
 		cmd:         cmd,
 		exited:      exited,
+		stopTimeout: stopTimeout,
 		client: &http.Client{ //nolint:exhaustruct_v5 // Options left out are the defaults
 			Transport: &http.Transport{ //nolint:exhaustruct_v5 // Options left out are the defaults
 				TLSClientConfig: &tls.Config{ //nolint:exhaustruct_v5 // Options left out are the defaults
