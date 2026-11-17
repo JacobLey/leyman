@@ -303,7 +303,7 @@ DynamoDB's Time to Live, turned on for `ttl`, deletes expired items some time af
 every condition checks `expires_at` itself.
 
 Expressions name every attribute through `ExpressionAttributeNames`, `#` and the attribute's name (`#token` for
-`token`), since `token`, `status` and `ttl` are reserved words in DynamoDB. Values are `:now`, `:token`,
+`token`), since `identity`, `token`, `status` and `ttl` are reserved words in DynamoDB. Values are `:now`, `:token`,
 `:fingerprint`, and `:` and the attribute's name for a value written.
 
 A claim is one `PutItem` of a running record (`identity`, `fingerprint`, `token`, `lease_expires_at`, `expires_at`,
@@ -334,7 +334,8 @@ Releasing is a `DeleteItem`. Renewing is an `UpdateItem`, with `:lease_expires_a
 ```
 SET #lease_expires_at = :lease_expires_at, #expires_at = :expires_at, #ttl = :ttl
 ```
- An item holds at most 400 KB, so a response that doesn't fit is
+
+An item holds at most 400 KB, so a response that doesn't fit is
 refused with an error when completing, which leaves the attempt to its lease.
 
 ## Notifiers

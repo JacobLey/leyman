@@ -4,7 +4,7 @@ description: A transactional outbox on Postgres relayed to Amazon EventBridge, w
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:39d31986a132e7509ab36815906a1244 Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/outbox-relay/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:b139222f33cb4131b2b3c39ffbfbe69b Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/outbox-relay/README.md instead, and the description only here. -->
 
 # Outbox relay
 
@@ -105,7 +105,7 @@ Rows are marked rather than deleted, since parked rows need their columns anyway
 - `ThrottlingException` or `InternalFailure`, the only codes AWS calls [retryable](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsResultEntry.html): the row waits (1 second, doubling up to 5 minutes) and goes again, up to `maxAttempts` (10).
 - Anything else (`MalformedDetail`, `InvalidArgument`, `NotAuthorizedForSourceException`): the same entry fails the same way again, so the row is parked in `failed_at` with the code in `last_error`, for someone to fix and requeue (`UPDATE outbox SET failed_at = NULL …`).
 
-When the whole call fails (the network, a request EventBridge refuses as a whole, or a response without one result per entry), `relayOnce` rejects and records nothing, and the rows come back when their lease expires. EventBridge refuses a request over [1 MiB in total](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html) as a whole, and since a whole-request failure records nothing, a batch that can't fit would come back and fail on every lease. So `schema.sql` caps each row so that any 10 fit: the detail at 100 000 bytes, the source at 256 and the detail type at 128 characters (the most [EventBridge takes](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html)), since an entry's size counts them too. AWS's own limit of 256 KB for one entry would let four large entries fill a request.
+When the whole call fails (the network, a request EventBridge refuses as a whole, or a response without one result per entry), `relayOnce` rejects and records nothing, and the rows come back when their lease expires. EventBridge refuses a request over [1 MiB in total](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html) as a whole, and since a whole-request failure records nothing, a batch that can't fit would come back and fail on every lease. So `schema.sql` caps each row so that any 10 fit: the detail at 100 000 bytes, the source at 256 and the detail type at 128 characters (the most [EventBridge takes](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html)), since an entry's size counts them too. The caps are `CHECK` constraints, so adding them to an existing outbox fails while a row is over them: send or delete those rows first.
 
 ## At least once
 
