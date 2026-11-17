@@ -72,6 +72,11 @@ const idempotencyKeyHeader = 'idempotency-key';
 const documentId = 'openapi.json';
 
 /**
+ * A UUID's string form, in either case, as RFC 4122 reads it: https://www.rfc-editor.org/rfc/rfc4122#section-3.
+ */
+const uuidFormat = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/iv;
+
+/**
  * An Ajv that resolves `$ref`s into the spec's `components`.
  *
  * @param options - Whether to coerce strings (parameters arrive as strings), and fill in defaults
@@ -84,6 +89,10 @@ const createAjv = (options: { readonly coerce: boolean }): Ajv2020 => {
         useDefaults: options.coerce,
     });
     addFormats(ajv);
+    // JSON Schema's `uuid` is RFC 4122's string form, which has no `urn:uuid:` prefix
+    // (https://json-schema.org/draft/2020-12/json-schema-validation#section-7.3.5). ajv-formats accepts the prefix,
+    // which Postgres doesn't, so an id with it would pass validation and fail the query.
+    ajv.addFormat('uuid', uuidFormat);
     // The spec is added whole, so references between components resolve as they do in the document. `components`
     // isn't a JSON Schema keyword, so strict mode needs to be told it's not a mistake.
     ajv.addKeyword('components');

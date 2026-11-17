@@ -303,6 +303,22 @@ suite('Notes API', () => {
 
             expect(read.status).to.equal(400);
         });
+
+        withServer.test('Rejects a UUID URN, which is not a UUID string', async ({ client }) => {
+            const read = await client.call('getNote', {
+                path: { noteId: 'urn:uuid:00000000-0000-4000-8000-000000000000' },
+            });
+
+            expect(read.status).to.equal(400);
+        });
+
+        withServer.test('Accepts a UUID in upper case', async ({ client }) => {
+            const read = await client.call('getNote', {
+                path: { noteId: '00000000-0000-4000-8000-00000000000A' },
+            });
+
+            expect(read.status).to.equal(404);
+        });
     });
 
     suite('listNotes', () => {

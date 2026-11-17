@@ -374,6 +374,7 @@ The validators are compiled once, straight from `openapi.json`, with Ajv (JSON S
 - The whole document is added to Ajv, so `$ref`s between components resolve exactly as they do in the document. `components` isn't a JSON Schema keyword, so it's registered as one, which keeps Ajv's strict mode on for everything else.
 - Parameters and bodies use separate Ajv instances. Parameters arrive as strings, so their instance coerces types and fills in defaults. Bodies and responses are already JSON, so theirs doesn't coerce, and `"5"` isn't accepted as a number.
 - The parameters in each location (path or query) become one object schema with `additionalProperties: false`, so they're validated together.
+- `uuid` is the strict form JSON Schema gives it, RFC 4122's string form without a `urn:uuid:` prefix, which `ajv-formats` would accept. Postgres doesn't, so a `getNote` with a prefixed id gets a `400`, not a failed query.
 
 ### Authentication
 
