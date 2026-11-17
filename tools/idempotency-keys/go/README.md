@@ -233,7 +233,7 @@ The API follows the TypeScript package's, adapted to Go's conventions. The full 
 
 Durations are `time.Duration`s of whole milliseconds, as in the spec. An empty name (`Operation`, a table, a prefix or a channel) means none, or the default.
 
-Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, `ErrUnsendableResponse` is a response `Respond` can't store, `ErrRenewUnsupported` is a `Renew` on a store that isn't a `Renewer`, and `ErrStoredRecord` means the store holds a record that no implementation writes.
+Errors can be matched with `errors.Is`. `ErrOption` is an `*OptionError` with its `Option` and `Value`, `ErrKeyHeader` is a `*KeyHeaderError` with its `Values`, `ErrUnsendableResponse` is a response `Respond` can't store, `ErrRenewUnsupported` is a `Renew` on a store that isn't a `Renewer`, and `ErrStoredRecord` means the store holds a record that no implementation writes. The DynamoDB store passes on a client's `ConditionalCheckFailedException` that carries no item (a wrapper that drops `ReturnValuesOnConditionCheckFailure`) rather than calling it a stored record, since nothing says what holds the key.
 
 If a Postgres listening connection fails, or a Valkey subscription drops, the error is reported to `NotifierOptions.OnError`. Waiting requests then fall back to polling, so to get notifications back, listen again on a new connection.
 

@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -446,13 +447,16 @@ func failedCondition(item map[string]types.AttributeValue) error {
 	return &types.ConditionalCheckFailedException{Message: aws.String("failed"), Item: item} //nolint:exhaustruct_v5 // Unused
 }
 
-func TestStoreRejectsAFailedClaimWithoutTheItem(t *testing.T) {
+func TestStorePassesOnAFailedClaimWithoutTheItem(t *testing.T) {
 	t.Parallel()
 
 	store := dynamodbstore.NewStore(fakeClient{Client: nil, err: failedCondition(nil), tables: &[]string{}}, dynamodbstore.StoreOptions{Table: ""})
 
 	_, err := store.Claim(t.Context(), claimParams(newIdentity(), fingerprint, "t1", time.Minute))
-	if !errors.Is(err, idempotencykeys.ErrStoredRecord) {
+
+	var failed *types.ConditionalCheckFailedException
+	if !errors.As(err, &failed) || errors.Is(err, idempotencykeys.ErrStoredRecord) ||
+		!strings.Contains(err.Error(), "returned no item") {
 		t.Fatalf("got %v", err)
 	}
 }

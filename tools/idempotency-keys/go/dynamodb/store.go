@@ -50,7 +50,9 @@ const (
 	renewUpdate         = "SET #lease_expires_at = :lease_expires_at, #expires_at = :expires_at, #ttl = :ttl"
 )
 
-// Client is what the store needs from a DynamoDB client. A [*dynamodb.Client] fits as is.
+// Client is what the store needs from a DynamoDB client. A [*dynamodb.Client] fits as is. A failed claim must return
+// a [types.ConditionalCheckFailedException] carrying the item it found, as that client does when asked to with
+// ReturnValuesOnConditionCheckFailure: without the item, the claim passes on the client's error.
 type Client interface {
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (
 		*dynamodb.PutItemOutput, error,
@@ -194,6 +196,13 @@ func (s *Store) Claim(ctx context.Context, params idempotencykeys.ClaimParams) (
 	var failed *types.ConditionalCheckFailedException
 	if !errors.As(err, &failed) {
 		return idempotencykeys.ClaimResult{}, fmt.Errorf("idempotency-keys: DynamoDB claim: %w", err)
+	}
+
+	// A client that gives back no item (one that drops ReturnValuesOnConditionCheckFailure) can't say what holds the
+	// key, which is the client's failure, not a stored record's: its error is passed on
+	if failed.Item == nil {
+		return idempotencykeys.ClaimResult{}, fmt.Errorf(
+			"idempotency-keys: DynamoDB claim failed its condition but the client returned no item: %w", err)
 	}
 
 	return found(failed.Item)
