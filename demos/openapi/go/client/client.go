@@ -203,13 +203,14 @@ func call[Result any, Target result[Result]](
 		return result, fmt.Errorf("%s: reading the response: %w", operationID, err)
 	}
 
-	if _, documented := operation.Responses[response.StatusCode]; !documented {
-		return result, &UnexpectedStatusError{OperationID: operationID, Status: response.StatusCode}
+	// genever-go generates a field for every status the document gives the operation, and reports any other
+	documented, err := Target(&result).UnmarshalResponse(response.StatusCode, data)
+	if err != nil {
+		return result, fmt.Errorf("%s: decoding the %d response: %w", operationID, response.StatusCode, err)
 	}
 
-	// genever-go generates a field for every status the document gives the operation
-	if _, err := Target(&result).UnmarshalResponse(response.StatusCode, data); err != nil {
-		return result, fmt.Errorf("%s: decoding the %d response: %w", operationID, response.StatusCode, err)
+	if !documented {
+		return result, &UnexpectedStatusError{OperationID: operationID, Status: response.StatusCode}
 	}
 
 	return result, nil
