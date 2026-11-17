@@ -4,7 +4,7 @@ description: A small notes API built properly from the spec down to the database
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:447f0d9cc5534ed0fe119b5fbc5a3503 Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:692b42f4204fb0158f50c8df7d6e1ae7 Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
 
 # OpenAPI
 

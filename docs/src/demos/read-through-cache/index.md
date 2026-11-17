@@ -4,7 +4,7 @@ description: A read-through cache on Valkey built from BentoCache and lease-cach
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:ad4b8d8947571f1da5fe279aa155dc5a Generated from demos/read-through-cache/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/read-through-cache/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:2efa81241f73dca2e1732822c1801aba Generated from demos/read-through-cache/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/read-through-cache/README.md instead, and the description only here. -->
 
 # Read-through cache
 
