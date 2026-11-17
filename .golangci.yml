@@ -5,6 +5,12 @@ run:
   # Nx lints Go projects in parallel. Each only reads its own project, and the default lock makes one
   # fail with "parallel golangci-lint is running" once another has held it for more than a moment
   allow-parallel-runners: true
+  # fork-manifest:repo-only
+  # Files behind a tag are still linted: `interop` holds tests that call a server they don't start
+  # (demos/openapi/go/client/interop_test.go), which a plain `go test` leaves out
+  build-tags:
+    - interop
+  # fork-manifest:end
 
 linters:
   default: all
