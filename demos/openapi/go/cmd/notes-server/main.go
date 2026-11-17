@@ -96,6 +96,7 @@ type options struct {
 	staticTokens         listFlag
 	authorizationServers listFlag
 	idempotencyWait      time.Duration
+	jwtFetchTimeout      time.Duration
 }
 
 // parse reads the flags, each defaulting to its environment variable.
@@ -113,9 +114,18 @@ func parse(args []string, getenv func(string) string, stderr io.Writer) (options
 		return fallback
 	}
 
-	wait, err := time.ParseDuration(env("NOTES_IDEMPOTENCY_WAIT", "10s"))
-	if err != nil {
-		return options{}, fmt.Errorf("%w: NOTES_IDEMPOTENCY_WAIT: %w", errUsage, err)
+	durations := map[string]time.Duration{}
+
+	for name, fallback := range map[string]string{
+		"NOTES_IDEMPOTENCY_WAIT":  "10s",
+		"NOTES_JWT_FETCH_TIMEOUT": "5s",
+	} {
+		duration, err := time.ParseDuration(env(name, fallback))
+		if err != nil {
+			return options{}, fmt.Errorf("%w: %s: %w", errUsage, name, err)
+		}
+
+		durations[name] = duration
 	}
 
 	set.StringVar(&parsed.databaseURL, "database-url", getenv("DATABASE_URL"), "Postgres connection URL, with the database package's schema (env DATABASE_URL)")
@@ -123,7 +133,8 @@ func parse(args []string, getenv func(string) string, stderr io.Writer) (options
 	set.StringVar(&parsed.jwtIssuer, "jwt-issuer", getenv("NOTES_JWT_ISSUER"), "Accept JWT access tokens from this issuer (env NOTES_JWT_ISSUER)")
 	set.StringVar(&parsed.jwtAudience, "jwt-audience", getenv("NOTES_JWT_AUDIENCE"), "The API's audience, with --jwt-issuer (env NOTES_JWT_AUDIENCE)")
 	set.StringVar(&parsed.resource, "resource", getenv("NOTES_RESOURCE"), "The API's URL, to serve its Protected Resource Metadata (env NOTES_RESOURCE)")
-	set.DurationVar(&parsed.idempotencyWait, "idempotency-wait", wait, "How long a retry waits for a running request with its key (env NOTES_IDEMPOTENCY_WAIT)")
+	set.DurationVar(&parsed.idempotencyWait, "idempotency-wait", durations["NOTES_IDEMPOTENCY_WAIT"], "How long a retry waits for a running request with its key (env NOTES_IDEMPOTENCY_WAIT)")
+	set.DurationVar(&parsed.jwtFetchTimeout, "jwt-fetch-timeout", durations["NOTES_JWT_FETCH_TIMEOUT"], "How long finding and fetching the issuer's keys may take, after which requests that need them fail (env NOTES_JWT_FETCH_TIMEOUT)")
 
 	parsed.staticTokens.values = strings.Fields(getenv("NOTES_STATIC_TOKENS"))
 	set.Var(&parsed.staticTokens, "static-token", "Accept a token, as subject=token, repeatable (env NOTES_STATIC_TOKENS, space-separated)")
@@ -135,28 +146,42 @@ func parse(args []string, getenv func(string) string, stderr io.Writer) (options
 		return options{}, err //nolint:wrapcheck // flag's own errors, including ErrHelp
 	}
 
-	switch {
-	case set.NArg() > 0:
+	if set.NArg() > 0 {
 		return options{}, fmt.Errorf("%w: unexpected argument %q", errUsage, set.Arg(0))
-	case parsed.databaseURL == "":
-		return options{}, fmt.Errorf("%w: --database-url is required", errUsage)
-	case (len(parsed.staticTokens.values) > 0) == (parsed.jwtIssuer != ""):
-		return options{}, fmt.Errorf("%w: give either --static-token or --jwt-issuer", errUsage)
-	case parsed.jwtIssuer != "" && parsed.jwtAudience == "":
-		return options{}, fmt.Errorf("%w: --jwt-issuer needs --jwt-audience", errUsage)
+	}
+
+	if err := parsed.check(); err != nil {
+		return options{}, err
 	}
 
 	return parsed, nil
+}
+
+// check refuses options that can't work together.
+func (o options) check() error {
+	switch {
+	case o.databaseURL == "":
+		return fmt.Errorf("%w: --database-url is required", errUsage)
+	case (len(o.staticTokens.values) > 0) == (o.jwtIssuer != ""):
+		return fmt.Errorf("%w: give either --static-token or --jwt-issuer", errUsage)
+	case o.jwtIssuer != "" && o.jwtAudience == "":
+		return fmt.Errorf("%w: --jwt-issuer needs --jwt-audience", errUsage)
+	case o.jwtFetchTimeout <= 0:
+		return fmt.Errorf("%w: --jwt-fetch-timeout must be positive", errUsage)
+	}
+
+	return nil
 }
 
 // authenticator is the static tokens, or the JWT issuer's.
 func (o options) authenticator() (server.Authenticator, error) { //nolint:ireturn // One of two
 	if o.jwtIssuer != "" {
 		return server.NewJWTAuthenticator(server.JWTOptions{
-			HTTPClient: nil,
-			Now:        nil,
-			Issuer:     o.jwtIssuer,
-			Audience:   o.jwtAudience,
+			HTTPClient:   nil,
+			Now:          nil,
+			Issuer:       o.jwtIssuer,
+			Audience:     o.jwtAudience,
+			FetchTimeout: o.jwtFetchTimeout,
 		}), nil
 	}
 

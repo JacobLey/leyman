@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"sync"
@@ -203,6 +204,30 @@ func TestServesJWTs(t *testing.T) {
 	}
 }
 
+// An issuer that never answers: requests fail once the fetch times out, rather than waiting for it forever.
+func TestJWTFetchTimeout(t *testing.T) {
+	t.Parallel()
+
+	hung := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
+		<-request.Context().Done()
+	}))
+	t.Cleanup(hung.Close)
+
+	server := start(t, []string{"--listen", "127.0.0.1:0", "--jwt-issuer", hung.URL, "--jwt-audience", "https://notes.example"},
+		map[string]string{"DATABASE_URL": newDatabaseURL(t), "NOTES_JWT_FETCH_TIMEOUT": "1ms"})
+
+	if status, _ := get(t, server.url+"/notes", "token"); status != http.StatusInternalServerError {
+		t.Fatalf("%d", status)
+	}
+
+	server.stop()
+	<-server.code
+
+	if !strings.Contains(server.stderr.String(), context.DeadlineExceeded.Error()) {
+		t.Fatalf("stderr %q", server.stderr.String())
+	}
+}
+
 func TestExitCodes(t *testing.T) {
 	t.Parallel()
 
@@ -224,6 +249,8 @@ func TestExitCodes(t *testing.T) {
 		"bad token":       {env: nil, args: []string{"--database-url", databaseURL, "--static-token", "secret"}, code: exitUsage},
 		"bad wait":        {env: map[string]string{"NOTES_IDEMPOTENCY_WAIT": "soon"}, args: static, code: exitUsage},
 		"negative wait":   {env: nil, args: append(static, "--idempotency-wait", "-1s"), code: exitError},
+		"bad fetch time":  {env: map[string]string{"NOTES_JWT_FETCH_TIMEOUT": "soon"}, args: static, code: exitUsage},
+		"no fetch time":   {env: nil, args: append(static, "--jwt-fetch-timeout", "0s"), code: exitUsage},
 		"bad resource":    {env: nil, args: append(static, "--resource", "/notes"), code: exitError},
 		"bad database":    {env: nil, args: []string{"--database-url", "://", "--static-token", "a=b"}, code: exitError},
 		"bad listen":      {env: nil, args: append(static, "--listen", "nowhere"), code: exitError},

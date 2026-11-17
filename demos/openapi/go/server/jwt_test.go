@@ -25,6 +25,9 @@ import (
 
 const audience = "https://notes.example"
 
+// errGone is a request's cancellation cause.
+var errGone = errors.New("the client went away")
+
 // issuer is an authorization server's discovery document and keys, served for the tests, with keys to sign tokens.
 type issuer struct {
 	// discovery answers the discovery document, and jwks the key set, each settable per test.
@@ -168,7 +171,9 @@ func (i *issuer) sign(t *testing.T, key jwk.Key, typ string, extra claims) strin
 }
 
 func (i *issuer) authenticator(now func() time.Time) *server.JWTAuthenticator {
-	return server.NewJWTAuthenticator(server.JWTOptions{HTTPClient: nil, Now: now, Issuer: i.url, Audience: audience})
+	return server.NewJWTAuthenticator(server.JWTOptions{
+		HTTPClient: nil, Now: now, Issuer: i.url, Audience: audience, FetchTimeout: 0,
+	})
 }
 
 func TestJWTTokens(t *testing.T) {
@@ -309,6 +314,80 @@ func TestJWTFailedFetchCooldown(t *testing.T) {
 	}
 }
 
+// An issuer that never answers fails the fetch after FetchTimeout, rather than holding requests forever.
+func TestJWTFetchTimeout(t *testing.T) {
+	t.Parallel()
+
+	hung := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
+		<-request.Context().Done()
+	}))
+	t.Cleanup(hung.Close)
+
+	authenticator := server.NewJWTAuthenticator(server.JWTOptions{
+		HTTPClient: nil, Now: nil, Issuer: hung.URL, Audience: audience, FetchTimeout: time.Millisecond,
+	})
+
+	var issuerError *server.AuthorizationServerError
+	if _, err := authenticator.Authenticate(context.Background(), "abc", nil); !errors.As(err, &issuerError) ||
+		!errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("%v", err)
+	}
+}
+
+// One fetch runs at a time. A request waiting for it stops when its own context is done, and the fetch goes on for
+// the others.
+func TestJWTFetchIsShared(t *testing.T) {
+	t.Parallel()
+
+	served := newIssuer(t)
+	authenticator := served.authenticator(nil)
+	token := served.sign(t, served.keys[0], "at+jwt", nil)
+	arrived := make(chan struct{})
+	release := make(chan struct{})
+
+	served.mu.Lock()
+	served.jwks = func(w http.ResponseWriter) {
+		close(arrived)
+		<-release
+		writeJSONBody(w, served.public)
+	}
+	served.mu.Unlock()
+
+	ctx, cancel := context.WithCancelCause(context.Background())
+	waiting := make(chan error, 1)
+
+	go func() {
+		_, err := authenticator.Authenticate(ctx, token, nil)
+		waiting <- err
+	}()
+
+	<-arrived
+
+	cancel(errGone)
+
+	if err := <-waiting; !errors.Is(err, errGone) {
+		t.Fatalf("cancelled: %v", err)
+	}
+
+	// Joins the fetch in flight, or finds its keys once it's done
+	second := make(chan error, 1)
+
+	go func() {
+		_, err := authenticator.Authenticate(context.Background(), token, nil)
+		second <- err
+	}()
+
+	close(release)
+
+	if err := <-second; err != nil {
+		t.Fatalf("second: %v", err)
+	}
+
+	if fetches := served.fetches.Load(); fetches != 1 {
+		t.Fatalf("%d fetches", fetches)
+	}
+}
+
 // An issuer with one key and no kid, as some publish, rotating it: a token no key verifies fetches the keys again.
 func TestJWTKeyRotationWithoutKid(t *testing.T) {
 	t.Parallel()
@@ -419,7 +498,9 @@ func TestJWTIssuerFailures(t *testing.T) {
 
 	// Unreachable, or not even a URL
 	for _, url := range []string{"http://127.0.0.1:1", "http://\x7f"} {
-		authenticator := server.NewJWTAuthenticator(server.JWTOptions{HTTPClient: nil, Now: nil, Issuer: url, Audience: audience})
+		authenticator := server.NewJWTAuthenticator(server.JWTOptions{
+			HTTPClient: nil, Now: nil, Issuer: url, Audience: audience, FetchTimeout: 0,
+		})
 
 		var issuerError *server.AuthorizationServerError
 		if _, err := authenticator.Authenticate(ctx, "abc", nil); !errors.As(err, &issuerError) {

@@ -30,7 +30,14 @@ type JWTOptions struct {
 	// Audience is the API's own resource identifier: a token is accepted only when issued for it (aud), so a token
 	// for another service, even from the same issuer, is not.
 	Audience string
+	// FetchTimeout is how long discovering and fetching the keys may take together, after which the fetch fails (a
+	// 500), so an issuer that never answers can't hold requests forever. 5 seconds when zero, as jose's
+	// createRemoteJWKSet (its timeoutDuration).
+	FetchTimeout time.Duration
 }
+
+// defaultFetchTimeout is JWTOptions.FetchTimeout's default.
+const defaultFetchTimeout = 5 * time.Second
 
 // keysCooldown is how long a JWTAuthenticator waits before fetching the issuer's keys again for a token signed with a
 // key it doesn't know, as jose's createRemoteJWKSet does (its cooldownDuration), so tokens with made-up key ids can't
@@ -47,9 +54,19 @@ type JWTAuthenticator struct {
 	// fetchedAt is when the keys were last fetched, or tried to be
 	fetchedAt time.Time
 	keys      jwk.Set
-	options   JWTOptions
-	jwksURI   string
-	mu        sync.Mutex
+	// fetching is the fetch in flight, or nil
+	fetching *keysFetch
+	options  JWTOptions
+	jwksURI  string
+	mu       sync.Mutex
+}
+
+// keysFetch is one fetch of the issuer's keys, which every request that needs it waits for.
+type keysFetch struct {
+	// done is closed once keys and err are set
+	done chan struct{}
+	keys jwk.Set
+	err  error
 }
 
 // NewJWTAuthenticator accepts the issuer's tokens for the audience.
@@ -62,7 +79,11 @@ func NewJWTAuthenticator(options JWTOptions) *JWTAuthenticator {
 		options.Now = time.Now
 	}
 
-	return &JWTAuthenticator{fetchedAt: time.Time{}, keys: nil, options: options, jwksURI: "", mu: sync.Mutex{}}
+	if options.FetchTimeout == 0 {
+		options.FetchTimeout = defaultFetchTimeout
+	}
+
+	return &JWTAuthenticator{fetchedAt: time.Time{}, keys: nil, fetching: nil, options: options, jwksURI: "", mu: sync.Mutex{}}
 }
 
 // isAccessToken is whether a JWS's typ is at+jwt, as RFC 9068 requires
@@ -215,33 +236,73 @@ func (a *JWTAuthenticator) discover(ctx context.Context) (string, error) {
 
 // keySet is the issuer's keys, discovered and fetched on first use. With refresh, they are fetched again, unless a
 // fetch was tried in the last 30 seconds, whether or not it worked.
+//
+// One fetch runs at a time, and every request that needs the keys meanwhile waits for it, as jose shares one reload.
+// The fetch is the authenticator's, not the request's: a request that's cancelled stops waiting (with its context's
+// error), while the fetch goes on for the others, up to FetchTimeout.
 func (a *JWTAuthenticator) keySet(ctx context.Context, refresh bool) (jwk.Set, error) { //nolint:ireturn // jwx's
+	a.mu.Lock()
+
+	if a.keys != nil && (!refresh || a.options.Now().Sub(a.fetchedAt) < keysCooldown) {
+		keys := a.keys
+		a.mu.Unlock()
+
+		return keys, nil
+	}
+
+	fetch := a.fetching
+	if fetch == nil {
+		fetch = &keysFetch{done: make(chan struct{}), keys: nil, err: nil}
+		a.fetching = fetch
+
+		go a.fetch(context.WithoutCancel(ctx), fetch)
+	}
+
+	a.mu.Unlock()
+
+	select {
+	case <-fetch.done:
+		return fetch.keys, fetch.err
+	case <-ctx.Done():
+		return nil, fmt.Errorf("waiting for the issuer's keys: %w", context.Cause(ctx))
+	}
+}
+
+// fetch discovers the issuer's jwks_uri, unless it already has, then fetches its keys, within FetchTimeout.
+func (a *JWTAuthenticator) fetch(ctx context.Context, fetch *keysFetch) {
+	ctx, cancel := context.WithTimeout(ctx, a.options.FetchTimeout)
+	defer cancel()
+
+	a.mu.Lock()
+	jwksURI := a.jwksURI
+	a.mu.Unlock()
+
+	var err error
+	if jwksURI == "" {
+		jwksURI, err = a.discover(ctx)
+	}
+
+	var keys jwk.Set
+	if err == nil {
+		keys, err = jwk.Fetch(ctx, jwksURI, jwk.WithHTTPClient(a.options.HTTPClient))
+	}
+
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if a.keys != nil && (!refresh || a.options.Now().Sub(a.fetchedAt) < keysCooldown) {
-		return a.keys, nil
-	}
-
-	if a.jwksURI == "" {
-		jwksURI, err := a.discover(ctx)
-		if err != nil {
-			return nil, &AuthorizationServerError{Err: err, Issuer: a.options.Issuer}
-		}
-
-		a.jwksURI = jwksURI
-	}
-
-	keys, err := jwk.Fetch(ctx, a.jwksURI, jwk.WithHTTPClient(a.options.HTTPClient))
+	a.fetching = nil
+	// Discovered once, even when the keys then fail
+	a.jwksURI = jwksURI
 	// A failed fetch starts the cooldown too, so tokens with made-up kids can't make it fetch from an issuer that's
 	// down on every request either. Until then, the keys it has are used
 	a.fetchedAt = a.options.Now()
 
 	if err != nil {
-		return nil, &AuthorizationServerError{Err: err, Issuer: a.options.Issuer}
+		fetch.err = &AuthorizationServerError{Err: err, Issuer: a.options.Issuer}
+	} else {
+		a.keys = keys
+		fetch.keys = keys
 	}
 
-	a.keys = keys
-
-	return keys, nil
+	close(fetch.done)
 }
