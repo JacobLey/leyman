@@ -222,18 +222,27 @@ export const createWorker = ({
                 controller.abort(error);
             }
         };
+        // Heartbeats still running, awaited once the handler ends, so a late extension can't land after the visibility
+        // the job's outcome sets (a retry delay, or 0 for a deferred job)
+        const beating = new Set<Promise<unknown>>();
+        const beat = async (): Promise<void> => {
+            const beaten = Promise.all([extend(), renew()]);
+            beating.add(beaten);
+            await beaten;
+            beating.delete(beaten);
+        };
         // Cleared once the handler ends, which it should soon after its signal aborts
         const heartbeat = setInterval(() => {
             if (controller.signal.aborted) {
                 return;
             }
-            void extend();
-            void renew();
+            void beat();
         }, heartbeatMs);
         try {
             await handle(job, controller.signal);
         } finally {
             clearInterval(heartbeat);
+            await Promise.all(beating);
         }
     };
 

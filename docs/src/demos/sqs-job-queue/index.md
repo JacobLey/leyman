@@ -4,7 +4,7 @@ description: A job queue on SQS, with retries by visibility timeout, a heartbeat
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:c0ea06045d1848ed73c07c5f0a99ee43 Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:bf40a2b0f63a6b33cfc104bbb735ca61 Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
 
 # SQS job queue
 
@@ -75,6 +75,7 @@ await worker.run(signal);
 - The heartbeat renews the idempotency lease as well as SQS visibility, so `leaseMs` only covers the time between heartbeats, plus a slow call and clock drift between workers, not the longest job. A worker that crashes stops renewing, so its job is taken over a lease later rather than a longest job later. `createWorker()` throws a `WorkerOptionError` for a `leaseMs` no longer than one heartbeat's interval, or a store without `renew`.
 - A renewal that finds the job's token gone means another delivery took the job over, after a heartbeat ran so late that the lease ran out, so the worker stops the job. One that fails stops it too: the lease may run out before the next heartbeat.
 - A heartbeat that fails stops the job, since another worker may have it by then. But the worker doesn't count on a heartbeat noticing that it lost the message: the emulator accepts an expired receipt handle (below), and AWS only documents that the latest handle is the one to use. The lease is what keeps two runs apart.
+- A heartbeat still running when the handler ends is waited for, so its extension can't land after the visibility the job's outcome sets, which would hide a failed job for the whole visibility timeout rather than its retry delay.
 - On FIFO, a job that goes to the dead-letter queue lets the rest of its group through, so order is kept only among jobs that finish. A group that must stop on a failure needs that in its handler.
 - A job id reused with another body (`reused`) and a body that isn't a job (`invalid`) can never succeed, so they are left to reach the dead-letter queue rather than deleted, where someone can look at them.
 - The emulator can't fail a message on its side or fail a move task, and a lease can't be taken over without waiting it out, so those paths, and a renewal that fails, are tested through thin fakes, labelled as such.

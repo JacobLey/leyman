@@ -456,8 +456,8 @@ suite('Worker', () => {
             expect(result!.outcome).to.equal('failed');
             expect(result!.error).to.be.an.instanceOf(JobLeaseLostError);
             expect(result!.error).to.have.property('jobId', job.id);
-            // The heartbeat's extension, and the retry delay once the job stopped, which may finish first
-            expect(watched.changes).to.have.members([30, 0]);
+            // The heartbeat's extension ends before the retry delay is set, so it can't hide the job again
+            expect(watched.changes).to.deep.equal([30, 0]);
         });
 
         withInstantQueue.test("Stops a job whose lease can't be renewed", async context => {
