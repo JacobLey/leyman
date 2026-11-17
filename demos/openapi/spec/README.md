@@ -63,6 +63,8 @@ const spec = serializeSpec({
 
 The `populate-files` target writes the document to `out/openapi.json`, and the same document as YAML to `out/notes.openapi.yaml`. Both are committed, and CI fails if either is stale. The package exports only those files. The client and server read the JSON at runtime (`@leyman/demo-openapi-spec/openapi.json`), and import their types from the YAML (`@leyman/demo-openapi-spec/notes.openapi.yaml`) through [genever-content-mapper](../../../apps/genever-content-mapper), as any outside consumer would, rather than importing the TypeScript. The YAML's name ends in `.openapi.yaml` because TypeScript won't map a `.json` file, and a compound extension leaves other YAML files alone.
 
+The package is also a Go module (`github.com/JacobLey/leyman/demos/openapi/spec`), whose one file embeds `out/openapi.json` as `spec.OpenAPI`, so the [Go client and server](../go) read the same bytes rather than a copy. Go's embedding only reaches files inside the module's own directory, which is why the module lives here rather than beside the Go code.
+
 It also writes `out/notes.openapi.d.yaml.ts`, which holds genever's types for the YAML (with `OperationRequest`, which only the server uses) for tools that can't run content mappers. typescript-eslint, on TypeScript 6, reads it for the import through `allowArbitraryExtensions`, and `tsc` 7.1 runs the mapper and ignores it. The file goes away once typescript-eslint can run mappers.
 
 ## Checks

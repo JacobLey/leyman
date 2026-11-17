@@ -590,7 +590,7 @@ export const demos: readonly Demo[] = [
     {
         slug: 'openapi',
         title: 'OpenAPI',
-        pitch: 'A small notes API built properly from the spec down to the database, with an OpenAPI 3.1 document written with Juniper, genever types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a database per test.',
+        pitch: 'A small notes API built properly from the spec down to the database, with an OpenAPI 3.1 document written with Juniper, genever types for a typed client and a Hono server that validates every request and response, Drizzle on Postgres with a database per test, and a Go client and server from the same document, each tested against the other.',
         source: 'demos/openapi',
         files: [
             { label: 'The spec', path: 'demos/openapi/spec/src/spec.ts' },
@@ -601,6 +601,9 @@ export const demos: readonly Demo[] = [
             { label: 'schema.sql', path: 'demos/openapi/database/schema.sql' },
             { label: 'Server composition', path: 'demos/openapi/server/src/lib/module.ts' },
             { label: 'Typed client', path: 'demos/openapi/client/src/lib/client.ts' },
+            { label: 'Go types, from genever-go', path: 'demos/openapi/go/notes/notes.go' },
+            { label: 'Go server', path: 'demos/openapi/go/server/server.go' },
+            { label: 'Go client', path: 'demos/openapi/go/client/client.go' },
             {
                 label: 'Server integration tests',
                 path: 'demos/openapi/server/test/integration/notes.spec.ts',
@@ -613,6 +616,7 @@ export const demos: readonly Demo[] = [
             { title: 'The client', path: 'demos/openapi/client/README.md' },
             { title: 'The database', path: 'demos/openapi/database/README.md' },
             { title: 'The server', path: 'demos/openapi/server/README.md' },
+            { title: 'In Go', path: 'demos/openapi/go/README.md' },
         ],
         uses: [
             'juniper',

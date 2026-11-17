@@ -4,9 +4,12 @@ The notes API is deliberately small (you can add a note, read one, and list the 
 
 ```
 spec (juniper) ──► openapi.json, notes.openapi.yaml ──┬──► client: imported types + a typed fetch client
-                                                     └──► server: imported types + Hono, validating against openapi.json
-                                                            ▲ Drizzle tables, and schema.sql for pg-dolly per test
-database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
+                                                     ├──► server: imported types + Hono, validating against openapi.json
+                                                     │      ▲ Drizzle tables, and schema.sql for pg-dolly per test
+                                                     └──► go: embedded openapi.json + genever-go types
+                                                            ├─ client: a method per operation
+                                                            └─ server: net/http, validating against openapi.json
+database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres; both servers use it)
 ```
 
 These are worked examples, and none of them is published. Each is still a full package (lint, types, 100% coverage), and the server's tests run against a real Postgres.
@@ -17,6 +20,7 @@ These are worked examples, and none of them is published. Each is still a full p
 | [`client`](./client)     | A typed client, from `openapi.json`: how its types and routes come from the spec                              |
 | [`database`](./database) | The Drizzle schema, its migrations, and `schema.sql`: what the migrations build                               |
 | [`server`](./server)     | The service, Hono on Postgres: validation, retries, authentication, the database and its tests                |
+| [`go`](./go)             | The same client and server in Go, from the same document, and the tests that run each against the other        |
 
 ## Why each piece
 
@@ -28,6 +32,8 @@ Lint reads the same types from a declaration file. typescript-eslint runs on Typ
 
 The server also checks every request and response against the document at runtime, with Ajv validators compiled from `openapi.json`. Types only hold inside TypeScript, so the contract is checked again on the wire.
 
+Go reads the same document. The spec package is also a tiny Go module that embeds `openapi.json`, [genever-go](../../apps/genever/go) generates the Go types from it (committed, since Go has no content mappers, and checked for staleness in CI), and the Go server validates against it as the TypeScript one does. Neither language lists an operation, a parameter or a status by hand, so a TypeScript client can call the Go server, a Go client the TypeScript server, and both servers can share one database, including its idempotency keys. That follows from both using one document, and the tests check it anyway: the TypeScript server's suites run against both servers (see [Interchangeable by construction](./go/README.md#interchangeable-by-construction)).
+
 The database schema is whatever the migrations build. Drizzle generates SQL migrations, [`pg-dolly-schema`](../../apps/pg-dolly-schema) dumps what they build into `schema.sql`, and every test gets its own database cloned from it with [`pg-dolly`](../../tools/pg-dolly).
 
 ## What was learned
@@ -38,6 +44,7 @@ The database schema is whatever the migrations build. Drizzle generates SQL migr
 - drizzle-kit has no check-only mode to find schema changes that no migration covers. `scripts/nx/drizzle-kit-check.sh` generates into a copy of the migrations, through a temporary config that only changes `out`, and compares the two.
 - drizzle-kit exits 0 when it fails. Without a terminal it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass, so the check fails on any error output instead.
 - Hono ignores a middleware's return value once a later handler has set `c.res`. A middleware that wraps the rest of the route (idempotency-keys' `handle()`, which reads the response to keep it and returns a copy) has to assign its response to `c.res`, or Hono sends the original, whose body has already been read.
+- Running one test suite against both servers found a difference neither suite had alone. ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, so the TypeScript server sent one to Postgres and answered `500`. The Go validator follows JSON Schema, whose `uuid` is the plain RFC 4122 form, and the TypeScript server now does too.
 - Fastify was the other option. It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields) and don't validate. With Hono, both directions are explicit middleware against the document.
 
 ## Not covered

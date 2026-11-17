@@ -173,6 +173,8 @@ const app = createContainer(
 
 ## Testing
 
+The integration suites run twice: against this server, and against the [Go server](../go) (its `notes-server` binary, built once per run), with the same expectations, so the two can't drift apart. Tests that swap this server's internals run against it alone. Two more tests cross over: a retry sent to the other server on the same database is replayed, and the Go client's tagged interop test runs against each server. See [Interchangeable by construction](../go/README.md#interchangeable-by-construction).
+
 Every test gets its own database, cloned by [`pg-dolly`](../../../tools/pg-dolly) from the database package's `schema.sql` (the template is built once per run), and serves the app on a free port with `@hono/node-server`, exactly as in production. Requests go through the [typed client](../client), or plain `fetch` for requests the client can't send (bad JSON, the wrong content type). Responses that break the spec are tested by swapping in handlers that break it, one binding at a time.
 
 Idempotency keys are tested against the same Postgres. A retry replays the same note, and a key reused on another note gets a `422`. A duplicate of a running request waits and replays, with the handler held open until the store reports that the duplicate found the key held, so nothing depends on timing. With `waitMs: 0` the duplicate gets a `409` instead. Two callers' keys are kept apart, a request without a key adds a note every time, and an oversized body doesn't hold a key. If a key's response can't be stored (its table is dropped mid-request), the response is still sent and the failure is reported.
