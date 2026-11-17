@@ -97,6 +97,37 @@ suite('FIFO queue', () => {
         ]);
     });
 
+    withQueue.test('Defers the rest of a group after a job whose lease was lost', async context => {
+        const { sqs, queue } = context;
+        const ran: string[] = [];
+        const store = createStore(context);
+        let completions = 0;
+        const worker = createWorker({
+            ...options(context, queue.queueUrl, async ({ id }) => {
+                ran.push(id);
+            }),
+            store: {
+                claim: async params => store.claim(params),
+                release: async (identity, token) => store.release(identity, token),
+                renew: async params => store.renew!(params),
+                // A fake for the first job: the record no longer holds its token, as after another delivery took it
+                // over, which has its group now
+                complete: async (identity, token, response) => {
+                    completions++;
+                    return completions > 1 && store.complete(identity, token, response);
+                },
+            },
+        });
+        await sendJobs(sqs, queue, groupA);
+
+        expect(await pollJobs(worker)).to.deep.equal([
+            { jobId: 'a-1', outcome: 'lost' },
+            { jobId: null, outcome: 'deferred' },
+        ]);
+        expect(await pollJobs(worker)).to.deep.equal([{ jobId: 'a-2', outcome: 'done' }]);
+        expect(ran).to.deep.equal(['a-1', 'a-2']);
+    });
+
     suite('Heartbeat', () => {
         // Only the heartbeat's interval is faked: the SDK's own timers and clock stay real
         const withClock = withQueue.beforeEach(() => ({

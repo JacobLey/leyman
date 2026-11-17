@@ -282,6 +282,31 @@ suite('Worker', () => {
         expect(second.calls).to.deep.equal([]);
     });
 
+    withQueue.test(
+        'Deletes a job whose lease was taken over as it finished, as lost',
+        async context => {
+            const { sqs, queue } = context;
+            const { handle, calls } = recorder();
+            const store = createStore(context);
+            const watched = watchDeletes(sqs);
+            const worker = createWorker({
+                ...options(context, queue.queueUrl, handle),
+                sqs: watched.sqs,
+                store: {
+                    ...withRenew(store, async params => store.renew!(params)),
+                    // A fake: the record no longer holds the job's token, as after another delivery took it over
+                    complete: async () => false,
+                },
+            });
+            await sendJobs(sqs, queue, [job]);
+
+            expect(await pollJobs(worker)).to.deep.equal([{ jobId: 'job-1', outcome: 'lost' }]);
+            expect(calls).to.have.length(1);
+            // It ran, so it isn't left to run again
+            expect(watched.undeleted()).to.deep.equal([]);
+        }
+    );
+
     withQueue.test('Leaves a job whose id ran with another payload', async context => {
         const { sqs, queue } = context;
         const { handle, calls } = recorder();

@@ -87,6 +87,8 @@ export interface WorkerOptions {
  * - `failed`: the handler rejected (with `error`), so it waits to come again
  * - `reused`: the job's id already ran with another body, so it waits, and ends up in the dead-letter queue
  * - `invalid`: the body isn't a job, so it waits, and ends up in the dead-letter queue
+ * - `lost`: the job ran, and the message was deleted, but its lease had run out and another delivery took the job
+ *   over, so the job may run twice. On a FIFO queue, the rest of its group is deferred, as that delivery has the group
  * - `deferred`: on a FIFO queue, a job before it in its group didn't finish, so it's left for after that one
  */
 export type JobOutcome =
@@ -96,6 +98,7 @@ export type JobOutcome =
     | 'duplicate'
     | 'failed'
     | 'invalid'
+    | 'lost'
     | 'reused';
 
 export interface JobResult {
@@ -299,6 +302,7 @@ export const createWorker = ({
         if (result.outcome === 'mismatch') {
             return retry('reused', job.id);
         }
+        let outcome: JobOutcome = 'duplicate';
         if (result.outcome === 'run') {
             try {
                 await runJob(message, followers, { ...job, receiveCount }, result.attempt);
@@ -306,19 +310,17 @@ export const createWorker = ({
                 await result.attempt.release();
                 return retry('failed', job.id, error);
             }
-            await result.attempt.respond(ranResponse);
+            // The job ran either way, so its message is deleted, but another delivery that took the key over may be
+            // running it too
+            outcome = (await result.attempt.respond(ranResponse)) === 'lost' ? 'lost' : 'done';
         }
         await sqs.deleteMessage({ QueueUrl: queueUrl, ReceiptHandle: message.ReceiptHandle });
-        return {
-            messageId,
-            jobId: job.id,
-            outcome: result.outcome === 'run' ? 'done' : 'duplicate',
-        };
+        return { messageId, outcome, jobId: job.id };
     };
 
     /**
-     * Runs a group's messages in order. Once one doesn't finish, the rest are made visible at once, which on a FIFO
-     * queue delivers them only after the one that didn't (a group with a message in flight delivers nothing).
+     * Runs a group's messages in order. Once one doesn't finish, or is `lost`, the rest are made visible at once, which
+     * on a FIFO queue delivers them only after the one that didn't (a group with a message in flight delivers nothing).
      *
      * @param messages - One group's messages, in the order received
      * @returns What became of each
