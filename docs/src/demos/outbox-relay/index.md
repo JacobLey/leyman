@@ -4,7 +4,7 @@ description: A transactional outbox on Postgres relayed to Amazon EventBridge, w
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:880eba078ffb95f15501cf4275739231 Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/outbox-relay/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:c930b818a23243bc68237dfe38487892 Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/outbox-relay/README.md instead, and the description only here. -->
 
 # Outbox relay
 
@@ -105,7 +105,7 @@ Rows are marked rather than deleted, since parked rows need their columns anyway
 - `ThrottlingException` or `InternalFailure`, the only codes AWS calls [retryable](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsResultEntry.html): the row waits (1 second, doubling up to 5 minutes) and goes again, up to `maxAttempts` (10).
 - Anything else (`MalformedDetail`, `InvalidArgument`, `NotAuthorizedForSourceException`): the same entry fails the same way again, so the row is parked in `failed_at` with the code in `last_error`, for someone to fix and requeue (`UPDATE outbox SET failed_at = NULL …`).
 
-When the whole call fails (the network, or a request EventBridge refuses as a whole), `relayOnce` rejects and records nothing, and the rows come back when their lease expires. A request over 1 MiB in total is refused as a whole, so `schema.sql` caps one row's detail at 256 KiB, which keeps one large event from failing every batch it's in.
+When the whole call fails (the network, or a request EventBridge refuses as a whole), `relayOnce` rejects and records nothing, and the rows come back when their lease expires. EventBridge refuses a request over [1 MiB in total](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html) as a whole, and since a whole-request failure records nothing, a batch that can't fit would come back and fail on every lease. So `schema.sql` caps each row so that any 10 fit: the detail at 100 000 bytes, the source at 256 and the detail type at 128 characters (the most [EventBridge takes](https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html)), since an entry's size counts them too. AWS's own limit of 256 KB for one entry would let four large entries fill a request.
 
 ## At least once
 
@@ -135,6 +135,6 @@ The relay can't see either, so marks those rows sent. Catch them outside it: a c
 The tests run against a Postgres database of its own per test, from [pg-dolly](/packages/pg-dolly/), and AWS Emulator, started once per test run with [aws-emulator-launch](/packages/aws-emulator-launch/). Each test reads what arrived from SQS queues subscribed to a bus of its own, so nothing is deleted between tests.
 
 - Nothing waits on time. A lease or retry delay is ended by setting `available_at` in the past in SQL, the doorbell test sets a poll of an hour, and the test for a ring mid-drain holds the first `PutEvents` until it has seen the ring.
-- What the emulator can produce is real: `MalformedDetail` for a detail that isn't an object, `NotAuthorizedForSourceException` for a source starting `aws.`, the silent drop without a queue policy, and FIFO delivery.
+- What the emulator can produce is real: `MalformedDetail` for a detail that isn't an object, `NotAuthorizedForSourceException` for a source starting `aws.`, the silent drop without a queue policy, FIFO delivery, and the refusal of a request over 1 MiB as a whole.
 - What it can't is faked, in [`test/helpers/fake-event-bridge.ts`](https://github.com/JacobLey/leyman/blob/main/demos/outbox-relay/test/helpers/fake-event-bridge.ts), each wrapping the real client: a throttled entry (it has no fault injection, and every entry failure it can be made to report isn't retryable), and a response lost after the events were sent.
 - Every SDK client is built in [`test/helpers/aws.ts`](https://github.com/JacobLey/leyman/blob/main/demos/outbox-relay/test/helpers/aws.ts) from the emulator's endpoint, keys and certificate, never from the environment.

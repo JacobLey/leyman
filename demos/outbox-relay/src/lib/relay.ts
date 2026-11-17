@@ -15,7 +15,8 @@ export interface PutEventsClient {
 }
 
 /**
- * The most entries `PutEvents` takes in one call: more fail the whole request.
+ * The most entries `PutEvents` takes in one call: more fail the whole request. `schema.sql` caps a row's size so that
+ * this many always fit in one request.
  */
 export const maxBatch = 10;
 

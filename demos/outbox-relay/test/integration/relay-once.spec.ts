@@ -118,6 +118,66 @@ suite('relayOnce', () => {
         }
     );
 
+    suite('Size caps', () => {
+        // `{"pad": "…"}` as jsonb text: 11 bytes around the padding
+        const insertPadded = async (pool: Pool, detailBytes: number, count = 1): Promise<void> => {
+            await pool.query(
+                `INSERT INTO outbox (source, detail_type, detail)
+                SELECT 'shop.orders', repeat('d', 128), jsonb_build_object('pad', repeat('x', $1))
+                FROM generate_series(1, $2)`,
+                [detailBytes - 11, count]
+            );
+        };
+
+        withBus.test(
+            'Sends 10 rows at the caps in one request',
+            async ({ pool, busName, queueUrl }) => {
+                await insertPadded(pool, 100_000, 10);
+
+                const result = await relayOnce({ pool, busName, eventBridge: aws().eventBridge });
+
+                expect(result.sent).to.have.length(10);
+                expect(await receiveEvents(queueUrl, 10)).to.have.length(10);
+            }
+        );
+
+        withBus.test('Refuses a detail over 100 000 bytes', async ({ pool }) => {
+            await expect(insertPadded(pool, 100_001)).to.be.rejectedWith(
+                'violates check constraint'
+            );
+        });
+
+        withBus.test(
+            'Refuses a source over 256 bytes, and a detail type over 128 characters',
+            async ({ pool }) => {
+                await expect(
+                    pool.query(
+                        "INSERT INTO outbox (source, detail_type, detail) VALUES (repeat('s', 257), 'OrderPlaced', '{}')"
+                    )
+                ).to.be.rejectedWith('violates check constraint');
+                await expect(
+                    pool.query(
+                        "INSERT INTO outbox (source, detail_type, detail) VALUES ('shop.orders', repeat('d', 129), '{}')"
+                    )
+                ).to.be.rejectedWith('violates check constraint');
+            }
+        );
+
+        // What the caps prevent: EventBridge refuses the whole request, so no entry gets a result to record
+        // https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html
+        withBus.test('EventBridge refuses a request over 1 MiB as a whole', async ({ busName }) => {
+            const entry = {
+                EventBusName: busName,
+                Source: 'shop.orders',
+                DetailType: 'OrderPlaced',
+                Detail: JSON.stringify({ pad: 'x'.repeat(250_000) }),
+            };
+            await expect(
+                aws().eventBridge.putEvents({ Entries: Array.from({ length: 5 }, () => entry) })
+            ).to.be.rejected;
+        });
+    });
+
     withBus.test('Never claims a parked row again', async ({ pool, busName }) => {
         await pool.query(
             "INSERT INTO outbox (source, detail_type, detail) VALUES ('aws.orders', 'OrderPlaced', '{}')"

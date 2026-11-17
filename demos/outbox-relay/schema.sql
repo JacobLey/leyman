@@ -10,10 +10,16 @@ CREATE TABLE orders (
 -- `available_at` is both the lease a relay takes when it claims a row and the backoff before a retry.
 CREATE TABLE outbox (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    source text NOT NULL,
-    detail_type text NOT NULL,
-    -- EventBridge refuses a request over 1 MiB as a whole, failing every entry in it: keep one row from doing that
-    detail jsonb NOT NULL CHECK (octet_length(detail::text) <= 256 * 1024),
+    -- EventBridge refuses a PutEvents request over 1 MiB as a whole, failing every entry in it, and a whole-request
+    -- failure records nothing, so a batch that can't fit would fail every lease forever. These caps keep any batch of
+    -- 10 under it: 10 x (100 000 detail + 256 source + 512 for 128 characters of detail type + Time's 14 +
+    -- `outboxId`) is about 1 008 000 bytes, leaving room for the bus names. An entry's size counts Source, DetailType and Detail:
+    -- https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html
+    -- A detail type over 128 characters is refused anyway (`InvalidArgument`):
+    -- https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_PutEventsRequestEntry.html
+    source text NOT NULL CHECK (octet_length(source) <= 256),
+    detail_type text NOT NULL CHECK (char_length(detail_type) <= 128),
+    detail jsonb NOT NULL CHECK (octet_length(detail::text) <= 100000),
     created_at timestamptz NOT NULL DEFAULT now(),
     attempts integer NOT NULL DEFAULT 0,
     available_at timestamptz NOT NULL DEFAULT now(),
