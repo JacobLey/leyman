@@ -35,6 +35,45 @@ suite('PostgresStore', () => {
         expect(createTableSql().replace('"idempotency_keys"', 'idempotency_keys')).to.equal(ddl);
     });
 
+    test('Runs the statements of the spec', async () => {
+        const spec = await readFile(new URL('../../../SPEC.md', import.meta.url), 'utf8');
+        const section = spec.slice(spec.indexOf('### Postgres'), spec.indexOf('### Valkey'));
+        // Each statement in the section's SQL blocks but the table's DDL, with whitespace collapsed
+        const statements = section
+            .matchAll(/^```sql\n(?<sql>.*?)\n```$/gmsv)
+            .flatMap(({ groups }) => groups!.sql!.split('\n\n'))
+            .filter(statement => !statement.startsWith('CREATE TABLE'))
+            .map(statement => statement.replaceAll(/\s+/gv, ' '))
+            .toArray();
+        const queries: string[] = [];
+        // A fake: the claim finds a running row, so it reads it, and every other statement changes a row
+        const client: PostgresQueryable = {
+            query: async text => {
+                queries.push(text.replaceAll('"idempotency_keys"', 'idempotency_keys'));
+                if (text.startsWith('INSERT')) {
+                    return { rows: [], rowCount: 0 };
+                }
+                if (text.startsWith('SELECT')) {
+                    return {
+                        rows: [{ fingerprint: Buffer.from(fingerprint, 'hex'), status: null }],
+                        rowCount: 1,
+                    };
+                }
+                return { rows: [], rowCount: 1 };
+            },
+        };
+        const store = new PostgresStore({ client });
+        const identity = 'a'.repeat(64);
+        const token = '1'.repeat(32);
+
+        await claim(store, identity, token);
+        await store.complete(identity, token, response);
+        await store.release(identity, token);
+        await store.renew({ identity, token, ...longTimes });
+
+        expect(queries.map(query => query.replaceAll(/\s+/gv, ' '))).to.deep.equal(statements);
+    });
+
     test('Rejects an empty table name', () => {
         expect(() => createTableSql('')).to.throw(IdempotencyKeysOptionError);
     });

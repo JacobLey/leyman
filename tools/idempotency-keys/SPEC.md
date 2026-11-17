@@ -134,7 +134,7 @@ each implementation: it is the fallback for a lost notification, so it only affe
 
 ## Stores
 
-Each store implements four operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for every
+Each store implements these operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for every
 claim and takeover.
 
 - `claim(identity, fingerprint, token, leaseMs, ttlMs)` returns `claimed`, `running` with the record's fingerprint, or
@@ -144,7 +144,7 @@ claim and takeover.
 - `release(identity, token)` deletes the record if it holds `token`, and says whether it did.
 - `renew(identity, token, leaseMs, ttlMs)` sets the record's lease to run out `leaseMs` from now and its key to expire
   `ttlMs` from now, if it holds `token`, and says whether it did. A store a server brings may leave it out (it was added
-  in 1.1); renewing an attempt on such a store is then an error.
+  in 1.1); renewing an attempt on such a store is then an error. Every built-in store implements it.
 
 ### The store contract
 
@@ -158,7 +158,7 @@ waiting, the response policy, notifying), so a store only keeps records.
 - **Reads see every completed write.** A claim that follows a `complete` or `release` (from any server) sees it. A store
   with eventually consistent reads must use its strongly consistent ones.
 - **A record past its `ttlMs` counts as absent**, to every operation, from the moment it expires: a claim writes over
-  it, and `complete` and `release` find no token. Deleting it may happen later, or never. A lease or key has run out
+  it, and `complete`, `release` and `renew` find no token. Deleting it may happen later, or never. A lease or key has run out
   once its end time is reached (the end is at or before now), so a takeover at that instant succeeds.
 - **Times are measured on one clock**, as in [Attempts](#attempts): the store's own, or the servers'.
 - **A failure is an error, never an answer.** A store that can't be reached or can't write raises it, and the request
@@ -302,26 +302,39 @@ DynamoDB's Time to Live, turned on for `ttl`, deletes expired items some time af
 `deleteExpired` isn't needed. Without it, expired items stay until a claim writes over them. Reads never rely on it:
 every condition checks `expires_at` itself.
 
+Expressions name every attribute through `ExpressionAttributeNames`, `#` and the attribute's name (`#token` for
+`token`), since `token`, `status` and `ttl` are reserved words in DynamoDB. Values are `:now`, `:token`,
+`:fingerprint`, and `:` and the attribute's name for a value written.
+
 A claim is one `PutItem` of a running record (`identity`, `fingerprint`, `token`, `lease_expires_at`, `expires_at`,
 `ttl`), replacing any item there, with `ReturnValuesOnConditionCheckFailure` set to `ALL_OLD`:
 
 ```
-attribute_not_exists(identity) OR expires_at <= :now OR (lease_expires_at <= :now AND fingerprint = :fingerprint)
+attribute_not_exists(#identity) OR #expires_at <= :now OR (#lease_expires_at <= :now AND #fingerprint = :fingerprint)
 ```
 
 A write is a claim. A failed condition returns the item it found, which is unexpired: `running` with its
 `fingerprint` when it has no `status`, `completed` otherwise. So a claim is one request, with no read after it.
 
-Completing is an `UpdateItem` that sets `status`, `headers` and `body` and removes
-`token` and `lease_expires_at`; releasing is a `DeleteItem`. Both have the condition
+Completing, releasing and renewing all have the condition
 
 ```
-token = :token AND expires_at > :now
+#token = :token AND #expires_at > :now
 ```
 
-and a failed condition is `false`, never an error. Renewing is an `UpdateItem` with the same condition, setting
-`lease_expires_at` to `:now` plus `leaseMs`, and `expires_at` and `ttl` to `:now` plus `ttlMs` (`ttl` is a reserved
-word, so it goes through an expression attribute name). An item holds at most 400 KB, so a response that doesn't fit is
+and a failed condition is `false`, never an error. Completing is an `UpdateItem`:
+
+```
+SET #status = :status, #headers = :headers, #body = :body REMOVE #token, #lease_expires_at
+```
+
+Releasing is a `DeleteItem`. Renewing is an `UpdateItem`, with `:lease_expires_at` `:now` plus `leaseMs`, and
+`:expires_at` (and `:ttl`, in seconds rounded up) `:now` plus `ttlMs`:
+
+```
+SET #lease_expires_at = :lease_expires_at, #expires_at = :expires_at, #ttl = :ttl
+```
+ An item holds at most 400 KB, so a response that doesn't fit is
 refused with an error when completing, which leaves the attempt to its lease.
 
 ## Notifiers
@@ -350,8 +363,9 @@ version it implements.
 ### 1.1
 
 Adds the [DynamoDB](#dynamodb) store's layout, and renewing a lease: the stores' `renew` operation (with its Postgres
-statement, Valkey script and DynamoDB update). A server on 1.0 never renews, which a 1.1 server sharing its store can
-ignore.
+statement, Valkey script and DynamoDB update). A renewal only moves a running record's lease and expiry, which a 1.0
+server already reads, so 1.0 and 1.1 servers still share a Postgres or Valkey store (a 1.0 server has no DynamoDB
+store).
 
 ### 1.0
 

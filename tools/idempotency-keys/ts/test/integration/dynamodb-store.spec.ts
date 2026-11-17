@@ -1,5 +1,5 @@
 import type { DynamoDB } from '@aws-sdk/client-dynamodb';
-import type { DynamoDbConnection } from 'idempotency-keys/dynamodb';
+import type { DynamoDbConnection, DynamoDbUpdateItemInput } from 'idempotency-keys/dynamodb';
 import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
@@ -53,7 +53,54 @@ class ConditionFailedError extends Error {
     public override readonly name = 'ConditionalCheckFailedException';
 }
 
+/**
+ * The expressions in the spec's DynamoDB section, in order: claim condition, token condition, complete update, renew
+ * update.
+ *
+ * @returns Each fenced expression
+ */
+const specExpressions = async (): Promise<string[]> => {
+    const spec = await readFile(new URL('../../../SPEC.md', import.meta.url), 'utf8');
+    const section = spec.slice(spec.indexOf('### DynamoDB'), spec.indexOf('## Notifiers'));
+    return section
+        .matchAll(/^```\n(?<expression>.*?)\n```$/gmsv)
+        .map(({ groups }) => groups!.expression!)
+        .toArray();
+};
+
 suite('DynamoDbStore', () => {
+    test('Writes the expressions of the spec', async () => {
+        const expressions: (string | undefined)[] = [];
+        const record = async (input: Partial<DynamoDbUpdateItemInput>) => {
+            expressions.push(input.ConditionExpression, input.UpdateExpression);
+            return {};
+        };
+        // A fake: every condition holds, so each operation makes one request
+        const store = new DynamoDbStore({
+            connection: { putItem: record, updateItem: record, deleteItem: record },
+        });
+        const identity = 'a'.repeat(64);
+        const token = '1'.repeat(32);
+
+        await claim(store, identity, token);
+        await store.complete(identity, token, response);
+        await store.release(identity, token);
+        await store.renew({ identity, token, ...longTimes });
+
+        const [claimCondition, tokenCondition, completeUpdate, renewUpdate] =
+            await specExpressions();
+        expect(expressions).to.deep.equal([
+            claimCondition,
+            undefined,
+            tokenCondition,
+            completeUpdate,
+            tokenCondition,
+            undefined,
+            tokenCondition,
+            renewUpdate,
+        ]);
+    });
+
     test('The SDK client fits the connection as is', () => {
         expectTypeOf<DynamoDB>().toExtend<DynamoDbConnection>();
     });
@@ -303,11 +350,22 @@ suite('DynamoDbStore', () => {
         expect(await claim(store, identity, '3'.repeat(32))).to.deep.equal({ state: 'claimed' });
     });
 
+    withStore.test('Renews nothing once the key expired', async ({ store, identity }) => {
+        await claim(store, identity, '1'.repeat(32), shortTimes);
+        await setTimeout(10);
+        expect(await store.renew({ identity, token: '1'.repeat(32), ...longTimes })).to.equal(
+            false
+        );
+    });
+
     withStore.test(
-        'Completes and releases nothing without an item',
+        'Completes, releases and renews nothing without an item',
         async ({ store, identity }) => {
             expect(await store.complete(identity, '1'.repeat(32), response)).to.equal(false);
             expect(await store.release(identity, '1'.repeat(32))).to.equal(false);
+            expect(await store.renew({ identity, token: '1'.repeat(32), ...longTimes })).to.equal(
+                false
+            );
         }
     );
 
@@ -340,6 +398,9 @@ suite('DynamoDbStore', () => {
         ).to.be.rejected.and.eventually.have.property('name', 'ResourceNotFoundException');
         await expect(
             store.release(identity, '1'.repeat(32))
+        ).to.be.rejected.and.eventually.have.property('name', 'ResourceNotFoundException');
+        await expect(
+            store.renew({ identity, token: '1'.repeat(32), ...longTimes })
         ).to.be.rejected.and.eventually.have.property('name', 'ResourceNotFoundException');
     });
 });
