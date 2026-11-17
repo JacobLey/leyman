@@ -4,7 +4,7 @@ description: A small notes API built properly from the spec down to the database
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:ac9d44fc005ec902a9675247fd21483e Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:447f0d9cc5534ed0fe119b5fbc5a3503 Generated from demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/openapi/README.md, demos/openapi/spec/README.md, demos/openapi/client/README.md, demos/openapi/database/README.md, demos/openapi/server/README.md and demos/openapi/go/README.md instead, and the description only here. -->
 
 # OpenAPI
 
@@ -54,7 +54,7 @@ The database schema is whatever the migrations build. Drizzle generates SQL migr
 - drizzle-kit has no check-only mode to find schema changes that no migration covers. `scripts/nx/drizzle-kit-check.sh` generates into a copy of the migrations, through a temporary config that only changes `out`, and compares the two.
 - drizzle-kit exits 0 when it fails. Without a terminal it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass, so the check fails on any error output instead.
 - Hono ignores a middleware's return value once a later handler has set `c.res`. A middleware that wraps the rest of the route (idempotency-keys' `handle()`, which reads the response to keep it and returns a copy) has to assign its response to `c.res`, or Hono sends the original, whose body has already been read.
-- Running one test suite against both servers found a difference neither suite had alone. ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, so the TypeScript server sent one to Postgres and answered `500`. The Go validator follows JSON Schema, whose `uuid` is the plain RFC 4122 form, and the TypeScript server now does too.
+- A second implementation is a review of the first. Running one suite against both servers found three bugs in the TypeScript one, none of which its own suite could show: a UUID URN accepted as a `uuid` and then refused by Postgres (a `500`), a query escape that isn't UTF-8 kept as its text, and access tokens accepted without `exp`. See [the Go README](/demos/openapi/#interchangeable-by-construction).
 - Fastify was the other option. It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields) and don't validate. With Hono, both directions are explicit middleware against the document.
 
 ## Not covered
@@ -382,6 +382,7 @@ The validators are compiled once, straight from `openapi.json`, with Ajv (JSON S
 
 - The whole document is added to Ajv, so `$ref`s between components resolve exactly as they do in the document. `components` isn't a JSON Schema keyword, so it's registered as one, which keeps Ajv's strict mode on for everything else.
 - Parameters and bodies use separate Ajv instances. Parameters arrive as strings, so their instance coerces types and fills in defaults. Bodies and responses are already JSON, so theirs doesn't coerce, and `"5"` isn't accepted as a number.
+- The query is parsed as the URL standard says: pairs split on `&`, `+` is a space, a `%` that isn't an escape is kept as it is, and an escape that isn't UTF-8 (`%ff`) is U+FFFD, where Hono's own `c.req.query()` would keep its text. A repeated parameter is its first value, and a pair without a name is ignored.
 - The parameters in each location (path or query) become one object schema with `additionalProperties: false`, so they're validated together.
 - `uuid` is the strict form JSON Schema gives it, RFC 4122's string form without a `urn:uuid:` prefix, which `ajv-formats` would accept. Postgres doesn't, so a `getNote` with a prefixed id gets a `400`, not a failed query.
 
@@ -514,7 +515,11 @@ The tests check that anyway, because those are exactly the places a contract doe
 - A retry crosses servers: a `createNote` sent to one server with an `Idempotency-Key`, then to the other on the same database, is replayed with the same note. That only works because both follow one [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md) for the key's fingerprint and row.
 - The Go client calls the TypeScript server, and the Go server too, from `client/interop_test.go`. It's behind the `interop` build tag, so plain `go test` leaves it out, and the TypeScript server's suite runs it once against each server.
 
-Running them side by side turned up one real difference: ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, which the TypeScript server then sent to Postgres and answered with a `500`. JSON Schema's `uuid` is the plain RFC 4122 form, so the TypeScript server now asserts that, and both answer `400`.
+Building the second server, and running both through one suite, turned up places where the TypeScript server was the one that was wrong, which neither suite showed alone:
+
+- ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, which the TypeScript server then sent to Postgres and answered with a `500`. JSON Schema's `uuid` is the plain RFC 4122 form, so the TypeScript server now asserts that, and both answer `400`.
+- Hono's `c.req.query()` keeps an escape that isn't UTF-8 (`%ff`) as its text, where the URL standard reads it as U+FFFD. The TypeScript server now parses the query with `URLSearchParams`, as the Go server parses it the standard's way.
+- Neither server required `exp` in an access token, which RFC 9068 does: jose and jwx only check it when it's there. Both require it now.
 
 ### Testing
 

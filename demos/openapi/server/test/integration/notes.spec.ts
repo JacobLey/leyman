@@ -465,6 +465,43 @@ for (const implementation of implementations) {
                 expect(items.map(({ title }) => title)).to.deep.equal(['100%zz wool']);
             });
 
+            // https://url.spec.whatwg.org/#urlencoded-parsing: bytes that aren't UTF-8 are read as U+FFFD
+            withServer.test(
+                'Reads an escape that is not UTF-8 as U+FFFD',
+                async ({ served, db }) => {
+                    await db.insert(notes).values([
+                        { owner, title: '\u{FFFD} wool', body: '' },
+                        { owner, title: '%ff wool', body: '' },
+                    ]);
+
+                    const response = await fetch(`${served.url}/notes?q=%ff+wool`, {
+                        headers: { authorization: `Bearer ${token}` },
+                    });
+
+                    expect(response.status).to.equal(200);
+                    const { items } = (await response.json()) as {
+                        items: { title: string }[];
+                    };
+                    expect(items.map(({ title }) => title)).to.deep.equal(['\u{FFFD} wool']);
+                }
+            );
+
+            withServer.test('Reads the first of a repeated parameter', async ({ served, db }) => {
+                await db.insert(notes).values([
+                    { owner, title: 'Dolly', body: '' },
+                    { owner, title: 'Sheep', body: '' },
+                ]);
+
+                const response = await fetch(`${served.url}/notes?limit=1&limit=2`, {
+                    headers: { authorization: `Bearer ${token}` },
+                });
+
+                expect(response.status).to.equal(200);
+                expect(await response.json())
+                    .to.have.property('items')
+                    .with.length(1);
+            });
+
             withServer.test('Ignores a query parameter without a name', async ({ served, db }) => {
                 await db.insert(notes).values([
                     { owner, title: 'Dolly', body: '' },

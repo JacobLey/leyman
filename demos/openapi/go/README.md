@@ -64,7 +64,11 @@ The tests check that anyway, because those are exactly the places a contract doe
 - A retry crosses servers: a `createNote` sent to one server with an `Idempotency-Key`, then to the other on the same database, is replayed with the same note. That only works because both follow one [specification](../../../tools/idempotency-keys/SPEC.md) for the key's fingerprint and row.
 - The Go client calls the TypeScript server, and the Go server too, from `client/interop_test.go`. It's behind the `interop` build tag, so plain `go test` leaves it out, and the TypeScript server's suite runs it once against each server.
 
-Running them side by side turned up one real difference: ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, which the TypeScript server then sent to Postgres and answered with a `500`. JSON Schema's `uuid` is the plain RFC 4122 form, so the TypeScript server now asserts that, and both answer `400`.
+Building the second server, and running both through one suite, turned up places where the TypeScript server was the one that was wrong, which neither suite showed alone:
+
+- ajv-formats accepts a UUID URN (`urn:uuid:…`) as a `uuid`, which the TypeScript server then sent to Postgres and answered with a `500`. JSON Schema's `uuid` is the plain RFC 4122 form, so the TypeScript server now asserts that, and both answer `400`.
+- Hono's `c.req.query()` keeps an escape that isn't UTF-8 (`%ff`) as its text, where the URL standard reads it as U+FFFD. The TypeScript server now parses the query with `URLSearchParams`, as the Go server parses it the standard's way.
+- Neither server required `exp` in an access token, which RFC 9068 does: jose and jwx only check it when it's there. Both require it now.
 
 ## Testing
 

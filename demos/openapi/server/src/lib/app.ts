@@ -104,6 +104,27 @@ const readJson = async (
 };
 
 /**
+ * The query's parameters, parsed as the URL standard says
+ * ([application/x-www-form-urlencoded parsing](https://url.spec.whatwg.org/#urlencoded-parsing)): pairs split on `&`,
+ * `+` a space, a `%` without two hex digits kept as it is, and bytes that aren't UTF-8 read as U+FFFD. Hono's
+ * `c.req.query()` keeps such an escape (`%ff`) as its literal text instead. A repeated parameter is its first value,
+ * and a pair without a name is ignored, as Hono reads them.
+ *
+ * @param url - The request's URL
+ * @returns Each parameter's value
+ */
+const readQuery = (url: string): Record<string, unknown> => {
+    const query: Record<string, unknown> = {};
+    const { searchParams: parameters } = new URL(url);
+    for (const [name, value] of parameters) {
+        if (name !== '' && !Object.hasOwn(query, name)) {
+            query[name] = value;
+        }
+    }
+    return query;
+};
+
+/**
  * Answers unless the request has a bearer token the authenticator accepts for the operation's scopes, as RFC 6750
  * says: a `401` without a token (`WWW-Authenticate: Bearer`) or with an invalid one (`error="invalid_token"`), and a
  * `403` with a valid token that lacks a scope (`error="insufficient_scope"`, naming every scope needed). Each
@@ -195,7 +216,7 @@ const serve =
     (operation: Operation, handlers: NotesHandlers) =>
     async (context: Context<NotesEnv>): Promise<Response> => {
         const path: Record<string, unknown> = { ...context.req.param() };
-        const query: Record<string, unknown> = { ...context.req.query() };
+        const query = readQuery(context.req.url);
         if (!operation.path(path)) {
             return problem(context, 400, 'invalid_request', describeErrors(operation.path, 'path'));
         }
