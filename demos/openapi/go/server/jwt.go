@@ -151,8 +151,10 @@ func (a *JWTAuthenticator) verify(ctx context.Context, token string) (jwt.Token,
 		jwt.WithValidate(true),
 		jwt.WithIssuer(a.options.Issuer),
 		jwt.WithAudience(a.options.Audience),
-		// Whose notes: RFC 9068 requires it
+		// RFC 9068 requires both (https://www.rfc-editor.org/rfc/rfc9068#section-2.2): sub says whose notes, and jwx
+		// checks exp only when it's there, so a token without one would be good forever
 		jwt.WithRequiredClaim("sub"),
+		jwt.WithRequiredClaim("exp"),
 	)
 	if err != nil {
 		return nil, ErrInvalidToken

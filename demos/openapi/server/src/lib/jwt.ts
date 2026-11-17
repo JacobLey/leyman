@@ -100,8 +100,9 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
                 issuer: options.issuer,
                 audience: options.audience,
                 typ: 'at+jwt',
-                // Whose notes: RFC 9068 requires it
-                requiredClaims: ['sub'],
+                // RFC 9068 requires both (https://www.rfc-editor.org/rfc/rfc9068#section-2.2): `sub` says whose notes,
+                // and jose checks `exp` only when it's there, so a token without one would be good forever
+                requiredClaims: ['sub', 'exp'],
             }));
         } catch (error) {
             if (isTokenError(error)) {

@@ -4,7 +4,7 @@ import type { ListeningAuthorizationServer } from 'oauth-dev-server';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { decodeJwt } from 'jose';
+import { decodeJwt, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { Pool } from 'pg';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { notes, NotesAuthorizationServerError } from '@leyman/demo-openapi-server';
@@ -258,6 +258,76 @@ for (const implementation of implementations) {
                     `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api"`,
                     `Bearer resource_metadata="${audience}/.well-known/oauth-protected-resource/api", error="invalid_token"`,
                 ]);
+            });
+        });
+
+        suite('Claims', () => {
+            /**
+             * The app, trusting an issuer of the test's own, which signs whatever claims a test gives it.
+             */
+            const withIssuer = withDatabase().beforeEach(async ({ database }) => {
+                const { publicKey, privateKey } = await generateKeyPair('ES256');
+                const jwk = { ...(await exportJWK(publicKey)), kid: 'key', alg: 'ES256' };
+                const issuer = createServer();
+                issuer.listen(0, '127.0.0.1');
+                await once(issuer, 'listening');
+                const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
+                issuer.on('request', (request, response: ServerResponse) => {
+                    const body =
+                        request.url === '/jwks'
+                            ? { keys: [jwk] }
+                            : { issuer: url, jwks_uri: `${url}/jwks` };
+                    response
+                        .writeHead(200, { 'content-type': 'application/json' })
+                        .end(JSON.stringify(body));
+                });
+                const served = await implementation.start({
+                    databaseUrl: database.url,
+                    authentication: { issuer: url, audience },
+                });
+                /**
+                 * A token from the issuer, for the API, as dolly, with its scope.
+                 *
+                 * @param hasExpiry - Whether it has an `exp`
+                 * @returns The access token
+                 */
+                const sign = async (hasExpiry: boolean): Promise<string> => {
+                    const token = new SignJWT({ scope: 'notes:read' });
+                    token
+                        .setProtectedHeader({ alg: 'ES256', typ: 'at+jwt', kid: 'key' })
+                        .setIssuer(url)
+                        .setAudience(audience)
+                        .setSubject('dolly')
+                        .setIssuedAt();
+                    if (hasExpiry) {
+                        token.setExpirationTime('1m');
+                    }
+                    return token.sign(privateKey);
+                };
+                return { issuer, served, sign };
+            });
+            withIssuer.afterEach(async ({ issuer, served }) => {
+                await served.close();
+                issuer.close();
+                issuer.closeAllConnections();
+            });
+
+            withIssuer.test('Accepts a token that expires', async ({ served, sign }) => {
+                const client = new NotesClient({ baseUrl: served.url, token: await sign(true) });
+
+                const listed = await client.call('listNotes', {});
+
+                expect(listed.status).to.equal(200);
+            });
+
+            // RFC 9068 requires exp (https://www.rfc-editor.org/rfc/rfc9068#section-2.2): a token without one would be
+            // good forever
+            withIssuer.test('Refuses a token that never expires', async ({ served, sign }) => {
+                const client = new NotesClient({ baseUrl: served.url, token: await sign(false) });
+
+                const listed = await client.call('listNotes', {});
+
+                expect(listed.status).to.equal(401);
             });
         });
 

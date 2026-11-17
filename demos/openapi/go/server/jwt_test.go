@@ -204,6 +204,7 @@ func TestJWTTokens(t *testing.T) {
 		"another audience":   served.sign(t, key, "at+jwt", claims{"aud": "https://other.example"}),
 		"expired":            served.sign(t, key, "at+jwt", claims{"exp": time.Now().Add(-time.Minute).Unix()}),
 		"no subject":         served.sign(t, key, "at+jwt", claims{"sub": nil}),
+		"never expires":      served.sign(t, key, "at+jwt", claims{"exp": nil}),
 		"client credentials": served.sign(t, key, "at+jwt", claims{"sub": "cli", "client_id": "cli"}),
 		"another key":        served.sign(t, other, "at+jwt", nil),
 	} {
