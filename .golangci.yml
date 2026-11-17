@@ -90,6 +90,11 @@ linters:
       - path: tools/constant-consistent-hash/go/
         linters:
           - mnd
+      # A notes API result is one response: exactly one of its fields is set, by design
+      - path: demos/openapi/go/
+        text: notes\.\w+Result is missing
+        linters:
+          - exhaustruct_v5
       # fork-manifest:end
 
 formatters:
