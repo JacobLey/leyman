@@ -545,6 +545,32 @@
         "{projectRoot}/schema.sql"
       ]
     },
+    "genever-go": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "go generate -run '^//go:generate go tool genever ' ./..."
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prepare:_"
+      ],
+      "cache": true,
+      "inputs": [
+        "goSource",
+        "^goSource",
+        "^dependency-files",
+        {
+          "runtime": "go version"
+        },
+        {
+          "env": "CI"
+        }
+      ],
+      "outputs": []
+    },
     "update-ts-references": {
       "executor": "nx:noop",
       "syncGenerators": [
@@ -955,6 +981,7 @@
         "barrelify",
         "update-ts-references",
         "schema-snapshot",
+        "genever-go",
         "dagger-develop"
       ],
       "configurations": {

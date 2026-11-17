@@ -57,6 +57,7 @@
     "barrelify": "prepare:generate",
     "update-ts-references": "prepare:generate",
     "schema-snapshot": "prepare:generate",
+    "genever-go": "prepare:generate",
     "biome": "prepare:format",
     "dagger-develop": "prepare:generate",
     "gofmt": "prepare:format",

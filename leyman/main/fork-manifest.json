@@ -570,6 +570,7 @@
       ],
       "go": [
         "check-go-release",
+        "genever-go",
         "go-coverage-report",
         "go-lint",
         "go-test",

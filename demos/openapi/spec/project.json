@@ -3,6 +3,7 @@
   "name": "@leyman/demo-openapi-spec",
   "targets": {
     "biome": {},
+    "gofmt": {},
     "eslint": {},
     "update-ts-references": {},
     "tsc": {},

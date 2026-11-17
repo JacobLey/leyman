@@ -247,6 +247,16 @@ Hashes `src/`, `migrations/`, `schema.sql`, dependencies' builds, `postgres` (`p
 
 ---
 
+### `genever-go`
+
+Writes Go types from a JSON Schema file or OpenAPI document with [genever-go](../../../apps/genever/go/), by running the project's `//go:generate go tool genever ...` directives (`go generate -run '^//go:generate go tool genever ' ./...`, so other directives don't run). The directive names the input, the package and `--signed`, and the module requires genever-go as a `tool`, with `replace` directives to the workspace copies of it and its dependencies. In CI genever-go only checks (its `--ci` is on when `CI` is set), failing if the committed file is stale; an edited signed file fails everywhere.
+
+Hashes the project's `goSource` (which includes the generated file), `^goSource`, `^dependency-files` (an input such as a spec project's `out/openapi.json`), the Go version and `CI`. It declares no outputs: the generated file is committed and hashed, so a cache hit means it is already up to date. List `@leyman/genever-go` under `implicitDependencies`, since gonx infers dependencies from imports, not `tool` directives. The generated file says `Code generated ... DO NOT EDIT.`, which golangci-lint's `generated: lax` leaves out of lint and formatting. See `demos/openapi/go`.
+
+**Add when:** A Go project generates types with genever-go.
+
+---
+
 ### `update-ts-references`
 
 Keep `tsconfig.json` `references` in sync with the package's inter-package dependencies.
