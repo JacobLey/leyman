@@ -83,3 +83,13 @@ export class IdempotencyKeysResponseError extends IdempotencyKeysError {
         this.status = status;
     }
 }
+
+/**
+ * An attempt was renewed on a store without the optional `renew` operation, such as one written before it existed.
+ */
+export class IdempotencyKeysRenewUnsupportedError extends IdempotencyKeysError {
+    public constructor() {
+        super('The store has no renew operation, so an attempt on it can not be renewed');
+        this.name = 'IdempotencyKeysRenewUnsupportedError';
+    }
+}

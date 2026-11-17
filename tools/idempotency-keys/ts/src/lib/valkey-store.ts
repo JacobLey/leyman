@@ -1,8 +1,14 @@
-import type { ClaimParams, ClaimResult, IdempotencyStore, StoredResponse } from './attempt.js';
+import type {
+    ClaimParams,
+    ClaimResult,
+    IdempotencyStore,
+    RenewParams,
+    StoredResponse,
+} from './attempt.js';
 // eslint-disable-next-line n/prefer-global/buffer -- Imported, as the package assumes no Node.js globals: Bun, Deno and Workers (`nodejs_compat`) have the module
 import { Buffer } from 'node:buffer';
 import { IdempotencyKeysReplyError } from './errors.js';
-import { claimScript, completeScript, releaseScript } from './scripts.js';
+import { claimScript, completeScript, releaseScript, renewScript } from './scripts.js';
 
 /**
  * The one command needed from a Valkey (or Redis) client: `EVAL`, replying with bytes, so a binary body comes back as
@@ -119,6 +125,18 @@ export class ValkeyStore implements IdempotencyStore {
 
     public async release(identity: string, token: string): Promise<boolean> {
         const done = await this.#connection.eval(releaseScript, 1, this.#key(identity), token);
+        return done === 1;
+    }
+
+    public async renew({ identity, token, leaseMs, ttlMs }: RenewParams): Promise<boolean> {
+        const done = await this.#connection.eval(
+            renewScript,
+            1,
+            this.#key(identity),
+            token,
+            leaseMs,
+            ttlMs
+        );
         return done === 1;
     }
 

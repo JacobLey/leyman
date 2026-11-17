@@ -1,4 +1,10 @@
-import type { ClaimParams, ClaimResult, IdempotencyStore, StoredResponse } from './attempt.js';
+import type {
+    ClaimParams,
+    ClaimResult,
+    IdempotencyStore,
+    RenewParams,
+    StoredResponse,
+} from './attempt.js';
 import { fromHex, toHex } from './encoding.js';
 import { quoteIdentifier } from './identifier.js';
 
@@ -67,6 +73,7 @@ export class PostgresStore implements IdempotencyStore {
     readonly #readSql: string;
     readonly #completeSql: string;
     readonly #releaseSql: string;
+    readonly #renewSql: string;
     readonly #expiredSql: string;
 
     public constructor({ client, table = defaultTable }: PostgresStoreOptions) {
@@ -85,6 +92,9 @@ RETURNING token`;
         this.#completeSql = `UPDATE ${name} SET status = $3, headers = $4, body = $5, token = NULL, lease_expires_at = NULL
 WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
         this.#releaseSql = `DELETE FROM ${name} WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
+        this.#renewSql = `UPDATE ${name}
+SET lease_expires_at = clock_timestamp() + $3 * interval '1 millisecond', expires_at = clock_timestamp() + $4 * interval '1 millisecond'
+WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
         this.#expiredSql = `DELETE FROM ${name} WHERE expires_at <= clock_timestamp()`;
     }
 
@@ -139,6 +149,16 @@ WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()`;
 
     public async release(identity: string, token: string): Promise<boolean> {
         const { rowCount } = await this.#client.query(this.#releaseSql, [fromHex(identity), token]);
+        return rowCount === 1;
+    }
+
+    public async renew({ identity, token, leaseMs, ttlMs }: RenewParams): Promise<boolean> {
+        const { rowCount } = await this.#client.query(this.#renewSql, [
+            fromHex(identity),
+            token,
+            leaseMs,
+            ttlMs,
+        ]);
         return rowCount === 1;
     }
 

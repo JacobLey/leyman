@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { expect } from '@leyman/expect';
 import { IdempotencyKeysReplyError, ValkeyStore } from 'idempotency-keys/valkey';
 import { beforeEach, suite, test } from 'mocha-chain';
-import { claimScript, completeScript, releaseScript } from '#internal/lib/scripts.js';
+import { claimScript, completeScript, releaseScript, renewScript } from '#internal/lib/scripts.js';
 import { closeValkey, valkeyContext } from '#test/helpers/valkey.js';
 import { vectors } from '#test/helpers/vectors.js';
 
@@ -21,6 +21,7 @@ suite('ValkeyStore', () => {
             claim: claimScript,
             complete: completeScript,
             release: releaseScript,
+            renew: renewScript,
         }).to.deep.equal(vectors.valkeyScripts);
     });
 
@@ -64,6 +65,26 @@ suite('ValkeyStore', () => {
                 headers: JSON.stringify(response.headers),
                 body: 'ok',
             });
+        }
+    );
+
+    withStore.test(
+        'Renews the lease and the expiry, as the spec describes',
+        async ({ valkey, prefix, store, identity }) => {
+            const key = `${prefix}:${identity}`;
+            const token = '1'.repeat(32);
+            await store.claim({ identity, fingerprint, token, leaseMs: 1000, ttlMs: 2000 });
+            const [[, now]] = (await valkey.multi().time().exec()) as [[null, [string, string]]];
+            expect(
+                await store.renew({ identity, token, leaseMs: 60_000, ttlMs: 86_400_000 })
+            ).to.equal(true);
+            const renewed = await valkey.hgetall(key);
+            expect(renewed).to.include({ fingerprint, token });
+            expect(Number(renewed.lease) - Number(now[0]) * 1000).to.be.within(59_000, 61_000);
+            expect(await valkey.pttl(key)).to.be.within(86_000_000, 86_400_000);
+            expect(
+                await store.renew({ identity, token: '2'.repeat(32), leaseMs: 1, ttlMs: 2 })
+            ).to.equal(false);
         }
     );
 

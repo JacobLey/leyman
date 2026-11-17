@@ -39,12 +39,13 @@ export interface IdempotencyKeysOptions {
      */
     readonly notifier?: IdempotencyNotifier;
     /**
-     * How long a key lasts from when it was claimed, in milliseconds. Defaults to 24 hours.
+     * How long a key lasts from when it was last claimed or renewed, in milliseconds. Defaults to 24 hours.
      */
     readonly ttlMs?: number;
     /**
-     * How long a request may run before another may take over, in milliseconds: longer than the slowest handler,
-     * so a slow request never runs twice. Below `ttlMs`. Defaults to 60 seconds.
+     * How long a request may run, from its claim or last renewal, before another may take over, in milliseconds:
+     * longer than the slowest handler (or, for one that renews, the longest time between renewals), so a slow request
+     * never runs twice. Below `ttlMs`. Defaults to 60 seconds.
      */
     readonly leaseMs?: number;
     /**
@@ -209,7 +210,14 @@ export class IdempotencyKeys {
         if (this.#leaseMs >= this.#ttlMs) {
             throw new IdempotencyKeysOptionError('leaseMs', leaseMs, 'must be less than ttlMs');
         }
-        this.#attemptContext = { store, notifier, respondPolicy, onError };
+        this.#attemptContext = {
+            leaseMs: this.#leaseMs,
+            ttlMs: this.#ttlMs,
+            store,
+            notifier,
+            respondPolicy,
+            onError,
+        };
         this.#onError = onError;
         this.#fingerprintHeaders = fingerprintHeaders;
         this.#problem = problem;

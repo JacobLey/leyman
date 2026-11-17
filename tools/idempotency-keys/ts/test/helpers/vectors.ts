@@ -29,6 +29,7 @@ export type Step =
           readonly response?: VectorResponse;
       }
     | { readonly release: string; readonly expect: boolean }
+    | { readonly renew: string; readonly expect: boolean }
     | {
           readonly respond: string;
           readonly response: VectorResponse;
@@ -82,6 +83,7 @@ export interface Vectors {
         readonly claim: string;
         readonly complete: string;
         readonly release: string;
+        readonly renew: string;
     };
     readonly scenarios: readonly Scenario[];
 }

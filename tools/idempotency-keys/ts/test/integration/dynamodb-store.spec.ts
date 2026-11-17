@@ -93,7 +93,13 @@ suite('DynamoDbStore', () => {
         await claim(store, 'a'.repeat(64), '1'.repeat(32));
         await store.complete('a'.repeat(64), '1'.repeat(32), response);
         await store.release('a'.repeat(64), '1'.repeat(32));
-        expect(tables).to.deep.equal(['idempotency_keys', 'idempotency_keys', 'idempotency_keys']);
+        await store.renew({ identity: 'a'.repeat(64), token: '1'.repeat(32), ...longTimes });
+        expect(tables).to.deep.equal([
+            'idempotency_keys',
+            'idempotency_keys',
+            'idempotency_keys',
+            'idempotency_keys',
+        ]);
     });
 
     test('Passes on a failed condition that carries no item', async () => {
@@ -158,6 +164,37 @@ suite('DynamoDbStore', () => {
             });
         }
     );
+
+    withStore.test(
+        'Renews the lease, the expiry and the ttl, as the spec describes',
+        async ({ dynamodb, table, store, identity }) => {
+            const key = { identity: { B: Buffer.from(identity, 'hex') } };
+            await claim(store, identity, '1'.repeat(32), { leaseMs: 1000, ttlMs: 2000 });
+            const before = Date.now();
+            expect(await store.renew({ identity, token: '1'.repeat(32), ...longTimes })).to.equal(
+                true
+            );
+            const after = Date.now();
+            const { Item: renewed } = await dynamodb.getItem({
+                TableName: table,
+                Key: key,
+                ConsistentRead: true,
+            });
+            expect(renewed!.token).to.deep.equal({ S: '1'.repeat(32) });
+            const leaseExpiresAt = Number(renewed!.lease_expires_at!.N);
+            const expiresAt = Number(renewed!.expires_at!.N);
+            expect(leaseExpiresAt).to.be.within(before + 60_000, after + 60_000);
+            expect(expiresAt - leaseExpiresAt).to.equal(86_400_000 - 60_000);
+            expect(renewed!.ttl).to.deep.equal({ N: String(Math.ceil(expiresAt / 1000)) });
+        }
+    );
+
+    withStore.test('Renews only with the token', async ({ store, identity }) => {
+        await claim(store, identity, '1'.repeat(32));
+        expect(await store.renew({ identity, token: '2'.repeat(32), ...longTimes })).to.equal(
+            false
+        );
+    });
 
     withStore.test('Turns on Time to Live with its input', async ({ dynamodb, table }) => {
         await dynamodb.updateTimeToLive(updateTimeToLiveInput(table));

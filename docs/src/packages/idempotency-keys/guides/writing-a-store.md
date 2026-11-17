@@ -6,11 +6,12 @@ description: Keep idempotency keys in any database by implementing IdempotencySt
 
 Postgres, DynamoDB and Valkey are the stores that ship, but the keys can live in any database that every server reaches: MongoDB, SQLite on one machine, or a key-value service of your platform. `store` takes anything implementing `IdempotencyStore`.
 
-A store does less than it might seem. The library computes the hashes, waits on running requests, applies the respond policy, notifies other servers and checks every response before storing it. A store only keeps one record per identity, with three operations:
+A store does less than it might seem. The library computes the hashes, waits on running requests, applies the respond policy, notifies other servers and checks every response before storing it. A store only keeps one record per identity, with four operations, the last optional:
 
 - `claim(params)` returns `claimed` when the record is absent, expired, or running past its lease with the same fingerprint, and writes a new running record holding `params.token`. Otherwise it returns `running` with the record's fingerprint, or `completed` with its fingerprint and response.
 - `complete(identity, token, response)` stores the response if the record still holds `token`, and says whether it did.
 - `release(identity, token)` deletes the record if it still holds `token`, and says whether it did.
+- `renew(params)` sets the record's lease to run out `params.leaseMs` from now and its key to expire `params.ttlMs` from now, if it still holds `params.token`, and says whether it did. A store may leave it out: then `attempt.renew()` rejects with `IdempotencyKeysRenewUnsupportedError`, and everything else works.
 
 What each must guarantee is the specification's [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract). Below is a store that keeps it, then how it does, point by point.
 
@@ -30,9 +31,9 @@ It isn't one to deploy: a second instance has a `Map` of its own, and a restart 
 
 **Reads see every completed write.** A claim after a `complete` or `release`, from any server, must see it. One `Map` does trivially. A database with eventually consistent reads (DynamoDB, a replica) must use its strongly consistent ones.
 
-**A record past its `ttlMs` counts as absent**, to every operation. `#read` returns nothing for an expired record, so a claim writes over it, and `complete` and `release` find no token. The record itself stays in the `Map` until then: a store may delete expired records later, or never, as the Postgres store does without `deleteExpired()`. A lease or key has run out once its end time is reached, so the comparisons are `<= now` for running out and `> now` for still valid.
+**A record past its `ttlMs` counts as absent**, to every operation. `#read` returns nothing for an expired record, so a claim writes over it, and `complete`, `release` and `renew` find no token. The record itself stays in the `Map` until then: a store may delete expired records later, or never, as the Postgres store does without `deleteExpired()`. A lease or key has run out once its end time is reached, so the comparisons are `<= now` for running out and `> now` for still valid.
 
-**Completing and releasing check the token.** A request whose lease ran out and was taken over still calls `complete` or `release` when it finishes. Its token is gone, so the store changes nothing and returns `false`, and the library answers that attempt `lost`. A completed record holds no token at all, so nothing can release it.
+**Completing, releasing and renewing check the token.** A request whose lease ran out and was taken over still calls `complete` or `release` when it finishes, or `renew` from its heartbeat. Its token is gone, so the store changes nothing and returns `false`, and the library answers that attempt `lost` (or `false` from `renew()`). One whose lease ran out but that nobody took over still holds its token, so it still completes, releases or renews. A completed record holds no token at all, so nothing can release it.
 
 **Times are measured on one clock.** Every lease and expiry here is `Date.now()`, one process's clock. The built-in stores use the database's (`clock_timestamp()`, `TIME`), so servers with drifting clocks agree on every lease. A store on a database without a clock may take the servers' time, as this one does. Then a server whose clock runs ahead can take over a lease early, so set `leaseMs` above the slowest handler plus the worst drift between servers.
 
@@ -44,7 +45,7 @@ Finally, a store keeps the identity, fingerprint, token and response exactly as 
 
 ## Testing it
 
-Run your store through the test vectors' scenarios, as the package's [vector tests](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/test/integration/vectors.spec.ts) do for every store: each scenario builds `IdempotencyKeys` on a fresh store with the scenario's options, then begins, responds and releases as its steps say, checking every outcome. The scenarios cover concurrent claims, takeovers, expiry and mismatched fingerprints, which are where a store goes wrong.
+Run your store through the test vectors' scenarios, as the package's [vector tests](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/ts/test/integration/vectors.spec.ts) do for every store: each scenario builds `IdempotencyKeys` on a fresh store with the scenario's options, then begins, responds, releases and renews as its steps say, checking every outcome. The scenarios cover concurrent claims, takeovers, renewals, expiry and mismatched fingerprints, which are where a store goes wrong.
 
 ## Sharing keys across languages
 

@@ -1,5 +1,5 @@
 import type { IdempotencyNotifier } from './listeners.js';
-import { IdempotencyKeysResponseError } from './errors.js';
+import { IdempotencyKeysRenewUnsupportedError, IdempotencyKeysResponseError } from './errors.js';
 
 /**
  * A response as stored and replayed.
@@ -33,6 +33,19 @@ export interface ClaimParams {
     readonly ttlMs: number;
 }
 
+export interface RenewParams {
+    /**
+     * The key's identity, as 64 hex characters.
+     */
+    readonly identity: string;
+    /**
+     * The token of the claim that holds the record.
+     */
+    readonly token: string;
+    readonly leaseMs: number;
+    readonly ttlMs: number;
+}
+
 /**
  * What a claim found:
  *
@@ -51,7 +64,7 @@ export type ClaimResult =
     | { readonly state: 'running'; readonly fingerprint: string };
 
 /**
- * Where records live: the spec's three operations. A store written for this interface must keep the
+ * Where records live: the spec's four operations, of which `renew` is optional. A store written for this interface must keep the
  * [store contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract):
  * each operation is atomic for its identity, reads see every completed write, a record past its `ttlMs` counts as
  * absent, every time is measured on one clock all servers agree on (the store's own, or else the servers'), and a
@@ -78,6 +91,14 @@ export interface IdempotencyStore {
      * @returns Whether it did
      */
     readonly release: (identity: string, token: string) => Promise<boolean>;
+    /**
+     * Sets the record's lease to run out `leaseMs` from now, and its key to expire `ttlMs` from now, if it still holds
+     * `token`. Optional, so a store written before it still fits: renewing an attempt on a store without it rejects
+     * with `IdempotencyKeysRenewUnsupportedError`.
+     *
+     * @returns Whether it did
+     */
+    readonly renew?: (params: RenewParams) => Promise<boolean>;
 }
 
 /**
@@ -135,7 +156,8 @@ const checkSendable = ({ status, body }: StoredResponse): void => {
 
 /**
  * A request that holds its key, and runs. End it with `respond()` or `release()`. One that never ends (it crashed)
- * holds the key until its lease runs out.
+ * holds the key until its lease runs out. One that runs longer than `leaseMs` keeps its key with `renew()`, called
+ * more often than `leaseMs`.
  */
 export interface IdempotencyAttempt {
     /**
@@ -160,10 +182,21 @@ export interface IdempotencyAttempt {
      * @returns Whether it released, `false` when another request took over
      */
     readonly release: () => Promise<boolean>;
+    /**
+     * Renews the lease: it runs out `leaseMs` from now, and the key expires `ttlMs` from now, as at a takeover. Works
+     * after the lease ran out too, as long as nobody took over.
+     *
+     * @returns Whether it renewed, `false` when the attempt no longer holds the key (another request took over, the
+     * attempt ended, or the key expired), so it should stop
+     * @rejects {IdempotencyKeysRenewUnsupportedError} When the store has no `renew`
+     */
+    readonly renew: () => Promise<boolean>;
 }
 
 export interface AttemptContext {
     readonly store: IdempotencyStore;
+    readonly leaseMs: number;
+    readonly ttlMs: number;
     readonly notifier: IdempotencyNotifier | undefined;
     readonly respondPolicy: RespondPolicy;
     readonly onError: (error: unknown, identity: string) => void;
@@ -204,6 +237,14 @@ export class Attempt implements IdempotencyAttempt {
         const isReleased = await this.#context.store.release(this.identity, this.#token);
         await this.#announce(isReleased);
         return isReleased;
+    }
+
+    public async renew(): Promise<boolean> {
+        const { store, leaseMs, ttlMs } = this.#context;
+        if (!store.renew) {
+            throw new IdempotencyKeysRenewUnsupportedError();
+        }
+        return store.renew({ identity: this.identity, token: this.#token, leaseMs, ttlMs });
     }
 
     /**

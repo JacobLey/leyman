@@ -109,6 +109,6 @@ Any store works with any [notifier](/packages/idempotency-keys/guides/notifiers)
 
 ## Your own store
 
-`store` takes anything implementing `IdempotencyStore`: `claim`, `complete` and `release`. The library does the hashing, the waiting, the policy and the notifying, so a store only keeps records, and the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) states what it must guarantee in a few points. [Writing a store](/packages/idempotency-keys/guides/writing-a-store) goes through them with an in-memory example.
+`store` takes anything implementing `IdempotencyStore`: `claim`, `complete`, `release` and, optionally, `renew`. The library does the hashing, the waiting, the policy and the notifying, so a store only keeps records, and the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) states what it must guarantee in a few points. [Writing a store](/packages/idempotency-keys/guides/writing-a-store) goes through them with an in-memory example.
 
 A store of your own shares keys with servers in other languages only if each of them implements the same layout. The Postgres, DynamoDB and Valkey layouts are pinned by the specification, so the built-in stores share keys with a [Go](/packages/idempotency-keys/guides/go) server out of the box.

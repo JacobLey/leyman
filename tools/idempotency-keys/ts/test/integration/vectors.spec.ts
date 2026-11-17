@@ -38,6 +38,7 @@ const isolated = (store: IdempotencyStore, salt: string): IdempotencyStore => {
         complete: async (identity, token, response) =>
             store.complete(own(identity), token, response),
         release: async (identity, token) => store.release(own(identity), token),
+        renew: async params => store.renew!({ ...params, identity: own(params.identity) }),
     };
 };
 

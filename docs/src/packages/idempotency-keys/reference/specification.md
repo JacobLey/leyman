@@ -31,7 +31,7 @@ Each is a sequence of length-prefixed fields, so no two inputs hash the same by 
 
 ## What is stored
 
-Each identity has at most one record: **running** (claimed by one request, with a random token and a lease) or **completed** (with a response). A request claims it, compares fingerprints, then waits or replays. The request that ran ends its attempt by completing (storing the response) or releasing (deleting the record), and either only applies while the record still holds its token.
+Each identity has at most one record: **running** (claimed by one request, with a random token and a lease) or **completed** (with a response). A request claims it, compares fingerprints, then waits or replays. The request that ran ends its attempt by completing (storing the response) or releasing (deleting the record). While it runs, it may renew its lease, which moves the lease and the key's expiry forward, so a long job with a heartbeat keeps its key while `leaseMs` only covers the time between renewals. Each of these only applies while the record still holds its token, so a request that was taken over learns it and stops.
 
 In Postgres, the record is a row of one table:
 
@@ -50,7 +50,7 @@ CREATE TABLE idempotency_keys (
 
 In Valkey, it is a hash at `<prefix>:<identity>`, with fields `fingerprint`, `token` and `lease` while running, and `status`, `headers` and `body` once completed, written by Lua scripts every implementation sends byte for byte.
 
-In DynamoDB, it is an item keyed by `identity` (bytes), with `fingerprint`, `expires_at` and `ttl` (the expiry in seconds, for DynamoDB's own Time to Live), plus `token` and `lease_expires_at` while running, or `status`, `headers` and `body` once completed. A claim is one conditional `PutItem`, which returns the item it found when its condition fails, and completing and releasing are an `UpdateItem` and a `DeleteItem` conditioned on the token.
+In DynamoDB, it is an item keyed by `identity` (bytes), with `fingerprint`, `expires_at` and `ttl` (the expiry in seconds, for DynamoDB's own Time to Live), plus `token` and `lease_expires_at` while running, or `status`, `headers` and `body` once completed. A claim is one conditional `PutItem`, which returns the item it found when its condition fails, and completing, renewing and releasing are an `UpdateItem`, an `UpdateItem` and a `DeleteItem` conditioned on the token.
 
 A response's headers are `[name, value]` pairs, names in lower case, without the headers a server recomputes for every response (`content-length`, `transfer-encoding`, `connection`, `keep-alive`). Every layout store them as a JSON array. A response a replay couldn't send (a status outside 200 to 599, or a body on a `204`, `205` or `304`) is never stored: ending an attempt with one is an error, and the attempt still holds the key.
 

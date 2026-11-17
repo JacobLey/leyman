@@ -183,6 +183,36 @@ suite('PostgresStore', () => {
         expect(await store.release(identity, '1'.repeat(32))).to.equal(true);
     });
 
+    withStore.test(
+        'Renews the lease and the expiry, only with the token',
+        async ({ pool, store, identity }) => {
+            await claim(store, identity, '1'.repeat(32), { leaseMs: 1000, ttlMs: 2000 });
+            expect(await store.renew({ identity, token: '2'.repeat(32), ...longTimes })).to.equal(
+                false
+            );
+            expect(await store.renew({ identity, token: '1'.repeat(32), ...longTimes })).to.equal(
+                true
+            );
+            const { rows } = await pool.query(
+                `SELECT token,
+                    lease_expires_at > clock_timestamp() + interval '59 seconds' AS leased,
+                    expires_at > clock_timestamp() + interval '23 hours' AS expires_later
+                FROM idempotency_keys`
+            );
+            expect(rows).to.deep.equal([
+                { token: '1'.repeat(32), leased: true, expires_later: true },
+            ]);
+        }
+    );
+
+    withStore.test('Renews nothing once the key expired', async ({ store, identity }) => {
+        await claim(store, identity, '1'.repeat(32), { leaseMs: 1, ttlMs: 2 });
+        await setTimeout(10);
+        expect(await store.renew({ identity, token: '1'.repeat(32), ...longTimes })).to.equal(
+            false
+        );
+    });
+
     test('Rejects an empty table name when constructed', () => {
         expect(
             () =>

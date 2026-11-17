@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention -- DynamoDB names its request fields in PascalCase, and its attribute types (`B`, `N`, `S`) in capitals */
-import type { ClaimParams, ClaimResult, IdempotencyStore, StoredResponse } from './attempt.js';
+import type {
+    ClaimParams,
+    ClaimResult,
+    IdempotencyStore,
+    RenewParams,
+    StoredResponse,
+} from './attempt.js';
 import { fromHex, toHex } from './encoding.js';
 
 /**
@@ -101,6 +107,7 @@ const names = {
     '#status': 'status',
     '#headers': 'headers',
     '#body': 'body',
+    '#ttl': 'ttl',
 } as const;
 
 const claimCondition =
@@ -108,6 +115,18 @@ const claimCondition =
 const tokenCondition = '#token = :token AND #expires_at > :now';
 const completeUpdate =
     'SET #status = :status, #headers = :headers, #body = :body REMOVE #token, #lease_expires_at';
+const renewUpdate =
+    'SET #lease_expires_at = :lease_expires_at, #expires_at = :expires_at, #ttl = :ttl';
+
+/**
+ * The `ttl` attribute for a key expiring at `expiresAt`: DynamoDB's Time to Live reads whole seconds.
+ *
+ * @param expiresAt - When the key expires, in milliseconds since the epoch
+ * @returns The attribute value
+ */
+const ttlOf = (expiresAt: number): { readonly N: string } => ({
+    N: String(Math.ceil(expiresAt / millisecondsPerSecond)),
+});
 
 /**
  * The table every implementation shares, as in the spec: the partition key `identity`, bytes, and nothing else
@@ -207,7 +226,7 @@ export class DynamoDbStore implements IdempotencyStore {
                     token: { S: token },
                     lease_expires_at: { N: String(now + leaseMs) },
                     expires_at: { N: String(expiresAt) },
-                    ttl: { N: String(Math.ceil(expiresAt / millisecondsPerSecond)) },
+                    ttl: ttlOf(expiresAt),
                 },
                 ConditionExpression: claimCondition,
                 ExpressionAttributeNames: {
@@ -292,5 +311,30 @@ export class DynamoDbStore implements IdempotencyStore {
             },
         });
         return wasWritten(deletion);
+    }
+
+    public async renew({ identity, token, leaseMs, ttlMs }: RenewParams): Promise<boolean> {
+        const now = Date.now();
+        const expiresAt = now + ttlMs;
+        const update = this.#connection.updateItem({
+            TableName: this.#table,
+            Key: { identity: { B: fromHex(identity) } },
+            UpdateExpression: renewUpdate,
+            ConditionExpression: tokenCondition,
+            ExpressionAttributeNames: {
+                '#lease_expires_at': names['#lease_expires_at'],
+                '#expires_at': names['#expires_at'],
+                '#ttl': names['#ttl'],
+                '#token': names['#token'],
+            },
+            ExpressionAttributeValues: {
+                ':lease_expires_at': { N: String(now + leaseMs) },
+                ':expires_at': { N: String(expiresAt) },
+                ':ttl': ttlOf(expiresAt),
+                ':token': { S: token },
+                ':now': { N: String(now) },
+            },
+        });
+        return wasWritten(update);
     }
 }

@@ -4,6 +4,8 @@ import { expect } from '@leyman/expect';
 import {
     computeFingerprint,
     IdempotencyKeys,
+    IdempotencyKeysError,
+    IdempotencyKeysRenewUnsupportedError,
     IdempotencyKeysResponseError,
 } from 'idempotency-keys';
 import { ValkeyStore } from 'idempotency-keys/valkey';
@@ -199,4 +201,50 @@ suite('IdempotencyKeys', () => {
             expect(subscriptions).to.equal(0);
         }
     );
+
+    withStore.test(
+        'Refuses to renew on a store without renew, leaving the attempt running',
+        async ({ store, fingerprint }) => {
+            const keys = new IdempotencyKeys({
+                store: {
+                    claim: async params => store.claim(params),
+                    complete: async (identity, token, stored) =>
+                        store.complete(identity, token, stored),
+                    release: async (identity, token) => store.release(identity, token),
+                },
+            });
+            const attempt = attemptOf(await keys.begin({ ...request, fingerprint }));
+            await expect(attempt.renew())
+                .to.be.rejectedWith(IdempotencyKeysRenewUnsupportedError)
+                .and.eventually.be.an.instanceOf(IdempotencyKeysError)
+                .with.property('name', 'IdempotencyKeysRenewUnsupportedError');
+            expect(await attempt.respond(response)).to.equal('stored');
+        }
+    );
+
+    withStore.test('Renews with its leaseMs and ttlMs', async ({ store, fingerprint }) => {
+        const renewals: unknown[] = [];
+        const keys = new IdempotencyKeys({
+            store: {
+                claim: async params => store.claim(params),
+                complete: async (identity, token, stored) =>
+                    store.complete(identity, token, stored),
+                release: async (identity, token) => store.release(identity, token),
+                renew: async params => {
+                    renewals.push(params);
+                    return store.renew(params);
+                },
+            },
+            leaseMs: 5000,
+            ttlMs: 10_000,
+        });
+        const attempt = attemptOf(await keys.begin({ ...request, fingerprint }));
+        expect(await attempt.renew()).to.equal(true);
+        expect(renewals).to.have.lengthOf(1);
+        expect(renewals[0]).to.deep.include({
+            identity: attempt.identity,
+            leaseMs: 5000,
+            ttlMs: 10_000,
+        });
+    });
 });

@@ -1,4 +1,10 @@
-import type { ClaimParams, ClaimResult, IdempotencyStore, StoredResponse } from 'idempotency-keys';
+import type {
+    ClaimParams,
+    ClaimResult,
+    IdempotencyStore,
+    RenewParams,
+    StoredResponse,
+} from 'idempotency-keys';
 
 type MemoryRecord = { readonly fingerprint: string; readonly expiresAt: number } & (
     | {
@@ -79,6 +85,18 @@ export class MemoryStore implements IdempotencyStore {
             return false;
         }
         this.#records.delete(identity);
+        return true;
+    }
+
+    public async renew({ identity, token, leaseMs, ttlMs }: RenewParams): Promise<boolean> {
+        await roundTrip();
+        const now = Date.now();
+        const record = this.#read(identity, now);
+        if (record?.state !== 'running' || record.token !== token) {
+            return false;
+        }
+        const lease = { token, leaseExpiresAt: now + leaseMs, expiresAt: now + ttlMs };
+        this.#write(identity, { ...record, ...lease });
         return true;
     }
 

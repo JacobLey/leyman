@@ -156,6 +156,8 @@ switch (result.outcome) {
 
 An attempt that never ends (its server crashed, or the handler threw) holds the key until its lease runs out, then the next request with the key runs.
 
+A request that may run longer than `leaseMs` (a job, say) renews its lease with `attempt.renew()` more often than `leaseMs`, from a heartbeat: each renewal moves the lease to run out `leaseMs` from then, and the key to expire `ttlMs` from then. It resolves to `false` once the attempt no longer holds the key (another request took over, the attempt ended, or the key expired), and the request should then stop, since another may be running it.
+
 ### Which responses are stored
 
 By default every response is stored except a `429` (Too Many Requests), which says nothing was done. That includes a `5xx`: a handler that failed halfway may have written something, and running it again could write it twice. If your handlers are transactional, release `5xx` responses too, so a retry runs again:
@@ -171,7 +173,7 @@ A response a replay couldn't send (a status that isn't a whole number from 200 t
 
 ### Writing a store
 
-`store` takes anything implementing `IdempotencyStore`: `claim`, `complete` and `release`, as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) defines them. The library does the hashing, waiting, policy and notifying, so a store only keeps records, and its [contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) is short:
+`store` takes anything implementing `IdempotencyStore`: `claim`, `complete`, `release` and, optionally, `renew` (without it, `attempt.renew()` rejects with `IdempotencyKeysRenewUnsupportedError`), as the [specification](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#stores) defines them. The library does the hashing, waiting, policy and notifying, so a store only keeps records, and its [contract](https://github.com/JacobLey/leyman/blob/main/tools/idempotency-keys/SPEC.md#the-store-contract) is short:
 
 - Each operation is atomic for its identity: of two concurrent claims on a free key, exactly one gets `claimed`.
 - Reads see every completed write, from any server.
@@ -193,7 +195,7 @@ The [test helpers](https://github.com/JacobLey/leyman/blob/main/tools/idempotenc
 | `store`              | `IdempotencyStore`                      | —                      | Required. A `PostgresStore`, a `ValkeyStore`, or [your own](#writing-a-store).                                                                                                                                                                                                                                   |
 | `notifier`           | `IdempotencyNotifier`                   | none                   | Wakes waiting requests, on this server and others, when a key's request ends. Without one, they only poll.                                                                                                                                                                                                       |
 | `ttlMs`              | `number`                                | `86_400_000` (24 h)    | How long a key lasts from when it was claimed.                                                                                                                                                                                                                                                                   |
-| `leaseMs`            | `number`                                | `60_000`               | How long a request may run before another may take over. Longer than your slowest handler, so a slow request never runs twice. Below `ttlMs`.                                                                                                                                                                    |
+| `leaseMs`            | `number`                                | `60_000`               | How long a request may run, from its claim or last `attempt.renew()`, before another may take over. Longer than your slowest handler (or the longest time between renewals), so a slow request never runs twice. Below `ttlMs`.                                                                                  |
 | `waitMs`             | `number`                                | `10_000`               | How long a duplicate waits on a running request before a `409`. `0` answers at once.                                                                                                                                                                                                                             |
 | `respondPolicy`      | `(response) => 'complete' \| 'release'` | `defaultRespondPolicy` | Which responses are stored (`complete`) and which free the key (`release`). The default releases only a `429`.                                                                                                                                                                                                   |
 | `fingerprintHeaders` | `readonly string[]`                     | `[]`                   | Headers that must match on a reused key in `handle()`, in any case.                                                                                                                                                                                                                                              |
@@ -233,7 +235,7 @@ Claims a key. A completed request's response is replayed, and a running one is w
 
 **Returns** `Promise<BeginResult>`, one of:
 
-- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'` or `'released'` (by the policy), or `'lost'` (its lease ran out and another request took over, so nothing changed), and rejects with `IdempotencyKeysResponseError` for a response a replay couldn't send (a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`; the store isn't touched and the attempt still holds the key, so respond again or release it); or with `attempt.release()`, which resolves to whether it released.
+- `{ outcome: 'run', attempt }`: the request holds the key. End it with `attempt.respond(response)`, which resolves to `'stored'` or `'released'` (by the policy), or `'lost'` (its lease ran out and another request took over, so nothing changed), and rejects with `IdempotencyKeysResponseError` for a response a replay couldn't send (a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`; the store isn't touched and the attempt still holds the key, so respond again or release it); or with `attempt.release()`, which resolves to whether it released. While it runs, `attempt.renew()` renews its lease, and resolves to `false` once another request took over, the attempt ended or the key expired.
 - `{ outcome: 'replay', response }`: the stored `{ status, headers, body }`, `headers` as `[name, value]` pairs with repeated names kept, and `body` as bytes.
 
 A stored response keeps its headers except `Connection`, `Content-Length`, `Keep-Alive`, `Transfer-Encoding` and `Idempotent-Replayed`, which describe one transfer rather than the response; a replay adds `Idempotent-Replayed: true` once.
@@ -355,18 +357,18 @@ Either notifier works with any store; DynamoDB has none of its own. A notifier o
 
 Every error extends `IdempotencyKeysError`.
 
-| Error                             | When                                                                                                                                                                  |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `IdempotencyKeysOptionError`      | An option out of range; an empty or not well-formed (lone surrogate) scope, operation or key; or an empty or over 63-byte table or channel. Has `option` and `value`. |
-| `IdempotencyKeyHeaderError`       | `parseIdempotencyKey()` can't read the header. Has `values`.                                                                                                          |
-| `IdempotencyKeysHeaderValueError` | A named header's value isn't Latin-1. Has `header` and `value`.                                                                                                       |
-| `IdempotencyKeysBodyUsedError`    | `handle()` got a request whose body was already read.                                                                                                                 |
-| `IdempotencyKeysReplyError`       | From `idempotency-keys/valkey`: a `ValkeyStore` connection replied with text (ioredis's own `eval`).                                                                  |
-| `IdempotencyKeysResponseError`    | `attempt.respond()` got a response a replay couldn't send: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`. Has `status`.    |
+| Error                                  | When                                                                                                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IdempotencyKeysOptionError`           | An option out of range; an empty or not well-formed (lone surrogate) scope, operation or key; or an empty or over 63-byte table or channel. Has `option` and `value`. |
+| `IdempotencyKeyHeaderError`            | `parseIdempotencyKey()` can't read the header. Has `values`.                                                                                                          |
+| `IdempotencyKeysHeaderValueError`      | A named header's value isn't Latin-1. Has `header` and `value`.                                                                                                       |
+| `IdempotencyKeysBodyUsedError`         | `handle()` got a request whose body was already read.                                                                                                                 |
+| `IdempotencyKeysReplyError`            | From `idempotency-keys/valkey`: a `ValkeyStore` connection replied with text (ioredis's own `eval`).                                                                  |
+| `IdempotencyKeysResponseError`         | `attempt.respond()` got a response a replay couldn't send: a status that isn't a whole number from 200 to 599, or a body on a `204`, `205` or `304`. Has `status`.    |
+| `IdempotencyKeysRenewUnsupportedError` | `attempt.renew()` on a store without the optional `renew`.                                                                                                            |
 
 ## Limits
 
 - **Responses are read whole** to be stored, so `handle()` buffers a streamed response before sending it.
 - **Headers are stored in the order the response lists them.** For `handle()` that is the order of `fetch`'s `Headers`: sorted by name, repeated values joined, and repeated `Set-Cookie` kept.
 - **A proxied response must match its body.** A response from an upstream `fetch` carries the upstream's `Content-Encoding` with a body `fetch` already decoded; strip that header in `run`, or a replay sends a decoded body labelled as encoded. `handle()` doesn't strip it for you, since a handler may really send an encoded body.
-- **No lease renewal.** Set `leaseMs` above your slowest handler: a request that runs longer can be taken over, and run twice.

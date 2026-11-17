@@ -88,8 +88,10 @@ export const runScenario = async (scenario: Scenario, keys: IdempotencyKeys): Pr
             await (step.expect === 'error'
                 ? expect(responded).to.be.rejectedWith(IdempotencyKeysResponseError)
                 : expect(responded).to.eventually.equal(step.expect));
-        } else {
+        } else if ('release' in step) {
             expect(await attempts.get(step.release)!.release()).to.equal(step.expect);
+        } else {
+            expect(await attempts.get(step.renew)!.renew()).to.equal(step.expect);
         }
     }
 };

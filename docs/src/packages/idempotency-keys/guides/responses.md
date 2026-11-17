@@ -35,7 +35,7 @@ A handler that may have partly written must not release, because the retry would
 
 A request that fails before it has a response (its server crashed, or the handler threw) neither completes nor releases. Its claim is a lease (`leaseMs`, 60 seconds by default), and once that runs out, a waiting or later request with the same key and fingerprint takes over and runs.
 
-So set `leaseMs` above your slowest handler. There is no lease renewal, so a request that runs longer than its lease can be taken over and run twice. Its own caller still gets its response, but it isn't stored, since the request that took over will store its own.
+So set `leaseMs` above your slowest handler, or have a request that runs longer (through `begin()`) renew its lease with `attempt.renew()` from a heartbeat, more often than `leaseMs`. A request that runs longer than its lease without renewing can be taken over and run twice. Its own caller still gets its response, but it isn't stored, since the request that took over will store its own.
 
 `handle()` rejects with the handler's error, so your framework answers as it would without the library, and the key stays held until the lease runs out.
 

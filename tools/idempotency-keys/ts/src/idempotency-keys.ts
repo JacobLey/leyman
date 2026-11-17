@@ -4,6 +4,7 @@ export {
     IdempotencyKeysError,
     IdempotencyKeysHeaderValueError,
     IdempotencyKeysOptionError,
+    IdempotencyKeysRenewUnsupportedError,
     IdempotencyKeysResponseError,
 } from './lib/errors.js';
 export type { FingerprintInput, IdentityInput } from './lib/hashes.js';
@@ -15,6 +16,7 @@ export type {
     ClaimResult,
     IdempotencyAttempt,
     IdempotencyStore,
+    RenewParams,
     RespondPolicy,
     RespondResult,
     StoredResponse,
