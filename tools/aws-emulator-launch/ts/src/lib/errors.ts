@@ -74,3 +74,14 @@ export class AwsEmulatorFileError extends AwsEmulatorError {
         this.file = file;
     }
 }
+
+/**
+ * An option that can't be passed to the emulator, such as an `idleTimeoutMs` that isn't whole seconds. The emulator
+ * isn't started.
+ */
+export class AwsEmulatorOptionError extends AwsEmulatorError {
+    public constructor(message: string) {
+        super(message);
+        this.name = 'AwsEmulatorOptionError';
+    }
+}

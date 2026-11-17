@@ -9,6 +9,7 @@ import {
     AwsEmulatorExitError,
     AwsEmulatorFileError,
     AwsEmulatorNotRunError,
+    AwsEmulatorOptionError,
     AwsEmulatorStartTimeoutError,
     launchAwsEmulator,
 } from 'aws-emulator-launch';
@@ -139,20 +140,85 @@ suite('launchAwsEmulator with a fake emulator', () => {
         }
     );
 
-    withFakes.test('Rounds the idle timeout up to whole seconds', async ({ fakes }) => {
+    withFakes.test('Passes the idle timeout in seconds', async ({ fakes }) => {
         const { binary, argsFile } = await serving(fakes, 'options', [
             await fakes.writeFiles('options'),
         ]);
 
         const emulator = await launchAwsEmulator({
             binary,
-            idleTimeoutMs: 1500,
+            idleTimeoutMs: 2000,
         });
         await emulator.stop();
 
         expect(await readFile(argsFile, 'utf8')).to.equal(
             '-b 127.0.0.1 -p 0 -a on --idle-timeout 2 -t off\n'
         );
+    });
+
+    for (const idleTimeoutMs of [500, 1500, 0, -1000, Number.NaN]) {
+        withFakes.test(
+            `Refuses an idle timeout of ${idleTimeoutMs} ms, without starting it`,
+            async ({ fakes }) => {
+                await expect(
+                    launchAwsEmulator({
+                        binary: path.join(fakes.dir, 'missing'),
+                        idleTimeoutMs,
+                    })
+                )
+                    .to.be.rejectedWith(AwsEmulatorOptionError)
+                    .and.eventually.have.property(
+                        'message',
+                        `idleTimeoutMs must be a positive whole number of seconds, got ${idleTimeoutMs}`
+                    );
+            }
+        );
+    }
+
+    withFakes.test('Kills it when it ignores SIGTERM', async ({ fakes }) => {
+        const line = await fakes.writeFiles('stubborn');
+        const pidFile = path.join(fakes.dir, 'stubborn.pid');
+        // An ignored signal stays ignored across exec
+        const binary = await fakes.write(
+            'stubborn',
+            [
+                "trap '' TERM",
+                `echo $$ > ${shellQuote(pidFile)}`,
+                `echo ${shellQuote(line)}`,
+                'exec sleep 30',
+            ].join('\n')
+        );
+        const emulator = await launchAwsEmulator({ binary, stopTimeoutMs: 200 });
+
+        await emulator.stop();
+
+        expect(isRunning(Number(await readFile(pidFile, 'utf8')))).to.equal(false);
+    });
+
+    withFakes.test('Stops when a process it started still holds its output', async ({ fakes }) => {
+        const line = await fakes.writeFiles('orphans');
+        const pidFile = path.join(fakes.dir, 'orphans.pid');
+        // The background sleep keeps the emulator's output open after the emulator exits
+        const binary = await fakes.write(
+            'orphans',
+            [
+                'sleep 30 &',
+                `echo $! > ${shellQuote(pidFile)}`,
+                `echo ${shellQuote(line)}`,
+                "trap 'exit 0' TERM",
+                'wait',
+            ].join('\n')
+        );
+        const emulator = await launchAwsEmulator({ binary });
+        const orphan = Number(await readFile(pidFile, 'utf8'));
+
+        try {
+            await emulator.stop();
+
+            expect(isRunning(orphan)).to.equal(true);
+        } finally {
+            process.kill(orphan, 'SIGKILL');
+        }
     });
 
     withFakes.test('Stops it, and waits until it has exited', async ({ fakes }) => {

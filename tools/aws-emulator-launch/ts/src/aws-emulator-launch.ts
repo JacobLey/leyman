@@ -6,6 +6,7 @@ import {
     AwsEmulatorExitError,
     AwsEmulatorFileError,
     AwsEmulatorNotRunError,
+    AwsEmulatorOptionError,
     AwsEmulatorStartTimeoutError,
 } from '#internal/lib/errors.js';
 import { parseIni, parseStartupLine } from '#internal/lib/startup.js';
@@ -17,6 +18,7 @@ export {
     AwsEmulatorExitError,
     AwsEmulatorFileError,
     AwsEmulatorNotRunError,
+    AwsEmulatorOptionError,
     AwsEmulatorStartTimeoutError,
 } from '#internal/lib/errors.js';
 
@@ -31,8 +33,9 @@ export interface LaunchAwsEmulatorOptions {
      */
     readonly binary?: string;
     /**
-     * Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`, rounded up to
-     * whole seconds), so one whose process died before calling `stop()` doesn't run forever.
+     * Milliseconds without an API call after which the emulator exits on its own (`--idle-timeout`), so one whose
+     * process died before calling `stop()` doesn't run forever. The emulator takes whole seconds, so this must be a
+     * positive multiple of 1000.
      *
      * @default 600000
      */
@@ -43,6 +46,12 @@ export interface LaunchAwsEmulatorOptions {
      * @default 10000
      */
     readonly startTimeoutMs?: number;
+    /**
+     * Milliseconds `stop()` waits for the emulator to exit after `SIGTERM`, after which it is killed.
+     *
+     * @default 10000
+     */
+    readonly stopTimeoutMs?: number;
 }
 
 /**
@@ -74,8 +83,9 @@ export interface AwsEmulator {
      */
     readonly caFile: string;
     /**
-     * Stops the emulator (`SIGTERM`), which deletes its files, and resolves once it has exited. Calling it again, or
-     * after the emulator exited on its own, just waits for that exit.
+     * Stops the emulator (`SIGTERM`), which deletes its files, and resolves once it has exited. One that hasn't exited
+     * within `stopTimeoutMs` is killed (`SIGKILL`), leaving its files behind. Calling it again, or after the emulator
+     * exited on its own, just waits for that exit.
      */
     readonly stop: () => Promise<void>;
     /**
@@ -88,6 +98,12 @@ const defaultBinary = 'aws-emulator';
 const defaultIdleTimeoutMs = 600_000;
 const msPerSecond = 1000;
 const defaultStartTimeoutMs = 10_000;
+const defaultStopTimeoutMs = 10_000;
+/**
+ * How long the emulator's output is still read once it has exited, before its pipes are closed: a process it started
+ * could otherwise hold them open, and keep `stop()` waiting, as long as that process runs.
+ */
+const waitDelayMs = 1000;
 
 /**
  * Reads a file the startup line named.
@@ -131,6 +147,7 @@ const iniValue = (file: string, text: string, key: string): string => {
  * @rejects {AwsEmulatorExitError} When the emulator exits before it starts
  * @rejects {AwsEmulatorStartTimeoutError} When it doesn't start within `startTimeoutMs`
  * @rejects {AwsEmulatorFileError} When a file its startup line names can't be read
+ * @rejects {AwsEmulatorOptionError} When `idleTimeoutMs` isn't a positive whole number of seconds
  */
 export const launchAwsEmulator = async (
     options: LaunchAwsEmulatorOptions = {}
@@ -139,7 +156,13 @@ export const launchAwsEmulator = async (
         binary = defaultBinary,
         idleTimeoutMs = defaultIdleTimeoutMs,
         startTimeoutMs = defaultStartTimeoutMs,
+        stopTimeoutMs = defaultStopTimeoutMs,
     } = options;
+    if (!Number.isSafeInteger(idleTimeoutMs / msPerSecond) || idleTimeoutMs <= 0) {
+        throw new AwsEmulatorOptionError(
+            `idleTimeoutMs must be a positive whole number of seconds, got ${idleTimeoutMs}`
+        );
+    }
     const child = spawn(
         binary,
         [
@@ -150,9 +173,8 @@ export const launchAwsEmulator = async (
             '0',
             '-a',
             'on',
-            // Whole seconds, rounded up
             '--idle-timeout',
-            String(Math.ceil(idleTimeoutMs / msPerSecond)),
+            String(idleTimeoutMs / msPerSecond),
             // Off always wins over EMULATOR_TELEMETRY and the config file, while on can't override them (`aws-emulator --help`)
             '-t',
             'off',
@@ -161,15 +183,32 @@ export const launchAwsEmulator = async (
     );
     child.stdout.setEncoding('utf8');
     child.stderr.setEncoding('utf8');
+    // 'close' waits for the pipes too, so they're closed a moment after the exit
+    let waitDelay: ReturnType<typeof setTimeout> | undefined;
+    child.once('exit', () => {
+        waitDelay = setTimeout(() => {
+            child.stdout.destroy();
+            child.stderr.destroy();
+        }, waitDelayMs);
+    });
     const closed = new Promise<void>(resolve => {
         child.once('close', () => {
+            clearTimeout(waitDelay);
             resolve();
         });
     });
+    let stopping: Promise<void> | undefined;
     const stop = async (): Promise<void> => {
-        // Does nothing once it has exited
-        child.kill('SIGTERM');
-        await closed;
+        stopping ??= (async () => {
+            // Each does nothing once it has exited
+            child.kill('SIGTERM');
+            const killTimer = setTimeout(() => {
+                child.kill('SIGKILL');
+            }, stopTimeoutMs);
+            await closed;
+            clearTimeout(killTimer);
+        })();
+        await stopping;
     };
 
     // Output is kept until it starts, for an error to show

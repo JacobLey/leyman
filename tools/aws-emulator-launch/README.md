@@ -22,8 +22,8 @@ The two take the same options and return the same things, in each language's con
 | TypeScript | Go |
 |------------|----|
 | `launchAwsEmulator(options?)` | `Launch(ctx, Options)` |
-| `binary`, `idleTimeoutMs`, `startTimeoutMs` | `Binary`, `IdleTimeout`, `StartTimeout` |
+| `binary`, `idleTimeoutMs`, `startTimeoutMs`, `stopTimeoutMs` | `Binary`, `IdleTimeout`, `StartTimeout`, `StopTimeout` |
 | `endpoint`, `region`, `credentials`, `ca`, `caFile` | `Endpoint`, `Region`, `Credentials`, `CA`, `CAFile` |
 | `awsClientConfig(emulator)`, a whole SDK client configuration | `HTTPClient()`, for an SDK client's `HTTPClient` |
 | `stop()`, or `await using` | `Stop()` |
-| `AwsEmulatorNotRunError`, `AwsEmulatorExitError`, `AwsEmulatorStartTimeoutError`, `AwsEmulatorFileError` | `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile` |
+| `AwsEmulatorNotRunError`, `AwsEmulatorExitError`, `AwsEmulatorStartTimeoutError`, `AwsEmulatorFileError`, `AwsEmulatorOptionError` | `ErrNotRun`, `ErrExited`, `ErrStartTimeout`, `ErrFile`, `ErrOption` |
