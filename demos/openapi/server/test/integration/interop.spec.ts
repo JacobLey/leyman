@@ -149,9 +149,19 @@ for (const implementation of implementations) {
             // Compiling the test binary can take a while on a cold cache
             this.timeout(300_000);
 
-            await run(
+            const output = await run(
                 'go',
-                ['test', '-tags', 'interop', '-count', '1', '-run', '^TestInterop', './client/...'],
+                [
+                    'test',
+                    '-v',
+                    '-tags',
+                    'interop',
+                    '-count',
+                    '1',
+                    '-run',
+                    '^TestInterop',
+                    './client/...',
+                ],
                 {
                     cwd: goModule,
                     env: {
@@ -162,6 +172,9 @@ for (const implementation of implementations) {
                 }
             );
 
+            // `go test` passes with nothing run (a renamed test, a lost build tag) or skipped, so check they ran
+            expect(output).to.match(/^--- PASS: TestInterop/mv);
+            expect(output).not.to.match(/\[no tests to run\]|--- SKIP/v);
             expect(await served.close()).to.deep.equal([]);
         });
     });
