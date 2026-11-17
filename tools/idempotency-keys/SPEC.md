@@ -101,6 +101,12 @@ token and lease) or **completed** (holding a response). A request goes through t
    finds its token gone: its own caller still gets its response, but it isn't stored (the request that took over will
    store its own).
 
+While it runs, a request may **renew** its lease: the lease runs out `leaseMs` from the renewal, and the key expires
+`ttlMs` from it, as at a takeover, so a key never expires while its request renews. A request that renews regularly
+(from a job's heartbeat, say) can run longer than `leaseMs`, which then only has to cover the time between renewals.
+A renewal also only applies while the record holds the request's token, so one whose lease ran out still renews if
+nobody took over, and one that finds its token gone learns that another request took over, and should stop.
+
 Which responses complete and which release is up to the server, as a function of the response. The default completes
 every response except a `429` (Too Many Requests, which says nothing was done). A server that knows its handlers are
 transactional may release `5xx` responses too, so a retry runs again; a handler that may have partly written must not.
@@ -119,8 +125,8 @@ drift.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `ttlMs` | 86 400 000 (24 hours) | How long a key lasts, from when it was claimed. A takeover claims it again, so a key never expires while its request runs. |
-| `leaseMs` | 60 000 | How long a request may run before it is taken to have crashed and another may take over. Longer than the slowest handler, so a slow request never runs twice. |
+| `ttlMs` | 86 400 000 (24 hours) | How long a key lasts, from when it was last claimed or renewed. A takeover claims it again, so a key never expires while its request runs. |
+| `leaseMs` | 60 000 | How long a request may run, from its claim or last renewal, before it is taken to have crashed and another may take over. Longer than the slowest handler (or, for one that renews, the longest time between renewals), so a slow request never runs twice. |
 | `waitMs` | 10 000 | How long a request waits on a running one before a `409`. `0` answers at once. |
 
 `leaseMs` must be less than `ttlMs`. Polling (how often a waiting request claims again without a notification) is up to
@@ -128,7 +134,7 @@ each implementation: it is the fallback for a lost notification, so it only affe
 
 ## Stores
 
-Each store implements three operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for every
+Each store implements four operations. `token` is 16 random bytes, as 32 lower-case hex characters, new for every
 claim and takeover.
 
 - `claim(identity, fingerprint, token, leaseMs, ttlMs)` returns `claimed`, `running` with the record's fingerprint, or
@@ -136,6 +142,9 @@ claim and takeover.
   mismatch must answer `422` without disturbing the request that holds the record.
 - `complete(identity, token, response)` stores the response if the record holds `token`, and says whether it did.
 - `release(identity, token)` deletes the record if it holds `token`, and says whether it did.
+- `renew(identity, token, leaseMs, ttlMs)` sets the record's lease to run out `leaseMs` from now and its key to expire
+  `ttlMs` from now, if it holds `token`, and says whether it did. A store a server brings may leave it out (it was added
+  in 1.1); renewing an attempt on such a store is then an error.
 
 ### The store contract
 
@@ -229,7 +238,15 @@ WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
 DELETE FROM idempotency_keys WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
 ```
 
-A request whose lease ran out, but that nobody took over, still completes or releases: its token is still there.
+Renewing has the same condition:
+
+```sql
+UPDATE idempotency_keys
+SET lease_expires_at = clock_timestamp() + $3 * interval '1 millisecond', expires_at = clock_timestamp() + $4 * interval '1 millisecond'
+WHERE identity = $1 AND token = $2 AND expires_at > clock_timestamp()
+```
+
+A request whose lease ran out, but that nobody took over, still completes, releases or renews: its token is still there.
 `deleteExpired` is `DELETE FROM idempotency_keys WHERE expires_at <= clock_timestamp()`.
 
 ### Valkey (or Redis)
@@ -237,7 +254,7 @@ A request whose lease ran out, but that nobody took over, still completes or rel
 Lax: a claim is a key with a time to live, so a failover that loses writes or a flush forgets keys, and a request after
 that runs again. Use it for deduplicating notifications or non-financial creates, never payments.
 
-A record is a hash at `<prefix>:<identity>` (the prefix is `idempotency_keys` unless configured), expiring with the key (`PEXPIRE` of `ttlMs` at each claim). Its fields:
+A record is a hash at `<prefix>:<identity>` (the prefix is `idempotency_keys` unless configured), expiring with the key (`PEXPIRE` of `ttlMs` at each claim and renewal). Its fields:
 
 | Field | Value |
 |---|---|
@@ -255,6 +272,7 @@ strings, numbers in decimal:
 | claim | fingerprint, token, `leaseMs`, `ttlMs` | `{'claimed'}`, `{'running', fingerprint}`, or `{'completed', fingerprint, status, headers, body}` (`status` a decimal string) |
 | complete | token, status, headers, body | `1` if it stored the response, `0` if the record doesn't hold the token |
 | release | token | `1` if it deleted the record, `0` if it doesn't hold the token |
+| renew | token, `leaseMs`, `ttlMs` | `1` if it renewed the record, `0` if it doesn't hold the token |
 
 `body` is binary: read the reply as bytes, not text (a client that decodes replies as UTF-8 changes a binary body).
 
@@ -301,7 +319,9 @@ Completing is an `UpdateItem` that sets `status`, `headers` and `body` and remov
 token = :token AND expires_at > :now
 ```
 
-and a failed condition is `false`, never an error. An item holds at most 400 KB, so a response that doesn't fit is
+and a failed condition is `false`, never an error. Renewing is an `UpdateItem` with the same condition, setting
+`lease_expires_at` to `:now` plus `leaseMs`, and `expires_at` and `ttl` to `:now` plus `ttlMs` (`ttl` is a reserved
+word, so it goes through an expression attribute name). An item holds at most 400 KB, so a response that doesn't fit is
 refused with an error when completing, which leaves the attempt to its lease.
 
 ## Notifiers
@@ -329,7 +349,9 @@ version it implements.
 
 ### 1.1
 
-Adds the [DynamoDB](#dynamodb) store's layout.
+Adds the [DynamoDB](#dynamodb) store's layout, and renewing a lease: the stores' `renew` operation (with its Postgres
+statement, Valkey script and DynamoDB update). A server on 1.0 never renews, which a 1.1 server sharing its store can
+ignore.
 
 ### 1.0
 

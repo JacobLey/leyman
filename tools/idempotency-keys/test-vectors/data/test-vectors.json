@@ -337,7 +337,7 @@
       "target": "/abcd"
     },
     {
-      "raw": "/a\u007fb?\u007f",
+      "raw": "/ab?",
       "target": "/a%7Fb?%7F"
     },
     {
@@ -1930,11 +1930,339 @@
           "expect": "run"
         }
       ]
+    },
+    {
+      "description": "a renewed lease is not taken over",
+      "options": {
+        "leaseMs": 400,
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "long",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 250
+        },
+        {
+          "renew": "long",
+          "expect": true
+        },
+        {
+          "sleep": 250
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        },
+        {
+          "respond": "long",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        }
+      ]
+    },
+    {
+      "description": "a holder whose lease ran out still renews when nobody took over",
+      "options": {
+        "leaseMs": 200,
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "slow",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 300
+        },
+        {
+          "renew": "slow",
+          "expect": true
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        },
+        {
+          "respond": "slow",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        }
+      ]
+    },
+    {
+      "description": "a holder that was taken over can't renew",
+      "options": {
+        "leaseMs": 200,
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "crashed",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 300
+        },
+        {
+          "begin": "takeover",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "renew": "crashed",
+          "expect": false
+        },
+        {
+          "begin": "duplicate",
+          "request": "a",
+          "expect": "conflict"
+        },
+        {
+          "respond": "takeover",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        }
+      ]
+    },
+    {
+      "description": "an attempt that ended can't renew",
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "other": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k2",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "stored",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "respond": "stored",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          },
+          "expect": "stored"
+        },
+        {
+          "renew": "stored",
+          "expect": false
+        },
+        {
+          "begin": "released",
+          "request": "other",
+          "expect": "run"
+        },
+        {
+          "release": "released",
+          "expect": true
+        },
+        {
+          "renew": "released",
+          "expect": false
+        },
+        {
+          "begin": "retry",
+          "request": "a",
+          "expect": "replay",
+          "response": {
+            "status": 201,
+            "headers": [
+              [
+                "content-type",
+                "application/json"
+              ],
+              [
+                "set-cookie",
+                "a=1"
+              ],
+              [
+                "set-cookie",
+                "b=2"
+              ]
+            ],
+            "body": "{\"id\":\"n_1\"}"
+          }
+        }
+      ]
+    },
+    {
+      "description": "a renewal keeps the key from expiring",
+      "options": {
+        "leaseMs": 100,
+        "ttlMs": 400,
+        "waitMs": 0
+      },
+      "requests": {
+        "a": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Hi\"}"
+        },
+        "body": {
+          "scope": "user_1",
+          "operation": "createNote",
+          "key": "k1",
+          "method": "POST",
+          "target": "/notes",
+          "headers": [],
+          "body": "{\"title\":\"Bye\"}"
+        }
+      },
+      "steps": [
+        {
+          "begin": "long",
+          "request": "a",
+          "expect": "run"
+        },
+        {
+          "sleep": 250
+        },
+        {
+          "renew": "long",
+          "expect": true
+        },
+        {
+          "sleep": 250
+        },
+        {
+          "begin": "mismatch",
+          "request": "body",
+          "expect": "mismatch"
+        }
+      ]
     }
   ],
   "valkeyScripts": {
     "claim": "local time = redis.call('TIME')\nlocal now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)\nlocal record = redis.call('HMGET', KEYS[1], 'fingerprint', 'lease', 'status', 'headers', 'body')\nif record[3] then\n    return {'completed', record[1], record[3], record[4], record[5]}\nend\nif record[1] and (record[1] ~= ARGV[1] or tonumber(record[2]) > now) then\n    return {'running', record[1]}\nend\nredis.call('DEL', KEYS[1])\nredis.call('HSET', KEYS[1], 'fingerprint', ARGV[1], 'token', ARGV[2], 'lease', string.format('%d', now + tonumber(ARGV[3])))\nredis.call('PEXPIRE', KEYS[1], ARGV[4])\nreturn {'claimed'}\n",
     "complete": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nredis.call('HDEL', KEYS[1], 'token', 'lease')\nredis.call('HSET', KEYS[1], 'status', ARGV[2], 'headers', ARGV[3], 'body', ARGV[4])\nreturn 1\n",
-    "release": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nredis.call('DEL', KEYS[1])\nreturn 1\n"
+    "release": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nredis.call('DEL', KEYS[1])\nreturn 1\n",
+    "renew": "if redis.call('HGET', KEYS[1], 'token') ~= ARGV[1] then\n    return 0\nend\nlocal time = redis.call('TIME')\nlocal now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)\nredis.call('HSET', KEYS[1], 'lease', string.format('%d', now + tonumber(ARGV[2])))\nredis.call('PEXPIRE', KEYS[1], ARGV[3])\nreturn 1\n"
   }
 }
