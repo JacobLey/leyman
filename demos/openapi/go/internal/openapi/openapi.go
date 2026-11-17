@@ -3,6 +3,7 @@
 package openapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -82,8 +83,7 @@ func (o Operation) Statuses() []int {
 	return statuses
 }
 
-// methods are those OpenAPI 3.1 allows in a path item, in the order its Path Item Object lists them, which is also
-// the order of the routes and of a 405's Allow header: https://spec.openapis.org/oas/v3.1.0#path-item-object
+// methods are those OpenAPI 3.1 allows in a path item: https://spec.openapis.org/oas/v3.1.0#path-item-object
 //
 //nolint:gochecknoglobals // Never changed
 var methods = []string{"get", "put", "post", "delete", "options", "head", "patch", "trace"}
@@ -110,7 +110,23 @@ type documentOperation struct {
 }
 
 type document struct {
-	Paths map[string]map[string]json.RawMessage `json:"paths"`
+	Paths orderedObject `json:"paths"`
+}
+
+// orderedObject is a JSON object's members, with its keys in the document's order.
+type orderedObject struct {
+	members map[string]json.RawMessage
+	keys    []string
+}
+
+func (o *orderedObject) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &o.members); err != nil {
+		return err //nolint:wrapcheck // Unmarshal wraps it
+	}
+
+	o.keys = objectKeys(data)
+
+	return nil
 }
 
 // escape is a key as a JSON Pointer token: https://www.rfc-editor.org/rfc/rfc6901#section-3
@@ -128,7 +144,9 @@ func Pointer(keys ...string) string {
 	return builder.String()
 }
 
-// Parse reads every operation of a document, sorted by path and then method, in the Path Item Object's order. Every
+// Parse reads every operation of a document, in its order: paths as the document lists them, and each path's methods
+// as it lists them. That is the order the TypeScript server reads them in (a JavaScript object keeps its keys in
+// order), so the routes, a 405's Allow header and the metadata's scopes_supported come out as they do there. Every
 // request body and response must be application/json, and every operation needs an operationId and one bearer
 // security requirement: the notes API has nothing else, so nothing else is supported.
 func Parse(data []byte) ([]Operation, error) {
@@ -137,17 +155,10 @@ func Parse(data []byte) ([]Operation, error) {
 		return nil, fmt.Errorf("%w: %w", ErrDocument, err)
 	}
 
-	paths := make([]string, 0, len(doc.Paths))
-	for path := range doc.Paths {
-		paths = append(paths, path)
-	}
-
-	slices.Sort(paths)
-
 	var operations []Operation
 
-	for _, path := range paths {
-		parsed, err := parsePathItem(path, doc.Paths[path])
+	for _, path := range doc.Paths.keys {
+		parsed, err := parsePathItem(path, doc.Paths.members[path])
 		if err != nil {
 			return nil, err
 		}
@@ -158,9 +169,40 @@ func Parse(data []byte) ([]Operation, error) {
 	return operations, nil
 }
 
-func parsePathItem(path string, item map[string]json.RawMessage) ([]Operation, error) {
+// objectKeys are the keys of a JSON object, which json.Unmarshal has already read, in the order the document has them,
+// each once. Nothing is read from anything but an object.
+func objectKeys(object json.RawMessage) []string {
+	decoder := json.NewDecoder(bytes.NewReader(object))
+	if token, _ := decoder.Token(); token != json.Delim('{') {
+		return nil
+	}
+
+	var keys []string
+
+	for decoder.More() {
+		token, _ := decoder.Token()
+		key, _ := token.(string)
+
+		var value json.RawMessage
+
+		_ = decoder.Decode(&value)
+
+		if !slices.Contains(keys, key) {
+			keys = append(keys, key)
+		}
+	}
+
+	return keys
+}
+
+func parsePathItem(path string, data json.RawMessage) ([]Operation, error) {
+	var item orderedObject
+	if err := json.Unmarshal(data, &item); err != nil {
+		return nil, fmt.Errorf("%w: path %s: %w", ErrDocument, path, err)
+	}
+
 	var shared []documentParameter
-	if raw, ok := item["parameters"]; ok {
+	if raw, ok := item.members["parameters"]; ok {
 		if err := json.Unmarshal(raw, &shared); err != nil {
 			return nil, fmt.Errorf("%w: parameters of %s: %w", ErrDocument, path, err)
 		}
@@ -168,9 +210,10 @@ func parsePathItem(path string, item map[string]json.RawMessage) ([]Operation, e
 
 	var operations []Operation
 
-	for _, method := range methods {
-		raw, ok := item[method]
-		if !ok {
+	for _, method := range item.keys {
+		raw := item.members[method]
+		// Its other members (parameters, summary...) aren't operations
+		if !slices.Contains(methods, method) {
 			continue
 		}
 

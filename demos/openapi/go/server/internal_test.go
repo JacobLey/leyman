@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	idempotencykeys "github.com/JacobLey/leyman/tools/idempotency-keys/go"
@@ -178,5 +180,24 @@ func TestUndocumentedStatus(t *testing.T) {
 	_, _, err = checkResponse(routes[0], result)
 	if !errors.As(err, &responseError) || responseError.Status != 418 || responseError.Reason != "the status is not documented" {
 		t.Fatalf("error %v", err)
+	}
+}
+
+// Each scope once, in the order the operations first name them, as the TypeScript server lists them.
+func TestMetadataScopesOrder(t *testing.T) {
+	t.Parallel()
+
+	srv := &server{
+		config:   Config{ProtectedResource: &ProtectedResource{Resource: "https://notes.example", AuthorizationServers: nil}}, //nolint:exhaustruct_v5 // Only the metadata
+		keys:     nil,
+		metadata: "",
+	}
+	recorder := httptest.NewRecorder()
+	operations := []openapi.Operation{{Scopes: []string{"b", "a"}}, {Scopes: []string{"a", "c"}}} //nolint:exhaustruct_v5 // Only scopes
+	srv.serveMetadata(operations).ServeHTTP(recorder, httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil))
+
+	var metadata metadataDocument
+	if err := json.Unmarshal(recorder.Body.Bytes(), &metadata); err != nil || fmt.Sprint(metadata.ScopesSupported) != "[b a c]" {
+		t.Fatalf("%s %v", recorder.Body, err)
 	}
 }

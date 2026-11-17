@@ -72,9 +72,12 @@ func TestParse(t *testing.T) {
 	}
 
 	operation := `"operationId":"a","security":[{"bearer":["s"]}]`
+
 	for name, document := range map[string]string{
 		"not JSON":            `{`,
 		"bad parameters":      `{"paths":{"/a":{"parameters":5}}}`,
+		"bad paths":           `{"paths":5}`,
+		"bad path item":       `{"paths":{"/a":5}}`,
 		"bad operation":       `{"paths":{"/a":{"get":5}}}`,
 		"no operationId":      `{"paths":{"/a":{"get":{"security":[{"bearer":["s"]}]}}}}`,
 		"no security":         `{"paths":{"/a":{"get":{"operationId":"a"}}}}`,
@@ -86,6 +89,36 @@ func TestParse(t *testing.T) {
 	} {
 		if _, err := openapi.Parse([]byte(document)); !errors.Is(err, openapi.ErrDocument) || !strings.HasPrefix(err.Error(), "openapi:") {
 			t.Errorf("%s: %v", name, err)
+		}
+	}
+}
+
+// Paths and methods in the document's order, as the TypeScript server reads them, each path once.
+func TestParseOrder(t *testing.T) {
+	t.Parallel()
+
+	operation := func(id string) string {
+		return `{"operationId":"` + id + `","security":[{"bearer":["s"]}]}`
+	}
+	pathB := `{"summary":"B","post":` + operation("b-post") + `,"get":` + operation("b-get") + `}`
+
+	operations, err := openapi.Parse([]byte(`{"paths":{"/b":` + pathB + `,"/a":{"get":` + operation("a") + `},"/b":` + pathB + `}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ids := make([]string, 0, len(operations))
+	for _, parsed := range operations {
+		ids = append(ids, parsed.ID)
+	}
+
+	if fmt.Sprint(ids) != "[b-post b-get a]" {
+		t.Fatalf("order %v", ids)
+	}
+
+	for _, document := range []string{`{}`, `{"paths":null}`, `{"paths":{}}`} {
+		if none, err := openapi.Parse([]byte(document)); err != nil || len(none) != 0 {
+			t.Fatalf("%s: %v %v", document, none, err)
 		}
 	}
 }

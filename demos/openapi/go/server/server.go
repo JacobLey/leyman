@@ -366,19 +366,23 @@ type metadataDocument struct {
 	BearerMethodsSupported []string `json:"bearer_methods_supported"`
 }
 
-// serveMetadata serves the API's Protected Resource Metadata, listing every scope an operation needs.
+// serveMetadata serves the API's Protected Resource Metadata, listing every scope an operation needs, each once, in
+// the order the document first names them, as the TypeScript server does.
 func (s *server) serveMetadata(operations []openapi.Operation) http.Handler {
 	var scopes []string
-	for _, operation := range operations {
-		scopes = append(scopes, operation.Scopes...)
-	}
 
-	slices.Sort(scopes)
+	for _, operation := range operations {
+		for _, scope := range operation.Scopes {
+			if !slices.Contains(scopes, scope) {
+				scopes = append(scopes, scope)
+			}
+		}
+	}
 
 	body := encodeJSON(metadataDocument{
 		Resource:               s.config.ProtectedResource.Resource,
 		AuthorizationServers:   s.config.ProtectedResource.AuthorizationServers,
-		ScopesSupported:        slices.Compact(scopes),
+		ScopesSupported:        scopes,
 		BearerMethodsSupported: []string{"header"},
 	})
 
