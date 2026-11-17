@@ -4,7 +4,7 @@ description: A read-through cache on Valkey built from BentoCache and lease-cach
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:664e8c6281e790cc71cb1a0e97219ab6 Generated from demos/read-through-cache/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/read-through-cache/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:ad4b8d8947571f1da5fe279aa155dc5a Generated from demos/read-through-cache/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/read-through-cache/README.md instead, and the description only here. -->
 
 # Read-through cache
 
@@ -70,6 +70,7 @@ Values are stored as JSON, so loaders must return JSON-compatible types (`Json`)
 | `memory`               | `{ maxItems, sync? }`: keep copies in each instance's memory, and with `sync`, drop them when any instance changes the key. See [Memory tier](#memory-tier-and-keeping-it-in-sync).                                                                                                                                                                                   |
 | `staleWhileRevalidate` | `{ graceMs }`: once a value expires, serve it while a fresh one loads. See [Stale-while-revalidate](#stale-while-revalidate).                                                                                                                                                                                                                                         |
 | `leases`               | `{ leaseMs, pollMs, waitMs, staleMs?, fallback? }`: load each miss once across every instance, and never cache a load that finishes after an invalidation, with lease-cache. `fallback` keeps reads working while Valkey is down (see [When Valkey is down](#when-valkey-is-down)). See [lease-cache](#lease-cache-one-load-across-instances-and-no-outdated-values). |
+| `circuitBreaker`       | `{ breakMs, now? }`: skip a Valkey node for `breakMs` after it fails, so reads fail (or fall back) at once rather than each waiting on it. See [Skipping a node that failed](#skipping-a-node-that-failed).                                                                                                                                                           |
 | `shards`               | `{ name, size, connection }[]`: spread keys over these nodes instead of `connection`. See [Sharding](#sharding-over-several-valkey-nodes).                                                                                                                                                                                                                            |
 | `invalidateEveryNode`  | With `shards`, invalidate each key on every node, so changing the nodes is safe. See [Changing the nodes safely](#changing-the-nodes-safely).                                                                                                                                                                                                                         |
 | `onLoadError`          | Called when a load fails, including background refreshes, whose errors no caller sees.                                                                                                                                                                                                                                                                                |
@@ -184,6 +185,16 @@ What happens depends on the shared tier, and on whether there is a memory tier.
 
 Without `fallback`, the cache is exactly as available as Valkey, which is the right choice when serving data a few seconds old is worse than failing. lease-cache's own [`onUnavailable`](https://github.com/JacobLey/leyman/tree/main/tools/lease-cache#when-valkey-is-down) sits in between, where reads keep working but nothing is cached.
 
+#### Skipping a node that failed
+
+Each of those reads still tries Valkey first. A node that is down but still accepts connections, or a connection that queues commands until it reconnects, makes every read wait on it before failing or falling back. `circuitBreaker: { breakMs }` (`circuitBreakerBinding`) skips a node for `breakMs` after a call to it fails: reads and writes on it fail at once with `ValkeyCircuitOpenError`, which the memory tier and `fallback` read past like any other Valkey error. The first call after `breakMs` tries the node again, and skips it for as long again if it still fails.
+
+- One breaker per node. With `shards`, keys on the other nodes are read as usual. BentoCache has its own breaker (`l2CircuitBreakerDuration`), but it covers the whole L2 tier, so one node down would stop reads from every node, and it only covers BentoCache's own tier. This one sits in [`ShardedValkeyDriver`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/sharded-valkey-driver.ts) and in the lease-cache tier.
+- Invalidations are tried anyway. One skipped while the node is already back would leave the old value cached on it, which costs more than the wait.
+- Only Valkey's failures count. A loader that throws, or lease-cache refusing an option, leaves the node alone. Failures of calls already on their way when the breaker opened don't keep it open longer.
+- Each container has its own breakers, as each process sees failures for itself.
+- It reads the time from `now` (`Date.now` by default), so the tests set the time rather than waiting `breakMs` out. BentoCache's breaker reads `Date.now()` itself, which a test can't control without faking timers for the whole process.
+
 ### Sharding over several Valkey nodes
 
 BentoCache's Redis driver talks to one server, or to a Redis Cluster (Valkey cluster mode), which places keys by hash slot and needs every node configured as a cluster. [`ShardedValkeyDriver`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/sharded-valkey-driver.ts) spreads keys over independent servers instead, as a custom BentoCache L2 driver. It picks each key's server with [`weighted-rendezvous-hash`](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/weighted-rendezvous-hash), then delegates to BentoCache's own Redis driver for that server, so values are stored exactly as BentoCache would store them. A single node is just a topology of one, through the same driver.
@@ -216,6 +227,7 @@ import { bind, createContainer } from 'haywire';
 import {
     cacheConfigId,
     leaseCacheTierBinding,
+    noCircuitBreakerBinding,
     noMemoryTierBinding,
     readThroughCacheModule,
     ResizableValkeyTopology,
@@ -227,7 +239,8 @@ const cacheModule = readThroughCacheModule
     .addBinding(bind(cacheConfigId).withInstance({ prefix: 'app', ttlMs: 60_000 }))
     .addBinding(noMemoryTierBinding)
     .addBinding(waitForFreshBinding)
-    .addBinding(leaseCacheTierBinding({ leaseMs: 5000, pollMs: 50, waitMs: 2000 }));
+    .addBinding(leaseCacheTierBinding({ leaseMs: 5000, pollMs: 50, waitMs: 2000 }))
+    .addBinding(noCircuitBreakerBinding);
 // ---cut---
 const nodes = [
     { name: 'cache-a', size: 1, url: 'redis://cache-a:6379' },
@@ -273,6 +286,7 @@ declare const valkey: Redis;
 // ---cut---
 import {
     cacheConfigId,
+    circuitBreakerBinding,
     leaseCacheTierBinding,
     ReadThroughCache,
     readThroughCacheModule,
@@ -291,6 +305,7 @@ const container = createContainer(
         .addBinding(syncedMemoryTierBinding({ maxItems: 10_000 }))
         .addBinding(staleWhileRevalidateBinding({ graceMs: 24 * 60 * 60_000 }))
         .addBinding(leaseCacheTierBinding({ leaseMs: 5000, pollMs: 50, waitMs: 2000 }))
+        .addBinding(circuitBreakerBinding({ breakMs: 5000 }))
 );
 const cache = container.get(ReadThroughCache);
 
@@ -306,6 +321,7 @@ await container[Symbol.asyncDispose]();
 | `sharedTierId`           | a feature       | `bentoValkeyTierBinding` (BentoCache's own Valkey tier) · `leaseCacheTierBinding({ leaseMs, pollMs, waitMs, staleMs?, fallback? })`                 |
 | `memoryTierId`           | a feature       | `noMemoryTierBinding` · `memoryTierBinding({ maxItems })` · `syncedMemoryTierBinding({ maxItems })`                                                 |
 | `expiryPolicyId`         | a feature       | `waitForFreshBinding` · `staleWhileRevalidateBinding({ graceMs })`                                                                                  |
+| `circuitBreakerId`       | a feature       | `noCircuitBreakerBinding` · `circuitBreakerBinding({ breakMs, now? })`                                                                              |
 
 A missing or doubled choice is a type error, and every combination works. Each feature is one small binding, so the code for, say, the memory tier is all in [`src/lib/memory-tier.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/src/lib/memory-tier.ts).
 
@@ -325,7 +341,7 @@ Who closes what follows from how each value was bound. Every Valkey connection b
 The tests run against a real Valkey, which is a `valkey` sidecar in the devcontainer and a service bound under the same hostname in Dagger. No part of the demo is mocked.
 
 - Several logical databases stand in for several servers. Nodes in the tests are databases `1` to `4` of one server, which don't share keys, and that's all sharding needs.
-- Each test varies one feature. It starts from a baseline module (one node, BentoCache's own Valkey tier, no memory tier, no grace), and swaps in the feature it's about with `replaceBinding()`, which haywire type-checks like any other binding. `createReadThroughCache` has its own tests for each option.
+- Each test varies one feature. It starts from a baseline module (one node, BentoCache's own Valkey tier, no memory tier, no grace, no circuit breaker), and swaps in the feature it's about with `replaceBinding()`, which haywire type-checks like any other binding. `createReadThroughCache` has its own tests for each option.
 - Each container stands in for a process. Two containers in one test share no BentoCache, memory tier or locks, only Valkey, like two pods would. (They do share the application's connection, as a stand-in for Valkey itself.)
-- The tests order events rather than waiting on time. The test controls the loader ([`test/helpers/loader.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/test/helpers/loader.ts)), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead.
+- The tests order events rather than waiting on time. The test controls the loader ([`test/helpers/loader.ts`](https://github.com/JacobLey/leyman/blob/main/demos/read-through-cache/test/helpers/loader.ts)), and each call stays pending until the test resolves it. Background work is awaited through events, using lease-cache's `onWait` when an instance waits on another's lease, and BentoCache's `cache:written` when a refresh is written. TTLs and leases are long enough that they don't run out during a test, and expiry is triggered with `expire()` instead. The circuit breaker's tests pass it a clock they set.
 - Every test uses its own prefix, so tests don't need to clear the server, and don't see each other's keys.

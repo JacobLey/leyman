@@ -128,6 +128,7 @@ const readThroughCacheBinding = bind(ReadThroughCache)
  * - `sharedTierId`: `bentoValkeyTierBinding` or `leaseCacheTierBinding()`
  * - `memoryTierId`: `noMemoryTierBinding`, `memoryTierBinding()` or `syncedMemoryTierBinding()`
  * - `expiryPolicyId`: `waitForFreshBinding` or `staleWhileRevalidateBinding()`
+ * - `circuitBreakerId`: `noCircuitBreakerBinding` or `circuitBreakerBinding()`
  *
  * Disposing the container closes what BentoCache opened (the bus's connections), and never the app's
  * Valkey connections.

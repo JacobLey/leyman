@@ -1,6 +1,13 @@
 export type { Json } from 'lease-cache';
 export { ReadThroughCache, readThroughCacheModule } from './lib/cache.js';
 export {
+    type CircuitBreaker,
+    circuitBreakerBinding,
+    type CircuitBreakerOptions,
+    noCircuitBreakerBinding,
+    ValkeyCircuitOpenError,
+} from './lib/circuit-breaker.js';
+export {
     type CreatedReadThroughCache,
     createReadThroughCache,
     type ReadThroughCacheOptions,
@@ -13,6 +20,7 @@ export {
 export {
     type CacheConfig,
     cacheConfigId,
+    circuitBreakerId,
     type ExpiryPolicy,
     expiryPolicyId,
     type MemoryTier,

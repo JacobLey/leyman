@@ -14,9 +14,11 @@ import pDefer from 'p-defer';
 import {
     bentoValkeyTierBinding,
     cacheConfigId,
+    circuitBreakerBinding,
     createReadThroughCache,
     leaseCacheTierBinding,
     memoryTierBinding,
+    noCircuitBreakerBinding,
     noMemoryTierBinding,
     ReadThroughCache,
     readThroughCacheModule,
@@ -25,6 +27,7 @@ import {
     singleNodeTopologyBinding,
     staleWhileRevalidateBinding,
     syncedMemoryTierBinding,
+    ValkeyCircuitOpenError,
     valkeyConnectionId,
     valkeyShardId,
     valkeyTopologyId,
@@ -72,7 +75,7 @@ suite('ReadThroughCache', () => {
         const connection = new Redis(valkeyUrl(1));
 
         /**
-         * The plainest cache: one node, BentoCache's own Valkey tier, no memory tier, no grace. Each test swaps in the features it
+         * The plainest cache: one node, BentoCache's own Valkey tier, no memory tier, no grace, no circuit breaker. Each test swaps in the features it
          * is about with `replaceBinding()`.
          */
         const baseline = readThroughCacheModule
@@ -81,7 +84,8 @@ suite('ReadThroughCache', () => {
             .addBinding(singleNodeTopologyBinding)
             .addBinding(noMemoryTierBinding)
             .addBinding(waitForFreshBinding)
-            .addBinding(bentoValkeyTierBinding);
+            .addBinding(bentoValkeyTierBinding)
+            .addBinding(noCircuitBreakerBinding);
 
         const containers: AsyncDisposable[] = [];
         /**
@@ -703,6 +707,209 @@ suite('ReadThroughCache', () => {
         });
     });
 
+    suite('Circuit breaker', () => {
+        const breakMs = 1000;
+        const withBreaker = withInstances.beforeEach(({ baseline }) => {
+            // The test sets the time, so a node reopens without waiting
+            const clock = { time: 0 };
+            const down = unreachableValkey();
+            const breaker = circuitBreakerBinding({ breakMs, now: () => clock.time });
+            return {
+                clock,
+                down,
+                breaker,
+                offline: baseline
+                    .replaceBinding(bind(valkeyConnectionId).withInstance(down))
+                    .replaceBinding(breaker),
+            };
+        });
+        withBreaker.afterEach(({ down }) => {
+            down.disconnect();
+        });
+
+        /**
+         * Waits for a read that should fail.
+         *
+         * @param read - A read expected to fail
+         * @returns What the failure was caused by
+         */
+        const causeOf = async (read: Promise<unknown>): Promise<unknown> => {
+            const error: unknown = await expect(read).to.be.rejected;
+            return (error as Error).cause;
+        };
+
+        withBreaker.test(
+            "Fails reads at once while a node is skipped, with BentoCache's own tier",
+            async ({ instance, offline }) => {
+                const cache = instance(offline);
+
+                expect(await causeOf(cache.get('key', async () => 'value'))).not.to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+                expect(await causeOf(cache.get('key', async () => 'value'))).to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+            }
+        );
+
+        withBreaker.test(
+            'Fails reads at once while a node is skipped, with lease-cache',
+            async ({ instance, offline }) => {
+                const cache = instance(offline.replaceBinding(leaseCacheTierBinding(lease)));
+
+                expect(await causeOf(cache.get('key', async () => 'value'))).not.to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+                expect(await causeOf(cache.get('key', async () => 'value'))).to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+            }
+        );
+
+        withBreaker.test(
+            'Tries the node again once breakMs has passed',
+            async ({ clock, instance, offline }) => {
+                const cache = instance(offline);
+                await expect(cache.get('key', async () => 'value')).to.be.rejected;
+
+                clock.time = breakMs - 1;
+                expect(await causeOf(cache.get('key', async () => 'value'))).to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+                clock.time = breakMs;
+                expect(await causeOf(cache.get('key', async () => 'value'))).not.to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+            }
+        );
+
+        withBreaker.test(
+            "Doesn't keep a node skipped longer for failures while it's skipped",
+            async ({ clock, instance, offline }) => {
+                const cache = instance(offline);
+                await expect(cache.get('key', async () => 'value')).to.be.rejected;
+
+                // Invalidations are still tried, and fail
+                clock.time = breakMs / 2;
+                await expect(cache.invalidate('key')).to.be.rejected;
+
+                clock.time = breakMs;
+                expect(await causeOf(cache.get('key', async () => 'value'))).not.to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+            }
+        );
+
+        withBreaker.test(
+            'Reads from the fallback at once while a node is skipped',
+            async ({ instance, offline }) => {
+                const reported: unknown[] = [];
+                const cache = instance(
+                    offline.replaceBinding(
+                        leaseCacheTierBinding({
+                            ...lease,
+                            fallback: {
+                                maxItems: 100,
+                                ttlMs: 60_000,
+                                onUnavailable: error => {
+                                    reported.push(error);
+                                },
+                            },
+                        })
+                    )
+                );
+
+                await cache.get('key', async () => 'value');
+
+                expect(await cache.get('key', async () => 'other')).to.equal('value');
+                expect(reported[0]).not.to.be.instanceOf(ValkeyCircuitOpenError);
+                expect(reported[1]).to.be.instanceOf(ValkeyCircuitOpenError);
+            }
+        );
+
+        withBreaker.test(
+            "Doesn't skip a node when the loader fails",
+            async ({ baseline, breaker, instance }) => {
+                const cache = instance(
+                    baseline.replaceBinding(breaker).replaceBinding(leaseCacheTierBinding(lease))
+                );
+                await expect(
+                    cache.get('key', async () => {
+                        throw new Error('Database is down');
+                    })
+                ).to.be.rejectedWith(errors.E_FACTORY_ERROR);
+
+                expect(await cache.get('key', async () => 'value')).to.equal('value');
+            }
+        );
+
+        suite('Invalidations, tried while a node is skipped', () => {
+            const withFailing = withBreaker.beforeEach(async ({ baseline, breaker }) => {
+                // Fails at once once disconnected, rather than queue commands until it reconnects
+                const failing = new Redis(valkeyUrl(1), { enableOfflineQueue: false });
+                await once(failing, 'ready');
+                return {
+                    failing,
+                    flaky: baseline
+                        .replaceBinding(bind(valkeyConnectionId).withInstance(failing))
+                        .replaceBinding(breaker),
+                };
+            });
+            withFailing.afterEach(async ({ failing }) => {
+                await failing.quit();
+            });
+
+            /**
+             * Caches `old`, then fails a read while Valkey is away, so the node is skipped once it's back.
+             *
+             * @param cache - Cache on `failing`
+             * @param failing - Its connection
+             */
+            const skipWhileBack = async (
+                cache: ReadThroughCache,
+                failing: Redis
+            ): Promise<void> => {
+                await cache.get('key', async () => 'old');
+                const ended = once(failing, 'end');
+                failing.disconnect();
+                await ended;
+                await expect(cache.get('key', async () => 'unused')).to.be.rejected;
+                const ready = once(failing, 'ready');
+                await failing.connect();
+                await ready;
+                expect(await causeOf(cache.get('key', async () => 'unused'))).to.be.instanceOf(
+                    ValkeyCircuitOpenError
+                );
+            };
+
+            withFailing.test(
+                "Invalidates with BentoCache's own tier",
+                async ({ clock, failing, flaky, instance }) => {
+                    const cache = instance(flaky);
+                    await skipWhileBack(cache, failing);
+
+                    await cache.invalidate('key');
+
+                    clock.time = breakMs;
+                    expect(await cache.get('key', async () => 'new')).to.equal('new');
+                }
+            );
+
+            withFailing.test(
+                'Invalidates with lease-cache',
+                async ({ clock, failing, flaky, instance }) => {
+                    const cache = instance(flaky.replaceBinding(leaseCacheTierBinding(lease)));
+                    await skipWhileBack(cache, failing);
+
+                    await cache.invalidate('key');
+
+                    clock.time = breakMs;
+                    expect(await cache.get('key', async () => 'new')).to.equal('new');
+                }
+            );
+        });
+    });
+
     suite('resource', () => {
         // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Only type aliases extend `Json`
         type User = { readonly id: number; readonly name: string };
@@ -865,6 +1072,40 @@ suite('ReadThroughCache', () => {
             expect(await cache.get('key', async () => 'other')).to.equal('value');
             await close();
         });
+
+        withInstances.test(
+            'Skips only the node that failed, with circuitBreaker',
+            async ({ connection, prefix }) => {
+                const down = unreachableValkey();
+                const shards = [
+                    { name: 'up', size: 1, connection },
+                    { name: 'down', size: 1, connection: down },
+                ];
+                const { cache, close } = createReadThroughCache({
+                    connection,
+                    prefix,
+                    shards,
+                    ttlMs: 60_000,
+                    circuitBreaker: { breakMs: 60_000 },
+                });
+                const hash = createRendezvousHash(shards);
+                const keys = Array.from({ length: 20 }, (_, i) => `key-${i}`);
+                const onDown = keys.find(key => hash.get(key).name === 'down');
+                const onUp = keys.find(key => hash.get(key).name === 'up');
+
+                await expect(cache.get(String(onDown), async () => 'value')).to.be.rejected;
+                const skipped: unknown = await expect(
+                    cache.get(String(onDown), async () => 'value')
+                ).to.be.rejected;
+                const value = await cache.get(String(onUp), async () => 'value');
+
+                await close();
+                down.disconnect();
+                expect((skipped as Error).cause).to.be.instanceOf(ValkeyCircuitOpenError);
+                expect(value).to.equal('value');
+                expect(await connection.exists(`${prefix}:${String(onUp)}`)).to.equal(1);
+            }
+        );
 
         withInstances.test('Combines every feature', async ({ connection, prefix }) => {
             const waiting = pDefer();

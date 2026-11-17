@@ -5,7 +5,8 @@ import type { GetOptions, Json, LeaseCacheOptions } from 'lease-cache';
 import { LRUCache } from 'lru-cache';
 import { bind, singletonScope } from 'haywire';
 import { LeaseCache, LeaseCacheError } from 'lease-cache';
-import { cacheConfigId, sharedTierId, valkeyTopologyId } from './ids.js';
+import { ValkeyCircuitOpenError } from './circuit-breaker.js';
+import { cacheConfigId, circuitBreakerId, sharedTierId, valkeyTopologyId } from './ids.js';
 import { ShardedValkeyDriver } from './sharded-valkey-driver.js';
 
 /**
@@ -49,17 +50,17 @@ export interface SharedTier {
  * and a load that finishes after an invalidation caches what it read until it expires.
  */
 export const bentoValkeyTierBinding = bind(sharedTierId)
-    .withDependencies([valkeyTopologyId, cacheConfigId])
-    .withProvider((topology, config): SharedTier => {
+    .withDependencies([valkeyTopologyId, cacheConfigId, circuitBreakerId])
+    .withProvider((topology, config, breaker): SharedTier => {
         // BentoCache's L2 keys are `<prefix>:<key>`, as this driver stores them
-        const elsewhere = new ShardedValkeyDriver(topology, config.prefix);
+        const elsewhere = new ShardedValkeyDriver(topology, config.prefix, breaker);
         return {
             layer: store =>
                 store.useL2Layer({
                     options: {},
                     // BentoCache passes its `prefix` option
                     factory: ({ prefix }: { prefix: string }) =>
-                        new ShardedValkeyDriver(topology, prefix),
+                        new ShardedValkeyDriver(topology, prefix, breaker),
                 }),
             // BentoCache writes what was loaded to this tier itself, for as long as it keeps it in memory
             load: async (_key, load, { ttlMs = config.ttlMs }) => {
@@ -112,10 +113,14 @@ export type LeaseCacheTierOptions = Pick<
  */
 export const leaseCacheTierBinding = (
     options: LeaseCacheTierOptions
-): Binding<typeof sharedTierId, [typeof valkeyTopologyId, typeof cacheConfigId], false> =>
+): Binding<
+    typeof sharedTierId,
+    [typeof valkeyTopologyId, typeof cacheConfigId, typeof circuitBreakerId],
+    false
+> =>
     bind(sharedTierId)
-        .withDependencies([valkeyTopologyId, cacheConfigId])
-        .withProvider((topology, { prefix, ttlMs }): SharedTier => {
+        .withDependencies([valkeyTopologyId, cacheConfigId, circuitBreakerId])
+        .withProvider((topology, { prefix, ttlMs }, breaker): SharedTier => {
             const { fallback, ...leaseOptions } = options;
             // One lease cache per node: lease-cache works on one connection, and the topology picks it per key
             const caches = new WeakMap<Redis, LeaseCache>();
@@ -155,16 +160,20 @@ export const leaseCacheTierBinding = (
                             throw error;
                         }
                     };
+                    const connection = topology.connectionFor(key);
                     try {
+                        breaker.check(connection);
                         // How long lease-cache keeps the value, so memory keeps it no longer, and never keeps one
                         // lease-cache didn't cache (a load that lost its lease, a stale value)
-                        return await cacheOn(topology.connectionFor(key)).read(
-                            key,
-                            tracked,
-                            readOptions
-                        );
+                        return await cacheOn(connection).read(key, tracked, readOptions);
                     } catch (error) {
-                        if (!memory || attempt.hasFailed || error instanceof LeaseCacheError) {
+                        if (attempt.hasFailed || error instanceof LeaseCacheError) {
+                            throw error;
+                        }
+                        if (!(error instanceof ValkeyCircuitOpenError)) {
+                            breaker.failed(connection);
+                        }
+                        if (!memory) {
                             throw error;
                         }
                         fallback.onUnavailable?.(error);
@@ -183,11 +192,17 @@ export const leaseCacheTierBinding = (
                 invalidate: async key => {
                     // Dropped from memory even when Valkey is down, which the invalidation then rejects for
                     memory?.delete(key);
-                    // On each node the topology sends invalidations to: a lease there is deleted too, harmlessly
+                    // On each node the topology sends invalidations to: a lease there is deleted too, harmlessly.
+                    // Tried even while a node's breaker is open: one skipped would leave a changed value cached.
                     await Promise.all(
-                        topology
-                            .invalidationConnections(key)
-                            .map(async connection => cacheOn(connection).invalidate(key))
+                        topology.invalidationConnections(key).map(async connection => {
+                            try {
+                                await cacheOn(connection).invalidate(key);
+                            } catch (error) {
+                                breaker.failed(connection);
+                                throw error;
+                            }
+                        })
                     );
                 },
             };

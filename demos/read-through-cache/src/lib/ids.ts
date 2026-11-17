@@ -1,5 +1,6 @@
 import type { BentoCache, BentoStore } from 'bentocache';
 import type { Emitter } from 'bentocache/types';
+import type { CircuitBreaker } from './circuit-breaker.js';
 import type { SharedTier } from './shared-tier.js';
 import type { ValkeyShard, ValkeyTopology } from './topology.js';
 import { Redis } from 'ioredis';
@@ -80,6 +81,11 @@ export const expiryPolicyId = identifier<ExpiryPolicy>();
  * instance), or lease-cache (one load across instances, and safe from loads finishing after an invalidation).
  */
 export const sharedTierId = identifier<SharedTier>();
+
+/**
+ * Whether a Valkey node that failed is skipped for a while.
+ */
+export const circuitBreakerId = identifier<CircuitBreaker>();
 
 /**
  * BentoCache, assembled from the features above.

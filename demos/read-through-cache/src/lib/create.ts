@@ -1,9 +1,11 @@
 import type { Redis } from 'ioredis';
+import type { CircuitBreakerOptions } from './circuit-breaker.js';
 import type { CacheConfig } from './ids.js';
 import type { LeaseCacheTierOptions } from './shared-tier.js';
 import type { ValkeyShard } from './topology.js';
 import { bind, createContainer } from 'haywire';
 import { ReadThroughCache, readThroughCacheModule } from './cache.js';
+import { circuitBreakerBinding, noCircuitBreakerBinding } from './circuit-breaker.js';
 import { staleWhileRevalidateBinding, waitForFreshBinding } from './expiry.js';
 import { cacheConfigId, valkeyConnectionId, valkeyTopologyId } from './ids.js';
 import { memoryTierBinding, noMemoryTierBinding, syncedMemoryTierBinding } from './memory-tier.js';
@@ -39,6 +41,11 @@ export interface ReadThroughCacheOptions extends CacheConfig {
      * with lease-cache. Without it, BentoCache's own Valkey tier loads a miss once per instance.
      */
     readonly leases?: LeaseCacheTierOptions;
+    /**
+     * Skips a Valkey node for `breakMs` after it fails, so reads fail (or fall back) at once rather than each
+     * waiting on it. Invalidations are still tried.
+     */
+    readonly circuitBreaker?: CircuitBreakerOptions;
 }
 
 export interface CreatedReadThroughCache {
@@ -66,6 +73,7 @@ export const createReadThroughCache = (
         memory,
         staleWhileRevalidate,
         leases,
+        circuitBreaker,
         ...config
     } = options;
 
@@ -77,7 +85,8 @@ export const createReadThroughCache = (
         .addBinding(singleNodeTopologyBinding)
         .addBinding(noMemoryTierBinding)
         .addBinding(waitForFreshBinding)
-        .addBinding(bentoValkeyTierBinding);
+        .addBinding(bentoValkeyTierBinding)
+        .addBinding(noCircuitBreakerBinding);
     if (shards) {
         module = module.replaceBinding(
             bind(valkeyTopologyId).withInstance(
@@ -100,6 +109,10 @@ export const createReadThroughCache = (
     }
     if (leases) {
         module = module.replaceBinding(leaseCacheTierBinding(leases));
+    }
+
+    if (circuitBreaker) {
+        module = module.replaceBinding(circuitBreakerBinding(circuitBreaker));
     }
 
     const container = createContainer(module);
