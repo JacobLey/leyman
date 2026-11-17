@@ -1024,7 +1024,8 @@ rm /tmp/llvm-cov.tar.gz /tmp/wasm-bindgen.tar.gz`})
 func awsEmulator() *dagger.Directory {
 	return dag.Container().
 		From(debianImage).
-		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends ca-certificates curl gpg"}).
+		// gpg-agent too: gpg starts it even to import a public key, and the slim image leaves it out
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends ca-certificates curl gpg gpg-agent"}).
 		WithExec([]string{"sh", "-c", `set -e
 cd /tmp
 package="aws-emulator_` + awsEmulatorVersion + `-1_$(dpkg --print-architecture).deb"
