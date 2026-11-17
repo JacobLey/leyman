@@ -3,7 +3,7 @@ import { createJobQueue, createWorker, sendJobs } from '@leyman/demo-sqs-job-que
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
 import { createStore, uniqueName, withAws } from '#test/helpers/aws.js';
-import { countMessages, pollJobs } from '#test/helpers/queue.js';
+import { peek, pollJobs } from '#test/helpers/queue.js';
 
 suite('FIFO queue', () => {
     const withQueue = withAws.beforeEach(async ({ sqs }) => ({
@@ -59,6 +59,9 @@ suite('FIFO queue', () => {
         await sendJobs(sqs, queue, [job]);
         await sendJobs(sqs, queue, [job]);
 
-        expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({ visible: 1, inFlight: 0 });
+        expect(await peek(sqs, queue.queueUrl)).to.deep.equal([
+            // Without its group, which SQS carries itself
+            '{"id":"job-1","type":"email","payload":{}}',
+        ]);
     });
 });

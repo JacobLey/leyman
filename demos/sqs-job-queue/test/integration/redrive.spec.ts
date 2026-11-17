@@ -9,7 +9,7 @@ import {
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
 import { createStore, uniqueName, withAws } from '#test/helpers/aws.js';
-import { countMessages, pollOutcomes } from '#test/helpers/queue.js';
+import { peek, pollOutcomes } from '#test/helpers/queue.js';
 
 /**
  * The client, with `ListMessageMoveTasks` answered by a fake: the emulator can't make a move task fail.
@@ -55,6 +55,7 @@ suite('Dead letters', () => {
         'Moves a job that keeps failing to the dead-letter queue, and back once fixed',
         async context => {
             const { sqs, queue } = context;
+            const poison = { id: 'poison', type: 'email', payload: {} };
             let isBroken = true;
             const ran: string[] = [];
             const worker = createWorker({
@@ -72,25 +73,19 @@ suite('Dead letters', () => {
                 retryDelayMs: () => 0,
                 waitTimeMs: 0,
             });
-            await sendJobs(sqs, queue, [{ id: 'poison', type: 'email', payload: {} }]);
+            await sendJobs(sqs, queue, [poison]);
 
             expect(await pollOutcomes(worker)).to.deep.equal(['failed']);
             expect(await pollOutcomes(worker)).to.deep.equal(['failed']);
             // The receive after the last one the queue allows moves it instead
             expect(await pollOutcomes(worker)).to.deep.equal([]);
-            expect(await countMessages(sqs, queue.deadLetterUrl)).to.deep.equal({
-                visible: 1,
-                inFlight: 0,
-            });
+            expect(await peek(sqs, queue.deadLetterUrl)).to.deep.equal([JSON.stringify(poison)]);
 
             isBroken = false;
             expect(
                 await redriveDeadLetters(sqs, { deadLetterArn: queue.deadLetterArn, pollMs: 10 })
             ).to.equal(1);
-            expect(await countMessages(sqs, queue.deadLetterUrl)).to.deep.equal({
-                visible: 0,
-                inFlight: 0,
-            });
+            expect(await peek(sqs, queue.deadLetterUrl)).to.deep.equal([]);
             expect(await pollOutcomes(worker)).to.deep.equal(['done']);
             expect(ran).to.deep.equal(['poison']);
         }

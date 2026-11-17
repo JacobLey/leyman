@@ -1,5 +1,5 @@
 import type { SQS } from '@aws-sdk/client-sqs';
-import type { JobOutcome, Worker } from '@leyman/demo-sqs-job-queue';
+import type { JobOutcome, Worker, WorkerSqs } from '@leyman/demo-sqs-job-queue';
 
 /**
  * Receives everything visible on a queue, hiding it for 30 seconds, by receiving until a receive comes back empty.
@@ -24,23 +24,56 @@ export const drain = async (sqs: SQS, queueUrl: string): Promise<string[]> => {
 };
 
 /**
- * How many messages a queue holds, visible or in flight. The emulator counts exactly, where AWS approximates.
+ * Bodies of the messages visible on a queue, received once with a visibility timeout of 0 so they stay visible. Use it
+ * only on a queue no worker holds a message of: each receive gives a new receipt handle, and on AWS a worker must use
+ * the latest one.
  *
- * @param sqs - Client to ask with
- * @param queueUrl - URL of the queue to count
- * @returns Visible and in-flight counts
+ * @param sqs - Client to receive with
+ * @param queueUrl - URL of the queue to look at
+ * @returns Message bodies, in the order received
  */
-export const countMessages = async (
-    sqs: SQS,
-    queueUrl: string
-): Promise<{ readonly visible: number; readonly inFlight: number }> => {
-    const { Attributes: attributes } = await sqs.getQueueAttributes({
+export const peek = async (sqs: SQS, queueUrl: string): Promise<string[]> => {
+    const { Messages: messages = [] } = await sqs.receiveMessage({
         QueueUrl: queueUrl,
-        AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible'],
+        MaxNumberOfMessages: 10,
+        VisibilityTimeout: 0,
     });
+    return messages.map(({ Body: body }) => body!);
+};
+
+/**
+ * Wraps a worker's client to record what it receives and deletes. SQS has no exact count of a queue's messages
+ * (`ApproximateNumberOfMessages` is eventually consistent), so a test tells a deleted message from a hidden one by
+ * whether the worker deleted it.
+ *
+ * @param sqs - Client to pass every call through to
+ * @returns The seam, and the bodies of messages received and not deleted, in the order received
+ */
+export const watchDeletes = (
+    sqs: WorkerSqs
+): { readonly sqs: WorkerSqs; readonly undeleted: () => string[] } => {
+    // By message id, as each delivery of a message has its own receipt handle
+    const bodies = new Map<string, string>();
+    const messageIds = new Map<string, string>();
     return {
-        visible: Number(attributes!.ApproximateNumberOfMessages),
-        inFlight: Number(attributes!.ApproximateNumberOfMessagesNotVisible),
+        sqs: {
+            receiveMessage: async (input, requestOptions) => {
+                const output = await sqs.receiveMessage(input, requestOptions);
+                const { Messages: messages = [] } = output;
+                for (const message of messages) {
+                    bodies.set(message.MessageId!, message.Body!);
+                    messageIds.set(message.ReceiptHandle!, message.MessageId!);
+                }
+                return output;
+            },
+            deleteMessage: async input => {
+                const output = await sqs.deleteMessage(input);
+                bodies.delete(messageIds.get(input.ReceiptHandle!)!);
+                return output;
+            },
+            changeMessageVisibility: async input => sqs.changeMessageVisibility(input),
+        },
+        undeleted: () => bodies.values().toArray(),
     };
 };
 

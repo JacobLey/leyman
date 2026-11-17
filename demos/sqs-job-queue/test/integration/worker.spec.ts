@@ -18,7 +18,7 @@ import {
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { createStore, uniqueName, withAws } from '#test/helpers/aws.js';
-import { countMessages, pollJobs, pollOutcomes } from '#test/helpers/queue.js';
+import { peek, pollJobs, pollOutcomes, watchDeletes } from '#test/helpers/queue.js';
 
 const job: Job = { id: 'job-1', type: 'email', payload: { to: 'a@example.com' } };
 
@@ -116,14 +116,18 @@ suite('Worker', () => {
     withQueue.test('Runs a job, then deletes it', async context => {
         const { sqs, queue } = context;
         const { handle, calls } = recorder();
-        const worker = createWorker(options(context, queue.queueUrl, handle));
+        const watched = watchDeletes(sqs);
+        const worker = createWorker({
+            ...options(context, queue.queueUrl, handle),
+            sqs: watched.sqs,
+        });
         await sendJobs(sqs, queue, [job]);
 
         expect(await pollJobs(worker)).to.deep.equal([{ jobId: 'job-1', outcome: 'done' }]);
         expect(calls).to.deep.equal([
             { id: 'job-1', type: 'email', payload: { to: 'a@example.com' }, receiveCount: 1 },
         ]);
-        expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({ visible: 0, inFlight: 0 });
+        expect(watched.undeleted()).to.deep.equal([]);
     });
 
     withQueue.test('Runs a job without a payload', async context => {
@@ -170,8 +174,10 @@ suite('Worker', () => {
         const failing = recorder(async () => {
             throw new Error('Failed');
         });
+        const watched = watchDeletes(sqs);
         const worker = createWorker({
             ...options(context, queue.queueUrl, failing.handle),
+            sqs: watched.sqs,
             retryDelayMs: defaultRetryDelayMs,
         });
         await sendJobs(sqs, queue, [job]);
@@ -179,7 +185,7 @@ suite('Worker', () => {
         expect(await pollOutcomes(worker)).to.deep.equal(['failed']);
         // 1 second, far longer than the next receive takes
         expect(await pollOutcomes(worker)).to.deep.equal([]);
-        expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({ visible: 0, inFlight: 1 });
+        expect(watched.undeleted()).to.deep.equal([JSON.stringify(job)]);
     });
 
     withQueue.test(
@@ -187,7 +193,11 @@ suite('Worker', () => {
         async context => {
             const { sqs, queue } = context;
             const { handle, calls } = recorder();
-            const worker = createWorker(options(context, queue.queueUrl, handle));
+            const watched = watchDeletes(sqs);
+            const worker = createWorker({
+                ...options(context, queue.queueUrl, handle),
+                sqs: watched.sqs,
+            });
 
             await sendJobs(sqs, queue, [job]);
             expect(await pollOutcomes(worker)).to.deep.equal(['done']);
@@ -196,10 +206,7 @@ suite('Worker', () => {
             expect(await pollOutcomes(worker)).to.deep.equal(['duplicate']);
 
             expect(calls).to.have.length(1);
-            expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({
-                visible: 0,
-                inFlight: 0,
-            });
+            expect(watched.undeleted()).to.deep.equal([]);
         }
     );
 
@@ -250,8 +257,10 @@ suite('Worker', () => {
         for (const body of ['not json', 'null', '{"id":"","type":"email"}']) {
             await sqs.sendMessage({ QueueUrl: queue.queueUrl, MessageBody: body });
         }
+        const watched = watchDeletes(sqs);
         const worker = createWorker({
             ...options(context, queue.queueUrl, handle),
+            sqs: watched.sqs,
             retryDelayMs: () => 30_000,
         });
 
@@ -261,7 +270,9 @@ suite('Worker', () => {
             { jobId: null, outcome: 'invalid' },
         ]);
         expect(calls).to.deep.equal([]);
-        expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({ visible: 0, inFlight: 3 });
+        // Hidden for the retry delay, not deleted
+        expect(await peek(sqs, queue.queueUrl)).to.deep.equal([]);
+        expect(watched.undeleted()).to.deep.equal(['not json', 'null', '{"id":"","type":"email"}']);
     });
 
     withQueue.test('Passes on a failed receive', async context => {
@@ -333,17 +344,11 @@ suite('Worker', () => {
             await sendJobs(sqs, queue, [job]);
             const polled = pollOutcomes(worker);
             await started.promise;
-            expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({
-                visible: 1,
-                inFlight: 0,
-            });
-
+            // Not peeked at before the heartbeat: a receive then would give the message a new receipt handle, which on
+            // AWS supersedes the worker's
             await clock.tickAsync(10_000);
             await extended.promise;
-            expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({
-                visible: 0,
-                inFlight: 1,
-            });
+            expect(await peek(sqs, queue.queueUrl)).to.deep.equal([]);
 
             finish.resolve();
             expect(await polled).to.deep.equal(['done']);
@@ -423,8 +428,10 @@ suite('Worker', () => {
                 started.resolve();
                 await finish.promise;
             });
+            const watched = watchDeletes(sqs);
             const worker = createWorker({
                 ...options(context, queue.queueUrl, handle),
+                sqs: watched.sqs,
                 waitTimeMs: 20_000,
             });
             await sendJobs(sqs, queue, [job]);
@@ -436,10 +443,7 @@ suite('Worker', () => {
             await running;
 
             expect(calls).to.have.length(1);
-            expect(await countMessages(sqs, queue.queueUrl)).to.deep.equal({
-                visible: 0,
-                inFlight: 0,
-            });
+            expect(watched.undeleted()).to.deep.equal([]);
         });
 
         withQueue.test('Stops a receive that is waiting', async context => {
