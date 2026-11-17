@@ -5,10 +5,10 @@ import type {
     ReceiveMessageCommandInput,
     ReceiveMessageCommandOutput,
 } from '@aws-sdk/client-sqs';
-import type { IdempotencyStore } from 'idempotency-keys';
+import type { IdempotencyAttempt, IdempotencyStore } from 'idempotency-keys';
 import type { ReceivedJob } from './job.js';
 import { IdempotencyKeys } from 'idempotency-keys';
-import { JobLeaseExpiredError } from './errors.js';
+import { JobLeaseLostError, WorkerOptionError } from './errors.js';
 import { decodeJob, fingerprintBody } from './job.js';
 import { toSeconds } from './queue.js';
 
@@ -25,8 +25,9 @@ export interface WorkerSqs {
 }
 
 /**
- * Runs a job. It may reject to retry the job later. It should stop when `signal` aborts, which happens when the job
- * runs into its lease.
+ * Runs a job. It may reject to retry the job later. It should stop when `signal` aborts, which happens when a
+ * heartbeat finds that another worker may have the job: its visibility couldn't be extended, or its lease couldn't be
+ * renewed.
  */
 export type JobHandler = (job: ReceivedJob, signal: AbortSignal) => Promise<void>;
 
@@ -34,19 +35,21 @@ export interface WorkerOptions {
     readonly sqs: WorkerSqs;
     readonly queueUrl: string;
     /**
-     * Where the ids of jobs that ran are kept, such as idempotency-keys' `DynamoDbStore`. The store is never closed.
+     * Where the ids of jobs that ran are kept, such as idempotency-keys' `DynamoDbStore`. It must have the optional
+     * `renew`, which every built-in store has. The store is never closed.
      */
     readonly store: IdempotencyStore;
     readonly handle: JobHandler;
     /**
      * How long a job stays hidden from other workers after each heartbeat, rounded up to whole seconds. The heartbeat
-     * runs every third of it, so a slow call to SQS doesn't let the job show.
+     * runs every third of it, so a slow call to SQS doesn't let the job show, and renews the job's lease too.
      */
     readonly visibilityTimeoutMs: number;
     /**
-     * The longest a job may run, with room for clock drift between workers. Another delivery of the job can run it
-     * once the lease runs out, and the heartbeat can't extend it, so the worker stops a job at the last heartbeat
-     * before it.
+     * How long a job's claim lasts without a heartbeat renewing it, after which another delivery may take the job
+     * over (a worker that crashed stops renewing). Each heartbeat renews it, so it only has to cover the time between
+     * heartbeats (a third of `visibilityTimeoutMs`), plus a slow call to the store and the clock drift between
+     * workers: a few heartbeats' worth is plenty. Must be more than one heartbeat's interval.
      */
     readonly leaseMs: number;
     /**
@@ -73,12 +76,6 @@ export interface WorkerOptions {
      * @default 10
      */
     readonly maxMessages?: number;
-    /**
-     * The clock the lease is measured with.
-     *
-     * @default Date.now
-     */
-    readonly now?: () => number;
 }
 
 /**
@@ -153,12 +150,15 @@ export const defaultRetryDelayMs = (receiveCount: number): number =>
  * idempotency-keys before it runs: a duplicate delivery of a job that ran is deleted, and one of a job that's running
  * waits.
  *
- * While a job runs, a heartbeat extends its visibility, so a long job isn't delivered again. A job that rejects is
+ * While a job runs, a heartbeat extends its visibility, so a long job isn't delivered again, and renews its lease, so
+ * a duplicate delivery can't take it over. A heartbeat that fails at either, or finds the lease lost, stops the job,
+ * since another worker may have it. A job that rejects is
  * released, and comes back after `retryDelayMs`, until the queue moves it to its dead-letter queue. On a FIFO queue,
  * jobs of one group run in order, and other groups aren't held up.
  *
  * @param options - Queue, store, handler and timings
  * @returns `poll()` to receive once, and `run()` to receive until stopped
+ * @throws {WorkerOptionError} When `leaseMs` isn't more than the heartbeat's interval, or the store has no `renew`
  */
 export const createWorker = ({
     sqs,
@@ -171,12 +171,23 @@ export const createWorker = ({
     retryDelayMs = defaultRetryDelayMs,
     waitTimeMs = defaultWaitTimeMs,
     maxMessages = defaultMaxMessages,
-    now = Date.now,
 }: WorkerOptions): Worker => {
+    const heartbeatMs = visibilityTimeoutMs / heartbeatsPerTimeout;
+    if (leaseMs <= heartbeatMs) {
+        throw new WorkerOptionError(
+            'leaseMs',
+            `${leaseMs} must be more than the heartbeat's interval (${heartbeatMs}), or a lease runs out before it is renewed`
+        );
+    }
+    if (!store.renew) {
+        throw new WorkerOptionError(
+            'store',
+            'it has no renew, so a heartbeat could not renew a lease'
+        );
+    }
     // `waitMs: 0`: a delivery of a running job isn't held, it comes back later
     const keys = new IdempotencyKeys({ store, leaseMs, ttlMs, waitMs: 0 });
     const scope = queueUrl.slice(queueUrl.lastIndexOf('/') + 1);
-    const heartbeatMs = visibilityTimeoutMs / heartbeatsPerTimeout;
 
     const setVisibility = async (message: Message, ms: number): Promise<void> => {
         await sqs.changeMessageVisibility({
@@ -186,9 +197,12 @@ export const createWorker = ({
         });
     };
 
-    const runJob = async (message: Message, job: ReceivedJob): Promise<void> => {
+    const runJob = async (
+        message: Message,
+        job: ReceivedJob,
+        attempt: IdempotencyAttempt
+    ): Promise<void> => {
         const controller = new AbortController();
-        const startedAt = now();
         const extend = async (): Promise<void> => {
             try {
                 await setVisibility(message, visibilityTimeoutMs);
@@ -197,17 +211,24 @@ export const createWorker = ({
                 controller.abort(error);
             }
         };
+        const renew = async (): Promise<void> => {
+            try {
+                if (!(await attempt.renew())) {
+                    // Taken over by another delivery, which may be running the job
+                    controller.abort(new JobLeaseLostError(job.id));
+                }
+            } catch (error) {
+                // Not renewed, so the lease may run out before the next heartbeat: the job stops rather than race
+                controller.abort(error);
+            }
+        };
         // Cleared once the handler ends, which it should soon after its signal aborts
         const heartbeat = setInterval(() => {
             if (controller.signal.aborted) {
                 return;
             }
-            // Stopped at the last heartbeat before the lease runs out: by the next, another delivery could run it
-            if (now() + heartbeatMs >= startedAt + leaseMs) {
-                controller.abort(new JobLeaseExpiredError(job.id));
-                return;
-            }
             void extend();
+            void renew();
         }, heartbeatMs);
         try {
             await handle(job, controller.signal);
@@ -249,7 +270,7 @@ export const createWorker = ({
         }
         if (result.outcome === 'run') {
             try {
-                await runJob(message, { ...job, receiveCount });
+                await runJob(message, { ...job, receiveCount }, result.attempt);
             } catch (error) {
                 await result.attempt.release();
                 return retry('failed', job.id, error);

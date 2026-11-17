@@ -4,7 +4,7 @@ description: A job queue on SQS, with retries by visibility timeout, a heartbeat
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:952658eb4f1f83aefcc9fb704d8f89d0 Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:c0ea06045d1848ed73c07c5f0a99ee43 Generated from demos/sqs-job-queue/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/sqs-job-queue/README.md instead, and the description only here. -->
 
 # SQS job queue
 
@@ -52,8 +52,8 @@ const worker = createWorker({
     store: new DynamoDbStore({ connection: new DynamoDB() }),
     handle: async (job, jobSignal) => sendEmail(job.payload, jobSignal),
     visibilityTimeoutMs: 30_000,
-    // No email takes longer than 5 minutes to send
-    leaseMs: 5 * 60_000,
+    // Renewed every 10 seconds, so a few heartbeats' worth, however long a job runs
+    leaseMs: 60_000,
 });
 
 await worker.run(signal);
@@ -63,7 +63,7 @@ await worker.run(signal);
 
 - `createJobQueue()` creates a queue with a dead-letter queue (`maxReceiveCount`), FIFO or standard. A FIFO queue's dead-letter queue is FIFO too, as SQS requires.
 - `sendJobs()` sends in batches of 10. A batch answers `200` even when some messages fail, so each entry in `Failed` is read: a sender fault fails at once, anything else is sent again up to `maxAttempts`, and what still failed is thrown together as a `SendJobsError`. On FIFO, the job id is the deduplication id.
-- `createWorker()` receives with long polling, and claims each job's id through idempotency-keys' `begin()` (scope the queue, a fixed operation, the fingerprint the SHA-256 of the body). A job that ran is deleted without running again; one still running is left to come back. A failed job is released and made visible again after `retryDelayMs`. While a job runs, a heartbeat extends its visibility every third of `visibilityTimeoutMs`. On FIFO, a group stops at its first job that didn't finish, and other groups go on.
+- `createWorker()` receives with long polling, and claims each job's id through idempotency-keys' `begin()` (scope the queue, a fixed operation, the fingerprint the SHA-256 of the body). A job that ran is deleted without running again; one still running is left to come back. A failed job is released and made visible again after `retryDelayMs`. While a job runs, a heartbeat every third of `visibilityTimeoutMs` extends its visibility and renews its idempotency lease (`attempt.renew()`). A heartbeat that fails at either, or finds the lease taken over (`JobLeaseLostError`), aborts the handler's signal. On FIFO, a group stops at its first job that didn't finish, and other groups go on.
 - `redriveDeadLetters()` starts a message move task and waits for it to end.
 
 `poll()` receives once and returns what became of each message (`done`, `duplicate`, `busy`, `failed`, `reused`, `invalid` or `deferred`), which is what the tests drive. `run()` polls until its signal aborts, then lets the jobs it has finish.
@@ -72,11 +72,12 @@ await worker.run(signal);
 
 - SQS delivers at least once, so jobs are keyed by an id the producer assigns, never `MessageId`: a producer's retry sends a new message, and on AWS, a redrive gives each message a new `MessageId` too.
 - FIFO deduplication lasts 5 minutes, and only for one queue; the idempotency key lasts `ttlMs` (24 hours by default), which covers standard queues and late retries.
-- The heartbeat extends SQS visibility, not the idempotency lease, which can't be renewed. `leaseMs` must cover the longest job plus clock drift between workers, and the worker stops a job at the last heartbeat before its lease runs out, since by the next, another delivery could run it.
+- The heartbeat renews the idempotency lease as well as SQS visibility, so `leaseMs` only covers the time between heartbeats, plus a slow call and clock drift between workers, not the longest job. A worker that crashes stops renewing, so its job is taken over a lease later rather than a longest job later. `createWorker()` throws a `WorkerOptionError` for a `leaseMs` no longer than one heartbeat's interval, or a store without `renew`.
+- A renewal that finds the job's token gone means another delivery took the job over, after a heartbeat ran so late that the lease ran out, so the worker stops the job. One that fails stops it too: the lease may run out before the next heartbeat.
 - A heartbeat that fails stops the job, since another worker may have it by then. But the worker doesn't count on a heartbeat noticing that it lost the message: the emulator accepts an expired receipt handle (below), and AWS only documents that the latest handle is the one to use. The lease is what keeps two runs apart.
 - On FIFO, a job that goes to the dead-letter queue lets the rest of its group through, so order is kept only among jobs that finish. A group that must stop on a failure needs that in its handler.
 - A job id reused with another body (`reused`) and a body that isn't a job (`invalid`) can never succeed, so they are left to reach the dead-letter queue rather than deleted, where someone can look at them.
-- The emulator can't fail a message on its side or fail a move task, so those paths are tested through thin fakes, labelled as such.
+- The emulator can't fail a message on its side or fail a move task, and a lease can't be taken over without waiting it out, so those paths, and a renewal that fails, are tested through thin fakes, labelled as such.
 
 ## Where the emulator differs from AWS
 
@@ -95,7 +96,6 @@ Probed on AWS Emulator 1.0.290. The tests don't assert any of these, and the cod
 - High-throughput FIFO, and the partitioning it brings.
 - Alarms on the dead-letter queue's depth or the age of the oldest message.
 - IAM policies and encryption with KMS.
-- Renewing the idempotency lease while a job runs, which would be a feature of idempotency-keys.
 
 ## Testing
 

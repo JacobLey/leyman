@@ -1,10 +1,11 @@
 export type { SendFailure } from './lib/errors.js';
 export {
-    JobLeaseExpiredError,
+    JobLeaseLostError,
     JobQueueError,
     MissingGroupError,
     RedriveError,
     SendJobsError,
+    WorkerOptionError,
 } from './lib/errors.js';
 export type { Job, ReceivedJob } from './lib/job.js';
 export type { CreateJobQueueOptions, CreateJobQueueSqs, JobQueue } from './lib/queue.js';

@@ -5,6 +5,7 @@ import type {
     WorkerOptions,
     WorkerSqs,
 } from '@leyman/demo-sqs-job-queue';
+import type { IdempotencyStore, RenewParams } from 'idempotency-keys';
 import type { AwsContext } from '#test/helpers/aws.js';
 import pDefer from 'p-defer';
 import sinon from 'sinon';
@@ -12,8 +13,9 @@ import {
     createJobQueue,
     createWorker,
     defaultRetryDelayMs,
-    JobLeaseExpiredError,
+    JobLeaseLostError,
     sendJobs,
+    WorkerOptionError,
 } from '@leyman/demo-sqs-job-queue';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
@@ -98,6 +100,23 @@ const wrap = (
     changeMessageVisibility: changeVisibility,
 });
 
+/**
+ * Wraps the store, to pass every call through but `renew`.
+ *
+ * @param store - Real store
+ * @param renew - Called for each renewal, or `undefined` for a store without `renew`
+ * @returns The seam
+ */
+const withRenew = (
+    store: IdempotencyStore,
+    renew: ((params: RenewParams) => Promise<boolean>) | undefined
+): IdempotencyStore => ({
+    claim: async params => store.claim(params),
+    complete: async (identity, token, response) => store.complete(identity, token, response),
+    release: async (identity, token) => store.release(identity, token),
+    ...(renew && { renew }),
+});
+
 suite('Worker', () => {
     test('Doubles the default retry delay from 1 second, up to 15 minutes', () => {
         expect([1, 2, 3, 11, 20].map(count => defaultRetryDelayMs(count))).to.deep.equal([
@@ -112,6 +131,31 @@ suite('Worker', () => {
             maxReceiveCount: 5,
         }),
     }));
+
+    withQueue.test("Refuses a leaseMs that a heartbeat can't renew in time", async context => {
+        const { queue } = context;
+        expect(() =>
+            createWorker({
+                ...options(context, queue.queueUrl, recorder().handle),
+                // The heartbeat runs every 10 seconds
+                leaseMs: 10_000,
+            })
+        )
+            .to.throw(WorkerOptionError)
+            .with.property('option', 'leaseMs');
+    });
+
+    withQueue.test('Refuses a store without renew', async context => {
+        const { queue } = context;
+        expect(() =>
+            createWorker({
+                ...options(context, queue.queueUrl, recorder().handle),
+                store: withRenew(createStore(context), undefined),
+            })
+        )
+            .to.throw(WorkerOptionError)
+            .with.property('option', 'store');
+    });
 
     withQueue.test('Runs a job, then deletes it', async context => {
         const { sqs, queue } = context;
@@ -355,35 +399,87 @@ suite('Worker', () => {
         });
 
         withInstantQueue.test(
-            'Stops a job at the last heartbeat before its lease runs out',
+            'Renews the lease at each heartbeat, so a job may outrun it',
             async context => {
                 const { sqs, queue, clock } = context;
-                let now = 0;
+                const store = createStore(context);
+                const renewals: boolean[] = [];
+                // Resolved as each heartbeat's renewal is made
+                const renewedAt = [pDefer(), pDefer(), pDefer()];
                 const started = pDefer();
-                const watched = watchVisibility(sqs);
+                const finish = pDefer();
                 const worker = createWorker({
-                    ...options(context, queue.queueUrl, untilAborted(started)),
-                    sqs: watched.sqs,
-                    leaseMs: 25_000,
-                    now: () => now,
+                    ...options(context, queue.queueUrl, async () => {
+                        started.resolve();
+                        await finish.promise;
+                    }),
+                    // Records each renewal of the real store once it's made
+                    store: withRenew(store, async params => {
+                        const isRenewed = await store.renew!(params);
+                        renewals.push(isRenewed);
+                        renewedAt[renewals.length - 1]!.resolve();
+                        return isRenewed;
+                    }),
+                    leaseMs: 15_000,
                 });
                 await sendJobs(sqs, queue, [job]);
-                const polled = worker.poll();
+                const polled = pollOutcomes(worker);
                 await started.promise;
+                // Three heartbeats, so the job runs twice as long as its lease
+                for (const renewed of renewedAt) {
+                    await clock.tickAsync(10_000);
+                    await renewed.promise;
+                }
+                finish.resolve();
 
-                now = 10_000;
-                await clock.tickAsync(10_000);
-                // The next heartbeat would be at 30 seconds, past the lease
-                now = 20_000;
-                await clock.tickAsync(10_000);
-
-                const [result] = await polled;
-                expect(result!.outcome).to.equal('failed');
-                expect(result!.error).to.be.an.instanceOf(JobLeaseExpiredError);
-                // One heartbeat, then the retry delay once the job stopped
-                expect(watched.changes).to.deep.equal([30, 0]);
+                expect(await polled).to.deep.equal(['done']);
+                expect(renewals).to.deep.equal([true, true, true]);
             }
         );
+
+        withInstantQueue.test('Stops a job whose lease was taken over', async context => {
+            const { sqs, queue, clock } = context;
+            const started = pDefer();
+            const watched = watchVisibility(sqs);
+            const worker = createWorker({
+                ...options(context, queue.queueUrl, untilAborted(started)),
+                sqs: watched.sqs,
+                // A fake: the record no longer holds the job's token, as after another delivery took it over
+                store: withRenew(createStore(context), async () => false),
+            });
+            await sendJobs(sqs, queue, [job]);
+            const polled = worker.poll();
+            await started.promise;
+            await clock.tickAsync(10_000);
+
+            const [result] = await polled;
+            expect(result!.outcome).to.equal('failed');
+            expect(result!.error).to.be.an.instanceOf(JobLeaseLostError);
+            expect(result!.error).to.have.property('jobId', job.id);
+            // The heartbeat's extension, and the retry delay once the job stopped, which may finish first
+            expect(watched.changes).to.have.members([30, 0]);
+        });
+
+        withInstantQueue.test("Stops a job whose lease can't be renewed", async context => {
+            const { sqs, queue, clock } = context;
+            const unreachable = new Error('Store is down');
+            const started = pDefer();
+            const worker = createWorker({
+                ...options(context, queue.queueUrl, untilAborted(started)),
+                // A fake: the renewal fails, as it would if the store were unreachable
+                store: withRenew(createStore(context), async () => {
+                    throw unreachable;
+                }),
+            });
+            await sendJobs(sqs, queue, [job]);
+            const polled = worker.poll();
+            await started.promise;
+            await clock.tickAsync(10_000);
+
+            const [result] = await polled;
+            expect(result!.outcome).to.equal('failed');
+            expect(result!.error).to.equal(unreachable);
+        });
 
         withInstantQueue.test("Stops a job whose visibility can't be extended", async context => {
             const { sqs, queue, clock } = context;

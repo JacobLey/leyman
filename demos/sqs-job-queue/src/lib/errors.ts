@@ -46,15 +46,29 @@ export class MissingGroupError extends JobQueueError {
 }
 
 /**
- * A job that ran into its lease, so the worker stopped it: past the lease, a duplicate delivery could run it again.
- * The handler's `signal` is aborted with it.
+ * A job whose idempotency lease a heartbeat couldn't renew because the job no longer holds its key: another delivery
+ * took it over once the lease ran out (or the key expired), so it may be running the job. The worker stops the job,
+ * aborting the handler's `signal` with this error.
  */
-export class JobLeaseExpiredError extends JobQueueError {
+export class JobLeaseLostError extends JobQueueError {
     public readonly jobId: string;
     public constructor(jobId: string) {
-        super(`Job ${jobId} ran into its lease`);
-        this.name = 'JobLeaseExpiredError';
+        super(`Job ${jobId} lost its lease to another delivery`);
+        this.name = 'JobLeaseLostError';
         this.jobId = jobId;
+    }
+}
+
+/**
+ * A worker option that can't work: a `leaseMs` that a heartbeat can't renew in time, or a store without
+ * idempotency-keys' optional `renew`.
+ */
+export class WorkerOptionError extends JobQueueError {
+    public readonly option: string;
+    public constructor(option: string, reason: string) {
+        super(`Invalid worker option ${option}: ${reason}`);
+        this.name = 'WorkerOptionError';
+        this.option = option;
     }
 }
 
