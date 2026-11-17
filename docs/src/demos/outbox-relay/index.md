@@ -4,7 +4,7 @@ description: A transactional outbox on Postgres relayed to Amazon EventBridge, w
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:27c56b866749bd6117a606299330eb70 Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/outbox-relay/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:880eba078ffb95f15501cf4275739231 Generated from demos/outbox-relay/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/outbox-relay/README.md instead, and the description only here. -->
 
 # Outbox relay
 

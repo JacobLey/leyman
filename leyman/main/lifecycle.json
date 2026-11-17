@@ -60,6 +60,7 @@
     "genever-go": "prepare:generate",
     "biome": "prepare:format",
     "dagger-develop": "prepare:generate",
+    "populate-docs": "prepare:generate",
     "gofmt": "prepare:format",
     "rustfmt": "prepare:format",
     "tofu-fmt": "prepare:format",

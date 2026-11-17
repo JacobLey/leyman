@@ -4,7 +4,7 @@ description: BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:af4882153d6c50106fb324386ae7e447 Generated from demos/blake3-wasm/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/blake3-wasm/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:479cc14d5d0efe38d0dc373afe00c31d Generated from demos/blake3-wasm/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/blake3-wasm/README.md instead, and the description only here. -->
 
 # BLAKE3 through WASM
 

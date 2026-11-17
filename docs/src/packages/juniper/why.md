@@ -4,7 +4,7 @@ description: The problems Juniper solves, its design goals and non-goals, and ho
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:26093ca40b39afb9dbf03301f8de2ab3 Generated from apps/juniper/WHY-JUNIPER.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit apps/juniper/WHY-JUNIPER.md instead, and the description only here. -->
+<!-- @generated-signature v1:3f863d190b20cc86bfa79922b593e4fc Generated from apps/juniper/WHY-JUNIPER.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit apps/juniper/WHY-JUNIPER.md instead, and the description only here. -->
 
 # Why Juniper?
 

@@ -4,7 +4,7 @@ description: An MCP server that makes a REST API easy for AI agents to use, with
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:90787915336c1d0b727ea83b47be8922 Generated from demos/agents/mcp/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/mcp/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:7910dbb16682809a01b1755a7a7716db Generated from demos/agents/mcp/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/agents/mcp/README.md instead, and the description only here. -->
 
 # MCP server
 

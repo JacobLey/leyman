@@ -4,7 +4,7 @@ description: Why mocha-chain exists - Mocha's beforeEach forces nullable variabl
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:bb5777c2264771101cf3ad2c5482e659 Generated from tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md instead, and the description only here. -->
+<!-- @generated-signature v1:e06be8d67f08e0944d6455a1bcd00f29 Generated from tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md instead, and the description only here. -->
 
 # Why mocha-chain?
 

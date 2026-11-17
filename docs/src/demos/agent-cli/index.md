@@ -4,7 +4,7 @@ description: A CLI that makes a REST API easy for AI agents with a shell. Each t
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:90ebd079660242a693565c52538904ad Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/agents/cli/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:454a4abf473d1f849dd94c948ae8e846 Generated from demos/agents/cli/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/agents/cli/README.md instead, and the description only here. -->
 
 # CLI for agents
 

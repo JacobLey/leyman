@@ -4,7 +4,7 @@ description: Middleware around fetch for Node.js, in the shape of Go's RoundTrip
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:0b238de5176d8b6565aacdff6cf195a9 Generated from demos/fetch-middleware/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/fetch-middleware/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:04c1e99501b746eb5fd2f4d600eb2dfb Generated from demos/fetch-middleware/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/fetch-middleware/README.md instead, and the description only here. -->
 
 # Fetch middleware
 

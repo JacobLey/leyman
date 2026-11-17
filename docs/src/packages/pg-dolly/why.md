@@ -4,7 +4,7 @@ description: Why each test gets a Postgres database of its own, why templates an
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:8b3055c79d0d782b7bf6c4acffec15a1 Generated from tools/pg-dolly/WHY-PG-DOLLY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/pg-dolly/WHY-PG-DOLLY.md instead, and the description only here. -->
+<!-- @generated-signature v1:d7a7845c16586815c77fda289a7c3e8b Generated from tools/pg-dolly/WHY-PG-DOLLY.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit tools/pg-dolly/WHY-PG-DOLLY.md instead, and the description only here. -->
 
 # Why pg-dolly?
 

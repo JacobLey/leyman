@@ -231,6 +231,12 @@ Rewrites `index.ts` files that contain an `// AUTO-BARREL` marker with correct r
 
 ---
 
+### `populate-docs`
+
+Only in `@leyman/docs`: runs [`docs/scripts/populate-docs.mjs`](../../../docs/scripts/populate-docs.mjs), which writes the generated docs pages (each demo's page, each `why.md`) and the tables in `AGENTS.md`, the READMEs and the skills (see the [docs-site skill](../docs-site/SKILL.md)). In CI it only checks. It runs in `prepare:generate`, before `vitepress-build` reads the pages, so a new demo's page is written before the site builds. Uncached: it reads every project's README and `package.json`.
+
+---
+
 ### `schema-snapshot`
 
 Keeps `schema.sql` of what the package's Postgres migrations build, with [`pg-dolly-schema`](../../../apps/pg-dolly-schema/): migrates an empty database on the `postgres` sidecar (Dagger's service in CI), dumps its schema, and writes `schema.sql`. In CI it only checks, failing if the committed file is stale. Tests build their databases from it with [`pg-dolly`](../../../tools/pg-dolly/) (see the [testing skill](../testing/SKILL.md#postgres-tests)).

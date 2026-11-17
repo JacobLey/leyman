@@ -952,6 +952,11 @@
         "test:_"
       ]
     },
+    "populate-docs": {
+      "dependsOn": [
+        "prepare:_"
+      ]
+    },
     "install:_": {
       "executor": "nx:noop",
       "dependsOn": [
@@ -987,7 +992,8 @@
         "update-ts-references",
         "schema-snapshot",
         "genever-go",
-        "dagger-develop"
+        "dagger-develop",
+        "populate-docs"
       ],
       "configurations": {
         "__lifecycle": {}

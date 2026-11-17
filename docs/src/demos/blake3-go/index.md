@@ -4,7 +4,7 @@ description: The same Rust crate called from Go without cgo, built to bare WASM 
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:cff4da0d6110b5e0c2ff0780be084ce2 Generated from demos/blake3-go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/blake3-go/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:74596e7d7af5a9b9335b3e28dc35a2e1 Generated from demos/blake3-go/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/blake3-go/README.md instead, and the description only here. -->
 
 # BLAKE3 from Go through WASM
 

@@ -4,7 +4,7 @@ description: A Vite dev server behind one machine-wide Caddy, so every worktree 
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:af3cd340dab7fe01be20c00e1f637c4c Generated from demos/local-ingress/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit demos/local-ingress/README.md instead, and the description only here. -->
+<!-- @generated-signature v1:47776aab739103dd269cc53ed312691c Generated from demos/local-ingress/README.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit demos/local-ingress/README.md instead, and the description only here. -->
 
 # Local ingress
 

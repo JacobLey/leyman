@@ -4,7 +4,7 @@ description: The problems Haywire solves, its requirements, how its type checks 
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:b44188e94ce5f9fed0e9d74a86b49362 Generated from tools/haywire/WHY-HAYWIRE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/haywire/WHY-HAYWIRE.md instead, and the description only here. -->
+<!-- @generated-signature v1:dadf4b12e5d37c56f9e668884d68e47b Generated from tools/haywire/WHY-HAYWIRE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit tools/haywire/WHY-HAYWIRE.md instead, and the description only here. -->
 
 # Why Haywire?
 

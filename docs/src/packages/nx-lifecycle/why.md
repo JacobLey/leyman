@@ -4,7 +4,7 @@ description: Why hand-written dependsOn doesn't scale in an Nx monorepo, and how
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:fdce96710bc7231e474463e2f26c85df Generated from apps/nx-lifecycle/WHY-NX-LIFECYCLE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit apps/nx-lifecycle/WHY-NX-LIFECYCLE.md instead, and the description only here. -->
+<!-- @generated-signature v1:01db848141477d9e2cc2c39dfafd1753 Generated from apps/nx-lifecycle/WHY-NX-LIFECYCLE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit apps/nx-lifecycle/WHY-NX-LIFECYCLE.md instead, and the description only here. -->
 
 # Why nx-lifecycle?
 

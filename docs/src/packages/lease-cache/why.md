@@ -4,7 +4,7 @@ description: The stampede and invalidation race in read-through caches, how leas
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:bbba0bb5c25728c42c06b9de9b483e3e Generated from tools/lease-cache/WHY-LEASE-CACHE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/lease-cache/WHY-LEASE-CACHE.md instead, and the description only here. -->
+<!-- @generated-signature v1:061bd811e266874db7f926b257e5a5d0 Generated from tools/lease-cache/WHY-LEASE-CACHE.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit tools/lease-cache/WHY-LEASE-CACHE.md instead, and the description only here. -->
 
 # Why lease-cache?
 

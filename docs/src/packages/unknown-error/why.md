@@ -4,7 +4,7 @@ description: The problems with hand-written error conversion, where existing lib
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:d4a7e0737b83e6905159d67387c1465a Generated from tools/unknown-error/WHY-UNKNOWN-ERROR.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit tools/unknown-error/WHY-UNKNOWN-ERROR.md instead, and the description only here. -->
+<!-- @generated-signature v1:7e4bca7005ac42da3c9aa2e83d23deaa Generated from tools/unknown-error/WHY-UNKNOWN-ERROR.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit tools/unknown-error/WHY-UNKNOWN-ERROR.md instead, and the description only here. -->
 
 # Why unknown-error?
 

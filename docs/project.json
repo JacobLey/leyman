@@ -20,18 +20,14 @@
         "^build"
       ]
     },
-    "populate-files": {
+    "populate-docs": {
+      "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "node ./scripts/populate-docs.mjs"
-        ]
+        "command": "node ./scripts/populate-docs.mjs",
+        "color": true,
+        "cwd": "{projectRoot}"
       },
-      "cache": false,
-      "inputs": [],
-      "outputs": [],
-      "dependsOn": [
-        "build:run"
-      ]
+      "cache": false
     },
     "install:_": {},
     "install": {},

@@ -4,7 +4,7 @@ description: Why genever generates types rather than inferring them, how it comp
 # @manual-end frontmatter
 ---
 
-<!-- @generated-signature v1:4b323416d2aa911105e1be9db76db5cd Generated from apps/genever/ts/WHY-GENEVER.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-files). Edit apps/genever/ts/WHY-GENEVER.md instead, and the description only here. -->
+<!-- @generated-signature v1:8444b612f718838488c9cead55852b81 Generated from apps/genever/ts/WHY-GENEVER.md by docs/scripts/populate-docs.mjs (nx run @leyman/docs:populate-docs). Edit apps/genever/ts/WHY-GENEVER.md instead, and the description only here. -->
 
 # Why genever?
 
