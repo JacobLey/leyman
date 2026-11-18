@@ -25,6 +25,7 @@
     "@naxodev/gonx": "catalog:",
     "@nx/js": "catalog:",
     "@typescript/native": "catalog:",
+    "drop-when": "workspace:^",
     "eslint": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",

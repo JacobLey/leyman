@@ -7,6 +7,7 @@
     "check-parity": {},
     "check-skills": {},
     "check-workspace-dependencies": {},
+    "drop-when-check": {},
     "eslint": {
       "inputs": [
         "eslint-input",
@@ -50,6 +51,20 @@
         "color": true,
         "cwd": "{projectRoot}"
       }
+    },
+    "drop-when-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "leyman/main/scripts/drop-when-report.sh"
+        ],
+        "color": true,
+        "cwd": "{workspaceRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "^build"
+      ]
     },
     "starter-audit": {
       "executor": "nx:run-commands",

@@ -488,6 +488,10 @@
       "why": "only matters to a workspace that also publishes what it depends on"
     },
     {
+      "path": "leyman/main/scripts/drop-when-report.sh",
+      "why": "runs drop-when, a private package of this repo, until it is published"
+    },
+    {
       "path": "leyman/main/scripts/fork-manifest.mjs",
       "why": "applies this repo's classification; a fork keeps the list of what it took"
     },
@@ -608,9 +612,11 @@
       "check-fork-manifest",
       "check-parity",
       "check-skills",
-      "check-workspace-dependencies"
+      "check-workspace-dependencies",
+      "drop-when-check"
     ],
     "repoOnlyProjectTargets": [
+      "drop-when-report",
       "fork-manifest-audit",
       "starter-audit"
     ]

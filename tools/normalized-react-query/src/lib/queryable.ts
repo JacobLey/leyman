@@ -93,6 +93,7 @@ export const withParams = <TContext extends object, TParams>(
  * @returns query client to render the hook with
  * @throws {Error} if a link's client is not the one the hook started with, since Tanstack would keep reading the other client
  */
+// drop-when: released https://github.com/TanStack/query/pull/12257
 export const useLinkedQueryClient = (linkedClient: QueryClient | null): QueryClient => {
     let contextClient: QueryClient | null = null;
     try {

@@ -235,6 +235,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/scripts/check-fork-manifest.mjs` | checks this repo's classification |
 | `leyman/main/scripts/check-parity.mjs` | anchored on this repo's Dockerfile, compose file and Dagger module |
 | `leyman/main/scripts/check-workspace-dependencies.mjs` | only matters to a workspace that also publishes what it depends on |
+| `leyman/main/scripts/drop-when-report.sh` | runs drop-when, a private package of this repo, until it is published |
 | `leyman/main/scripts/fork-manifest.mjs` | applies this repo's classification; a fork keeps the list of what it took |
 | `pnpm-lock.yaml` | a fork resolves its own after pruning the catalog |
 | `apps/check-package` | on npm as @leyman/check-package: a fork installs it |

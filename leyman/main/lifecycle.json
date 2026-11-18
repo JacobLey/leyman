@@ -70,6 +70,7 @@
     "check-parity": "check:lint",
     "check-skills": "check:lint",
     "check-workspace-dependencies": "check:lint",
+    "drop-when-check": "check:lint",
     "drizzle-kit-check": "check:lint",
     "go-lint": "check:lint",
     "check-go-release": "check:lint",

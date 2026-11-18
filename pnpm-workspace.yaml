@@ -94,7 +94,9 @@ peerDependencyRules:
   allowedVersions:
     # No release declares ESLint 10 yet, but they run on it (`@leyman/eslint-config` adapts eslint-plugin-react's rules).
     # Remove once they do: jsx-eslint/eslint-plugin-jsx-a11y#1081 and jsx-eslint/eslint-plugin-react#4022.
+    # drop-when: released https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/pull/1081
     eslint-plugin-jsx-a11y>eslint: '10'
+    # drop-when: released https://github.com/jsx-eslint/eslint-plugin-react/pull/4022
     eslint-plugin-react>eslint: '10'
 
 packageExtensions:
@@ -308,4 +310,5 @@ patchedDependencies:
   # arbitraries) fills a Map with all 1.1 million code points to unmap it: ~0.5s and 85MB per process, which times out
   # the first property test on CI. Unmaps from the ranges instead. Drop once a release fixing
   # https://github.com/dubzzz/fast-check/issues/7551 is 7 days old
+  # drop-when: released https://github.com/dubzzz/fast-check/pull/7566
   fast-check@4.10.2: patches/fast-check@4.10.2.patch

@@ -3801,6 +3801,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      drop-when:
+        specifier: workspace:^
+        version: file:apps/drop-when
       eslint:
         specifier: 'catalog:'
         version: 10.14.0(supports-color@8.1.1)
@@ -9359,6 +9362,10 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drop-when@file:apps/drop-when:
+    resolution: {directory: apps/drop-when, type: directory}
+    hasBin: true
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -17532,6 +17539,13 @@ snapshots:
     optionalDependencies:
       '@types/pg': 8.23.1
       pg: 8.23.1
+
+  drop-when@file:apps/drop-when:
+    dependencies:
+      entry-script: file:tools/entry-script
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      yargs: 18.2.0
 
   dunder-proto@1.0.1:
     dependencies:

@@ -175,6 +175,22 @@ Fails if a `package.json` or catalog takes a package in this workspace from npm 
 
 ---
 
+### `drop-when-check`
+
+Fails on a malformed [`drop-when`](../../../apps/drop-when/) marker (the line beside a workaround naming the upstream fix or the date that ends it) in any file Git lists, naming the file and line. It leaves out `apps/drop-when`, whose sources, tests and README hold the token as examples, and `pnpm-lock.yaml`, where the package's own name is a key. Runs in `check:lint`, cached on every file of the workspace. It skips inside Dagger, whose source leaves out `.git`, and unlike `check-parity`, CI doesn't run it from the checkout, since it needs `drop-when` built.
+
+**Add when:** Never: only `@leyman/main` has it.
+
+---
+
+### `drop-when-report`
+
+Resolves every marker against GitHub and prints which workarounds are due, as Markdown (`leyman/main/scripts/drop-when-report.sh`): those whose fix is in a release at least 7 days old, matching `minimumReleaseAge`. It takes `GITHUB_TOKEN`, or else `gh auth token`, which only raises the rate limit. Defined in `@leyman/main`'s `project.json` and bound to no stage: it depends on the network and the date, so it is never cached and never part of `verify`. Run it by hand.
+
+**Add when:** Never: only `@leyman/main` has it.
+
+---
+
 ### `tofu-fmt`
 
 Formats OpenTofu configuration with `tofu fmt` (`scripts/nx/tofu-fmt.sh`). Like `gofmt`, writes changes, except in CI where it fails showing the diff.
