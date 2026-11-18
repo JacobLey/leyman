@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-17T19:20:20.19859295Z",
-  "commit": "7b0c8d9214831bebcf6343727e0c9c094a5f7a5f",
+  "generatedAt": "2026-11-18T19:02:26.237313917Z",
+  "commit": "4b63447d9d61a3f540af62774f396cfce72fc158",
   "suites": {
     "jsonSchema": [
       {
@@ -115,7 +115,7 @@
     {
       "name": "genever-go",
       "packageName": "github.com/JacobLey/leyman/apps/genever/go",
-      "version": "0.2.1",
+      "version": "0.3.0",
       "results": {
         "jsonSchema": {
           "typeErrors": [],
@@ -139,7 +139,7 @@
             true,
             true
           ],
-          "generateMs": 42.347823
+          "generateMs": 63.263609
         },
         "openApi": {
           "typeErrors": [],
@@ -152,7 +152,7 @@
             true,
             true
           ],
-          "generateMs": 56.272987
+          "generateMs": 150.972846
         }
       }
     },
@@ -183,7 +183,7 @@
             true,
             true
           ],
-          "generateMs": 519.78861
+          "generateMs": 823.970565
         }
       }
     },
@@ -203,7 +203,7 @@
             true,
             false
           ],
-          "generateMs": 62.639954
+          "generateMs": 93.716143
         }
       }
     }
