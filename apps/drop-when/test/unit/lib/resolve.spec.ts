@@ -160,6 +160,61 @@ suite('resolveMarker', () => {
             ).to.deep.equal({ status: 'noReleases', sha });
         });
 
+        suite('Pages of releases', () => {
+            const page2 = `${api}/repositories/9/releases?per_page=100&page=2`;
+            const next = `<${page2}>; rel="next"`;
+
+            test('Stops at the page that reaches releases from before the fix', async () => {
+                const fake = fakeGitHub({
+                    ...mergedPull,
+                    [`${repo}/releases?per_page=100`]: ok(
+                        [
+                            releaseResponse({ tag: 'v1.1.0', publishedAt: '2026-11-05T00:00:00Z' }),
+                            releaseResponse({ tag: 'v1.0.0', publishedAt: '2026-10-01T00:00:00Z' }),
+                        ],
+                        next
+                    ),
+                    [page2]: () => {
+                        throw new Error('Requested a page of releases from before the fix');
+                    },
+                    [`${repo}/compare/v1.1.0...${sha}?per_page=1`]: ok(compareResponse('behind')),
+                });
+
+                const { outcome } = await resolveMarker(
+                    new GitHub({ fetch: fake.fetch }),
+                    { path: 'a.ts', line: 1, condition: released('pull', 7) },
+                    timing
+                );
+                expect(outcome).to.have.property('status', 'due');
+                expect(fake.requests.map(({ url }) => url)).not.to.include(page2);
+            });
+
+            test('Reads on past drafts and prereleases from before the fix', async () => {
+                expect(
+                    await resolve(released('pull', 7), {
+                        ...mergedPull,
+                        [`${repo}/releases?per_page=100`]: ok(
+                            [
+                                releaseResponse({ tag: 'v1.2.0', publishedAt: null, draft: true }),
+                                releaseResponse({
+                                    tag: 'v1.1.0-rc.1',
+                                    publishedAt: '2026-10-01T00:00:00Z',
+                                    prerelease: true,
+                                }),
+                            ],
+                            next
+                        ),
+                        [page2]: ok([
+                            releaseResponse({ tag: 'v1.1.0', publishedAt: '2026-11-05T00:00:00Z' }),
+                        ]),
+                        [`${repo}/compare/v1.1.0...${sha}?per_page=1`]: ok(
+                            compareResponse('behind')
+                        ),
+                    })
+                ).to.have.nested.property('release.tag', 'v1.1.0');
+            });
+        });
+
         test('Is unreleased when no release contains it', async () => {
             expect(
                 await resolve(released('pull', 7), {

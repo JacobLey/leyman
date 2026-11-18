@@ -31,13 +31,16 @@ const nextLink = (header: string | null): string | undefined => {
 /**
  * A client for the few GitHub REST API endpoints drop-when reads.
  *
- * Each URL is requested once per client, so markers that share an issue or a repository's releases share the requests,
- * and their failures.
+ * Each URL (each page of a list) is requested once per client, so markers that share an issue or a repository's
+ * releases share the requests, and their failures.
  */
 export class GitHub {
     readonly #fetch: Fetch;
     readonly #token: string | undefined;
-    readonly #requests = new Map<string, Promise<unknown>>();
+    readonly #requests = new Map<
+        string,
+        Promise<{ readonly body: unknown; readonly next?: string }>
+    >();
 
     /**
      * @param options - how to reach GitHub
@@ -58,37 +61,38 @@ export class GitHub {
      * @rejects {GitHubError} when GitHub can't be reached or doesn't answer with success
      */
     public async get<T>(path: string): Promise<T> {
-        return this.#memoize(path, async () => {
-            const { body } = await this.#request(`${apiUrl}${path}`);
-            return body;
-        }) as Promise<T>;
+        const { body } = await this.#page(`${apiUrl}${path}`);
+        return body as T;
     }
 
     /**
-     * Reads every page of a list, following the `Link` header's `next` URL.
+     * Reads the pages of a list, following the `Link` header's `next` URL.
      *
      * @param path - API path, from `/repos`, with `per_page=100` to make the fewest requests
-     * @returns every element, in the order GitHub lists them
+     * @param [isLast] - whether a page is the last one needed, so the pages after it are never requested
+     * @returns every element read, in the order GitHub lists them
      * @rejects {GitHubError} when GitHub can't be reached or doesn't answer with success
      */
-    public async getAll<T>(path: string): Promise<T[]> {
-        return this.#memoize(path, async () => {
-            const all: unknown[] = [];
-            let url: string | undefined = `${apiUrl}${path}`;
-            while (url !== undefined) {
-                const page = await this.#request(url);
-                all.push(...(page.body as unknown[]));
-                url = page.next;
-            }
-            return all;
-        }) as Promise<T[]>;
+    public async getAll<T>(
+        path: string,
+        isLast: (page: readonly T[]) => boolean = () => false
+    ): Promise<T[]> {
+        const all: T[] = [];
+        let url: string | undefined = `${apiUrl}${path}`;
+        while (url !== undefined) {
+            const page = await this.#page(url);
+            const body = page.body as T[];
+            all.push(...body);
+            url = isLast(body) ? undefined : page.next;
+        }
+        return all;
     }
 
-    async #memoize(key: string, request: () => Promise<unknown>): Promise<unknown> {
-        let pending = this.#requests.get(key);
+    async #page(url: string): Promise<{ readonly body: unknown; readonly next?: string }> {
+        let pending = this.#requests.get(url);
         if (pending === undefined) {
-            pending = request();
-            this.#requests.set(key, pending);
+            pending = this.#request(url);
+            this.#requests.set(url, pending);
         }
         return pending;
     }

@@ -147,10 +147,20 @@ const findRelease = async (
     condition: ReleasedCondition,
     fix: Fix
 ): Promise<Extract<Outcome, { readonly status: 'noReleases' | 'unreleased' }> | Release> => {
+    const isRelease = ({ draft, prerelease }: ReleaseResponse): boolean => !draft && !prerelease;
+    // GitHub lists releases newest first, so once a page holds a release published before the fix, no later page
+    // holds one published after it: https://docs.github.com/en/rest/releases/releases#list-releases
     const listed = await github.getAll<ReleaseResponse>(
-        `${repoPath(condition)}/releases?per_page=100`
+        `${repoPath(condition)}/releases?per_page=100`,
+        page =>
+            page.some(
+                release =>
+                    isRelease(release) &&
+                    Temporal.Instant.compare(Temporal.Instant.from(release.published_at!), fix.at) <
+                        0
+            )
     );
-    const releases = listed.filter(({ draft, prerelease }) => !draft && !prerelease);
+    const releases = listed.filter(release => isRelease(release));
     if (releases.length === 0) {
         return { status: 'noReleases', sha: fix.sha };
     }
