@@ -4,7 +4,7 @@ Imports every entry point (each `exports` subpath) of every published package fr
 
 Workspace packages are installed here as copies of exactly the files they publish (see the `sync-injected` target), with only their `dependencies` and peers. So a test fails when a package's `files` leaves out a module it imports at runtime, or a runtime dependency is only in its `devDependencies`. A package's own tests can't catch either: they run from its source, with its dev dependencies installed.
 
-Packages are found the way `Publish` finds what to release, so a new published package fails here until it is added to `devDependencies` (with its required peers).
+Packages are found the way `Publish` finds what to release, so a new published package fails here until it is added to `devDependencies` (with its required peers). The list isn't generated: `package.json` is read by `pnpm install`, which runs before any generator, so a generated entry would need a second install, and CI's frozen lockfile would reject it first.
 
 The `floor-test` target ([`scripts/floor-test.mjs`](scripts/floor-test.mjs)) imports them again on each package's floor, which is the exact oldest version its `engines.node` allows (`>=24` is 24.0.0, `>=22.12` is 22.12.0). It runs the spec once per floor, with that version's binary, naming that floor's packages in `FLOOR_TEST_PACKAGES`; without it, the spec imports every package whose floor's major the running Node.js meets.
 
