@@ -36,6 +36,8 @@ This applies at multiple levels:
 
 If you write a workaround, a subtle ordering constraint, or a counter-intuitive data structure, leave a comment. Future readers (and agents) will thank you.
 
+A workaround for an upstream bug, or one with an expiry date, also gets a drop-when marker beside its comment, naming the pull request that fixes the bug (an issue closed by a merge names no commit) or the date; the syntax is in [`apps/drop-when`](../../../apps/drop-when/README.md). Writing the marker's token anywhere makes it a marker, so prose that only mentions it, like this paragraph, leaves it out. `nx run @leyman/main:drop-when-report` lists the markers whose fix has been released for at least 7 days, and verify fails on a malformed one.
+
 ---
 
 ## Prefer immutability
