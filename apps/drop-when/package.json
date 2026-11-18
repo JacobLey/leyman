@@ -24,6 +24,7 @@
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
+    "ignore": "catalog:",
     "yargs": "catalog:"
   },
   "devDependencies": {

@@ -39,12 +39,12 @@ It only knows GitHub, and only GitHub Releases: a repository that publishes from
 
 `drop-when` isn't published yet. In this repository, `nx run @leyman/main:drop-when-check` runs `check` as part of `verify`, and `nx run @leyman/main:drop-when-report` prints the report.
 
-Both commands read the files Git lists in the working directory: tracked files, and untracked files that no ignore rule matches, so a new file is checked before it is added. They skip binary files (those with a NUL byte, as Git decides), symbolic links and files deleted from the work tree, and fail outside a Git work tree.
+Both commands read every file under the working directory that no `.gitignore` ignores, the way Git decides which new files it would add, so they list the same files with or without a Git repository (in CI, say). They read each directory's `.gitignore` on the way down, including nested ones and their negations, and never enter an ignored directory. They always skip `.git`, binary files (those with a NUL byte, as Git decides) and symbolic links. A `.gitignore` above the working directory, `.git/info/exclude` and a global excludes file aren't read, so run them from the repository's root. A tracked file that matches a `.gitignore` rule is skipped too.
 
-The paths they take are Git pathspecs, relative to the working directory, so `':!vendor'` leaves a directory out:
+They take the files or directories to scan (by default the working directory), and `--exclude` leaves out a file, or everything under a directory. Each path is relative to the working directory, and must exist:
 
 ```sh
-drop-when check src ':!src/vendor'
+drop-when check src --exclude src/vendor --exclude src/fixtures.ts
 ```
 
 ## Markers

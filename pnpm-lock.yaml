@@ -600,6 +600,9 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.14
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -17545,6 +17548,7 @@ snapshots:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      ignore: 7.0.14
       yargs: 18.2.0
 
   dunder-proto@1.0.1:

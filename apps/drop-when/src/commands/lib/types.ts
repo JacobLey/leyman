@@ -2,10 +2,11 @@ import type { Argv, CommandModule } from 'yargs';
 import { identifier } from 'haywire';
 
 /**
- * The input every command shares: the paths to scan.
+ * The input every command shares: the paths to scan, and to leave out.
  */
 export interface DropWhenCommandInput {
     paths: string[];
+    exclude: string[];
 }
 
 export type Command<ExtendedInput extends DropWhenCommandInput> = Pick<

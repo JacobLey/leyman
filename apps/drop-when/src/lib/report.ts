@@ -11,13 +11,17 @@ import { scan } from './scan.js';
  */
 export interface ReportOptions {
     /**
-     * Where Git runs.
+     * The working directory.
      */
     readonly cwd: string;
     /**
-     * Git pathspecs to scan, or all of `cwd` when empty.
+     * Files or directories to scan, or all of `cwd` when empty.
      */
     readonly paths: readonly string[];
+    /**
+     * Files, or directories to leave out everything under.
+     */
+    readonly exclude: readonly string[];
     /**
      * How old a release must be before its marker is due, as given (`7d`, `12h`).
      */
@@ -163,7 +167,7 @@ export const runReport = async (
         };
     }
 
-    const scanned = await scan(options.cwd, options.paths);
+    const scanned = await scan(options.cwd, options);
     if ('error' in scanned) {
         return { stdout: '', stderr: `${scanned.error}\n`, exitCode: 1 };
     }

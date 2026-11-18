@@ -2,7 +2,7 @@ import type { Command, DropWhenCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
 import { runReport } from '#internal/lib/report.js';
 import { clockId, fetchId } from './lib/dependencies.js';
-import { pathsPositional } from './lib/paths.js';
+import { pathsOptions } from './lib/paths.js';
 import { commandId } from './lib/types.js';
 
 /* eslint-disable @typescript-eslint/naming-convention -- Option names, as typed on the command line */
@@ -23,7 +23,7 @@ export const reportCommandBinding = bind(commandId)
             command: 'report [paths..]',
             describe: 'Resolve each marker against GitHub, and print what is due as Markdown',
             builder: yargs =>
-                pathsPositional(yargs)
+                pathsOptions(yargs)
                     .options({
                         'min-age': {
                             describe:
@@ -38,11 +38,11 @@ export const reportCommandBinding = bind(commandId)
                         },
                     })
                     .strict(),
-            handler: async ({ paths, 'min-age': minAge, 'fail-on-due': failOnDue }) => {
+            handler: async ({ paths, exclude, 'min-age': minAge, 'fail-on-due': failOnDue }) => {
                 // eslint-disable-next-line n/no-process-env -- The token only raises the rate limit, never changes a result
                 const token = process.env.GITHUB_TOKEN;
                 const result = await runReport(
-                    { cwd: '.', paths, minAge, failOnDue },
+                    { cwd: '.', paths, exclude, minAge, failOnDue },
                     { fetch, now: clock(), ...(token !== undefined && { token }) }
                 );
                 process.stdout.write(result.stdout);

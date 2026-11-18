@@ -177,7 +177,7 @@ Fails if a `package.json` or catalog takes a package in this workspace from npm 
 
 ### `drop-when-check`
 
-Fails on a malformed [`drop-when`](../../../apps/drop-when/) marker (the line beside a workaround naming the upstream fix or the date that ends it) in any file Git lists, naming the file and line. It leaves out `apps/drop-when`, whose sources, tests and README hold the token as examples, and `pnpm-lock.yaml`, where the package's own name is a key. Runs in `check:lint`, cached on every file of the workspace. It skips inside Dagger, whose source leaves out `.git`, and unlike `check-parity`, CI doesn't run it from the checkout, since it needs `drop-when` built.
+Fails on a malformed [`drop-when`](../../../apps/drop-when/) marker (the line beside a workaround naming the upstream fix or the date that ends it) in any file of the workspace that no `.gitignore` ignores, naming the file and line. It leaves out `apps/drop-when`, whose sources, tests and README hold the token as examples, and `pnpm-lock.yaml`, where the package's own name is a key. Runs in `check:lint`, cached on every file of the workspace. It reads no Git metadata, so it runs the same in Dagger, whose source has no `.git`.
 
 **Add when:** Never: only `@leyman/main` has it.
 

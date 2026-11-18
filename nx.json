@@ -274,7 +274,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "if [ -e .git ]; then leyman/main/node_modules/.bin/drop-when check ':!apps/drop-when' ':!pnpm-lock.yaml'; else echo 'Skipped: the source Dagger tests has no .git to list files with'; fi"
+          "leyman/main/node_modules/.bin/drop-when check --exclude apps/drop-when --exclude pnpm-lock.yaml"
         ],
         "color": true,
         "cwd": "{workspaceRoot}"

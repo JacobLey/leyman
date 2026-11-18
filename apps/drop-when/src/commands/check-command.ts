@@ -2,7 +2,7 @@ import type { Command, DropWhenCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
 import { formatMalformed, plural } from '#internal/lib/format.js';
 import { scan } from '#internal/lib/scan.js';
-import { pathsPositional } from './lib/paths.js';
+import { pathsOptions } from './lib/paths.js';
 import { commandId } from './lib/types.js';
 
 /**
@@ -11,9 +11,9 @@ import { commandId } from './lib/types.js';
 export const checkCommand: Command<DropWhenCommandInput> = {
     command: 'check [paths..]',
     describe: 'Fail on any malformed marker, without going online',
-    builder: yargs => pathsPositional(yargs).strict(),
-    handler: async ({ paths }) => {
-        const result = await scan('.', paths);
+    builder: yargs => pathsOptions(yargs).strict(),
+    handler: async ({ paths, exclude }) => {
+        const result = await scan('.', { paths, exclude });
         if ('error' in result) {
             console.error(result.error);
             process.exitCode = 1;

@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
-import { createRepo } from '#test/helpers/repo.js';
+import { createDirectory } from '#test/helpers/directory.js';
 
 const execFileAsync = promisify(execFile);
 const bin = Path.resolve('bin.mjs');
@@ -66,69 +66,82 @@ suite('cli', () => {
     });
 
     suite('check', () => {
-        const withRepo = beforeEach(async () => createRepo());
+        const withDirectory = beforeEach(async () => createDirectory());
 
-        withRepo.afterEach(async ({ repo }) => {
-            await repo.cleanup();
+        withDirectory.afterEach(async ({ directory }) => {
+            await directory.cleanup();
         });
 
-        withRepo.test('Counts the markers', async ({ repo, write }) => {
+        withDirectory.test('Counts the markers', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} 2026-01-01\n` });
 
-            const { stdout, code } = await run(repo.path, 'check');
+            const { stdout, code } = await run(directory.path, 'check');
             expect(code).to.equal(0);
             expect(stdout).to.equal('1 marker in 1 file, none malformed\n');
         });
 
-        withRepo.test('Counts several', async ({ repo, write }) => {
+        withDirectory.test('Counts several', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} 2026-01-01\n// ${token} 2026-01-02\n`, 'b.ts': '' });
 
-            const { stdout } = await run(repo.path, 'check');
+            const { stdout } = await run(directory.path, 'check');
             expect(stdout).to.equal('2 markers in 2 files, none malformed\n');
         });
 
-        withRepo.test('Fails on a malformed marker, naming where', async ({ repo, write }) => {
-            await write({ 'a.ts': `\n// ${token} 2026-02-30\n` });
+        withDirectory.test(
+            'Fails on a malformed marker, naming where',
+            async ({ directory, write }) => {
+                await write({ 'a.ts': `\n// ${token} 2026-02-30\n` });
 
-            const { stderr, code } = await run(repo.path, 'check');
-            expect(code).to.equal(1);
-            expect(stderr).to.equal('a.ts:2: 2026-02-30 is not a day\n1 malformed marker\n');
-        });
+                const { stderr, code } = await run(directory.path, 'check');
+                expect(code).to.equal(1);
+                expect(stderr).to.equal('a.ts:2: 2026-02-30 is not a day\n1 malformed marker\n');
+            }
+        );
 
-        withRepo.test('Checks only the paths given', async ({ repo, write }) => {
+        withDirectory.test('Checks only the paths given', async ({ directory, write }) => {
             await write({ 'a/a.ts': `// ${token} 2026-01-01\n`, 'b/b.ts': `// ${token} soon\n` });
 
-            const { code } = await run(repo.path, 'check', 'a');
+            const { code } = await run(directory.path, 'check', 'a');
             expect(code).to.equal(0);
         });
-    });
 
-    suite('check outside a git repository', () => {
-        const withDirectory = beforeEach(async () => createRepo({ git: false }));
+        withDirectory.test('Leaves out what --exclude names', async ({ directory, write }) => {
+            await write({
+                'a.ts': `// ${token} soon\n`,
+                'b/b.ts': `// ${token} soon\n`,
+                'c.ts': '',
+            });
 
-        withDirectory.afterEach(async ({ repo }) => {
-            await repo.cleanup();
+            const { stdout } = await run(
+                directory.path,
+                'check',
+                '--exclude',
+                'a.ts',
+                '--exclude',
+                'b'
+            );
+            expect(stdout).to.equal('0 markers in 1 file, none malformed\n');
         });
 
-        withDirectory.test('Fails', async ({ repo }) => {
-            const { stderr, code } = await run(repo.path, 'check');
+        withDirectory.test('Fails on a path that does not exist', async ({ directory }) => {
+            const { stderr, code } = await run(directory.path, 'check', 'missing');
             expect(code).to.equal(1);
-            expect(stderr).to.contain('not a git repository');
+            expect(stderr).to.equal('missing does not exist\n');
         });
     });
 
     suite('report', () => {
-        const withRepo = beforeEach(async () => createRepo());
+        const withDirectory = beforeEach(async () => createDirectory());
 
-        withRepo.afterEach(async ({ repo }) => {
-            await repo.cleanup();
+        withDirectory.afterEach(async ({ directory }) => {
+            await directory.cleanup();
         });
 
-        withRepo.test('Prints the report', async ({ repo, write }) => {
+        withDirectory.test('Prints the report', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} 2000-01-01\n// ${token} 9999-12-31\n` });
 
             const { stdout, code } = await runWithEnv(
-                repo.path,
+                directory.path,
                 { ...withoutToken, GITHUB_TOKEN: 'secret' },
                 'report',
                 '--min-age',
@@ -141,15 +154,24 @@ suite('cli', () => {
             );
         });
 
-        withRepo.test('Fails on a marker due, with --fail-on-due', async ({ repo, write }) => {
-            await write({ 'a.ts': `// ${token} 2000-01-01\n` });
+        withDirectory.test(
+            'Fails on a marker due, with --fail-on-due',
+            async ({ directory, write }) => {
+                await write({ 'a.ts': `// ${token} 2000-01-01\n` });
 
-            const { code } = await run(repo.path, 'report', '--min-age', '7d', '--fail-on-due');
-            expect(code).to.equal(1);
-        });
+                const { code } = await run(
+                    directory.path,
+                    'report',
+                    '--min-age',
+                    '7d',
+                    '--fail-on-due'
+                );
+                expect(code).to.equal(1);
+            }
+        );
 
-        withRepo.test('Requires --min-age', async ({ repo }) => {
-            const { stderr, code } = await run(repo.path, 'report');
+        withDirectory.test('Requires --min-age', async ({ directory }) => {
+            const { stderr, code } = await run(directory.path, 'report');
 
             expect(code).to.equal(1);
             expect(stderr).to.contain('Missing required argument: min-age');

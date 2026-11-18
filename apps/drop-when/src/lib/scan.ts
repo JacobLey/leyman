@@ -1,3 +1,4 @@
+import type { Selection } from './files.js';
 import type { MalformedMarker, Marker } from './marker.js';
 import { listFiles, readText } from './files.js';
 import { parseMarkers } from './marker.js';
@@ -17,17 +18,17 @@ export interface ScanResult {
 const concurrency = 16;
 
 /**
- * Finds every marker in the files Git lists.
+ * Finds every marker in the files `listFiles()` lists.
  *
- * @param cwd - where Git runs
- * @param paths - Git pathspecs to scan, or all of `cwd` when empty
- * @returns markers and malformed markers, by path then line, or the error when Git can't list the files
+ * @param cwd - the working directory
+ * @param selection - what to scan, and leave out
+ * @returns markers and malformed markers, by path then line, or what is wrong with a given path
  */
 export const scan = async (
     cwd: string,
-    paths: readonly string[]
+    selection: Selection
 ): Promise<ScanResult | { readonly error: string }> => {
-    const result = await listFiles(cwd, paths);
+    const result = await listFiles(cwd, selection);
     if ('error' in result) {
         return result;
     }

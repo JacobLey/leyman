@@ -3,8 +3,8 @@ import type { Outcome, Resolved } from '#internal/lib/resolve.js';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { renderReport, runReport } from '#internal/lib/report.js';
+import { createDirectory } from '#test/helpers/directory.js';
 import { api, fakeGitHub, ok, pullResponse } from '#test/helpers/github.js';
-import { createRepo } from '#test/helpers/repo.js';
 
 const token = ['drop', 'when:'].join('-');
 const now = Temporal.Instant.from('2026-11-18T12:00:00Z');
@@ -98,7 +98,7 @@ suite('renderReport', () => {
 });
 
 suite('runReport', () => {
-    const options = { cwd: '', paths: [], minAge: '7d', failOnDue: false };
+    const options = { cwd: '', paths: [], exclude: [], minAge: '7d', failOnDue: false };
 
     test('Rejects a minimum age it cannot read', async () => {
         expect(
@@ -110,75 +110,73 @@ suite('runReport', () => {
         });
     });
 
-    suite('Outside a Git repository', () => {
-        const withDirectory = beforeEach(async () => createRepo({ git: false }));
-
-        withDirectory.afterEach(async ({ repo }) => {
-            await repo.cleanup();
-        });
-
-        withDirectory.test('Fails', async ({ repo }) => {
-            const result = await runReport(
-                { ...options, cwd: repo.path },
-                { fetch: fakeGitHub({}).fetch, now }
-            );
-            expect(result).to.include({ stdout: '', exitCode: 1 });
-            expect(result.stderr).to.contain('not a git repository');
+    test('Fails on a path that does not exist', async () => {
+        const result = await runReport(
+            { ...options, cwd: import.meta.dirname, paths: ['missing'] },
+            { fetch: fakeGitHub({}).fetch, now }
+        );
+        expect(result).to.deep.equal({
+            stdout: '',
+            stderr: 'missing does not exist\n',
+            exitCode: 1,
         });
     });
 
-    suite('In a Git repository', () => {
-        const withRepo = beforeEach(async () => createRepo());
+    suite('In a directory', () => {
+        const withDirectory = beforeEach(async () => createDirectory());
 
-        withRepo.afterEach(async ({ repo }) => {
-            await repo.cleanup();
+        withDirectory.afterEach(async ({ directory }) => {
+            await directory.cleanup();
         });
 
-        withRepo.test('Fails on malformed markers, before any request', async ({ repo, write }) => {
-            await write({
-                'a.ts': `// ${token} released https://github.com/o/r/pull/1\n// ${token} soon\n`,
-            });
-            const fake = fakeGitHub({});
+        withDirectory.test(
+            'Fails on malformed markers, before any request',
+            async ({ directory, write }) => {
+                await write({
+                    'a.ts': `// ${token} released https://github.com/o/r/pull/1\n// ${token} soon\n`,
+                });
+                const fake = fakeGitHub({});
 
-            const result = await runReport(
-                { ...options, cwd: repo.path },
-                { fetch: fake.fetch, now }
-            );
-            expect(result).to.include({ stdout: '', exitCode: 1 });
-            expect(result.stderr).to.contain('a.ts:2: expected');
-            expect(fake.requests).to.deep.equal([]);
-        });
+                const result = await runReport(
+                    { ...options, cwd: directory.path },
+                    { fetch: fake.fetch, now }
+                );
+                expect(result).to.include({ stdout: '', exitCode: 1 });
+                expect(result.stderr).to.contain('a.ts:2: expected');
+                expect(fake.requests).to.deep.equal([]);
+            }
+        );
 
-        withRepo.test('Fails when a lookup fails', async ({ repo, write }) => {
+        withDirectory.test('Fails when a lookup fails', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} released https://github.com/o/r/pull/1\n` });
 
             const result = await runReport(
-                { ...options, cwd: repo.path },
+                { ...options, cwd: directory.path },
                 { fetch: fakeGitHub({}).fetch, now }
             );
             expect(result).to.include({ stderr: '', exitCode: 1 });
             expect(result.stdout).to.contain('## Failed lookups');
         });
 
-        withRepo.test('Sends the token', async ({ repo, write }) => {
+        withDirectory.test('Sends the token', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} released https://github.com/o/r/pull/1\n` });
             const fake = fakeGitHub({
                 [`${api}/repos/o/r/pulls/1`]: ok(pullResponse({ number: 1, state: 'open' })),
             });
 
             const result = await runReport(
-                { ...options, cwd: repo.path },
+                { ...options, cwd: directory.path },
                 { now, fetch: fake.fetch, token: 'secret' }
             );
             expect(result).to.include({ exitCode: 0 });
             expect(fake.requests[0]?.headers).to.have.property('authorization', 'Bearer secret');
         });
 
-        withRepo.test('Succeeds with a marker due', async ({ repo, write }) => {
+        withDirectory.test('Succeeds with a marker due', async ({ directory, write }) => {
             await write({ 'a.ts': `// ${token} 2026-11-01\n` });
 
             const result = await runReport(
-                { ...options, cwd: repo.path },
+                { ...options, cwd: directory.path },
                 { fetch: fakeGitHub({}).fetch, now }
             );
             expect(result).to.deep.equal({
@@ -188,23 +186,26 @@ suite('runReport', () => {
             });
         });
 
-        withRepo.test('Fails with a marker due, when asked to', async ({ repo, write }) => {
-            await write({ 'a.ts': `// ${token} 2026-11-01\n` });
+        withDirectory.test(
+            'Fails with a marker due, when asked to',
+            async ({ directory, write }) => {
+                await write({ 'a.ts': `// ${token} 2026-11-01\n` });
 
-            const result = await runReport(
-                { ...options, cwd: repo.path, failOnDue: true },
-                { fetch: fakeGitHub({}).fetch, now }
-            );
-            expect(result).to.include({ exitCode: 1 });
-        });
+                const result = await runReport(
+                    { ...options, cwd: directory.path, failOnDue: true },
+                    { fetch: fakeGitHub({}).fetch, now }
+                );
+                expect(result).to.include({ exitCode: 1 });
+            }
+        );
 
-        withRepo.test(
+        withDirectory.test(
             'Succeeds with nothing due, when asked to fail on due',
-            async ({ repo, write }) => {
+            async ({ directory, write }) => {
                 await write({ 'a.ts': `// ${token} 2026-12-01\n` });
 
                 const result = await runReport(
-                    { ...options, cwd: repo.path, failOnDue: true },
+                    { ...options, cwd: directory.path, failOnDue: true },
                     { fetch: fakeGitHub({}).fetch, now }
                 );
                 expect(result).to.include({ exitCode: 0 });
