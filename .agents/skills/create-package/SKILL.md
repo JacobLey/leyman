@@ -29,6 +29,8 @@ It writes `package.json` (versions from the catalog or `workspace:^`), `tsconfig
 
 Also add it to the package lists (the [projects skill](../projects/SKILL.md) says how), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)). A published package also goes in the `devDependencies` of [`e2e/published-entrypoints`](../../../e2e/published-entrypoints) (`workspace:^`), whose test fails for any public package missing there. Nx caches that test on its own inputs, so a passing cached run can hide this: run it with `--skip-nx-cache` after making a package public.
 
+A new published package needs its name set up on npm before the release that first publishes it is merged. CI publishes with trusted publishing, which npm only allows for a package that already exists with a trusted publisher; for any other, `npm publish` fails with `ENEEDAUTH` ("This command requires you to be logged in"), and the `publish` job fails. So the owner publishes an empty `0.0.0` placeholder with `pnpm publish`, wherever they are logged in to npm (`-stage` versions are reserved by npm), then adds the package's trusted publisher on npmjs.com: repository `<owner>/<repo>` (`JacobLey/leyman` in leyman), workflow `ci.yml`, environment `npm`. Leave the real first version to CI, so it carries provenance. If the release already failed, rerunning the `publish` job afterwards publishes and tags it, since it skips only what is on npm.
+
 ## E2E packages
 
 A test-only package under `e2e/` checks other workspace packages together, e.g. a pairing that can't depend on each other directly. Copy `e2e/eslint-config-schema`. Compared to a regular package:
