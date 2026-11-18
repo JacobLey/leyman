@@ -13,15 +13,17 @@ const token = ['drop', 'when:'].join('-');
  * Runs the CLI, resolving with its output and exit code whether or not it fails.
  *
  * @param cwd - working directory
+ * @param env - environment variables
  * @param args - arguments
  * @returns output and exit code
  */
-const run = async (
+const runWithEnv = async (
     cwd: string,
+    env: Readonly<Record<string, string | undefined>>,
     ...args: readonly string[]
 ): Promise<{ stdout: string; stderr: string; code: number }> => {
     try {
-        const { stdout, stderr } = await execFileAsync(bin, args, { cwd });
+        const { stdout, stderr } = await execFileAsync(bin, args, { cwd, env });
         return { stdout, stderr, code: 0 };
     } catch (error) {
         const { stdout, stderr, code } = error as { stdout: string; stderr: string; code: number };
@@ -29,11 +31,31 @@ const run = async (
     }
 };
 
+// GITHUB_TOKEN is left out, so no test depends on the one running them
+const withoutToken = Object.fromEntries(
+    // eslint-disable-next-line n/no-process-env -- The environment the CLI runs in
+    Object.entries(process.env).filter(([key]) => key !== 'GITHUB_TOKEN')
+);
+
+/**
+ * Runs the CLI, without `GITHUB_TOKEN`.
+ *
+ * @param cwd - working directory
+ * @param args - arguments
+ * @returns output and exit code
+ */
+const run = async (
+    cwd: string,
+    ...args: readonly string[]
+): Promise<{ stdout: string; stderr: string; code: number }> =>
+    runWithEnv(cwd, withoutToken, ...args);
+
 suite('cli', () => {
     test('--help lists every command', async () => {
         const { stdout } = await run('.', '--help');
 
         expect(stdout).to.contain('drop-when check [paths..]');
+        expect(stdout).to.contain('drop-when report [paths..]');
     });
 
     test('Fails without a command', async () => {
@@ -92,6 +114,45 @@ suite('cli', () => {
             const { stderr, code } = await run(repo.path, 'check');
             expect(code).to.equal(1);
             expect(stderr).to.contain('not a git repository');
+        });
+    });
+
+    suite('report', () => {
+        const withRepo = beforeEach(async () => createRepo());
+
+        withRepo.afterEach(async ({ repo }) => {
+            await repo.cleanup();
+        });
+
+        withRepo.test('Prints the report', async ({ repo, write }) => {
+            await write({ 'a.ts': `// ${token} 2000-01-01\n// ${token} 9999-12-31\n` });
+
+            const { stdout, code } = await runWithEnv(
+                repo.path,
+                { ...withoutToken, GITHUB_TOKEN: 'secret' },
+                'report',
+                '--min-age',
+                '7d'
+            );
+            expect(code).to.equal(0);
+            expect(stdout).to.contain('## Due\n\n- `a.ts:1` 2000-01-01\n');
+            expect(stdout).to.contain(
+                '## Waiting\n\n- `a.ts:2` 9999-12-31: due on 9999-12-31T00:00Z\n'
+            );
+        });
+
+        withRepo.test('Fails on a marker due, with --fail-on-due', async ({ repo, write }) => {
+            await write({ 'a.ts': `// ${token} 2000-01-01\n` });
+
+            const { code } = await run(repo.path, 'report', '--min-age', '7d', '--fail-on-due');
+            expect(code).to.equal(1);
+        });
+
+        withRepo.test('Requires --min-age', async ({ repo }) => {
+            const { stderr, code } = await run(repo.path, 'report');
+
+            expect(code).to.equal(1);
+            expect(stderr).to.contain('Missing required argument: min-age');
         });
     });
 });
