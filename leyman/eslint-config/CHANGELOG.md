@@ -1,5 +1,11 @@
 # @leyman/eslint-config
 
+## 0.5.1
+
+### Patch Changes
+
+- 7b0c8d9: Update dependencies: @typescript-eslint/eslint-plugin@8.72.2, @typescript-eslint/parser@8.72.2, @typescript-eslint/utils@8.72.2. 8.72.2 fixes `prefer-string-starts-ends-with`'s autofix on `v`-flag regular expressions.
+
 ## 0.5.0
 
 ### Minor Changes

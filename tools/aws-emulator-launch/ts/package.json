@@ -1,6 +1,6 @@
 {
   "name": "aws-emulator-launch",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Starts AWS Emulator for tests, on a free port, and returns its endpoint, credentials and certificate authority.",
   "engines": {
     "node": ">=22.12.0"
