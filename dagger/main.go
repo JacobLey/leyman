@@ -964,7 +964,7 @@ func withNxCache(ctr *dagger.Container, nxCache *dagger.Service) *dagger.Contain
 		WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
 }
 
-// Postgres client tools on Debian, with nothing else installed yet.
+// Postgres client tools, a C linker and Git on Debian, with nothing else installed yet.
 func system() *dagger.Container {
 	return dag.Container().
 		From(debianImage).
@@ -974,7 +974,9 @@ func system() *dagger.Container {
 			" && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y" +
 			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor +
 			// `cargo test` links with `cc`. Building WASM doesn't need it, with its own bundled linker
-			" && apt-get install --yes --no-install-recommends gcc libc6-dev"})
+			" && apt-get install --yes --no-install-recommends gcc libc6-dev" +
+			// drop-when's tests list files with `git ls-files`, in repositories they create
+			" && apt-get install --yes --no-install-recommends git"})
 }
 
 // The Go toolchain, with the same golangci-lint release as the devcontainer's.
