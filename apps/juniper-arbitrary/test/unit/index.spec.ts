@@ -124,7 +124,7 @@ const idRefs: Readonly<Record<string, Schema<unknown>>> = {
                 $id: 'resource.json',
                 // `allOf` wraps the `$ref`, since Ajv overflows its stack on a `$ref` beside `$id` that points back
                 // into the resource: https://github.com/ajv-validator/ajv/issues/2699
-                // drop-when: released https://github.com/ajv-validator/ajv/pull/2700
+                // @drop-when released https://github.com/ajv-validator/ajv/pull/2700
                 allOf: [{ $ref: '#/$defs/x' }],
                 $defs: { x: { type: 'number' } },
             },

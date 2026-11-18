@@ -5,7 +5,7 @@ import { beforeEach, suite } from 'mocha-chain';
 import { scan } from '#internal/lib/scan.js';
 import { createDirectory } from '#test/helpers/directory.js';
 
-const token = ['drop', 'when:'].join('-');
+const token = ['@drop', 'when'].join('-');
 const all = { paths: [], exclude: [] };
 
 suite('scan', () => {

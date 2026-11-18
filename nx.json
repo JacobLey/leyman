@@ -274,7 +274,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "leyman/main/node_modules/.bin/drop-when check --exclude apps/drop-when --exclude pnpm-lock.yaml"
+          "leyman/main/node_modules/.bin/drop-when check --exclude apps/drop-when"
         ],
         "color": true,
         "cwd": "{workspaceRoot}"

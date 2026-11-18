@@ -7,7 +7,7 @@ import { createDirectory } from '#test/helpers/directory.js';
 
 const execFileAsync = promisify(execFile);
 const bin = Path.resolve('bin.mjs');
-const token = ['drop', 'when:'].join('-');
+const token = ['@drop', 'when'].join('-');
 
 /**
  * Runs the CLI, resolving with its output and exit code whether or not it fails.

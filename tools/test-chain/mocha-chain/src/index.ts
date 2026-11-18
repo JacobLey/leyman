@@ -24,7 +24,7 @@ export const xdescribe = suite.skip;
  * Ensures that tests are not accidentally instantiated internally, which currently
  * is silently ignored: https://github.com/mochajs/mocha/issues/4525
  */
-// drop-when: released https://github.com/mochajs/mocha/issues/4525
+// @drop-when released https://github.com/mochajs/mocha/issues/4525
 export const { test } = chain;
 export const xit = test.skip;
 /**

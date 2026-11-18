@@ -136,7 +136,7 @@ export default class Cli extends EntryScript {
                 async options => {
                     // Checked here rather than in a builder `.check()`, whose failure still runs the handler when
                     // `parseAsync` is given a callback: https://github.com/yargs/yargs/issues/1975
-                    // drop-when: released https://github.com/yargs/yargs/issues/1975
+                    // @drop-when released https://github.com/yargs/yargs/issues/1975
                     const read = readCatalog(options.catalog ?? []);
                     if ('error' in read) {
                         console.error(read.error);

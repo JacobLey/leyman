@@ -6,7 +6,7 @@ import { renderReport, runReport } from '#internal/lib/report.js';
 import { createDirectory } from '#test/helpers/directory.js';
 import { api, fakeGitHub, ok, pullResponse } from '#test/helpers/github.js';
 
-const token = ['drop', 'when:'].join('-');
+const token = ['@drop', 'when'].join('-');
 const now = Temporal.Instant.from('2026-11-18T12:00:00Z');
 const sha = 'e8d2bdc501b3ba6f03922db5e595770d4763d9da';
 const release = { tag: 'v1.1.0', publishedAt: Temporal.Instant.from('2026-11-05T09:30:00Z') };

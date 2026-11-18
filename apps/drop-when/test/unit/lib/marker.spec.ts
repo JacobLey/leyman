@@ -2,7 +2,7 @@ import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { parseMarkers } from '#internal/lib/marker.js';
 
-const token = ['drop', 'when:'].join('-');
+const token = ['@drop', 'when'].join('-');
 
 suite('parseMarkers', () => {
     suite('released', () => {
@@ -92,6 +92,19 @@ suite('parseMarkers', () => {
         const { malformed } = parseMarkers('a.ts', `// ${token}`);
         expect(malformed).to.have.length(1);
         expect(malformed[0]?.problem).to.contain('expected "released');
+    });
+
+    test('Requires whitespace after the token', () => {
+        expect(parseMarkers('a.ts', `// ${token}2026-11-25`).malformed).to.have.length(1);
+    });
+
+    test('Ignores the package name without the @, as a lockfile holds it', () => {
+        expect(
+            parseMarkers('pnpm-lock.yaml', '      drop-when:\n        specifier: workspace:^')
+        ).to.deep.equal({
+            markers: [],
+            malformed: [],
+        });
     });
 
     test('Rejects a condition it does not know', () => {

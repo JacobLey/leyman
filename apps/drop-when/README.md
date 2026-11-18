@@ -16,7 +16,7 @@ Ideally each workaround names the condition that ends it in a form a tool can re
 patchedDependencies:
   # Unmaps from code point ranges instead of a Map of every code point. Drop once a release fixing
   # https://github.com/dubzzz/fast-check/issues/7551 is 7 days old
-  # drop-when: released https://github.com/dubzzz/fast-check/pull/7566
+  # @drop-when released https://github.com/dubzzz/fast-check/pull/7566
   fast-check@4.10.2: patches/fast-check@4.10.2.patch
 ```
 
@@ -49,14 +49,24 @@ drop-when check src --exclude src/vendor --exclude src/fixtures.ts
 
 ## Markers
 
-A marker is the text `drop-when:` followed by a condition. It can be anywhere on a line, so it works in any comment syntax (`#`, `//`, `/* */`, `<!-- -->`), and every occurrence is a marker, even two on one line.
+A marker is the text `@drop-when`, then a space and a condition. It can be anywhere on a line, so it works in any comment syntax (`#`, `//`, `/* */`, `<!-- -->`), and every occurrence is a marker, even two on one line. The `@` keeps it apart from the package's own name, which a lockfile or a catalog holds as a key (`drop-when:`).
 
 | Condition        | Due                                                                                                                                                                                                                           |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `released <URL>` | Once the fix for a GitHub issue or pull request is in a release that is old enough (`--min-age`). The URL is exactly `https://github.com/<owner>/<repo>/issues/<number>` or `https://github.com/<owner>/<repo>/pull/<number>` |
 | `<YYYY-MM-DD>`   | From the start of that day, UTC. The day must exist (`2026-02-30` is malformed)                                                                                                                                               |
 
-Whitespace separates the words of a condition, and anything after the condition is ignored, so a comment closes after a space: `<!-- drop-when: 2026-11-25 -->`. Anything else after the token, including a URL with trailing punctuation, is a malformed marker.
+Whitespace separates the words of a condition, and anything after the condition is ignored, so a comment closes after a space: `<!-- @drop-when 2026-11-25 -->`. Anything else after the token, including a URL with trailing punctuation or no space after `@drop-when`, is a malformed marker.
+
+In a JSDoc block (`/** */`), a marker at the start of a line is read as a tag, so eslint-plugin-jsdoc's [`check-tag-names`](https://github.com/gajus/eslint-plugin-jsdoc/blob/main/docs/rules/check-tag-names.md) rejects it unless `drop-when` is in its `definedTags`. A line comment next to the block avoids that, and keeps the marker out of the generated `.d.ts` and editor tooltips:
+
+```ts
+/**
+ * Waits for the stream to drain, as `pipeline()` doesn't: https://github.com/nodejs/node/issues/12345
+ */
+// @drop-when released https://github.com/nodejs/node/issues/12345
+export const drain = async (stream: Writable): Promise<void> => {
+```
 
 When a pull request fixes an issue, point the marker at the pull request. GitHub records no commit on an issue that a merged pull request closed, so the report can't follow the issue to the fix, and lists it under [Decide by hand](#how-a-marker-is-resolved).
 

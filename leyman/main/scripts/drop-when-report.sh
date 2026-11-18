@@ -10,4 +10,4 @@ if [ -z "${GITHUB_TOKEN:-}" ] && token=$(gh auth token 2>/dev/null); then
     export GITHUB_TOKEN="$token"
 fi
 
-exec leyman/main/node_modules/.bin/drop-when report --min-age 7d --exclude apps/drop-when --exclude pnpm-lock.yaml "$@"
+exec leyman/main/node_modules/.bin/drop-when report --min-age 7d --exclude apps/drop-when "$@"

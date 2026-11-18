@@ -1,7 +1,8 @@
 /**
- * The token that starts a marker, wherever it is on a line, so it works in any comment syntax.
+ * The token that starts a marker, wherever it is on a line, so it works in any comment syntax. The `@` keeps it from
+ * being a package name or a YAML key, which a lockfile or catalog that installs drop-when would hold.
  */
-export const markerToken = 'drop-when:';
+export const markerToken = '@drop-when';
 
 /**
  * A GitHub issue or pull request whose fix must be released.
@@ -86,12 +87,16 @@ const parseDate = (date: string): DateCondition | { readonly problem: string } |
 /**
  * Parses the condition after one marker token: `released` and a URL, or a date. Whitespace separates its words,
  * and anything after it is ignored, so a marker can end a comment line, and a comment closes after a space
- * (`<!-- drop-when: 2026-11-25 -->`).
+ * (`<!-- @drop-when 2026-11-25 -->`). Whitespace also separates the condition from the token, so `@drop-whenever`
+ * is malformed rather than ignored.
  *
  * @param rest - the line after the token
  * @returns the condition, or what is wrong with it
  */
 const parseCondition = (rest: string): Condition | { readonly problem: string } => {
+    if (!/^\s/v.test(rest)) {
+        return { problem: `${expected}, after a space` };
+    }
     const [first = '', second = ''] = rest.trim().split(/\s+/v, 2);
 
     if (first === 'released') {
