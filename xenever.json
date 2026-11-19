@@ -1,6 +1,6 @@
 {
-  "commit": "4b63447d9d61a3f540af62774f396cfce72fc158",
-  "generatedAt": "2026-11-18T19:02:33.320Z",
+  "commit": "5e6c1422c832c20a634e056d34db674e7fa1df0a",
+  "generatedAt": "2026-11-19T19:10:51.986Z",
   "probes": [
     {
       "feature": "One or many, from maxOccurs",
@@ -482,21 +482,8 @@
     {
       "name": "xenever",
       "packageName": "xenever",
-      "version": "0.2.0",
-      "errors": [
-        {
-          "feature": "XSD: xsi:type",
-          "message": "Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
-        },
-        {
-          "feature": "XSD: substitution groups",
-          "message": "Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
-        },
-        {
-          "feature": "XSD: identity constraints",
-          "message": "Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
-        }
-      ],
+      "version": "0.3.0",
+      "errors": [],
       "probes": [
         {
           "outcome": "pass"
@@ -763,37 +750,31 @@
           "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
+          "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Abstract types are not supported (at /xs:schema/xs:complexType[1]/@abstract in /schemas/drawing.xsd, line 9, column 32)"
+          "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
+          "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Abstract elements are not supported (at /xs:schema/xs:element[2]/@abstract in /schemas/zoo.xsd, line 9, column 46)"
+          "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
+          "outcome": "pass"
         },
         {
-          "outcome": "fail",
-          "detail": "couldn't load the schema: Identity constraints (`xs:unique`) are not supported (at /xs:schema/xs:element/xs:unique in /schemas/catalog.xsd, line 12, column 5)"
+          "outcome": "pass"
         }
       ],
       "bundle": {
-        "minified": 64477,
-        "gzip": 22312,
+        "minified": 79321,
+        "gzip": 27110,
         "nodeBuiltins": []
       },
       "parse": {
-        "ms": 21.311108000000104
+        "ms": 16.061251999999968
       }
     },
     {
@@ -1159,7 +1140,7 @@
         ]
       },
       "parse": {
-        "ms": 26.869175999999698
+        "ms": 23.145134999999755
       }
     },
     {
@@ -1515,7 +1496,7 @@
         ]
       },
       "parse": {
-        "ms": 20.50146600000062
+        "ms": 14.035930999999891
       }
     },
     {
@@ -1837,7 +1818,7 @@
         "nodeBuiltins": []
       },
       "parse": {
-        "ms": 17.962392999999793
+        "ms": 13.715356999999585
       }
     }
   ]
