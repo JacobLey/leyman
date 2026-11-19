@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Identity constraints, after the vehicle example of XSD 1.0 Part 1 §3.11.2: a key within each state, keys and
+     keyrefs across the registry, and a keyref through a namespace prefix. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:r="urn:example:registry"
+           targetNamespace="urn:example:registry"
+           elementFormDefault="qualified">
+  <xs:element name="registry">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="r:state" maxOccurs="unbounded"/>
+        <xs:element ref="r:person" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:key name="state">
+      <xs:selector xpath="r:state"/>
+      <xs:field xpath="r:code"/>
+    </xs:key>
+    <xs:keyref name="vehicleState" refer="r:state">
+      <xs:selector xpath=".//r:vehicle"/>
+      <xs:field xpath="@state"/>
+    </xs:keyref>
+    <xs:key name="registration">
+      <xs:selector xpath=".//r:vehicle"/>
+      <xs:field xpath="@state"/>
+      <xs:field xpath="@plate"/>
+    </xs:key>
+    <xs:keyref name="car" refer="r:registration">
+      <xs:selector xpath="r:person/r:car"/>
+      <xs:field xpath="@state"/>
+      <xs:field xpath="@plate"/>
+    </xs:keyref>
+  </xs:element>
+
+  <xs:element name="state">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="code" type="r:Code"/>
+        <xs:element ref="r:vehicle" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:unique name="plate">
+      <xs:selector xpath="r:vehicle"/>
+      <xs:field xpath="@plate"/>
+    </xs:unique>
+  </xs:element>
+
+  <xs:element name="vehicle">
+    <xs:complexType>
+      <xs:attribute name="plate" type="xs:integer" use="required"/>
+      <xs:attribute name="state" type="r:Code" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="person">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="car" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="state" type="r:Code" use="required"/>
+            <xs:attribute name="plate" type="xs:integer" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="Code">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="[A-Z]{2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

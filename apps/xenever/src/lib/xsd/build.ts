@@ -4,6 +4,7 @@ import type {
     Attribute,
     ComplexType,
     Element,
+    IdentityConstraint,
     Lazy,
     ModelGroup,
     Particle,
@@ -32,6 +33,7 @@ import {
 import { element as buildElement, lazy } from '#internal/lib/schema/builders.js';
 import { ShapeConflictError } from '#internal/lib/schema/check.js';
 import { compileElement } from '#internal/lib/schema/compile.js';
+import { parseIdentityPaths } from '#internal/lib/schema/identity.js';
 import { InvalidValueError } from '#internal/lib/simple/builtins.js';
 import { compileSimple } from '#internal/lib/simple/compile-simple.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
@@ -47,6 +49,8 @@ import {
 import {
     checkDerivationSet,
     clark,
+    code,
+    collapsed,
     invalid,
     isFinal,
     isTrue,
@@ -171,6 +175,25 @@ type ComplexFields = Omit<ComplexType, 'kind'>;
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
 /**
+ * The identity constraints an element declaration may end with.
+ */
+const identitySlot = many('unique', 'key', 'keyref');
+
+/**
+ * Elements whose content is an element's anonymous type.
+ */
+const anonymousTypeNames: ReadonlySet<string> = new Set(['simpleType', 'complexType']);
+
+/**
+ * An identity constraint, as building records it to check names and `refer`s once every one is built.
+ */
+interface IdentityDefinition {
+    readonly at: Located;
+    readonly kind: IdentityConstraint['kind'];
+    readonly fields: number;
+}
+
+/**
  * What may follow the optional particle of a complex type or derivation.
  */
 const attributeSlots = [many('attribute', 'attributeGroup'), optional('anyAttribute')];
@@ -191,7 +214,7 @@ const grammars = {
             'final',
             'id',
         ],
-        content: [optional('simpleType', 'complexType')],
+        content: [optional('simpleType', 'complexType'), identitySlot],
     },
     localElement: {
         attributes: [
@@ -207,7 +230,7 @@ const grammars = {
             'form',
             'id',
         ],
-        content: [optional('simpleType', 'complexType')],
+        content: [optional('simpleType', 'complexType'), identitySlot],
     },
     globalAttribute: {
         attributes: ['name', 'type', 'default', 'fixed', 'id'],
@@ -251,6 +274,15 @@ const grammars = {
         content: [],
     },
     anyAttribute: { attributes: ['namespace', 'processContents', 'id'], content: [] },
+    identity: {
+        attributes: ['name', 'id'],
+        content: [one('selector'), { names: ['field'], min: 1, max: Number.POSITIVE_INFINITY }],
+    },
+    keyref: {
+        attributes: ['name', 'refer', 'id'],
+        content: [one('selector'), { names: ['field'], min: 1, max: Number.POSITIVE_INFINITY }],
+    },
+    identityPath: { attributes: ['xpath', 'id'], content: [] },
 } as const satisfies Record<string, Grammar>;
 
 /**
@@ -591,6 +623,20 @@ export class SchemaBuilder {
      * Copies of element declarations without their occurrences, as the target of a lazy reference.
      */
     readonly #stripped = new WeakMap<Element, Element>();
+    /**
+     * Identity constraints by name in Clark notation: one symbol space across the schema set
+     * ([XSD 1.0 Part 1 §3.11.1](https://www.w3.org/TR/xmlschema-1/#Identity-constraint_Definition_details)).
+     */
+    readonly #identities = new Map<string, IdentityDefinition>();
+    /**
+     * Each keyref's `refer`, checked once every identity constraint is built.
+     */
+    readonly #refers: {
+        readonly at: Located;
+        readonly refer: XmlAttributeNode;
+        readonly name: string;
+        readonly fields: number;
+    }[] = [];
 
     /**
      * @param tables - global components of every file loaded
@@ -631,6 +677,7 @@ export class SchemaBuilder {
         for (const { at, isGlobal } of this.#queue) {
             this.#fill(at, isGlobal);
         }
+        this.#checkRefers();
         for (const [node, name] of this.#options.ordered) {
             if (!this.#complexTypes.get(node)!.content) {
                 throw new TypeError(
@@ -990,7 +1037,9 @@ export class SchemaBuilder {
      */
     #elementType(at: Located, construct: Construct): Type {
         const typeAttribute = construct.attributes.get('type');
-        const [inline] = construct.children;
+        const inline = construct.children.find(child =>
+            anonymousTypeNames.has(child.node.localName)
+        );
         if (typeAttribute && inline) {
             invalid(inline, 'An element has either a `type` or an anonymous type, not both');
         }
@@ -1029,6 +1078,7 @@ export class SchemaBuilder {
             ...(targetNamespace !== null && { namespace: targetNamespace }),
             ...(isTrue(at, construct.attributes.get('nillable')) && { nillable: true }),
             ...valueConstraint(at, construct),
+            ...this.#identity(construct),
         }) as unknown as XsdElement;
         this.#record(declaration, at);
         this.#globalOf.set(declaration, declaration);
@@ -1081,7 +1131,12 @@ export class SchemaBuilder {
         }
         const [inline] = construct.children;
         if (inline) {
-            invalid(inline, 'An element reference can not have an anonymous type');
+            invalid(
+                inline,
+                anonymousTypeNames.has(inline.node.localName)
+                    ? 'An element reference can not have an anonymous type'
+                    : 'An element reference can not have identity constraints'
+            );
         }
         const { namespace, localName } = resolveQName(at, ref);
         const name = clark(namespace, localName);
@@ -1125,10 +1180,147 @@ export class SchemaBuilder {
                 ...(namespace !== null && { namespace }),
                 ...(isTrue(at, construct.attributes.get('nillable')) && { nillable: true }),
                 ...valueConstraint(at, construct),
+                ...this.#identity(construct),
                 ...occurs,
             },
             at
         );
+    }
+
+    /**
+     * Builds the identity constraints of an element declaration.
+     *
+     * @param construct - the declaration, read
+     * @returns its `identity` property, absent when it has none
+     */
+    #identity(construct: Construct): { readonly identity?: readonly IdentityConstraint[] } {
+        const identity = construct.children
+            .filter(child => !anonymousTypeNames.has(child.node.localName))
+            .map(child => this.#identityConstraint(child));
+        return identity.length === 0 ? {} : { identity };
+    }
+
+    /**
+     * Builds an identity constraint, checking its paths are in the XPath subset of
+     * [XSD 1.0 Part 1 §3.11.6](https://www.w3.org/TR/xmlschema-1/#coss-identity-constraint), and recording the
+     * prefixes they use from the scope of each `xs:selector` and `xs:field`.
+     *
+     * @param at - its `xs:key`, `xs:keyref` or `xs:unique` element
+     * @returns the constraint
+     * @throws {XeneverInvalidSchemaError} when its name is taken, or a path is invalid or uses an unbound prefix
+     * @throws {XeneverUnsupportedError} when its paths bind one prefix to different namespaces
+     */
+    #identityConstraint(at: Located): IdentityConstraint {
+        const kind = at.node.localName as IdentityConstraint['kind'];
+        const construct = readConstruct(
+            at,
+            kind === 'keyref' ? grammars.keyref : grammars.identity
+        );
+        const name = readNcName(at, required(at, construct, 'name'));
+        const { targetNamespace } = at.doc;
+        const namespaces = new Map<string, string>();
+        const [selectorAt, ...fieldsAt] = construct.children as [Located, ...Located[]];
+        const path = (pathAt: Located): string => {
+            const xpath = required(pathAt, readConstruct(pathAt, grammars.identityPath), 'xpath');
+            const text = collapsed(xpath);
+            parseIdentityPaths(
+                text,
+                pathAt.node.localName === 'field',
+                prefix => {
+                    const namespace = pathAt.node.inScopeNamespaces.get(prefix);
+                    const recorded = namespaces.get(prefix);
+                    if (
+                        namespace !== undefined &&
+                        recorded !== undefined &&
+                        recorded !== namespace
+                    ) {
+                        unsupported(
+                            pathAt,
+                            `The prefix ${code(prefix)} is bound to different namespaces in the paths of one identity constraint, which is not supported`,
+                            xpath
+                        );
+                    }
+                    if (namespace !== undefined) {
+                        namespaces.set(prefix, namespace);
+                    }
+                    return namespace;
+                },
+                message =>
+                    invalid(
+                        pathAt,
+                        `${JSON.stringify(text)} is not in the XPath subset of identity constraints: ${message}`,
+                        xpath
+                    )
+            );
+            return text;
+        };
+        const selector = path(selectorAt);
+        const fields = fieldsAt.map(fieldAt => path(fieldAt));
+
+        const clarkName = clark(targetNamespace, name);
+        const existing = this.#identities.get(clarkName);
+        if (existing && existing.at.node !== at.node) {
+            invalid(at, `Identity constraint ${clarkName} is declared twice`);
+        }
+        this.#identities.set(clarkName, { at, kind, fields: fields.length });
+        let referName: { readonly name: string; readonly namespace?: string } | null = null;
+        if (kind === 'keyref') {
+            const refer = required(at, construct, 'refer');
+            const resolved = resolveQName(at, refer);
+            this.#refers.push({
+                at,
+                refer,
+                name: clark(resolved.namespace, resolved.localName),
+                fields: fields.length,
+            });
+            referName = {
+                name: resolved.localName,
+                ...(resolved.namespace !== null && { namespace: resolved.namespace }),
+            };
+        }
+        return this.#record(
+            {
+                kind,
+                name,
+                ...(targetNamespace !== null && { namespace: targetNamespace }),
+                ...(referName && { refer: referName }),
+                selector,
+                fields,
+                ...(namespaces.size > 0 && {
+                    namespaces: Object.fromEntries(namespaces),
+                }),
+            } as IdentityConstraint,
+            at
+        );
+    }
+
+    /**
+     * Checks each keyref refers to a `key` or `unique` constraint with as many fields
+     * ([XSD 1.0 Part 1 §3.11.6](https://www.w3.org/TR/xmlschema-1/#c-props-correct), clause 2).
+     *
+     * @throws {XeneverInvalidSchemaError} when one refers to no constraint, to a keyref, or to one with another
+     * number of fields
+     */
+    #checkRefers(): void {
+        for (const { at, refer, name, fields } of this.#refers) {
+            const target =
+                this.#identities.get(name) ??
+                invalid(at, `Identity constraint ${name} is not declared`, refer);
+            if (target.kind === 'keyref') {
+                invalid(
+                    at,
+                    `\`refer\` must name a key or unique constraint, not keyref ${name}`,
+                    refer
+                );
+            }
+            if (target.fields !== fields) {
+                invalid(
+                    at,
+                    `A keyref has as many fields as the constraint it refers to: ${name} has ${target.fields}, not ${fields}`,
+                    refer
+                );
+            }
+        }
     }
 
     /**

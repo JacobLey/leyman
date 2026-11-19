@@ -454,7 +454,77 @@ export interface Element extends Occurs {
      * simple type or a complex type with `text`; not with `default`.
      */
     readonly fixed?: string;
+    /**
+     * Identity constraints, checked over each element this declares and its descendants once they are read.
+     */
+    readonly identity?: readonly IdentityConstraint[];
 }
+
+/**
+ * Names an identity constraint: what a keyref's `refer` holds. A `key` or `unique` constraint is one.
+ */
+export interface IdentityName {
+    /**
+     * Local name, an NCName.
+     */
+    readonly name: string;
+    /**
+     * Namespace name: the target namespace of the schema that declares it. Absent for none.
+     */
+    readonly namespace?: string;
+}
+
+/**
+ * What every identity constraint has
+ * ([XSD 1.0 Part 1 §3.11](https://www.w3.org/TR/xmlschema-1/#cIdentity-constraint_Definitions)).
+ */
+export interface IdentityConstraintBase extends IdentityName {
+    /**
+     * Which elements the constraint applies to, from the element it is declared on: the XPath subset of
+     * [§3.11.6](https://www.w3.org/TR/xmlschema-1/#coss-identity-constraint), such as `item`, `.//item` or
+     * `a/b | c`. An unprefixed name is in no namespace, as in XPath 1.0.
+     */
+    readonly selector: string;
+    /**
+     * The values that identify each selected element, from it: the same subset, whose last step may be an
+     * attribute (`@sku`). Each must select at most one element or attribute, with a simple type.
+     */
+    readonly fields: readonly string[];
+    /**
+     * The prefixes `selector` and `fields` use, to namespace names.
+     */
+    readonly namespaces?: Readonly<Record<string, string>>;
+}
+
+/**
+ * Each selected element has every field, and no two have equal values.
+ */
+export interface KeyConstraint extends IdentityConstraintBase {
+    readonly kind: 'key';
+}
+
+/**
+ * No two selected elements that have every field have equal values.
+ */
+export interface UniqueConstraint extends IdentityConstraintBase {
+    readonly kind: 'unique';
+}
+
+/**
+ * Each selected element that has every field has the values of an element its `key` or `unique` constraint
+ * selected, among those of the element declaring the keyref and its descendants
+ * ([§3.11.5](https://www.w3.org/TR/xmlschema-1/#sic-key)).
+ */
+export interface KeyrefConstraint extends IdentityConstraintBase {
+    readonly kind: 'keyref';
+    readonly refer: IdentityName;
+}
+
+/**
+ * An identity constraint. Field values compare in the XSD value space, so `1.0` equals `1` for a decimal, but
+ * the string `1` doesn't equal the number.
+ */
+export type IdentityConstraint = KeyConstraint | KeyrefConstraint | UniqueConstraint;
 
 /**
  * Brand of {@link ElementOf}, never present at runtime.

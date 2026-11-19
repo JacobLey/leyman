@@ -1,0 +1,14 @@
+<registry xmlns="urn:example:registry">
+  <state>
+    <code>CA</code>
+    <vehicle plate="123" state="CA"/>
+    <vehicle plate="0456" state="CA"/>
+  </state>
+  <state>
+    <code>NV</code>
+    <vehicle plate="123" state="NV"/>
+  </state>
+  <person>
+    <car state="CA" plate="456"/>
+  </person>
+</registry>

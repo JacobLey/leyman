@@ -16,6 +16,8 @@ import type {
     ElementOf,
     FloatFacets,
     FloatKind,
+    IdentityConstraintBase,
+    IdentityName,
     IntFacets,
     IntKind,
     LengthFacets,
@@ -661,3 +663,101 @@ export const anyAttribute = <const O extends AnyAttributeOptions = NoProperties>
     options?: O
 ): Simplify<NoInfer<O> & { readonly kind: 'anyAttribute' }> =>
     ({ kind: 'anyAttribute', ...options }) as Simplify<O & { readonly kind: 'anyAttribute' }>;
+
+/**
+ * Options of an identity constraint: its namespace, and the prefixes its paths use.
+ */
+export type IdentityOptions = Pick<IdentityConstraintBase, 'namespace' | 'namespaces'>;
+
+/**
+ * An identity constraint as a builder returns it.
+ *
+ * @template Kind - which constraint
+ * @template N - its name
+ */
+export type Identity<Kind extends 'key' | 'keyref' | 'unique', N extends string> = Simplify<
+    IdentityConstraintBase & {
+        readonly kind: Kind;
+        readonly name: N;
+    } & (Kind extends 'keyref' ? { readonly refer: IdentityName } : NoProperties)
+>;
+
+/**
+ * Builds a `key` or `unique` constraint.
+ *
+ * @param kind - which constraint
+ * @returns its builder
+ */
+const identityBuilder =
+    <Kind extends 'key' | 'unique'>(kind: Kind) =>
+    <const N extends string>(
+        constraintName: N,
+        selector: string,
+        fields: readonly string[],
+        options?: IdentityOptions
+    ): Identity<Kind, N> =>
+        ({ kind, name: constraintName, selector, fields, ...options }) as Identity<Kind, N>;
+
+/**
+ * An `xs:key` identity constraint, for an element declaration's `identity`: each element the selector selects has
+ * a value for every field, and no two have equal values. Values compare in the XSD value space.
+ *
+ * @example
+ * ```ts
+ * x.key('sku', 'item', ['@sku'])
+ * ```
+ *
+ * @param constraintName - its name, an NCName, which a keyref refers to it by
+ * @param selector - XPath subset selecting elements from the declared element, e.g. `item` or `.//item`
+ * @param fields - XPath subset selecting each value from a selected element, e.g. `@sku` or `code`
+ * @param options - its namespace, and the prefixes its paths use
+ * @returns the constraint
+ */
+export const key = identityBuilder('key');
+
+/**
+ * An `xs:unique` identity constraint, for an element declaration's `identity`: no two elements the selector
+ * selects that have a value for every field have equal values. Values compare in the XSD value space.
+ *
+ * @param constraintName - its name, an NCName
+ * @param selector - XPath subset selecting elements from the declared element, e.g. `item` or `.//item`
+ * @param fields - XPath subset selecting each value from a selected element, e.g. `@sku` or `code`
+ * @param options - its namespace, and the prefixes its paths use
+ * @returns the constraint
+ */
+export const unique = identityBuilder('unique');
+
+/**
+ * An `xs:keyref` identity constraint, for an element declaration's `identity`: each element the selector
+ * selects that has a value for every field has the values of an element that `refer` selected, in the declared
+ * element or its descendants.
+ *
+ * @example
+ * ```ts
+ * x.keyref('itemSku', sku, './/line', ['@sku'])
+ * ```
+ *
+ * @param constraintName - its name, an NCName
+ * @param refer - the `key` or `unique` constraint it refers to, or its name and namespace
+ * @param selector - XPath subset selecting elements from the declared element
+ * @param fields - XPath subset selecting each value from a selected element, as many as `refer` has
+ * @param options - its namespace, and the prefixes its paths use
+ * @returns the constraint
+ */
+export const keyref = <const N extends string>(
+    constraintName: N,
+    refer: IdentityName,
+    selector: string,
+    fields: readonly string[],
+    options?: IdentityOptions
+): Identity<'keyref', N> => ({
+    kind: 'keyref',
+    name: constraintName,
+    refer: {
+        name: refer.name,
+        ...(refer.namespace !== undefined && { namespace: refer.namespace }),
+    },
+    selector,
+    fields,
+    ...options,
+});

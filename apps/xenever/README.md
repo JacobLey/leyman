@@ -21,7 +21,7 @@ Ideally the schema decides the shape. A repeatable element is always an array, a
 - `xs:decimal` is a string, and `xs:integer` and the other big integer types are a `number` only within the safe range, or `bigint` when you ask for it. Nothing is rounded.
 - A document that breaks the schema throws with the line, column and path of the problem. DTDs are rejected, so entities are never expanded.
 
-It doesn't write XML yet, and some XSD constructs are not supported: substitution groups, `xsi:type` and identity constraints among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
+It doesn't write XML yet, and some XSD constructs are not supported: substitution groups and `xsi:type` among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
 
 Guides and the comparison with other XML tools are on the [docs site](https://jacobley.github.io/leyman/packages/xenever/).
 
@@ -30,6 +30,7 @@ Guides and the comparison with other XML tools are on the [docs site](https://ja
 - [Install](#install)
 - [Example](#example)
 - [Values](#values)
+- [Identity constraints](#identity-constraints)
 - [Errors](#errors)
 - [`xenever/xsd`](#xeneverxsd)
 - [Generating TypeScript](#generating-typescript)
@@ -113,6 +114,37 @@ const extensible = x.element(
 
 Each element built with `x.element` also implements [Standard Schema](https://standardschema.dev/) (`StandardSchemaV1<string, T>`), so a library that takes one can validate an XML string with it.
 
+## Identity constraints
+
+An element can declare keys, as XSD's `xs:key`, `xs:unique` and `xs:keyref` do. Each constraint selects elements below the one declaring it, with an XPath selector, and reads fields from each, which are attributes or elements of a simple type:
+
+- `x.unique(name, selector, fields)`: the selected elements that have every field have distinct values.
+- `x.key(name, selector, fields)`: the same, and every selected element has every field.
+- `x.keyref(name, key, selector, fields)`: the fields of each selected element that has them all match an element the key or unique selected, in the element declaring the keyref or below it.
+
+```ts
+const sku = x.key('sku', 'item', ['@sku']);
+const order = x.element(
+    'order',
+    x.complex({
+        content: x.sequence([
+            x.element('item', x.complex({ attributes: [x.attribute('sku', x.int())] }), {
+                maxOccurs: 'unbounded',
+            }),
+            x.element('line', x.complex({ attributes: [x.attribute('sku', x.int())] }), {
+                maxOccurs: 'unbounded',
+            }),
+        ]),
+    }),
+    { identity: [sku, x.keyref('lineSku', sku, 'line', ['@sku'])] }
+);
+
+parse('<order><item sku="1"/><item sku="2"/><line sku="02"/></order>', order); // valid
+parse('<order><item sku="1"/><item sku="01"/><line sku="1"/></order>', order); // throws
+```
+
+Values are compared by the field's type, not as text: as `xs:int`, `01` and `1` are the same value, so the second document has a duplicate key. Paths are the XPath subset XSD allows: child steps, `.`, `*`, a leading `.//` and `|` between paths, and in a field an `@` step last. A prefixed name needs its prefix in the `namespaces` option, as unprefixed names are in no namespace. The constraints are checked once the element declaring them is read, and don't change the value's type.
+
 ## Errors
 
 Every error extends `XeneverError`:
@@ -151,7 +183,7 @@ The options:
 - `bigint`: makes `xs:integer`, `xs:long` and the other big integer types `bigint`.
 - `ordered`: lists the complex types, or elements with an anonymous type, whose children keep their order. Names use Clark notation, `{namespace}local`.
 
-The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include substitution groups, abstract declarations, `xs:redefine`, identity constraints, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax.
+The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include substitution groups, abstract declarations, `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
 
 ## Generating TypeScript
 
@@ -212,7 +244,7 @@ The same is available as an API, from `xenever/xsd`: `xeneverFile(path, options)
 Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at the construct, rather than reading documents more loosely:
 
 - Substitution groups, abstract elements and types, and `xsi:type`.
-- Identity constraints (`xs:key`, `xs:keyref`, `xs:unique`).
+- An identity constraint whose selector and fields bind one prefix to different namespaces.
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Enumerations of binary values, QNames and unions, and of lists of them, whose values xenever has no equality for; length facets on QNames.
 

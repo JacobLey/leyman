@@ -110,13 +110,15 @@ export const code = (text: string): string => `\`${text}\``;
 /**
  * Lists names or values as code, for errors.
  *
- * @param texts - what to list, two or more
+ * @param texts - what to list, one or more
  * @param conjunction - the word before the last
  * @returns e.g. `` `a`, `b` or `c` ``
  */
 export const codeList = (texts: readonly string[], conjunction: 'and' | 'or'): string => {
     const quoted = texts.map(text => code(text));
-    return `${quoted.slice(0, -1).join(', ')} ${conjunction} ${quoted.at(-1)!}`;
+    return quoted.length === 1
+        ? quoted[0]!
+        : `${quoted.slice(0, -1).join(', ')} ${conjunction} ${quoted.at(-1)!}`;
 };
 
 /**
@@ -209,9 +211,6 @@ export interface Construct {
 const unsupportedElements: ReadonlyMap<string, string> = new Map([
     ['redefine', '`xs:redefine` is not supported'],
     ['override', '`xs:override` (XSD 1.1) is not supported'],
-    ['key', 'Identity constraints (`xs:key`) are not supported'],
-    ['keyref', 'Identity constraints (`xs:keyref`) are not supported'],
-    ['unique', 'Identity constraints (`xs:unique`) are not supported'],
     ['notation', 'Notations are not supported'],
     ['assert', '`xs:assert` (XSD 1.1) is not supported'],
     ['assertion', '`xs:assertion` (XSD 1.1) is not supported'],

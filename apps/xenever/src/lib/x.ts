@@ -25,6 +25,10 @@ export type {
     ComplexType,
     Element,
     ElementOf,
+    IdentityConstraint,
+    IdentityName,
+    KeyConstraint,
+    KeyrefConstraint,
     Lazy,
     ModelGroup,
     NamespaceConstraint,
@@ -33,6 +37,7 @@ export type {
     Sequence,
     SimpleType,
     Type,
+    UniqueConstraint,
 } from './schema/ir.js';
 export type { ElementSchema } from './schema/builders.js';
 export {
@@ -64,6 +69,8 @@ export {
     idref,
     int,
     integer,
+    key,
+    keyref,
     language,
     lazy,
     list,
@@ -83,6 +90,7 @@ export {
     time,
     token,
     union,
+    unique,
     unsignedByte,
     unsignedInt,
     unsignedLong,

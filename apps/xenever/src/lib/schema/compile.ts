@@ -1,6 +1,7 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { AllPart, ModelSymbol, Pattern } from './content.js';
+import type { CompiledIdentity } from './identity.js';
 import type { ProcessContents } from './ir.js';
 import { XeneverUnsupportedError } from '#internal/lib/errors.js';
 import { InvalidValueError } from '#internal/lib/simple/builtins.js';
@@ -17,6 +18,7 @@ import {
     shapeConflict,
 } from './check.js';
 import { ContentModel } from './content.js';
+import { compileIdentities } from './identity.js';
 
 /**
  * Identifies a name by namespace name and local name: prefixes are cosmetic.
@@ -138,6 +140,10 @@ export interface CompiledElement {
      */
     readonly empty: string | null;
     readonly fixed: FixedValue | null;
+    /**
+     * Its identity constraints, `null` when it has none, so reading an element costs nothing for them.
+     */
+    readonly identity: readonly CompiledIdentity[] | null;
 }
 
 /**
@@ -154,6 +160,7 @@ const elementProperties = [
     'nillable',
     'default',
     'fixed',
+    'identity',
 ];
 
 /**
@@ -340,6 +347,7 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         type: undefined as unknown as CompiledType,
         empty: null,
         fixed: null,
+        identity: compileIdentities(record.identity, childPath(path, 'identity'), describeName),
     };
     compiledElements.set(record, compiled);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other

@@ -1,4 +1,4 @@
-import type { XmlLocation } from '#internal/lib/errors.js';
+import type { XmlErrorLocation, XmlLocation } from '#internal/lib/errors.js';
 
 /**
  * Namespace name of the `xml` prefix, which is always in scope and can't be bound to another prefix
@@ -91,3 +91,25 @@ export interface XmlElementNode {
      */
     readonly inScopeNamespaces: ReadonlyMap<string, string>;
 }
+
+/**
+ * Where an element or attribute is, for errors.
+ *
+ * @param node - element or attribute read
+ * @returns its location and path
+ */
+export const at = (node: Pick<XmlElementNode, 'location' | 'path'>): XmlErrorLocation => ({
+    ...node.location,
+    path: node.path,
+});
+
+/**
+ * Name of an element or attribute as written, for errors.
+ *
+ * @param node - element or attribute read
+ * @returns its name, prefix included
+ */
+export const written = (node: Pick<XmlElementNode, 'localName' | 'prefix'>): string => {
+    const name = node.prefix === null ? node.localName : `${node.prefix}:${node.localName}`;
+    return `\`${name}\``;
+};

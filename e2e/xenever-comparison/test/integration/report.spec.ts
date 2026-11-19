@@ -32,9 +32,6 @@ const xeneverGaps = [
     'XSD: xsi:type: rejects invalid content of the derived type',
     'XSD: substitution groups: accepts a member of the substitution group',
     'XSD: substitution groups: rejects the abstract head of the group',
-    // Identity constraints need XPath
-    'XSD: identity constraints: accepts distinct keys',
-    'XSD: identity constraints: rejects a duplicate xs:unique key',
 ];
 
 /**

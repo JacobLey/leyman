@@ -1,6 +1,7 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
+import type { QNameValue } from '#internal/lib/schema/infer.js';
 import type { AtomicKind, BigIntegerKind, DateKind } from '#internal/lib/schema/ir.js';
-import type { Builtin, Namespaces, Whitespace } from './builtins.js';
+import type { Builtin, BuiltinValue, Namespaces, Whitespace } from './builtins.js';
 import type { Decimal } from './decimal.js';
 import { XeneverUnsupportedError } from '#internal/lib/errors.js';
 import {
@@ -21,10 +22,12 @@ import {
 import {
     compareDateValues,
     compareDurationValues,
+    dateIdentity,
+    durationIdentity,
     readDateValue,
     readDurationValue,
 } from './date-time.js';
-import { compareDecimals, readDecimal, totalDigits } from './decimal.js';
+import { canonicalDecimal, compareDecimals, readDecimal, totalDigits } from './decimal.js';
 import { compilePattern } from './regex.js';
 
 /**
@@ -57,6 +60,18 @@ export interface CompiledSimple {
      * item, others as {@link isSameValue}.
      */
     readonly isEqual: (a: unknown, b: unknown) => boolean;
+    /**
+     * Identifies the value of a valid text in the value space, for identity constraints: two texts get the same
+     * identity exactly when their values are equal ([XSD 1.0 Part 2 §2.2.3](https://www.w3.org/TR/xmlschema-2/#equality)),
+     * whatever types read them. Values whose primitive types differ are never equal (the string `1` and the
+     * decimal `1`), while types derived from one primitive share its value space (the int `1` and the decimal
+     * `1.0`).
+     *
+     * @param text - a text the type accepts, as written
+     * @param namespaces - namespaces in scope, for `QName` values
+     * @returns its identity
+     */
+    readonly identityKey: (text: string, namespaces: Namespaces) => string;
     /**
      * Whether a value of the type may be a `QName`, which a value written in the schema (an enumeration or a
      * default) can't resolve.
@@ -140,6 +155,38 @@ const families: Readonly<Record<AtomicKind, Family>> = {
     base64Binary: 'binary',
     hexBinary: 'binary',
     QName: 'qname',
+};
+
+/**
+ * Identifies a value a built-in type read, for {@link CompiledSimple.identityKey}: by its primitive type, then its
+ * value in that primitive's value space.
+ *
+ * @param kind - the built-in type that read it
+ * @param read - what it read: the value, and the decimal of a decimal or integer type
+ * @returns a text that is the same exactly for equal values
+ */
+const builtinIdentity = (kind: AtomicKind, read: BuiltinValue): string => {
+    const family = families[kind];
+    if (family === 'decimal') {
+        return `decimal ${canonicalDecimal(read.decimal!)}`;
+    }
+    if (family === 'float') {
+        // `float` and `double` are separate primitives. `String` writes -0 as `0`, which it equals.
+        return `${kind} ${String(read.value)}`;
+    }
+    if (family === 'binary') {
+        // Equal when the octets are: hex digits ignore case, and base64 may space its groups out.
+        const text = read.value as string;
+        return kind === 'hexBinary'
+            ? `hexBinary ${text.toUpperCase()}`
+            : `base64Binary ${atob(text)}`;
+    }
+    if (family === 'qname') {
+        const { namespace, localName } = read.value as QNameValue;
+        return `QName ${JSON.stringify([namespace, localName])}`;
+    }
+    // Booleans, and strings: `anyURI` is a primitive of its own, every other string type derives from `string`.
+    return `${kind === 'anyURI' ? 'anyURI' : family} ${String(read.value)}`;
 };
 
 /**
@@ -605,6 +652,7 @@ const compileAtomic = (type: Readonly<Record<string, unknown>>, path: string): C
         isId: kind === 'ID',
         hasIds: idKind !== null,
         isEqual: isSameValue,
+        identityKey: (text, namespaces) => builtinIdentity(kind, readBuiltin(text, namespaces)),
         parse: (text, namespaces, ids) => {
             const read = readBuiltin(text, namespaces);
             checkPatterns(read.lexical);
@@ -750,6 +798,10 @@ const compileDate = (type: Readonly<Record<string, unknown>>, path: string): Com
         isId: false,
         hasIds: false,
         isEqual: (a, b) => compare(order.read(a as string), order.read(b as string)) === 0,
+        identityKey: text => {
+            const lexical = processWhitespace(text, 'collapse');
+            return `${kind} ${kind === 'duration' ? durationIdentity(lexical) : dateIdentity(kind, lexical)}`;
+        },
         parse: text => {
             const lexical = readLexical(text);
             checkPatterns(lexical);
@@ -867,6 +919,12 @@ const compileList = (type: Readonly<Record<string, unknown>>, path: string): Com
     }
     return {
         isEqual,
+        // A list equals only a list, item by item.
+        identityKey: (text, namespaces) => {
+            const lexical = processWhitespace(text, 'collapse');
+            const texts = lexical === '' ? [] : lexical.split(' ');
+            return `list ${JSON.stringify(texts.map(itemText => item.identityKey(itemText, namespaces)))}`;
+        },
         hasQName: item.hasQName,
         isId: false,
         hasIds: item.hasIds,
@@ -908,6 +966,18 @@ const compileUnion = (type: Readonly<Record<string, unknown>>, path: string): Co
         hasIds: members.some(member => member.hasIds),
         // The value doesn't say which member read it, so values compare as they are.
         isEqual: isSameValue,
+        // The text has the value of the first member that accepts it, in that member's value space.
+        identityKey: (text, namespaces) =>
+            members
+                .find(member => {
+                    try {
+                        member.parse(text, namespaces);
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                })!
+                .identityKey(text, namespaces),
         parse: (text, namespaces, ids) => {
             // A union has no whitespace processing of its own; its members each have theirs. Patterns are
             // matched against the collapsed text, as most members collapse it.

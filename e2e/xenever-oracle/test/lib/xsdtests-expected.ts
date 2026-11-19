@@ -657,6 +657,30 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
         ],
     },
     {
+        name: 'libxml2-identity-values',
+        kind: 'libxml2',
+        reason: "libxml2's identity constraints tell `+0` from `-0` as decimals, which are one value",
+        spec: 'https://www.w3.org/TR/xmlschema-2/#decimal',
+        ids: [
+            'suntest/identitytestsuitetest001/test.2.n',
+            'suntest/identitytestsuitetest003/test.2.v',
+        ],
+    },
+    {
+        name: 'libxml2-identity-xsi',
+        kind: 'libxml2',
+        reason: "libxml2's identity constraint fields skip the `xsi` attributes, so its `@*` misses `xsi:nil` (W3C bug 4061)",
+        spec: 'https://www.w3.org/TR/xmlschema-1/#cvc-identity-constraint',
+        ids: ['MS-IdentityConstraint2006-07-15/idL100/idL100.v'],
+    },
+    {
+        name: 'lax-descendants',
+        kind: 'gap',
+        reason: 'A lax wildcard leaves the descendants of an element it has no declaration for unvalidated, rather than validating those that have one, so a field selecting one finds no type',
+        spec: 'https://www.w3.org/TR/xmlschema-1/#cvc-assess-elt',
+        ids: ['suntest/idc006.nogen/idc006.nogen.v00'],
+    },
+    {
         name: 'schema-constraint-gaps',
         kind: 'gap',
         reason: 'Small schema constraints not checked yet: `xml:lang` on documentation, a qualified local attribute in the xsi namespace, `mixed` on an extension that adds nothing, and a local type named anySimpleType',

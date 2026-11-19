@@ -11,10 +11,12 @@ import type { CompiledSimple } from './simple/compile-simple.js';
 import type { StandardSchemaV1 } from './standard-schema.js';
 import type { XmlAttributeNode, XmlElementNode } from './xml/nodes.js';
 import { XeneverDocumentError, XeneverUnsupportedError, XeneverValidationError } from './errors.js';
+import { IdentityScope } from './identity.js';
 import { anyKey, compileElement, describeName, expandedName } from './schema/compile.js';
 import { expectedLabels, matchingWildcards } from './schema/content.js';
 import { InvalidValueError } from './simple/builtins.js';
 import { compileSimple } from './simple/compile-simple.js';
+import { at, written } from './xml/nodes.js';
 import { readXml } from './xml/read-xml.js';
 
 /**
@@ -45,28 +47,6 @@ const textKey = '#text';
  * Whitespace as XML defines it ([XML 1.0 §2.3](https://www.w3.org/TR/xml/#NT-S)).
  */
 const whitespaceOnly = /^[\t\n\r ]*$/v;
-
-/**
- * Where an element or attribute is, for errors.
- *
- * @param node - element or attribute read
- * @returns its location and path
- */
-const at = (node: Pick<XmlElementNode, 'location' | 'path'>): XmlErrorLocation => ({
-    ...node.location,
-    path: node.path,
-});
-
-/**
- * Name of an element or attribute as written, for errors.
- *
- * @param node - element or attribute read
- * @returns its name, prefix included
- */
-const written = (node: Pick<XmlElementNode, 'localName' | 'prefix'>): string => {
-    const name = node.prefix === null ? node.localName : `${node.prefix}:${node.localName}`;
-    return `\`${name}\``;
-};
 
 /**
  * Lists labels for an error: `` `a`, `b` or `c` ``.
@@ -151,6 +131,15 @@ class IdTable {
             }
         }
     }
+}
+
+/**
+ * What reading one document keeps track of: its `ID`s and `IDREF`s, and the identity constraints being
+ * checked, `null` outside any element that has some.
+ */
+interface DocumentState {
+    readonly ids: IdTable;
+    identity: IdentityScope | null;
 }
 
 /**
@@ -409,14 +398,14 @@ const processStrength: Readonly<Record<ProcessContents, number>> = { skip: 0, la
  *
  * @param child - node of the XML tree
  * @param wildcards - the wildcards that may have matched it, in model order
- * @param ids - the document's `ID`s and `IDREF`s
+ * @param state - what reading the document keeps track of
  * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
  * @throws {XeneverUnsupportedError} on `xsi:type` where the element is validated
  */
 const checkWildcardElement = (
     child: XmlElementNode,
     wildcards: readonly CompiledWildcard<CompiledElement>[],
-    ids: IdTable
+    state: DocumentState
 ): void => {
     let processContents: ProcessContents = 'skip';
     for (const wildcard of wildcards) {
@@ -434,7 +423,7 @@ const checkWildcardElement = (
         .find(found => found !== undefined);
     if (declaration) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
-        readElement(child, declaration, ids);
+        readElement(child, declaration, state);
         return;
     }
     // Without a declaration, `xsi:type` would give the type to validate against.
@@ -452,11 +441,15 @@ const checkWildcardElement = (
  *
  * @param node - node of the XML tree
  * @param type - its complex type, which has content
- * @param ids - the document's `ID`s and `IDREF`s
+ * @param state - what reading the document keeps track of
  * @returns the value of `children`: an object by key, or entries in document order when ordered
  * @throws {XeneverValidationError} when the children don't match the content model
  */
-const readChildren = (node: XmlElementNode, type: CompiledComplex, ids: IdTable): unknown => {
+const readChildren = (
+    node: XmlElementNode,
+    type: CompiledComplex,
+    state: DocumentState
+): unknown => {
     const { model, elements, keys, wildcards } = type.content!;
     const values = new Map<string, unknown[]>();
     const entries: { readonly name: string; readonly value: unknown }[] = [];
@@ -508,13 +501,13 @@ const readChildren = (node: XmlElementNode, type: CompiledComplex, ids: IdTable)
                 matchingWildcards(before, { name, namespace }).map(
                     symbol => wildcards.get(symbol.id)!
                 ),
-                ids
+                state
             );
             add(anyKey, toXmlNode(child));
         } else {
             const declaration = elements.get(name)!;
             // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `readElement` and this function call each other
-            add(declaration.key, readElement(child, declaration, ids));
+            add(declaration.key, readElement(child, declaration, state));
         }
     }
     if (!term.nullable) {
@@ -611,20 +604,27 @@ const readText = (
 };
 
 /**
- * Reads an element as its declaration says.
+ * Reads an element as its declaration says, without its identity constraints.
  *
  * @param node - node of the XML tree
  * @param declaration - what declares it
- * @param ids - the document's `ID`s and `IDREF`s
+ * @param state - what reading the document keeps track of
  * @returns its value
  * @throws {XeneverValidationError} when it doesn't match the declaration
  * @throws {XeneverUnsupportedError} on `xsi:type`
  */
-const readElement = (node: XmlElementNode, declaration: CompiledElement, ids: IdTable): unknown => {
+const readDeclared = (
+    node: XmlElementNode,
+    declaration: CompiledElement,
+    state: DocumentState
+): unknown => {
     rejectXsiType(node);
+    const { ids } = state;
     const { type } = declaration;
     const complex = type.kind === 'complex' ? type : null;
-    if (isNil(node, declaration)) {
+    const isNilled = isNil(node, declaration);
+    state.identity?.record(node, declaration, isNilled);
+    if (isNilled) {
         // Validated, but a nil element's value is `null` alone.
         readAttributes(node, complex, ids);
         return null;
@@ -635,7 +635,7 @@ const readElement = (node: XmlElementNode, declaration: CompiledElement, ids: Id
     }
     const value: Record<string, unknown> = { attributes: readAttributes(node, type, ids) };
     if (type.content) {
-        value.children = readChildren(node, type, ids);
+        value.children = readChildren(node, type, state);
     } else if (type.text) {
         value.text = readText(node, declaration, type.text, ids);
     } else {
@@ -647,6 +647,36 @@ const readElement = (node: XmlElementNode, declaration: CompiledElement, ids: Id
                 first.kind === 'element' ? at(first) : { ...first.location, path: node.path }
             );
         }
+    }
+    return value;
+};
+
+/**
+ * Reads an element as its declaration says, then checks its identity constraints over its subtree. Elements
+ * outside any element with identity constraints skip the bookkeeping.
+ *
+ * @param node - node of the XML tree
+ * @param declaration - what declares it
+ * @param state - what reading the document keeps track of
+ * @returns its value
+ * @throws {XeneverValidationError} when it doesn't match the declaration, or breaks an identity constraint
+ * @throws {XeneverUnsupportedError} on `xsi:type`
+ */
+const readElement = (
+    node: XmlElementNode,
+    declaration: CompiledElement,
+    state: DocumentState
+): unknown => {
+    if (declaration.identity === null && state.identity === null) {
+        return readDeclared(node, declaration, state);
+    }
+    state.identity ??= new IdentityScope();
+    const scope = state.identity;
+    const siblings = scope.enter(declaration);
+    const value = readDeclared(node, declaration, state);
+    scope.exit(node, declaration, siblings);
+    if (scope.isDone) {
+        state.identity = null;
     }
     return value;
 };
@@ -677,9 +707,9 @@ const readDocument = (xml: string, root: CompiledElement): unknown => {
             at(node)
         );
     }
-    const ids = new IdTable();
-    const value = readElement(node, root, ids);
-    ids.checkReferences();
+    const state: DocumentState = { ids: new IdTable(), identity: null };
+    const value = readElement(node, root, state);
+    state.ids.checkReferences();
     return value;
 };
 

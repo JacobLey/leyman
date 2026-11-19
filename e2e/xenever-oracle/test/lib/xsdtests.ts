@@ -234,7 +234,6 @@ export type OutsideReason =
     | 'abstract'
     | 'chameleon include'
     | 'DTD'
-    | 'identity constraint'
     | 'multiple schema documents'
     | 'notation'
     | 'redefine'
@@ -383,9 +382,7 @@ export const scanSchema = async (
             }
             if (isXsd) {
                 const { attributes } = element;
-                if (['key', 'keyref', 'unique'].includes(name)) {
-                    outside.add('identity constraint');
-                } else if (name === 'redefine') {
+                if (name === 'redefine') {
                     outside.add('redefine');
                 } else if (name === 'notation') {
                     outside.add('notation');

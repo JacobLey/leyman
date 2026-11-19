@@ -3,12 +3,13 @@ import type { XsdSchemaSet } from 'xenever/xsd';
 import { readFile } from 'node:fs/promises';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { parse } from 'xenever';
+import { parse, XeneverValidationError } from 'xenever';
 import { loadXsd } from 'xenever/xsd';
 import * as content from '#test/generated/content.js';
 import * as names from '#test/generated/names.js';
 import * as order from '#test/generated/order.js';
 import * as pom from '#test/generated/pom.js';
+import * as registry from '#test/generated/registry.js';
 import * as tree from '#test/generated/tree.js';
 import { codegenFixtures } from './fixtures.js';
 
@@ -92,10 +93,29 @@ suite('Generated consts', () => {
         await expectSameParse('tree', tree.outline, 'test/data/codegen/outline.xml');
     });
 
+    test('Parse identity constraints as the loaded schema does', async () => {
+        await expectSameParse('registry', registry.registry, 'test/data/codegen/registry.xml');
+    });
+
+    test('Reject a broken identity constraint as the loaded schema does', async () => {
+        const [set, xml] = await Promise.all([
+            loadFixture('registry'),
+            readFile('test/data/codegen/registry.xml', 'utf8'),
+        ]);
+        const broken = xml.replace('plate="456"', 'plate="457"');
+        const reason =
+            /^Element `car` has values \("CA", "457"\) that match nothing of `registration`/v;
+        expect(() => parse(broken, registry.registry)).to.throw(XeneverValidationError, reason);
+        expect(() => parse(broken, set.elements[0]!)).to.throw(XeneverValidationError, reason);
+    });
+
     test('Build the same schema values as the loader, without recursion', async () => {
-        const [orderSet, contentSet, namesSet, pomSet] = await Promise.all(
-            ['order', 'content', 'names', 'pom'].map(async name => loadFixture(name))
+        const [orderSet, contentSet, namesSet, pomSet, registrySet] = await Promise.all(
+            ['order', 'content', 'names', 'pom', 'registry'].map(async name => loadFixture(name))
         );
+        expect(
+            resolved([registry.registry, registry.state, registry.vehicle, registry.person])
+        ).to.deep.equal(resolved(registrySet!.elements));
         expect(resolved([content.anything, content.content])).to.deep.equal(
             resolved(contentSet!.elements)
         );

@@ -7,6 +7,7 @@ import type {
     ComplexType,
     DateKind,
     Element,
+    IdentityConstraint,
     ModelGroup,
     Particle,
     SimpleType,
@@ -187,6 +188,42 @@ const optionsOf = (record: object, omit: readonly string[]): string | null => {
  */
 const call = (builder: string, args: readonly (string | null)[]): string =>
     `x.${builder}(${args.filter(arg => arg !== null).join(', ')})`;
+
+/**
+ * Code building an identity constraint.
+ *
+ * @param constraint - an identity constraint of an element declaration
+ * @returns `x.key(...)`, `x.unique(...)` or `x.keyref(...)`
+ */
+const identityCode = (constraint: IdentityConstraint): string =>
+    call(constraint.kind, [
+        JSON.stringify(constraint.name),
+        constraint.kind === 'keyref' ? literal(constraint.refer) : null,
+        JSON.stringify(constraint.selector),
+        literal(constraint.fields),
+        optionsOf(constraint, ['kind', 'name', 'refer', 'selector', 'fields']),
+    ]);
+
+/**
+ * The options object of an element builder, in the order the IR has them, its identity constraints built by
+ * their builders.
+ *
+ * @param element - an element declaration
+ * @returns `{ ... }`, or `null` when it has no options
+ */
+const elementOptions = (element: Element): string | null => {
+    const entries = Object.entries(element)
+        .filter(([key]) => !['kind', 'name', 'type'].includes(key))
+        .map(
+            ([key, value]) =>
+                `${property(key)}: ${
+                    key === 'identity'
+                        ? `[${(value as readonly IdentityConstraint[]).map(constraint => identityCode(constraint)).join(', ')}]`
+                        : literal(value)
+                }`
+        );
+    return entries.length === 0 ? null : `{ ${entries.join(', ')} }`;
+};
 
 /**
  * A union of TypeScript types, each once.
@@ -700,7 +737,7 @@ class Printer {
         return call('element', [
             JSON.stringify(element.name),
             this.#typeCode(element.type, true),
-            optionsOf(element, ['kind', 'name', 'type']),
+            elementOptions(element),
         ]);
     }
 

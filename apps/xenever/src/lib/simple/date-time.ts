@@ -437,3 +437,50 @@ export const compareDurationValues = (a: DurationValue, b: DurationValue): numbe
     );
     return comparisons.size === 1 ? comparisons.values().next().value! : Number.NaN;
 };
+
+/**
+ * An exact number written so that equal numbers are written alike: trailing zeros of the fraction dropped.
+ *
+ * @param value - a number
+ * @returns its canonical text
+ */
+const canonicalExact = ({ units, scale }: Exact): string => {
+    let reduced = units;
+    let reducedScale = scale;
+    while (reducedScale > 0 && reduced % ten === 0n) {
+        reduced /= ten;
+        reducedScale--;
+    }
+    return `${reduced}e-${reducedScale}`;
+};
+
+/**
+ * Identifies a date or time value in its value space: two values of one type get the same text exactly when they
+ * are equal ([XSD 1.0 Part 2 §3.2.7.4](https://www.w3.org/TR/xmlschema-2/#dateTime-order)). Values with a
+ * timezone are equal on the UTC timeline; a value without one is only ever equal to another without one, as
+ * any comparison with a value with a timezone is indeterminate or unequal.
+ *
+ * @param kind - a date or time type
+ * @param lexical - a valid lexical form, whitespace collapsed
+ * @returns the identifying text
+ */
+export const dateIdentity = (kind: Exclude<DateKind, 'duration'>, lexical: string): string => {
+    const value = readDateValue(kind, lexical);
+    return value.timezone === null
+        ? `local ${canonicalExact(value.local)}`
+        : `utc ${canonicalExact(utc(value))}`;
+};
+
+/**
+ * Identifies a duration in its value space: two durations are equal exactly when their months and their seconds
+ * are, as XSD 1.1 defines it ([Part 2 §3.3.6.2](https://www.w3.org/TR/xmlschema11-2/#duration)). XSD 1.0's four
+ * reference dateTimes agree but for durations of centuries, where months and days can come out even: `P400Y`
+ * and `P146097D` are equal there.
+ *
+ * @param lexical - a valid lexical form, whitespace collapsed
+ * @returns the identifying text
+ */
+export const durationIdentity = (lexical: string): string => {
+    const { months, seconds } = readDurationValue(lexical);
+    return `${months} ${canonicalExact(seconds)}`;
+};
