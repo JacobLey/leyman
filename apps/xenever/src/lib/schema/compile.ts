@@ -675,13 +675,10 @@ const compileWildcard = <
     if (allowed !== null && disallowed !== null) {
         invalidSchema('A wildcard has either `namespace` or `notNamespace`, not both', path);
     }
+    if (allowed?.length === 0) {
+        return { processContents, declarations, allows: () => false, label: `no ${noun}` };
+    }
     if (allowed !== null) {
-        if (allowed.length === 0) {
-            invalidSchema(
-                'A wildcard with no namespaces allows nothing; leave `namespace` out to allow any',
-                childPath(path, 'namespace')
-            );
-        }
         return {
             processContents,
             declarations,
@@ -1063,7 +1060,8 @@ class ContentCompiler {
             const symbol: ModelSymbol = {
                 id,
                 isWildcard: true,
-                isAbstract: false,
+                // Its `namespace` is checked to be a list by now.
+                matchesNothing: (record.namespace as readonly unknown[] | undefined)?.length === 0,
                 label: wildcard.label,
                 matches: child => wildcard.allows(child.namespace),
             };
@@ -1092,7 +1090,7 @@ class ContentCompiler {
         const symbol: ModelSymbol = {
             id: symbolName,
             isWildcard: false,
-            isAbstract: compiled.abstract,
+            matchesNothing: compiled.abstract,
             label: describeName(compiled.namespace, compiled.name),
             // An abstract element matches no child, so one that must occur makes the model unsatisfiable.
             matches: compiled.abstract ? () => false : child => child.name === symbolName,

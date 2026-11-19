@@ -373,6 +373,10 @@ export interface Attribute {
  * Which namespaces a wildcard allows: `namespace` lists the allowed namespace names, `notNamespace` the
  * disallowed ones, `null` standing for no namespace; neither allows any. XSD's `##other` is `notNamespace`
  * with the target namespace and `null` ([XSD 1.1 Part 1 §3.10](https://www.w3.org/TR/xmlschema11-1/#Wildcards)).
+ * An empty `namespace` allows no namespace, so the wildcard matches nothing, as an XSD wildcard with an empty
+ * `namespace` list, or the intersection of two with nothing in common, does: an element wildcard never
+ * matches (one that must occur leaves the type no valid content), and an attribute wildcard allows no
+ * undeclared attribute.
  */
 export interface NamespaceConstraint {
     readonly namespace?: readonly (string | null)[];

@@ -741,10 +741,6 @@ export const limits: readonly Limit[] = [
         reason: 'Unicode block escapes, which need a table of blocks JavaScript does not have',
     },
     {
-        pattern: /^A wildcard that allows no namespace is not supported/v,
-        reason: 'A wildcard allowing nothing, which the IR can not express',
-    },
-    {
         pattern: /the XSD importer has no way to give them separate keys/v,
         reason: 'Two declarations whose values would share a key in the parsed shape',
     },

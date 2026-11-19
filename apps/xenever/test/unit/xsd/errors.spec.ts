@@ -841,19 +841,6 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^An attribute group refers to itself/v,
     ],
     [
-        'an attribute wildcard allowing nothing',
-        withAttributes('<xs:anyAttribute namespace=""/>'),
-        XeneverUnsupportedError,
-        /^A wildcard that allows no namespace is not supported/v,
-    ],
-    [
-        'disjoint attribute wildcards',
-        `<xs:attributeGroup name="g"><xs:anyAttribute namespace="urn:a"/></xs:attributeGroup>
-        ${withAttributes('<xs:attributeGroup ref="t:g"/><xs:anyAttribute namespace="urn:b"/>')}`,
-        XeneverUnsupportedError,
-        /^A wildcard that allows no namespace is not supported/v,
-    ],
-    [
         'a keyword in a list of namespaces',
         withAttributes('<xs:anyAttribute namespace="urn:a ##other"/>'),
         XeneverInvalidSchemaError,
@@ -867,12 +854,6 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
     ],
 
     // Model groups.
-    [
-        'an element wildcard allowing nothing',
-        withParticles('<xs:any namespace=""/>'),
-        XeneverUnsupportedError,
-        /^A wildcard that allows no namespace is not supported/v,
-    ],
     [
         'an xs:all occurring more than once',
         '<xs:element name="e"><xs:complexType><xs:all maxOccurs="2"/></xs:complexType></xs:element>',

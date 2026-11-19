@@ -2088,17 +2088,13 @@ export class SchemaBuilder {
      * @param wildcard - the constraint
      * @param at - where it is declared
      * @returns the IR wildcard
-     * @throws {XeneverUnsupportedError} when it allows no namespace at all
      */
     #anyAttribute(wildcard: ReadWildcard, at: Located): AnyAttribute {
-        const constraint =
-            toIr(wildcard.constraint) ??
-            unsupported(at, 'A wildcard that allows no namespace is not supported');
         const { processContents } = wildcard;
         return this.#record<AnyAttribute>(
             {
                 kind: 'anyAttribute',
-                ...constraint,
+                ...toIr(wildcard.constraint),
                 processContents,
                 ...(processContents !== 'skip' && {
                     declarations: this.#attributeDeclarations(wildcard.constraint),
@@ -2118,16 +2114,13 @@ export class SchemaBuilder {
         const construct = readConstruct(at, grammars.any);
         const occurs = readOccurs(at, construct);
         const wildcard = readWildcard(at, construct);
-        const constraint =
-            toIr(wildcard.constraint) ??
-            unsupported(at, 'A wildcard that allows no namespace is not supported');
         const { processContents } = wildcard;
         return occurs === null
             ? null
             : this.#record<Any>(
                   {
                       kind: 'any',
-                      ...constraint,
+                      ...toIr(wildcard.constraint),
                       processContents,
                       ...(processContents !== 'skip' && {
                           declarations: this.#elementDeclarations(wildcard.constraint),

@@ -28,16 +28,16 @@ export const fromIr = (constraint: NamespaceConstraint): Wildcard => {
  * Writes a wildcard's constraint as the IR does.
  *
  * @param wildcard - the constraint
- * @returns its IR properties, or `null` when it allows nothing, which the IR can't write
+ * @returns its IR properties: an empty `namespace` when it allows nothing
  */
-export const toIr = (wildcard: Wildcard): NamespaceConstraint | null => {
+export const toIr = (wildcard: Wildcard): NamespaceConstraint => {
     if (wildcard.mode === 'any') {
         return {};
     }
     if (wildcard.mode === 'not') {
         return { notNamespace: [...wildcard.namespaces] };
     }
-    return wildcard.namespaces.size === 0 ? null : { namespace: [...wildcard.namespaces] };
+    return { namespace: [...wildcard.namespaces] };
 };
 
 /**

@@ -352,6 +352,43 @@ suite('Content', () => {
                 { name: 'a', value: 1 },
             ]);
         });
+
+        test('Matches nothing when it allows no namespace', () => {
+            const optional = x.element(
+                'r',
+                x.complex({
+                    content: x.sequence([
+                        x.any({ namespace: [], minOccurs: 0 }),
+                        x.element('a', x.int()),
+                    ]),
+                })
+            );
+            expect(parse('<r><a>1</a></r>', optional)).to.deep.equal({
+                attributes: {},
+                children: { a: 1 },
+            });
+            expectInvalid(
+                () => parse('<r><b/><a>1</a></r>', optional),
+                /^Element `b` is not expected here; expected `a` \(/v,
+                { path: '/r/b' }
+            );
+            const required = x.element(
+                'r',
+                x.complex({ content: x.sequence([x.any({ namespace: [] })]) })
+            );
+            expectInvalid(
+                () => parse('<r/>', required),
+                /^Element `r` can not be valid: its content needs an element that can never occur/v,
+                { path: '/r' }
+            );
+            expectInvalid(
+                () => parse('<r><b/></r>', required),
+                /^Element `b` is not expected here \(/v,
+                {
+                    path: '/r/b',
+                }
+            );
+        });
     });
 
     suite('Attribute wildcards', () => {
@@ -387,6 +424,21 @@ suite('Content', () => {
             expectInvalid(() => parse('<r other="1"/>', open), /`other` is not declared on `r`/v, {
                 path: '/r/@other',
             });
+        });
+
+        test('Allows no undeclared attribute when it allows no namespace', () => {
+            const closed = x.element(
+                'r',
+                x.complex({
+                    attributes: [x.attribute('id', x.int()), x.anyAttribute({ namespace: [] })],
+                })
+            );
+            expect(parse('<r id="1"/>', closed).attributes).to.deep.equal({ id: 1 });
+            expectInvalid(
+                () => parse('<r xmlns:e="urn:e" e:b="2"/>', closed),
+                /`e:b` is not declared on `r`/v,
+                { path: '/r/@e:b' }
+            );
         });
 
         test('Never matches xsi attributes', () => {

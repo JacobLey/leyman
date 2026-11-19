@@ -83,6 +83,24 @@ suite('generate', () => {
         expect(generated.Empty).to.deep.equal(type);
     });
 
+    test('Builds wildcards that allow nothing', async () => {
+        const generated = await importGenerated(
+            'nothing',
+            `<xs:element name="closed"><xs:complexType>
+                <xs:sequence><xs:any namespace="" minOccurs="0"/></xs:sequence>
+                <xs:anyAttribute namespace="" processContents="skip"/>
+            </xs:complexType></xs:element>`
+        );
+        const closed = generated.closed as x.Element;
+        expect(parse('<closed/>', closed)).to.deep.equal({ attributes: {}, children: {} });
+        expect(() => parse('<closed xmlns:e="urn:e" e:a="1"/>', closed)).to.throw(
+            /`e:a` is not declared on `closed`/v
+        );
+        expect(() => parse('<closed><a/></closed>', closed)).to.throw(
+            /^Element `a` is not expected here; expected the end of `closed`/v
+        );
+    });
+
     test('Builds the types an xsi:type may select, saying one by its key', async () => {
         const filePath = Path.join(tmpDirectory, 'types.ts');
         const base = x.complex({ name: 'Base', abstract: true });

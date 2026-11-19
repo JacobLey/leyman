@@ -522,6 +522,45 @@ suite('loadXsd elements and attributes', () => {
             ]);
         });
 
+        test('Wildcards allowing nothing: an empty list, or attribute wildcards with nothing in common', async () => {
+            const { elements } = await loadSchema(
+                `<xs:attributeGroup name="a"><xs:anyAttribute namespace="urn:a"/></xs:attributeGroup>
+                <xs:element name="a"><xs:complexType>
+                    <xs:sequence><xs:any namespace="" minOccurs="0" processContents="skip"/></xs:sequence>
+                    <xs:anyAttribute namespace="" processContents="lax"/>
+                </xs:complexType></xs:element>
+                <xs:element name="b"><xs:complexType>
+                    <xs:attributeGroup ref="t:a"/><xs:anyAttribute namespace="urn:b"/>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            expect(withoutDeclarations(elements.map(element => element.type))).to.deep.equal([
+                {
+                    kind: 'complex',
+                    attributes: [{ kind: 'anyAttribute', namespace: [], processContents: 'lax' }],
+                    content: {
+                        kind: 'sequence',
+                        particles: [
+                            { kind: 'any', namespace: [], processContents: 'skip', minOccurs: 0 },
+                        ],
+                    },
+                },
+                {
+                    kind: 'complex',
+                    attributes: [
+                        { kind: 'anyAttribute', namespace: [], processContents: 'strict' },
+                    ],
+                },
+            ]);
+            expect(parse('<a xmlns="urn:t"/>', elements[0]!)).to.deep.equal({
+                attributes: {},
+                children: {},
+            });
+            expect(() =>
+                parse('<b xmlns="urn:t" xmlns:b="urn:b" b:x="1"/>', elements[1]!)
+            ).to.throw(XeneverValidationError, /`b:x` is not declared on `b`/v);
+        });
+
         test('Attribute wildcards intersect in a type, and unite in an extension', async () => {
             const { types } = await loadSchema(
                 `<xs:attributeGroup name="any"><xs:anyAttribute/></xs:attributeGroup>

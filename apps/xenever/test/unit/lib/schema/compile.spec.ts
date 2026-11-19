@@ -567,12 +567,16 @@ suite('Schema checks', () => {
             );
         });
 
-        test('Rejects an empty namespace list', () => {
-            expectInvalidSchema(
-                root({ attributes: [x.anyAttribute({ namespace: [] })] }),
-                /allows nothing/v,
-                '/type/attributes/0/namespace'
-            );
+        test('Accepts an empty namespace list, which allows nothing', () => {
+            expect(() =>
+                parse(
+                    '<a/>',
+                    root({
+                        attributes: [x.anyAttribute({ namespace: [] })],
+                        content: x.sequence([x.any({ namespace: [], minOccurs: 0 })]),
+                    }) as x.Element
+                )
+            ).not.to.throw();
         });
 
         test('Rejects a namespace that is not a name or null', () => {
