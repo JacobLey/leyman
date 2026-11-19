@@ -319,6 +319,11 @@ export interface CompiledIdentity {
      * The `key` or `unique` constraint a keyref refers to: its expanded name, and how errors name it.
      */
     readonly refer: { readonly id: string; readonly label: string } | null;
+    /**
+     * What it is, as text: two constraints of one name with the same signature are the same constraint, which
+     * may be on several declarations (a declaration written twice, or copied).
+     */
+    readonly signature: string;
 }
 
 /**
@@ -476,7 +481,20 @@ export const compileIdentities = (
                       describe
                   )
                 : null;
-        return { kind, id, selector, fields, refer, label: `${kind} ${label}` };
+        return {
+            kind,
+            id,
+            selector,
+            fields,
+            refer,
+            label: `${kind} ${label}`,
+            signature: JSON.stringify([
+                kind,
+                selector,
+                fields.map(field => field.paths),
+                refer?.id ?? null,
+            ]),
+        };
     });
     return compiled.length === 0 ? null : compiled;
 };

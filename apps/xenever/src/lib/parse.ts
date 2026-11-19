@@ -14,7 +14,7 @@ import type { StandardSchemaV1 } from './standard-schema.js';
 import type { XmlAttributeNode, XmlElementNode } from './xml/nodes.js';
 import { XeneverDocumentError, XeneverUnsupportedError, XeneverValidationError } from './errors.js';
 import { IdentityScope } from './identity.js';
-import { anyKey, compileElement, describeName, expandedName } from './schema/compile.js';
+import { anyKey, compileRoot, describeName, expandedName } from './schema/compile.js';
 import { expectedLabels, matchingWildcards } from './schema/content.js';
 import { InvalidValueError } from './simple/builtins.js';
 import { compileSimple } from './simple/compile-simple.js';
@@ -778,14 +778,6 @@ const readElement = (
     }
     return value;
 };
-
-/**
- * Compiles a root declaration.
- *
- * @param element - the declaration
- * @returns its compiled form
- */
-const compileRoot = (element: Element): CompiledElement => compileElement(element, '/');
 
 /**
  * Reads a document whose root the compiled declaration declares.

@@ -301,4 +301,169 @@ suite('Identity constraint schema values', () => {
             );
         });
     });
+
+    suite('Across the root', () => {
+        /**
+         * An optional, repeated element with an `id` attribute.
+         *
+         * @param name - its name
+         * @param options - more of its options, or others in place of these
+         * @returns the declaration
+         */
+        const item = (name: string, options: Record<string, unknown> = {}): x.Element => ({
+            kind: 'element',
+            name,
+            type: { kind: 'complex', attributes: [x.attribute('id', x.int())] },
+            minOccurs: 0,
+            maxOccurs: 'unbounded',
+            ...options,
+        });
+
+        /**
+         * A root `a` holding the particles given.
+         *
+         * @param particles - its content
+         * @param identity - its identity constraints
+         * @returns the declaration
+         */
+        const holding = (particles: readonly unknown[], identity?: readonly unknown[]): x.Element =>
+            ({
+                kind: 'element',
+                name: 'a',
+                type: { kind: 'complex', content: { kind: 'sequence', particles } },
+                ...(identity && { identity }),
+            }) as x.Element;
+
+        test('Rejects two different constraints of one name on different elements', () => {
+            const key = x.key('id', 'a', ['@id']);
+            expectInvalidSchema(
+                holding(
+                    [
+                        item('as', { identity: [key] }),
+                        item('bs', { identity: [x.key('id', 'b', ['@id'])] }),
+                        item('ref'),
+                    ],
+                    [x.keyref('r', key, 'ref', ['@id'])]
+                ),
+                /^The key `id` is declared twice, differently/v,
+                '/type/content/particles/1/identity/0'
+            );
+        });
+
+        test('Accepts one constraint on several declarations, given again or written twice', () => {
+            const key = x.key('id', 'b', ['@id']);
+            const declaration = holding(
+                [
+                    item('as', { identity: [key] }),
+                    item('bs', { identity: [key] }),
+                    item('cs', { identity: [x.key('id', 'b', ['@id'])] }),
+                ],
+                [x.keyref('r', { name: 'id' }, 'b', ['@id']), x.keyref('r2', key, 'b', ['@id'])]
+            );
+            expect(parse('<a/>', declaration)).to.deep.equal({ attributes: {}, children: {} });
+        });
+
+        test('Finds constraints through lazy references, recursion included', () => {
+            const tree: x.Element = x.element(
+                'tree',
+                x.complex({
+                    content: x.sequence([x.lazy(() => tree, { minOccurs: 0 })]),
+                }),
+                { identity: [x.key('id', 'b', ['@id'])] }
+            );
+            expectInvalidSchema(
+                holding([x.lazy(() => tree)], [x.unique('id', 'b', ['@id'])]),
+                /^The key `id` is declared twice, differently/v,
+                '/type/content/particles/0/get()/identity/0'
+            );
+        });
+
+        test('Finds constraints through the declarations of wildcards', () => {
+            expectInvalidSchema(
+                holding(
+                    [
+                        x.any({ processContents: 'skip' }),
+                        x.any({
+                            declarations: () => [
+                                item('b', { identity: [x.unique('id', 'b', ['@id'])] }),
+                            ],
+                        }),
+                    ],
+                    [x.key('id', 'b', ['@id'])]
+                ),
+                /^The unique `id` is declared twice, differently/v,
+                '/type/content/particles/1/declarations()/0/identity/0'
+            );
+        });
+
+        test('Finds constraints through the types xsi:type may select, each type once', () => {
+            const shared = x.complex({
+                content: x.sequence([item('b', { identity: [x.unique('id', 'b', ['@id'])] })]),
+            });
+            const derived = x.complex({
+                name: 'Derived',
+                content: x.sequence([item('c', { type: shared })]),
+            });
+            const base = x.complex({ name: 'Base' });
+            expectInvalidSchema(
+                holding(
+                    [
+                        item('d', { type: shared }),
+                        item('e', {
+                            type: base,
+                            types: () => [derived],
+                            minOccurs: 1,
+                            maxOccurs: 1,
+                        }),
+                        item('f', { type: x.string() }),
+                    ],
+                    [x.unique('id', 'c', ['@id'])]
+                ),
+                /^The unique `id` is declared twice, differently/v,
+                '/type/content/particles/0/type/content/particles/0/identity/0'
+            );
+        });
+
+        test('Rejects a keyref referring to nothing, though no document reaches it', () => {
+            expectInvalidSchema(
+                holding([item('b')], [x.keyref('r', { name: 'typo' }, 'b', ['@id'])]),
+                /^The keyref `r` refers to `typo`, which names no identity constraint/v,
+                '/identity/0/refer'
+            );
+        });
+
+        test('Rejects a keyref referring to a keyref', () => {
+            const keyref = x.keyref('r', { name: 'k' }, 'b', ['@id']);
+            expectInvalidSchema(
+                holding(
+                    [item('b')],
+                    [x.key('k', 'b', ['@id']), keyref, x.keyref('r2', keyref, 'b', ['@id'])]
+                ),
+                /^The keyref `r2` refers to the keyref `r`, which is not a key or unique constraint/v,
+                '/identity/2/refer'
+            );
+        });
+
+        test('Rejects a keyref with a number of fields other than its key', () => {
+            expectInvalidSchema(
+                holding(
+                    [item('b')],
+                    [x.key('k', 'b', ['@id']), x.keyref('r', { name: 'k' }, 'b', ['@id', '@id'])]
+                ),
+                /^The keyref `r` has 2 fields, and the key `k` it refers to 1/v,
+                '/identity/1/fields'
+            );
+        });
+
+        test('Resolves a keyref to a key of an element it holds, declared after it', () => {
+            const declaration = holding(
+                [item('b', { identity: [x.key('k', 'c', ['@id'])] })],
+                [x.keyref('r', { name: 'k' }, 'b/c', ['@id'])]
+            );
+            expect(parse('<a><b/></a>', declaration)).to.deep.equal({
+                attributes: {},
+                children: { b: [{ attributes: {} }] },
+            });
+        });
+    });
 });

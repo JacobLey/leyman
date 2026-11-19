@@ -1148,3 +1148,181 @@ const compileContent = (group: unknown, path: string): CompiledContent => {
     const compiler = new ContentCompiler();
     return compiler.compile(group, path);
 };
+
+/**
+ * Collects the identity constraints a root declaration may hold, through content models, `x.lazy` references,
+ * wildcards' `declarations` and elements' `types`, each declaration and type once. Constraint names are one
+ * symbol space ([XSD 1.0 Part 1 §3.11.1](https://www.w3.org/TR/xmlschema-1/#Identity-constraint_Definition_details)),
+ * which is how a keyref's `refer` names one: node tables are kept by name.
+ */
+class IdentityCollector {
+    readonly #visited = new Set<object>();
+    readonly #constraints = new Map<
+        string,
+        { readonly identity: CompiledIdentity; readonly path: string }
+    >();
+
+    /**
+     * Checks the constraints collected: each keyref refers to a `key` or `unique` constraint among them, with as
+     * many fields.
+     *
+     * @throws {XeneverInvalidSchemaError} at the first keyref, in the order collected, that doesn't
+     */
+    public checkRefers(): void {
+        for (const { identity, path } of this.#constraints.values()) {
+            const { refer } = identity;
+            if (refer === null) {
+                continue;
+            }
+            const referPath = childPath(path, 'refer');
+            const target = this.#constraints.get(refer.id)?.identity;
+            if (!target) {
+                invalidSchema(
+                    `The ${identity.label} refers to ${refer.label}, which names no identity constraint of the root or of an element it may hold`,
+                    referPath
+                );
+            }
+            if (target!.kind === 'keyref') {
+                invalidSchema(
+                    `The ${identity.label} refers to the ${target!.label}, which is not a key or unique constraint`,
+                    referPath
+                );
+            }
+            if (target!.fields.length !== identity.fields.length) {
+                invalidSchema(
+                    `The ${identity.label} has ${identity.fields.length} fields, and the ${target!.label} it refers to ${target!.fields.length}`,
+                    childPath(path, 'fields')
+                );
+            }
+        }
+    }
+
+    /**
+     * Collects the constraints of an element declaration, and of every declaration it may hold.
+     *
+     * @param record - the declaration, already compiled
+     * @param path - path to it
+     * @throws {XeneverInvalidSchemaError} when a constraint has the name of a different one already collected
+     */
+    public element(record: Readonly<Record<string, unknown>>, path: string): void {
+        if (this.#visited.has(record)) {
+            return;
+        }
+        this.#visited.add(record);
+        const identityPath = childPath(path, 'identity');
+        const identities = compiledElements.get(record)!.identity ?? [];
+        for (const [index, identity] of identities.entries()) {
+            this.#add(identity, childPath(identityPath, index));
+        }
+        this.#type(record.type, childPath(path, 'type'));
+        if (record.types === undefined) {
+            return;
+        }
+        const listPath = `${childPath(path, 'types')}()`;
+        const types = getterResult(record, record.types as () => unknown) as readonly unknown[];
+        for (const [index, type] of types.entries()) {
+            this.#type(type, childPath(listPath, index));
+        }
+    }
+
+    /**
+     * Collects a constraint.
+     *
+     * @param identity - the constraint
+     * @param path - path to it
+     * @throws {XeneverInvalidSchemaError} when it has the name of a different one already collected
+     */
+    #add(identity: CompiledIdentity, path: string): void {
+        const existing = this.#constraints.get(identity.id);
+        if (!existing) {
+            this.#constraints.set(identity.id, { identity, path });
+        } else if (existing.identity.signature !== identity.signature) {
+            invalidSchema(
+                `The ${identity.label} is declared twice, differently: an identity constraint's name is unique among those the root may hold`,
+                path
+            );
+        }
+    }
+
+    /**
+     * Collects the constraints of the declarations a type may hold.
+     *
+     * @param type - the type, already compiled
+     * @param path - path to it
+     */
+    #type(type: unknown, path: string): void {
+        const record = type as Readonly<Record<string, unknown>>;
+        if (record.kind !== 'complex' || this.#visited.has(record)) {
+            return;
+        }
+        this.#visited.add(record);
+        if (record.content !== undefined) {
+            this.#particle(record.content, childPath(path, 'content'));
+        }
+    }
+
+    /**
+     * Collects the constraints of the declarations a particle may hold.
+     *
+     * @param particle - the particle, already compiled
+     * @param path - path to it
+     */
+    #particle(particle: unknown, path: string): void {
+        const record = particle as Readonly<Record<string, unknown>>;
+        if (modelGroupKinds.has(record.kind)) {
+            const particlesPath = childPath(path, 'particles');
+            for (const [index, item] of (record.particles as readonly unknown[]).entries()) {
+                this.#particle(item, childPath(particlesPath, index));
+            }
+        } else if (record.kind === 'any') {
+            if (record.declarations !== undefined) {
+                const listPath = `${childPath(path, 'declarations')}()`;
+                const declarations = getterResult(
+                    record,
+                    record.declarations as () => unknown
+                ) as readonly Readonly<Record<string, unknown>>[];
+                for (const [index, declaration] of declarations.entries()) {
+                    this.element(declaration, childPath(listPath, index));
+                }
+            }
+        } else if (record.kind === 'lazy') {
+            this.element(
+                getterResult(record, record.get as () => unknown) as Readonly<
+                    Record<string, unknown>
+                >,
+                `${childPath(path, 'get')}()`
+            );
+        } else {
+            this.element(record, path);
+        }
+    }
+}
+
+/**
+ * Root declarations whose identity constraints were checked.
+ */
+const checkedRoots = new WeakSet<object>();
+
+/**
+ * Checks and compiles a root declaration, as {@link compileElement} does, then checks the identity constraints it
+ * may hold, once per root: names are unique among them, and each keyref refers to a `key` or `unique` constraint
+ * among them with as many fields. Done when the schema compiles, so a schema that breaks this fails whether or
+ * not a document reaches the constraints.
+ *
+ * @param declaration - schema value of the declaration
+ * @returns its compiled form
+ * @throws {XeneverInvalidSchemaError} when the declaration, or anything in it, is invalid, or its identity
+ * constraints are
+ * @throws {XeneverUnsupportedError} when it uses something xenever doesn't support
+ */
+export const compileRoot = (declaration: unknown): CompiledElement => {
+    const compiled = compileElement(declaration, '/');
+    const record = declaration as Readonly<Record<string, unknown>>;
+    if (!checkedRoots.has(record)) {
+        const collector = new IdentityCollector();
+        collector.element(record, '/');
+        collector.checkRefers();
+        checkedRoots.add(record);
+    }
+    return compiled;
+};

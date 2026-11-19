@@ -738,7 +738,8 @@ export const unique = identityBuilder('unique');
  * ```
  *
  * @param constraintName - its name, an NCName
- * @param refer - the `key` or `unique` constraint it refers to, or its name and namespace
+ * @param refer - the `key` or `unique` constraint it refers to, or its name and namespace: only those are kept,
+ * and resolve among the constraints the root may hold
  * @param selector - XPath subset selecting elements from the declared element
  * @param fields - XPath subset selecting each value from a selected element, as many as `refer` has
  * @param options - its namespace, and the prefixes its paths use

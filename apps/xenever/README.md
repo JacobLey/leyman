@@ -152,9 +152,11 @@ Each element built with `x.element` also implements [Standard Schema](https://st
 
 An element can declare keys, as XSD's `xs:key`, `xs:unique` and `xs:keyref` do. Each constraint selects elements below the one declaring it, with an XPath selector, and reads fields from each, which are attributes or elements of a simple type:
 
-- `x.unique(name, selector, fields)`: the selected elements that have every field have distinct values.
-- `x.key(name, selector, fields)`: the same, and every selected element has every field.
-- `x.keyref(name, key, selector, fields)`: the fields of each selected element that has them all match an element the key or unique selected, in the element declaring the keyref or below it.
+- `x.unique(name, selector, fields, options?)`: the selected elements that have every field have distinct values.
+- `x.key(name, selector, fields, options?)`: the same, and every selected element has every field.
+- `x.keyref(name, key, selector, fields, options?)`: the fields of each selected element that has them all match an element the key or unique selected, in the element declaring the keyref or below it.
+
+`options` takes a `namespace` for the constraint's name, and `namespaces`, the prefixes its paths use, mapped to namespace names.
 
 ```ts
 const sku = x.key('sku', 'item', ['@sku']);
@@ -178,6 +180,8 @@ parse('<order><item sku="1"/><item sku="01"/><line sku="1"/></order>', order); /
 ```
 
 Values are compared by the field's type, not as text: as `xs:int`, `01` and `1` are the same value, so the second document has a duplicate key. Paths are the XPath subset XSD allows: child steps, `.`, `*`, a leading `.//` and `|` between paths, and in a field an `@` step last. A prefixed name needs its prefix in the `namespaces` option, as unprefixed names are in no namespace. The constraints are checked once the element declaring them is read, and don't change the value's type.
+
+As in XSD, a constraint is known by its name and namespace. `x.keyref` keeps only the name and namespace of the key it is given, so `{ name: 'sku' }` works as well, and it refers to whichever key of that name the root holds. So among the elements a root may hold, through its content, `x.lazy`, wildcards' `declarations` and `types`, two constraints with one name must be the same constraint, the same object or one written the same way twice. Each keyref must refer to one of them, a key or unique with as many fields. `parse` checks this once per root, before reading a document, and throws `XeneverInvalidSchemaError` when it doesn't hold.
 
 ## Errors
 
