@@ -40,15 +40,6 @@ export const createLocate = (xml: string): Locate => {
 };
 
 /**
- * Deepest nesting of elements accepted, the root being 1. The tokenizer (parse-xml 5.1) parses each element
- * with a recursive call and no limit of its own, so a deep enough document would exhaust the call stack, at a
- * depth that depends on the engine. 256 is libxml2's default limit
- * ([parser.c](https://gitlab.gnome.org/GNOME/libxml2/-/blob/21c8223ac091b81d5914c52eb20b1b063e29cb92/parser.c#L2030)),
- * so the `xmllint` oracle agrees.
- */
-export const maxElementDepth = 256;
-
-/**
  * Offset just past the next `terminator` at or after `from`.
  *
  * @param xml - input string
@@ -62,23 +53,22 @@ const after = (xml: string, terminator: string, from: number): number => {
 };
 
 /**
- * A start tag up to its `>`, skipping quoted attribute values, which may contain `>`. Each alternative starts
- * with a different character, so matching is linear.
+ * A start or end tag up to its `>`, skipping quoted attribute values, which may contain `>`. Each alternative
+ * starts with a different character, so matching is linear.
  */
-const startTag = /(?:[^"'>]|"[^"]*"|'[^']*')*>/vy;
+const tag = /(?:[^"'>]|"[^"]*"|'[^']*')*>/vy;
 
 /**
- * Checks what the tokenizer can't be trusted with before it runs: any DOCTYPE, and elements nested deeper than
- * {@link maxElementDepth}. Only the markup that matters for that is scanned (comments, CDATA sections and
- * processing instructions are skipped whole); the first construct that isn't closed stops the scan, leaving
- * the tokenizer to report the document as not well-formed.
+ * Rejects any DOCTYPE before the tokenizer runs, since the tokenizer would read one. Only markup is scanned:
+ * comments, CDATA sections, processing instructions and tags are skipped whole, so `<!DOCTYPE` in them is not
+ * a DOCTYPE. The first construct that isn't closed stops the scan, leaving the tokenizer to report the document
+ * as not well-formed.
  *
  * @param xml - input string
  * @param locate - locates offsets in `xml`
- * @throws {XeneverXmlError} on a DOCTYPE, or nesting deeper than {@link maxElementDepth}
+ * @throws {XeneverXmlError} on a DOCTYPE
  */
-export const prescan = (xml: string, locate: Locate): void => {
-    let depth = 0;
+export const rejectDoctype = (xml: string, locate: Locate): void => {
     let index = xml.indexOf('<');
     while (index !== -1) {
         let next: number;
@@ -92,22 +82,9 @@ export const prescan = (xml: string, locate: Locate): void => {
             // A DTD can declare entities (billion laughs, external entities) and attribute defaults that change
             // what the document means. Typed data never needs one, so none is accepted, even an empty one.
             throw new XeneverXmlError('A DOCTYPE is not allowed', { ...locate(index), path: '/' });
-        } else if (xml.startsWith('</', index)) {
-            depth--;
-            next = after(xml, '>', index);
         } else {
-            // An empty element is nested as deep as one with content.
-            if (depth === maxElementDepth) {
-                throw new XeneverXmlError(`Elements are nested deeper than ${maxElementDepth}`, {
-                    ...locate(index),
-                    path: '/',
-                });
-            }
-            startTag.lastIndex = index;
-            next = startTag.test(xml) ? startTag.lastIndex : -1;
-            if (xml[next - 2] !== '/') {
-                depth++;
-            }
+            tag.lastIndex = index;
+            next = tag.test(xml) ? tag.lastIndex : -1;
         }
         if (next === -1) {
             return;

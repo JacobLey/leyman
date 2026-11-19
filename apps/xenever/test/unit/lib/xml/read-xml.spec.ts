@@ -3,8 +3,7 @@ import { XmlError } from '@rgrove/parse-xml';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { XeneverXmlError } from 'xenever';
-import { readXml } from '#internal/lib/xml/read-xml.js';
-import { maxElementDepth } from '#internal/lib/xml/source.js';
+import { maxElementDepth, readXml } from '#internal/lib/xml/read-xml.js';
 
 const xmlNamespace = 'http://www.w3.org/XML/1998/namespace';
 const xmlnsNamespace = 'http://www.w3.org/2000/xmlns/';

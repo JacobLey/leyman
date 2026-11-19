@@ -10,7 +10,7 @@ import {
 } from '@rgrove/parse-xml';
 import { XeneverXmlError } from '#internal/lib/errors.js';
 import { xmlNamespace, xmlnsNamespace } from './nodes.js';
-import { createLocate, locateAttributes, prescan } from './source.js';
+import { createLocate, locateAttributes, rejectDoctype } from './source.js';
 
 /**
  * A name split into prefix and local name.
@@ -72,8 +72,27 @@ const splitQName = (name: string): QName | null => {
 };
 
 /**
+ * Deepest nesting of elements accepted, the root being 1. The tokenizer parses each element with a recursive
+ * call, and so does {@link DocumentReader.readElement}, so a deep enough document would exhaust the call stack,
+ * at a depth that depends on the engine. 256 is libxml2's default limit
+ * ([parser.c](https://gitlab.gnome.org/GNOME/libxml2/-/blob/21c8223ac091b81d5914c52eb20b1b063e29cb92/parser.c#L2030)),
+ * so the `xmllint` oracle agrees. It is passed to the tokenizer's `maxElementDepth` rather than left to its
+ * default, which happens to be the same, so the limit stays xenever's.
+ */
+export const maxElementDepth = 256;
+
+/**
+ * How the message the tokenizer throws for an element nested deeper than {@link maxElementDepth} starts
+ * ([Parser.ts](https://github.com/rgrove/parse-xml/blob/811867febc3e01b53143fa8038b29bc5f8abf2a4/src/lib/Parser.ts#L413-L416)).
+ * Its error has no code, and its message names an option xenever doesn't have, so it is recognized by this
+ * and reworded.
+ */
+const depthExceeded = `Maximum element depth of ${maxElementDepth} exceeded `;
+
+/**
  * Converts a tokenizer error, whose position counts code points (`XmlError.pos`), to an offset in UTF-16 code
- * units, and rereads its message without the tokenizer's own location.
+ * units, and rereads its message without the tokenizer's own location. Nesting deeper than
+ * {@link maxElementDepth} gets xenever's own message, since the document may be well-formed.
  *
  * @param error - what the tokenizer threw
  * @param xml - the document it read
@@ -85,8 +104,10 @@ const fromTokenizerError = (error: XmlError, xml: string, locate: Locate): Xenev
     for (let codePoint = 0; codePoint < error.pos; codePoint++) {
         offset += String.fromCodePoint(xml.codePointAt(offset)!).length;
     }
-    const message = error.message.slice(0, error.message.lastIndexOf(' (line '));
-    return new XeneverXmlError(`Not well-formed XML: ${message}`, {
+    const message = error.message.startsWith(depthExceeded)
+        ? `Elements are nested deeper than ${maxElementDepth}`
+        : `Not well-formed XML: ${error.message.slice(0, error.message.lastIndexOf(' (line '))}`;
+    return new XeneverXmlError(message, {
         ...locate(offset),
         path: '/',
         cause: error,
@@ -351,14 +372,14 @@ class DocumentReader {
  */
 export const readXml = (xml: string): XmlElementNode => {
     const locate = createLocate(xml);
-    prescan(xml, locate);
+    rejectDoctype(xml, locate);
 
     let document;
     try {
-        document = parseXml(xml, { includeOffsets: true });
+        document = parseXml(xml, { includeOffsets: true, maxElementDepth });
     } catch (error) {
-        // Unreachable: the prescan's depth limit keeps the call stack from overflowing, the only other error
-        // the tokenizer could throw with these options.
+        // Unreachable: `maxElementDepth` keeps the call stack from overflowing, the only other error the
+        // tokenizer could throw with these options.
         /* c8 ignore next 3 */
         if (!(error instanceof XmlError)) {
             throw error;
