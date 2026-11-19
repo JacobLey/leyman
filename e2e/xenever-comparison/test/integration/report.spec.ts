@@ -27,11 +27,9 @@ const options = {
  * test, so the list stays true.
  */
 const xeneverGaps = [
-    // Abstract types, xsi:type and substitution groups wait for polymorphism
+    // Abstract types and xsi:type wait for the rest of polymorphism
     'XSD: xsi:type: accepts a derived type named by xsi:type',
     'XSD: xsi:type: rejects invalid content of the derived type',
-    'XSD: substitution groups: accepts a member of the substitution group',
-    'XSD: substitution groups: rejects the abstract head of the group',
 ];
 
 /**

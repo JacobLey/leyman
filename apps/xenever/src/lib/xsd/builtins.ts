@@ -31,6 +31,35 @@ export const listKinds: ReadonlyMap<string, 'ENTITY' | 'IDREF' | 'NMTOKEN'> = ne
 ] as const);
 
 /**
+ * The built-in type each built-in simple type restricts, when that isn't `xs:anySimpleType`
+ * ([XSD 1.0 Part 2 §3](https://www.w3.org/TR/xmlschema-2/#built-in-datatypes)).
+ */
+export const builtinBases: ReadonlyMap<string, string> = new Map([
+    ['normalizedString', 'string'],
+    ['token', 'normalizedString'],
+    ['language', 'token'],
+    ['NMTOKEN', 'token'],
+    ['Name', 'token'],
+    ['NCName', 'Name'],
+    ['ID', 'NCName'],
+    ['IDREF', 'NCName'],
+    ['ENTITY', 'NCName'],
+    ['integer', 'decimal'],
+    ['nonPositiveInteger', 'integer'],
+    ['negativeInteger', 'nonPositiveInteger'],
+    ['long', 'integer'],
+    ['int', 'long'],
+    ['short', 'int'],
+    ['byte', 'short'],
+    ['nonNegativeInteger', 'integer'],
+    ['unsignedLong', 'nonNegativeInteger'],
+    ['unsignedInt', 'unsignedLong'],
+    ['unsignedShort', 'unsignedInt'],
+    ['unsignedByte', 'unsignedShort'],
+    ['positiveInteger', 'nonNegativeInteger'],
+]);
+
+/**
  * Built-in types XSD 1.1 added.
  */
 export const xsd11Types: ReadonlySet<string> = new Set([

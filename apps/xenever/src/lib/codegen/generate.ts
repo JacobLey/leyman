@@ -785,12 +785,16 @@ class Printer {
     }
 
     /**
-     * TypeScript type of an element's value: `null` too when it is nillable.
+     * TypeScript type of an element's value (`ElementValue` in `infer.ts`): `null` too when it is nillable, and
+     * `never` when it is abstract.
      *
      * @param element - a global or local element declaration
      * @returns the TypeScript type
      */
     #elementValue(element: Element): string {
+        if (element.abstract === true) {
+            return 'never';
+        }
         const value = this.#typeValue(element.type);
         return element.nillable === true ? `${value} | null` : value;
     }

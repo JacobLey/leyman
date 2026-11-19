@@ -224,7 +224,6 @@ const unsupportedElements: ReadonlyMap<string, string> = new Map([
  * Attributes of XSD elements outside the supported subset, and why.
  */
 const unsupportedAttributes: ReadonlyMap<string, string> = new Map([
-    ['substitutionGroup', 'Substitution groups are not supported'],
     ['targetNamespace', '`targetNamespace` on a local declaration (XSD 1.1) is not supported'],
     ['inheritable', '`inheritable` (XSD 1.1) is not supported'],
     ['defaultAttributes', '`defaultAttributes` (XSD 1.1) is not supported'],
@@ -422,8 +421,7 @@ export const isTrue = (at: Located, attribute: XmlAttributeNode | undefined): bo
 };
 
 /**
- * Checks a `block`, `final`, `blockDefault` or `finalDefault` attribute, which is accepted and otherwise
- * ignored: without substitution groups or `xsi:type`, no derivation it blocks can be used.
+ * Checks a `block`, `final`, `blockDefault` or `finalDefault` attribute, which {@link readDerivationSet} reads.
  *
  * @param at - its element
  * @param attribute - the attribute, if present
@@ -449,6 +447,38 @@ export const checkDerivationSet = (
             attribute
         );
     }
+};
+
+/**
+ * Reads the derivations a component's `block` or `final` lists, or else its file's `blockDefault` or
+ * `finalDefault`, of those that apply to it: the default may list more, which don't
+ * ([XSD 1.0 Part 1 §3.3.2](https://www.w3.org/TR/xmlschema-1/#declare-element) and
+ * [§3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type)).
+ *
+ * @param component - the `xs:element` or `xs:complexType` element
+ * @param name - which attribute
+ * @param keywords - the derivations that apply to the component
+ * @returns those it lists, all of them for `#all`
+ */
+export const readDerivationSet = (
+    component: Located,
+    name: 'block' | 'final',
+    keywords: readonly string[]
+): ReadonlySet<string> => {
+    const attribute =
+        component.node.attributes.find(
+            candidate => candidate.namespace === null && candidate.localName === name
+        ) ??
+        component.doc.root.attributes.find(
+            candidate => candidate.namespace === null && candidate.localName === `${name}Default`
+        );
+    if (attribute === undefined) {
+        return new Set();
+    }
+    const value = collapsed(attribute);
+    return new Set(
+        value === '#all' ? keywords : value.split(' ').filter(keyword => keywords.includes(keyword))
+    );
 };
 
 /**

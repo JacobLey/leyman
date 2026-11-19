@@ -868,6 +868,61 @@ suite('parse', () => {
         });
     });
 
+    suite('Abstract elements', () => {
+        const head = x.element('head', x.string(), { abstract: true });
+        const member = x.element('member', x.string());
+
+        test('Rejects an abstract root', () => {
+            expectInvalid(
+                () => parse('<head>a</head>', head),
+                /^Element `head` is abstract, so can not be in a document/v,
+                { path: '/head', line: 1, column: 1 }
+            );
+        });
+
+        test('Never matches an abstract element in a content model', () => {
+            const list = x.element(
+                'list',
+                x.complex({ content: x.choice([head, member], { maxOccurs: 'unbounded' }) })
+            );
+            expect(parse('<list><member>a</member></list>', list)).to.deep.equal({
+                attributes: {},
+                children: { member: ['a'] },
+            });
+            expectInvalid(
+                () => parse('<list><member>a</member><head>b</head></list>', list),
+                /^Element `head` is not expected here; expected `member` or the end of `list`/v,
+                { path: '/list/head' }
+            );
+        });
+
+        test('Rejects content that needs an abstract element', () => {
+            const list = x.element('list', x.complex({ content: x.sequence([head]) }));
+            expectInvalid(
+                () => parse('<list/>', list),
+                /^Element `list` can not be valid: its content needs an element that can never occur/v,
+                { path: '/list' }
+            );
+            expectInvalid(
+                () => parse('<list><head>a</head></list>', list),
+                /^Element `head` is not expected here \(at/v,
+                { path: '/list/head' }
+            );
+        });
+
+        test('Rejects an abstract element a wildcard validates', () => {
+            const open = x.element(
+                'open',
+                x.complex({ content: x.sequence([x.any({ declarations: () => [head] })]) })
+            );
+            expectInvalid(
+                () => parse('<open><head>a</head></open>', open),
+                /^Element `head` is abstract/v,
+                { path: '/open/head' }
+            );
+        });
+    });
+
     suite('Standard Schema', () => {
         const n = x.element('n', x.int());
 

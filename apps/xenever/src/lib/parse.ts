@@ -511,8 +511,11 @@ const readChildren = (
         }
     }
     if (!term.nullable) {
+        const expected = expectedLabels(term);
         throw new XeneverValidationError(
-            `Element ${written(node)} is missing ${listLabels(expectedLabels(term))}`,
+            expected.length === 0
+                ? `Element ${written(node)} can not be valid: its content needs an element that can never occur`
+                : `Element ${written(node)} is missing ${listLabels(expected)}`,
             at(node)
         );
     }
@@ -618,6 +621,13 @@ const readDeclared = (
     declaration: CompiledElement,
     state: DocumentState
 ): unknown => {
+    if (declaration.abstract) {
+        // Cvc-elt.2: reached as the root, or through a wildcard, as no content model matches one.
+        throw new XeneverValidationError(
+            `Element ${written(node)} is abstract, so can not be in a document`,
+            at(node)
+        );
+    }
     rejectXsiType(node);
     const { ids } = state;
     const { type } = declaration;

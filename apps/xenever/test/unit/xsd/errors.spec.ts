@@ -63,9 +63,9 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
     // Reading XSD elements.
     [
         'an unsupported attribute',
-        '<xs:element name="a" substitutionGroup="t:b"/>',
+        '<xs:element name="a" inheritable="true"/>',
         XeneverUnsupportedError,
-        /^Substitution groups are not supported/v,
+        /^`inheritable` \(XSD 1\.1\) is not supported/v,
     ],
     [
         'an unknown attribute',
@@ -603,10 +603,48 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^An element has either a `type` or an anonymous type, not both/v,
     ],
     [
-        'an abstract element',
-        '<xs:element name="a" abstract="true"/>',
+        'a substitution group on a local element',
+        `<xs:element name="a"/>${withParticles('<xs:element name="b" substitutionGroup="t:a"/>')}`,
+        XeneverInvalidSchemaError,
+        /^Unknown attribute `substitutionGroup` on `xs:element`/v,
+    ],
+    [
+        'a substitution group of an undeclared element',
+        '<xs:element name="a" substitutionGroup="t:missing"/>',
+        XeneverInvalidSchemaError,
+        /^Element \{urn:t\}missing is not declared/v,
+    ],
+    [
+        'a substitution group that leads back to its element',
+        '<xs:element name="a" substitutionGroup="t:b"/><xs:element name="b" substitutionGroup="t:a"/>',
+        XeneverInvalidSchemaError,
+        /^A substitution group can not be circular/v,
+    ],
+    [
+        'a member whose type does not derive from the type of its head',
+        '<xs:element name="a" type="xs:int"/><xs:element name="b" type="xs:string" substitutionGroup="t:a"/>',
+        XeneverInvalidSchemaError,
+        /^The type of an element must derive from the type of \{urn:t\}a, the head of its substitution group/v,
+    ],
+    [
+        'a member whose type derives by a method its head is final for',
+        '<xs:element name="a" type="xs:decimal" final="restriction"/><xs:element name="b" type="xs:int" substitutionGroup="t:a"/>',
+        XeneverInvalidSchemaError,
+        /^Element \{urn:t\}a is final for restriction, by which the type of this member of its substitution group derives from its type/v,
+    ],
+    [
+        'a member whose type derives by a method the file makes heads final for',
+        '<xs:element name="a" type="xs:decimal"/><xs:element name="b" type="xs:int" substitutionGroup="t:a"/>',
+        XeneverInvalidSchemaError,
+        /^Element \{urn:t\}a is final for restriction/v,
+        `${tns} finalDefault="restriction list"`,
+    ],
+    [
+        'a reference in xs:all to the head of a substitution group',
+        `<xs:element name="a"/><xs:element name="b" substitutionGroup="t:a"/>
+        <xs:element name="e"><xs:complexType><xs:all><xs:element ref="t:a"/></xs:all></xs:complexType></xs:element>`,
         XeneverUnsupportedError,
-        /^Abstract elements are not supported/v,
+        /^A reference in `xs:all` to an element with a substitution group is not supported/v,
     ],
     [
         'an element with default and fixed',

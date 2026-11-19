@@ -24,6 +24,10 @@ export interface ModelSymbol {
      */
     readonly isWildcard: boolean;
     /**
+     * Whether it is an abstract element, which no child matches, so errors don't name it as expected.
+     */
+    readonly isAbstract: boolean;
+    /**
      * Whether a child matches.
      */
     readonly matches: (child: ModelChild) => boolean;
@@ -160,6 +164,7 @@ export const expectedLabels = (term: Term): readonly string[] => [
     ...new Set(
         nextSymbols(term)
             .values()
+            .filter(symbol => !symbol.isAbstract)
             .map(symbol => symbol.label)
     ),
 ];

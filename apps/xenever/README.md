@@ -21,7 +21,7 @@ Ideally the schema decides the shape. A repeatable element is always an array, a
 - `xs:decimal` is a string, and `xs:integer` and the other big integer types are a `number` only within the safe range, or `bigint` when you ask for it. Nothing is rounded.
 - A document that breaks the schema throws with the line, column and path of the problem. DTDs are rejected, so entities are never expanded.
 
-It doesn't write XML yet, and some XSD constructs are not supported: substitution groups and `xsi:type` among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
+It doesn't write XML yet, and some XSD constructs are not supported: abstract types and `xsi:type` among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
 
 Guides and the comparison with other XML tools are on the [docs site](https://jacobley.github.io/leyman/packages/xenever/).
 
@@ -92,6 +92,7 @@ The type of an element decides the shape of its value, whatever the document hol
 - Children are keyed by local name, in declaration order. `maxOccurs` above 1 is an array, even for one occurrence, and `minOccurs="0"` is an optional key, absent when the element is. A `choice` is a union of objects.
 - With `ordered: true` on the complex type, and always for `mixed`, children are a list of `{ name, value }` in document order, with `{ name: '#text', value }` for text in mixed content.
 - `xs:decimal` is a canonical string (`9.50` reads as `'9.5'`). Big integer types are a `number`, and a value past `Number.MAX_SAFE_INTEGER` is an error, unless the type is `x.integer({ bigint: true })`. `float` and `double` read `INF`, `-INF` and `NaN`. Dates, times and durations stay strings as written, even when enumerated: their facets compare values, so `2026-11-12Z` matches an enumerated `2026-11-12+00:00`. A value without a timezone may be up to 14 hours either side of one with a timezone, so a range facet rejects it when that could put it on either side of the bound, and `P1M` neither is nor isn't below `P30D`.
+- An element declared `abstract: true` is never in a document. It is an error as the root, matches nothing in a content model, and its value's type is `never`.
 - `xsi:nil="true"` on a `nillable` element is `null`. Elements an `x.any()` wildcard matches are kept as untyped `XmlNode` trees under `'#any'`, and attributes an `x.anyAttribute()` matches as `XmlAttribute`s under `attributes['#any']`.
 
 Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored. No two elements may have the same `xs:ID`, and each `xs:IDREF`, including each item of an `xs:IDREFS`, must be the ID of an element somewhere in the document.
@@ -173,6 +174,8 @@ const order = parse(xml, elements[0]);
 
 Elements and types come back in document order. The first file comes first, then the files it includes and imports, depth first. An element whose type contains itself becomes an `x.lazy` reference. Groups and attribute groups are inlined.
 
+A reference to the head of a substitution group becomes an `x.choice`, with the reference's `minOccurs` and `maxOccurs`, of the head and every member of its group that may stand for it, in document order. An abstract head or member is left out, as are the members its `block` rules out. Each member keeps its own name as its key in `children`, so the value says which element the document used. A member must have a type derived from its head's, by a method the head's `final` allows.
+
 Files are only ever read from local paths, through `readFile`, which defaults to the file system. A `schemaLocation` that is a URL needs a `catalog` entry, and nothing is fetched. The XML namespace (`xml:lang` and the rest) is built in.
 
 The options:
@@ -183,7 +186,7 @@ The options:
 - `bigint`: makes `xs:integer`, `xs:long` and the other big integer types `bigint`.
 - `ordered`: lists the complex types, or elements with an anonymous type, whose children keep their order. Names use Clark notation, `{namespace}local`.
 
-The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include substitution groups, abstract declarations, `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
+The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include abstract types, `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
 
 ## Generating TypeScript
 
@@ -243,7 +246,8 @@ The same is available as an API, from `xenever/xsd`: `xeneverFile(path, options)
 
 Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at the construct, rather than reading documents more loosely:
 
-- Substitution groups, abstract elements and types, and `xsi:type`.
+- Abstract types. `xsi:type` in a document fails the same way, when it is parsed.
+- A reference inside `xs:all` to an element whose substitution group has members, as `xs:all` holds elements only. Two members of one group whose names differ only by namespace, as they would share a key.
 - An identity constraint whose selector and fields bind one prefix to different namespaces.
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Enumerations of binary values, QNames and unions, and of lists of them, whose values xenever has no equality for; length facets on QNames.

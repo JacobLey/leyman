@@ -50,14 +50,14 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 
 ## Limits
 
-xenever doesn't write XML yet. Substitution groups, abstract types, `xsi:type`, `xs:redefine` and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded.
+xenever doesn't write XML yet. Abstract types, `xsi:type`, `xs:redefine` and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded.
 
 ## Compared to
 
 Each tool is given the same schemas and documents every night, and the [comparison](/packages/xenever/comparison) shows the latest report. In a local run on 2026-11-12:
 
 - [@abapify/ts-xsd](https://www.npmjs.com/package/@abapify/ts-xsd) 0.4.34 doesn't validate: it accepted 9 of the 10 invalid purchase orders. It reads `xs:decimal` and `xs:integer` as numbers, so `12345678901234567890.10` came back as `12345678901234567000`. Importing its `parseXml` also bundles ts-morph and TypeScript, 1.6 MB gzipped.
-- [xml-xsd-engine](https://www.npmjs.com/package/xml-xsd-engine) 1.7.3 validates well, with line and column, and handles substitution groups, which xenever doesn't. Its `xmlToJson` turns a repeatable element that occurs once into an object rather than an array, and the TypeScript it generates for a schema with a target namespace doesn't compile.
+- [xml-xsd-engine](https://www.npmjs.com/package/xml-xsd-engine) 1.7.3 validates well, with line and column. Its `xmlToJson` turns a repeatable element that occurs once into an object rather than an array, and the TypeScript it generates for a schema with a target namespace doesn't compile.
 - [fast-xml-parser](https://www.npmjs.com/package/fast-xml-parser) 5.12.0 reads no schema, so which elements are arrays, and the types, are written by hand. It checks only that a document is well-formed, and keeps text in order only with `preserveOrder`, which changes the shape of the whole document.
 
 xenever was slower than fast-xml-parser and xml-xsd-engine in that run: 9.6 ms to parse a 145 kB purchase order, against 7.5 ms and 8.2 ms.

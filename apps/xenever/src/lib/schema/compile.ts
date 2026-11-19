@@ -144,6 +144,10 @@ export interface CompiledElement {
      * Its identity constraints, `null` when it has none, so reading an element costs nothing for them.
      */
     readonly identity: readonly CompiledIdentity[] | null;
+    /**
+     * Whether it can never occur in a document.
+     */
+    readonly abstract: boolean;
 }
 
 /**
@@ -161,6 +165,7 @@ const elementProperties = [
     'default',
     'fixed',
     'identity',
+    'abstract',
 ];
 
 /**
@@ -348,6 +353,7 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         empty: null,
         fixed: null,
         identity: compileIdentities(record.identity, childPath(path, 'identity'), describeName),
+        abstract: isFlagged(record.abstract, childPath(path, 'abstract')),
     };
     compiledElements.set(record, compiled);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
@@ -785,6 +791,7 @@ class ContentCompiler {
             const symbol: ModelSymbol = {
                 id,
                 isWildcard: true,
+                isAbstract: false,
                 label: wildcard.label,
                 matches: child => wildcard.allows(child.namespace),
             };
@@ -813,8 +820,10 @@ class ContentCompiler {
         const symbol: ModelSymbol = {
             id: symbolName,
             isWildcard: false,
+            isAbstract: compiled.abstract,
             label: describeName(compiled.namespace, compiled.name),
-            matches: child => child.name === symbolName,
+            // An abstract element matches no child, so one that must occur makes the model unsatisfiable.
+            matches: compiled.abstract ? () => false : child => child.name === symbolName,
         };
         return {
             pattern: { kind: 'repeat', item: { kind: 'symbol', symbol }, ...occurs },

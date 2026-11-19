@@ -171,9 +171,15 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
     {
         name: 'libxml2-any-simple-type',
         kind: 'libxml2',
-        reason: 'libxml2 rejects xs:anySimpleType as a union member or base of a list item',
+        reason: 'libxml2 rejects xs:anySimpleType as a union member, as the base of a list item, and as the content of a complex type that a simple content restriction derives from',
         spec: 'https://www.w3.org/TR/xmlschema-2/#anySimpleType',
-        ids: ['MS-SimpleType2006-07-15/stE053', 'MS-SimpleType2006-07-15/stZ007'],
+        ids: [
+            'MS-SimpleType2006-07-15/stE053',
+            'MS-SimpleType2006-07-15/stZ007',
+            'MS-SimpleType2006-07-15/stZ047',
+            'MS-SimpleType2006-07-15/stZ047/stZ047.v',
+            'MS-SimpleType2006-07-15/stZ055',
+        ],
     },
     {
         name: 'libxml2-qname-whitespace',
@@ -609,6 +615,7 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
             'MS-Particles2006-07-15/particlesZ018',
             'MS-Particles2006-07-15/particlesZ023',
             'MS-Particles2006-07-15/particlesZ024',
+            'MS-Particles2006-07-15/particlesZ028',
         ],
     },
     {
@@ -622,6 +629,11 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
             'MS-Additional2006-07-15/addB153',
             'MS-Additional2006-07-15/addB177',
             'MS-Additional2006-07-15/addB178',
+            'MS-Element2006-07-15/elemZ028d',
+            'MS-Element2006-07-15/elemZ028e',
+            'MS-Element2006-07-15/elemZ028f1',
+            'MS-Element2006-07-15/elemZ028f2',
+            'MS-Element2006-07-15/elemZ028f3',
             'MS-ModelGroups2006-07-15/mgQ001',
             'MS-ModelGroups2006-07-15/mgQ021',
             'MS-ModelGroups2006-07-15/mgS002',
@@ -635,6 +647,9 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
             'MS-Particles2006-07-15/particlesQ008',
             'MS-Particles2006-07-15/particlesZ022',
             'MS-Particles2006-07-15/particlesZ033_c',
+            'MS-Particles2006-07-15/particlesZ033_e',
+            'MS-Particles2006-07-15/particlesZ033_f',
+            'MS-Particles2006-07-15/particlesZ033_g',
             'MS-Particles2006-07-15/particlesZ037',
             'MS-Wildcards2006-07-15/wildI009',
             'MS-Wildcards2006-07-15/wildI010',
@@ -722,6 +737,11 @@ export const limits: readonly Limit[] = [
     {
         pattern: /the XSD importer has no way to give them separate keys/v,
         reason: 'Two declarations whose values would share a key in the parsed shape',
+    },
+    {
+        pattern:
+            /^A reference in `xs:all` to an element with a substitution group is not supported/v,
+        reason: 'A substitution group head in an `xs:all`, which holds elements only, not the choice of members the reference becomes',
     },
     {
         pattern: /^`minOccurs` past \d+ is not supported/v,

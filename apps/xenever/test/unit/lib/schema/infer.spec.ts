@@ -453,6 +453,31 @@ suite('Infer', () => {
         });
     });
 
+    suite('Abstract elements', () => {
+        test('An abstract element has no value', () => {
+            expectTypeOf(inferred(x.element('a', x.int(), { abstract: true }))).toBeNever();
+            expectTypeOf(
+                inferred(x.element('a', x.int(), { abstract: false }))
+            ).toEqualTypeOf<number>();
+            expectTypeOf(
+                inferred(x.element('a', x.int(), { abstract: isKnownAtRuntime() }))
+            ).toEqualTypeOf<number>();
+        });
+
+        test('An abstract child is never present', () => {
+            const parent = x.complex({
+                content: x.choice(
+                    [x.element('head', x.int(), { abstract: true }), x.element('member', x.int())],
+                    { maxOccurs: 'unbounded' }
+                ),
+            });
+            expectTypeOf(inferred(parent).children).toEqualTypeOf<{
+                head?: never[];
+                member?: number[];
+            }>();
+        });
+    });
+
     suite('Nil, default and fixed', () => {
         test('A nillable element may be null', () => {
             expectTypeOf(inferred(x.element('n', x.int(), { nillable: true }))).toEqualTypeOf<

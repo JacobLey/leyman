@@ -10,6 +10,7 @@ import * as names from '#test/generated/names.js';
 import * as order from '#test/generated/order.js';
 import * as pom from '#test/generated/pom.js';
 import * as registry from '#test/generated/registry.js';
+import * as shapes from '#test/generated/shapes.js';
 import * as tree from '#test/generated/tree.js';
 import { codegenFixtures } from './fixtures.js';
 
@@ -109,10 +110,54 @@ suite('Generated consts', () => {
         expect(() => parse(broken, set.elements[0]!)).to.throw(XeneverValidationError, reason);
     });
 
-    test('Build the same schema values as the loader, without recursion', async () => {
-        const [orderSet, contentSet, namesSet, pomSet, registrySet] = await Promise.all(
-            ['order', 'content', 'names', 'pom', 'registry'].map(async name => loadFixture(name))
+    test('Parse substitution groups as the loaded schema does', async () => {
+        await expectSameParse('shapes', shapes.drawing, 'test/data/codegen/shapes.xml');
+    });
+
+    test('Parse substitution groups into their printed type', async () => {
+        const value: shapes.Drawing = parse(
+            await readFile('test/data/codegen/shapes.xml', 'utf8'),
+            shapes.drawing
         );
+        expect(value.children.title).to.equal('Two shapes');
+        expect(value.children.circle?.map(circle => circle.attributes.radius)).to.deep.equal([
+            '2.5',
+            '1',
+        ]);
+        expect(value.children.square).to.deep.equal([{ attributes: { id: 's1' } }]);
+    });
+
+    test('Reject the abstract head of a substitution group as the loaded schema does', async () => {
+        const [set, xml] = await Promise.all([
+            loadFixture('shapes'),
+            readFile('test/data/codegen/shapes.xml', 'utf8'),
+        ]);
+        const broken = xml.replace('<square id="s1"/>', '<shape id="s1"/>');
+        const reason = /^Element `shape` is not expected here; expected `circle`/v;
+        expect(() => parse(broken, shapes.drawing)).to.throw(XeneverValidationError, reason);
+        expect(() => parse(broken, set.elements[0]!)).to.throw(XeneverValidationError, reason);
+        expect(() => parse('<shape xmlns="urn:example:shapes" id="a"/>', shapes.shape)).to.throw(
+            XeneverValidationError,
+            /^Element `shape` is abstract/v
+        );
+    });
+
+    test('Build the same schema values as the loader, without recursion', async () => {
+        const [orderSet, contentSet, namesSet, pomSet, registrySet, shapesSet] = await Promise.all(
+            ['order', 'content', 'names', 'pom', 'registry', 'shapes'].map(async name =>
+                loadFixture(name)
+            )
+        );
+        expect(
+            resolved([
+                shapes.drawing,
+                shapes.label,
+                shapes.title,
+                shapes.shape,
+                shapes.circle,
+                shapes.square,
+            ])
+        ).to.deep.equal(resolved(shapesSet!.elements));
         expect(
             resolved([registry.registry, registry.state, registry.vehicle, registry.person])
         ).to.deep.equal(resolved(registrySet!.elements));

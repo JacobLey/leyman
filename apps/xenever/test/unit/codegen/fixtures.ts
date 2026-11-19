@@ -29,4 +29,5 @@ export const codegenFixtures: readonly CodegenFixture[] = [
     },
     { name: 'pom', xsd: 'test/data/pom/maven-4.0.0.xsd', options: {} },
     { name: 'registry', xsd: 'test/data/codegen/registry.xsd', options: {} },
+    { name: 'shapes', xsd: 'test/data/codegen/shapes.xsd', options: {} },
 ];

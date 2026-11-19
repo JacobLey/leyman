@@ -2,6 +2,7 @@ import type {
     Any,
     AnyAttribute,
     Attribute,
+    Choice,
     ComplexType,
     Element,
     IdentityConstraint,
@@ -40,6 +41,7 @@ import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 import {
     atomicKinds,
     bigIntegerKinds,
+    builtinBases,
     createAnyType,
     createXmlAttributes,
     listKinds,
@@ -59,6 +61,7 @@ import {
     one,
     optional,
     readConstruct,
+    readDerivationSet,
     readKeyword,
     readNcName,
     readOccurs,
@@ -212,6 +215,7 @@ const grammars = {
             'abstract',
             'block',
             'final',
+            'substitutionGroup',
             'id',
         ],
         content: [optional('simpleType', 'complexType'), identitySlot],
@@ -295,6 +299,60 @@ const particleNames: ReadonlySet<string> = new Set(['group', 'all', 'choice', 's
  */
 const elementBlock = ['extension', 'restriction', 'substitution'];
 const typeDerivations = ['extension', 'restriction'];
+
+/**
+ * How a type is derived from the type it names as its base.
+ */
+type DerivationMethod = 'extension' | 'restriction';
+
+/**
+ * One step of a type's derivation: its base type, and how it derives from it.
+ */
+interface DerivationStep {
+    readonly base: Type;
+    readonly method: DerivationMethod;
+}
+
+/**
+ * How a type derives from one of the types it is derived from, over every step between them.
+ */
+interface DerivationPath {
+    /**
+     * The methods of the steps.
+     */
+    readonly methods: ReadonlySet<string>;
+    /**
+     * The derivations that the ancestor and the types between them `block`
+     * ([XSD 1.0 Part 1 §3.4.1](https://www.w3.org/TR/xmlschema-1/#Complex_Type_Definition_details),
+     * {prohibited substitutions}).
+     */
+    readonly blocked: ReadonlySet<string>;
+}
+
+/**
+ * The child element of an XSD element with one of these names.
+ *
+ * @param node - an element of an XSD file
+ * @param names - local names in the XML Schema namespace
+ * @returns the first such child, if any
+ */
+const childNamed = (node: XmlElementNode, names: readonly string[]): XmlElementNode | undefined =>
+    node.children.find(
+        (child): child is XmlElementNode =>
+            child.kind === 'element' &&
+            child.namespace === xsdNamespace &&
+            names.includes(child.localName)
+    );
+
+/**
+ * An attribute of an XSD element, by name.
+ *
+ * @param node - an element of an XSD file
+ * @param name - name of an unqualified attribute
+ * @returns the attribute, if present
+ */
+const attributeNamed = (node: XmlElementNode, name: string): XmlAttributeNode | undefined =>
+    node.attributes.find(attribute => attribute.namespace === null && attribute.localName === name);
 
 /**
  * Whether a model group is empty as a type's content: no particles, unless it is a choice that must occur
@@ -589,6 +647,23 @@ export class SchemaBuilder {
      */
     readonly #origins = new WeakMap<object, Located>();
     readonly #builtins = new Map<string, Type>();
+    /**
+     * Local name of each built-in type built.
+     */
+    readonly #builtinNames = new Map<Type, string>();
+    /**
+     * The type each simple type defined in the XSD restricts, `null` for a list or union.
+     */
+    readonly #simpleBases = new WeakMap<SimpleType, SimpleType | null>();
+    readonly #complexBases = new Map<XmlElementNode, DerivationStep>();
+    /**
+     * The head of each global element's substitution group, with the attribute naming it, in document order.
+     */
+    readonly #heads = new Map<
+        XmlElementNode,
+        { readonly at: Located; readonly head: Located; readonly attribute: XmlAttributeNode }
+    >();
+    readonly #substitutes = new Map<XmlElementNode, readonly XsdElement[]>();
     readonly #xmlAttributes = createXmlAttributes();
     readonly #globalElements = new Map<XmlElementNode, XsdElement>();
     /**
@@ -651,6 +726,9 @@ export class SchemaBuilder {
             anonymousSimple: at => this.#simpleType(at, false),
             compile: (type, at) => this.#checked(type, at, () => compileSimple(type, '/')),
             record: (value, at) => this.#record(value, at),
+            derive: (type, base) => {
+                this.#simpleBases.set(type, base);
+            },
         });
     }
 
@@ -668,6 +746,7 @@ export class SchemaBuilder {
         const elements = this.#elements;
         const types: XsdNamedType[] = [];
         this.#docs = docs;
+        this.#readSubstitutionGroups(docs);
         for (const doc of docs) {
             for (const at of doc.components) {
                 this.#component(at, elements, types);
@@ -678,6 +757,7 @@ export class SchemaBuilder {
             this.#fill(at, isGlobal);
         }
         this.#checkRefers();
+        this.#checkSubstitutionGroups();
         for (const [node, name] of this.#options.ordered) {
             if (!this.#complexTypes.get(node)!.content) {
                 throw new TypeError(
@@ -866,6 +946,26 @@ export class SchemaBuilder {
      * @returns the type, one object per load
      */
     #builtinType(at: Located, localName: string, attribute?: XmlAttributeNode): Type {
+        const type = this.#builtin(localName);
+        if (type) {
+            return type;
+        }
+        if (localName === 'NOTATION') {
+            return unsupported(at, 'Notations are not supported', attribute);
+        }
+        if (xsd11Types.has(localName)) {
+            return unsupported(at, `\`xs:${localName}\` (XSD 1.1) is not supported`, attribute);
+        }
+        return invalid(at, `\`xs:${localName}\` is not a built-in type`, attribute);
+    }
+
+    /**
+     * Builds a supported built-in type of the XML Schema namespace, once.
+     *
+     * @param localName - its local name
+     * @returns the type, one object per load, or `null` when the name is of none
+     */
+    #builtin(localName: string): Type | null {
         let type = this.#builtins.get(localName);
         if (type) {
             return type;
@@ -884,15 +984,229 @@ export class SchemaBuilder {
             } as SimpleType;
         } else if (item) {
             type = { kind: 'list', item: { kind: item }, facets: { minLength: 1 } };
-        } else if (localName === 'NOTATION') {
-            return unsupported(at, 'Notations are not supported', attribute);
-        } else if (xsd11Types.has(localName)) {
-            return unsupported(at, `\`xs:${localName}\` (XSD 1.1) is not supported`, attribute);
         } else {
-            return invalid(at, `\`xs:${localName}\` is not a built-in type`, attribute);
+            return null;
         }
         this.#builtins.set(localName, type);
+        this.#builtinNames.set(type, localName);
         return type;
+    }
+
+    /**
+     * The step by which a type derives from its base type.
+     *
+     * @param type - a type of the schema set
+     * @returns its base type and the method, or `null` for `xs:anyType`, which derives from nothing
+     */
+    #derivationStep(type: Type): DerivationStep | null {
+        if (type.kind === 'complex') {
+            const origin = this.#origins.get(type);
+            // Only `xs:anyType` comes from no `xs:complexType` element.
+            return origin ? this.#complexBase(origin) : null;
+        }
+        const builtin = this.#builtinNames.get(type);
+        let base: string | null = null;
+        if (builtin === undefined) {
+            // A simple type the XSD defines: a restriction of its base, or a list or union.
+            const restricted = this.#simpleBases.get(type);
+            if (restricted) {
+                return { base: restricted, method: 'restriction' };
+            }
+            base = 'anySimpleType';
+        } else if (builtin !== 'anySimpleType') {
+            base = builtinBases.get(builtin) ?? 'anySimpleType';
+        }
+        return { base: this.#builtin(base ?? 'anyType')!, method: 'restriction' };
+    }
+
+    /**
+     * The base type a complex type names, and whether it extends or restricts it, read from its element without
+     * filling the type in, so it can be asked of a type still being built. A type that names none restricts
+     * `xs:anyType`.
+     *
+     * @param at - its `xs:complexType` element
+     * @returns its base type and the method
+     */
+    #complexBase(at: Located): DerivationStep {
+        let step = this.#complexBases.get(at.node);
+        if (!step) {
+            const content = childNamed(at.node, ['simpleContent', 'complexContent']);
+            const derivation = content && childNamed(content, typeDerivations);
+            const base = derivation && attributeNamed(derivation, 'base');
+            step =
+                derivation && base
+                    ? {
+                          base: this.#typeByQName({ doc: at.doc, node: derivation }, base, false),
+                          method: derivation.localName as DerivationMethod,
+                      }
+                    : { base: this.#builtin('anyType')!, method: 'restriction' };
+            this.#complexBases.set(at.node, step);
+        }
+        return step;
+    }
+
+    /**
+     * How a type derives from another, following the base type of each step
+     * ([XSD 1.0 Part 1 §3.4.6](https://www.w3.org/TR/xmlschema-1/#cos-ct-derived-ok) and
+     * [§3.14.6](https://www.w3.org/TR/xmlschema-1/#cos-st-derived-ok)). A type also derives from a union it,
+     * or a type it derives from, is a member of.
+     *
+     * @param type - the derived type
+     * @param ancestor - the type it may derive from
+     * @returns the methods of the steps between them, none when they are one type, and what the types on the way
+     * block; `null` when `type` doesn't derive from `ancestor`
+     */
+    #derivationPath(type: Type, ancestor: Type): DerivationPath | null {
+        const methods = new Set<string>();
+        const blocked = new Set<string>();
+        const visited = new Set<Type>();
+        let current = type;
+        while (current !== ancestor) {
+            if (ancestor.kind === 'union' && ancestor.members.includes(current as SimpleType)) {
+                // A member of a union derives from it (cos-st-derived-ok, clause 2.2.4).
+                methods.add('restriction');
+                break;
+            }
+            const step = this.#derivationStep(current);
+            // A type deriving from itself is reported when it is filled in.
+            if (step === null || visited.has(current)) {
+                return null;
+            }
+            visited.add(current);
+            methods.add(step.method);
+            current = step.base;
+            const origin = current.kind === 'complex' ? this.#origins.get(current) : undefined;
+            if (origin) {
+                for (const method of readDerivationSet(origin, 'block', typeDerivations)) {
+                    blocked.add(method);
+                }
+            }
+        }
+        return { methods, blocked };
+    }
+
+    /**
+     * Reads the `substitutionGroup` of every global element, before any is built: a reference to a head needs
+     * every member of its group, wherever it is declared.
+     *
+     * @param docs - the files, in document order
+     * @throws {XeneverInvalidSchemaError} when one names no global element, or leads back to the element itself
+     */
+    #readSubstitutionGroups(docs: readonly SchemaDocument[]): void {
+        for (const doc of docs) {
+            for (const at of doc.components) {
+                const attribute =
+                    at.node.localName === 'element'
+                        ? attributeNamed(at.node, 'substitutionGroup')
+                        : undefined;
+                if (!attribute) {
+                    continue;
+                }
+                const { namespace, localName } = resolveQName(at, attribute);
+                const name = clark(namespace, localName);
+                const head =
+                    this.#tables.elements.get(name) ??
+                    invalid(at, `Element ${name} is not declared`, attribute);
+                this.#heads.set(at.node, { at, head, attribute });
+            }
+        }
+        for (const { at, head, attribute } of this.#heads.values()) {
+            let current: Located | undefined = head;
+            while (current && current.node !== at.node) {
+                current = this.#heads.get(current.node)?.head;
+            }
+            if (current) {
+                // E-props-correct.6 ([XSD 1.0 Part 1 §3.3.6](https://www.w3.org/TR/xmlschema-1/#e-props-correct)).
+                invalid(at, 'A substitution group can not be circular', attribute);
+            }
+        }
+    }
+
+    /**
+     * Every member of a head's substitution group, those of its members included, in document order.
+     *
+     * @param head - the head's `xs:element` element
+     * @returns the `xs:element` element of each member
+     */
+    #membersOf(head: Located): Located[] {
+        const members: Located[] = [];
+        for (const { at } of this.#heads.values()) {
+            let current = this.#heads.get(at.node);
+            while (current && current.head.node !== head.node) {
+                current = this.#heads.get(current.head.node);
+            }
+            if (current) {
+                members.push(at);
+            }
+        }
+        return members;
+    }
+
+    /**
+     * The global elements a reference to one may be in a document
+     * ([XSD 1.0 Part 1 §3.3.6](https://www.w3.org/TR/xmlschema-1/#cos-equiv-derived-ok-rec)): itself, then the
+     * members of its substitution group, unless its `block` lists `substitution`, or lists (as its type or a
+     * type between them may) a method by which the member's type derives from its own. Abstract ones are
+     * left out, as they can't be in a document, though their own members still stand in.
+     *
+     * @param at - its `xs:element` element
+     * @returns the declarations
+     */
+    #substitutesOf(at: Located): readonly XsdElement[] {
+        let substitutes = this.#substitutes.get(at.node);
+        if (!substitutes) {
+            const head = this.#globalElement(at);
+            const block = readDerivationSet(at, 'block', elementBlock);
+            const members = block.has('substitution') ? [] : this.#membersOf(at);
+            substitutes = [head, ...members.map(member => this.#globalElement(member))].filter(
+                member => {
+                    if (member.abstract === true) {
+                        return false;
+                    }
+                    // A member whose type doesn't derive from the head's is reported once every type is read.
+                    const path = this.#derivationPath(member.type, head.type);
+                    return (
+                        path !== null &&
+                        path.methods.isDisjointFrom(block) &&
+                        path.methods.isDisjointFrom(path.blocked)
+                    );
+                }
+            );
+            this.#substitutes.set(at.node, substitutes);
+        }
+        return substitutes;
+    }
+
+    /**
+     * Checks each member of a substitution group has a type that derives from its head's, by no method the
+     * head's `final` lists ([XSD 1.0 Part 1 §3.3.6](https://www.w3.org/TR/xmlschema-1/#e-props-correct),
+     * clause 4).
+     *
+     * @throws {XeneverInvalidSchemaError} when a member's type doesn't
+     */
+    #checkSubstitutionGroups(): void {
+        for (const { at, head, attribute } of this.#heads.values()) {
+            const member = this.#globalElement(at);
+            const declared = this.#globalElement(head);
+            const name = clark(declared.namespace ?? null, declared.name);
+            const path = this.#derivationPath(member.type, declared.type);
+            if (path === null) {
+                invalid(
+                    at,
+                    `The type of an element must derive from the type of ${name}, the head of its substitution group`,
+                    attribute
+                );
+            }
+            const final = readDerivationSet(head, 'final', typeDerivations);
+            const method = [...path!.methods].find(used => final.has(used));
+            if (method !== undefined) {
+                invalid(
+                    at,
+                    `Element ${name} is final for ${method}, by which the type of this member of its substitution group derives from its type`,
+                    attribute
+                );
+            }
+        }
     }
 
     /**
@@ -1051,7 +1365,10 @@ export class SchemaBuilder {
                 ? this.#simpleType(inline, false)
                 : this.#complexType(inline, false);
         }
-        return this.#builtinType(at, 'anyType');
+        // Without a type of its own, a member of a substitution group has its head's
+        // ([XSD 1.0 Part 1 §3.3.2](https://www.w3.org/TR/xmlschema-1/#declare-element)).
+        const head = this.#heads.get(at.node);
+        return head ? this.#globalElement(head.head).type : this.#builtinType(at, 'anyType');
     }
 
     /**
@@ -1066,10 +1383,6 @@ export class SchemaBuilder {
             return cached;
         }
         const construct = readConstruct(at, grammars.globalElement);
-        const abstract = construct.attributes.get('abstract');
-        if (isTrue(at, abstract)) {
-            unsupported(at, 'Abstract elements are not supported', abstract);
-        }
         checkDerivationSet(at, construct.attributes.get('block'), elementBlock);
         checkDerivationSet(at, construct.attributes.get('final'), typeDerivations);
         const name = readNcName(at, required(at, construct, 'name'));
@@ -1079,6 +1392,7 @@ export class SchemaBuilder {
             ...(isTrue(at, construct.attributes.get('nillable')) && { nillable: true }),
             ...valueConstraint(at, construct),
             ...this.#identity(construct),
+            ...(isTrue(at, construct.attributes.get('abstract')) && { abstract: true }),
         }) as unknown as XsdElement;
         this.#record(declaration, at);
         this.#globalOf.set(declaration, declaration);
@@ -1091,9 +1405,10 @@ export class SchemaBuilder {
      * is built once.
      *
      * @param at - its `xs:element` element
-     * @returns the declaration, or `null` when it can never occur (`maxOccurs="0"`)
+     * @returns the declaration, a choice of the elements that may stand for the one referred to, or `null` when
+     * it can never occur (`maxOccurs="0"`)
      */
-    #localElement(at: Located): Element | null {
+    #localElement(at: Located): Choice | Element | null {
         const construct = readConstruct(at, grammars.localElement);
         const occurs = readOccurs(at, construct);
         const ref = construct.attributes.get('ref');
@@ -1109,20 +1424,21 @@ export class SchemaBuilder {
 
     /**
      * Builds a reference to a global element: the declaration itself, or a copy with the reference's
-     * occurrences.
+     * occurrences. When members of its substitution group may stand for it, the reference is a choice of them
+     * all, with the reference's occurrences; when it is abstract and only one may, that one.
      *
      * @param at - the `xs:element` element
      * @param construct - it, read
      * @param ref - its `ref`
      * @param occurs - its occurrences
-     * @returns the declaration
+     * @returns the declaration, or the choice
      */
     #elementReference(
         at: Located,
         construct: Construct,
         ref: XmlAttributeNode,
         occurs: ReadOccurs
-    ): Element {
+    ): Choice | Element {
         for (const name of ['type', 'nillable', 'default', 'fixed', 'form', 'block']) {
             const attribute = construct.attributes.get(name);
             if (attribute) {
@@ -1140,9 +1456,17 @@ export class SchemaBuilder {
         }
         const { namespace, localName } = resolveQName(at, ref);
         const name = clark(namespace, localName);
-        const global = this.#globalElement(
-            this.#tables.elements.get(name) ?? invalid(at, `Element ${name} is not declared`, ref)
-        );
+        const component =
+            this.#tables.elements.get(name) ?? invalid(at, `Element ${name} is not declared`, ref);
+        const substitutes = this.#substitutesOf(component);
+        if (substitutes.length > 1) {
+            return this.#record<Choice>(
+                { kind: 'choice', particles: [...substitutes], ...occurs },
+                at
+            );
+        }
+        // An abstract head nothing stands for is itself, which matches no element.
+        const global = substitutes[0] ?? this.#globalElement(component);
         if (Object.keys(occurs).length === 0) {
             return global;
         }
@@ -1695,6 +2019,12 @@ export class SchemaBuilder {
         switch (localName) {
             case 'element': {
                 const declaration = this.#localElement(at);
+                if (isInAll && declaration?.kind === 'choice') {
+                    unsupported(
+                        at,
+                        'A reference in `xs:all` to an element with a substitution group is not supported'
+                    );
+                }
                 if (isInAll && declaration?.maxOccurs !== undefined) {
                     unsupported(
                         at,

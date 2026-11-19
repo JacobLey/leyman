@@ -237,7 +237,6 @@ export type OutsideReason =
     | 'multiple schema documents'
     | 'notation'
     | 'redefine'
-    | 'substitution group'
     | 'XSD 1.1'
     | 'xsi:type';
 
@@ -404,10 +403,10 @@ export const scanSchema = async (
                 ) {
                     outside.add('XSD 1.1');
                 }
-                if (attributes.substitutionGroup !== undefined) {
-                    outside.add('substitution group');
-                }
-                if (attributes.abstract === 'true' || attributes.abstract === '1') {
+                if (
+                    name === 'complexType' &&
+                    (attributes.abstract === 'true' || attributes.abstract === '1')
+                ) {
                     outside.add('abstract');
                 }
                 for (const attribute of ['type', 'base', 'itemType']) {

@@ -458,6 +458,12 @@ export interface Element extends Occurs {
      * Identity constraints, checked over each element this declares and its descendants once they are read.
      */
     readonly identity?: readonly IdentityConstraint[];
+    /**
+     * Whether the element can never occur in a document: it only declares what other elements stand in for
+     * (the head of an XSD substitution group). As the root it is an error, and in a content model it matches
+     * nothing ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 2).
+     */
+    readonly abstract?: boolean;
 }
 
 /**

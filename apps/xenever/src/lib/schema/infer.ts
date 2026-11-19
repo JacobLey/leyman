@@ -603,19 +603,21 @@ export type ComplexValue<T extends ComplexType> = Simplify<
 
 /**
  * What `parse` returns for an element: its simple value, or an object of attributes and content; `null`
- * too when nillable.
+ * too when nillable. An abstract element is never in a document, so has no value.
  *
  * @template E - an element declaration
  */
-export type ElementValue<E> = E extends { readonly type: infer T }
-    ?
-          | (E extends { readonly nillable: infer N } ? (true extends N ? null : never) : never)
-          | (T extends ComplexType
-                ? ComplexValue<T>
-                : T extends SimpleType
-                  ? SimpleValue<T>
-                  : never)
-    : never;
+export type ElementValue<E> = E extends { readonly abstract: true }
+    ? never
+    : E extends { readonly type: infer T }
+      ?
+            | (E extends { readonly nillable: infer N } ? (true extends N ? null : never) : never)
+            | (T extends ComplexType
+                  ? ComplexValue<T>
+                  : T extends SimpleType
+                    ? SimpleValue<T>
+                    : never)
+      : never;
 
 /**
  * The value `parse` returns for a declaration: of an element (the value its `x.ElementOf` annotation gives,

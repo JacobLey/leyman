@@ -150,6 +150,14 @@ suite('Schema checks', () => {
                 '/type/members/0'
             );
         });
+
+        test('Rejects abstract that is not a boolean', () => {
+            expectInvalidSchema(
+                { kind: 'element', name: 'a', type: { kind: 'string' }, abstract: 'yes' },
+                /Expected a boolean/v,
+                '/abstract'
+            );
+        });
     });
 
     suite('Complex types', () => {

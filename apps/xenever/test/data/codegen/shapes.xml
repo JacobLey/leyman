@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<drawing xmlns="urn:example:shapes">
+  <title> Two  shapes </title>
+  <circle id="c1" radius="2.50"/>
+  <square id="s1"/>
+  <circle id="c2" radius="1"/>
+</drawing>

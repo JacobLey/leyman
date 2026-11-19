@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type * as names from '#test/generated/names.js';
 import type * as order from '#test/generated/order.js';
 import type * as pom from '#test/generated/pom.js';
+import type * as shapes from '#test/generated/shapes.js';
 import type * as tree from '#test/generated/tree.js';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-chain';
@@ -140,6 +141,41 @@ suite('Generated types', () => {
             })
         );
         expectTypeOf(inferred(outline)).toEqualTypeOf<tree.Outline>();
+    });
+
+    test('Are what parse returns for references to the heads of substitution groups', () => {
+        const namespace = 'urn:example:shapes';
+        const shape = x.complex({ attributes: [x.attribute('id', x.id(), { use: 'required' })] });
+        const circle = x.complex({
+            attributes: [
+                x.attribute('id', x.id(), { use: 'required' }),
+                x.attribute('radius', x.decimal(), { use: 'required' }),
+            ],
+        });
+        const drawing = x.element(
+            'drawing',
+            x.complex({
+                content: x.sequence([
+                    x.choice([
+                        x.element('label', x.string(), { namespace }),
+                        x.element('title', x.token(), { namespace }),
+                    ]),
+                    x.choice(
+                        [
+                            x.element('circle', circle, { namespace }),
+                            x.element('square', shape, { namespace }),
+                        ],
+                        { minOccurs: 0, maxOccurs: 'unbounded' }
+                    ),
+                ]),
+            }),
+            { namespace }
+        );
+        expectTypeOf(inferred(drawing)).toEqualTypeOf<shapes.Drawing>();
+        expectTypeOf(
+            inferred(x.element('shape', shape, { namespace, abstract: true }))
+        ).toEqualTypeOf<shapes.Shape_2>();
+        expectTypeOf<shapes.Shape_2>().toBeNever();
     });
 
     test('Read their printed type back from the annotation', () => {

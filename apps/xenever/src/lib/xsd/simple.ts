@@ -47,6 +47,10 @@ export interface SimpleContext {
      * Records which construct defines a value of the IR, for errors found when it is compiled.
      */
     readonly record: <T extends object>(value: T, at: Located) => T;
+    /**
+     * Records the type a simple type restricts, `null` for a list or union, which restricts `xs:anySimpleType`.
+     */
+    readonly derive: (type: SimpleType, base: SimpleType | null) => void;
 }
 
 /**
@@ -411,6 +415,7 @@ export class SimpleTypeBuilder {
         if (fixed.size > 0) {
             this.#fixed.set(restricted, fixed);
         }
+        this.#context.derive(restricted, base);
         return restricted;
     }
 
@@ -543,7 +548,9 @@ export class SimpleTypeBuilder {
             ? this.#context.anonymousSimple(inline)
             : this.#context.simpleByQName(at, itemType!, 'list');
         // The item type may itself be a list, which the compiled type reports.
-        return this.#context.record({ kind: 'list', item } as SimpleType, at);
+        const list = this.#context.record({ kind: 'list', item } as SimpleType, at);
+        this.#context.derive(list, null);
+        return list;
     }
 
     /**
@@ -566,6 +573,8 @@ export class SimpleTypeBuilder {
         if (members.length === 0) {
             invalid(at, 'A union needs at least one member type');
         }
-        return this.#context.record({ kind: 'union', members }, at);
+        const union = this.#context.record<SimpleType>({ kind: 'union', members }, at);
+        this.#context.derive(union, null);
+        return union;
     }
 }

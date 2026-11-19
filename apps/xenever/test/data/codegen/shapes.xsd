@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Polymorphism: an abstract head and a concrete one, each with a substitution group. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:s="urn:example:shapes"
+           targetNamespace="urn:example:shapes"
+           elementFormDefault="qualified">
+  <xs:element name="drawing">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="s:label"/>
+        <xs:element ref="s:shape" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="label" type="xs:string"/>
+  <xs:element name="title" type="xs:token" substitutionGroup="s:label"/>
+
+  <xs:element name="shape" type="s:Shape" abstract="true"/>
+  <xs:element name="circle" type="s:Circle" substitutionGroup="s:shape"/>
+  <xs:element name="square" substitutionGroup="s:shape"/>
+
+  <xs:complexType name="Shape">
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="Circle">
+    <xs:complexContent>
+      <xs:extension base="s:Shape">
+        <xs:attribute name="radius" type="xs:decimal" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>
