@@ -327,7 +327,7 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
     },
     {
         name: 'xsd11-datatypes',
-        kind: 'xsd 1.1',
+        kind: 'revision',
         reason: 'xenever reads XSD 1.1 lexical spaces: year 0000, `+INF`, and any string as an anyURI',
         spec: 'https://www.w3.org/TR/xmlschema11-2/#built-in-datatypes',
         ids: [
@@ -341,7 +341,7 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
     },
     {
         name: 'xsd11-ids',
-        kind: 'xsd 1.1',
+        kind: 'revision',
         reason: 'XSD 1.1 allows several ID attributes on one element, and the same ID twice on one element',
         spec: 'https://www.w3.org/TR/xmlschema11-2/#ID',
         ids: [
@@ -353,14 +353,14 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
     },
     {
         name: 'xsd11-derivations',
-        kind: 'xsd 1.1',
+        kind: 'revision',
         reason: 'xenever follows XSD 1.1: complex content can not extend simple content, and a simple type may be final for extension',
         spec: 'https://www.w3.org/TR/xmlschema11-1/#cos-ct-extends',
         ids: ['MS-Particles2006-07-15/particlesZ031', 'MS-SimpleType2006-07-15/stZ041'],
     },
     {
         name: 'xsd11-attribute-groups',
-        kind: 'xsd 1.1',
+        kind: 'revision',
         reason: 'xenever follows XSD 1.1, where a prohibited use in an attribute group referenced by a restriction removes the inherited attribute',
         spec: 'https://www.w3.org/TR/xmlschema11-1/#dcl.ctd.attuses',
         ids: ['MS-Attribute2006-07-15/attZ015/attZ015.v'],
@@ -710,7 +710,7 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
     },
     {
         name: 'xml-lang-empty',
-        kind: 'gap',
+        kind: 'revision',
         reason: "XSD's representation of `xs:documentation` types `xml:lang` as `xs:language`, as libxml2 checks it, but the schema for schemas refers to the declaration of `xml.xsd`, which since 2009 also allows the empty string, as xenever's `xml:lang` does",
         spec: 'https://www.w3.org/TR/xmlschema-1/#declare-annotation',
         ids: ['MS-Annotations2006-07-15/annotF001'],

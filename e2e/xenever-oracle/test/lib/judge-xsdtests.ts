@@ -6,10 +6,11 @@ import type { TestResult } from './run-xsdtests.js';
 export interface ExpectedDisagreement {
     readonly name: string;
     /**
-     * Whose the disagreement is: a bug of libxml2, a deliberate strictness of xenever, xenever following XSD
-     * 1.1 where XSD 1.0 differs, or a gap of xenever deferred to a later version.
+     * Whose the disagreement is: a bug of libxml2, a deliberate strictness of xenever, xenever following a
+     * later revision where XSD 1.0 differs (XSD 1.1, or the current `xml.xsd` the schema for schemas imports),
+     * or a gap of xenever deferred to a later version.
      */
-    readonly kind: 'gap' | 'libxml2' | 'strictness' | 'xsd 1.1';
+    readonly kind: 'gap' | 'libxml2' | 'revision' | 'strictness';
     readonly reason: string;
     /**
      * Link to the section of the specification the reason rests on.
