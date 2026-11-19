@@ -1,5 +1,0 @@
----
-"xenever": minor
----
-
-Support `xsi:type` and abstract types. A complex type takes a `name`, `namespace`, `key` and `abstract`, and an element a `types` option: the named complex types an `xsi:type` in the document may give it besides its own. Such an element's value has a `type`, the name of the type it was read as, and is typed as a union over them in `x.Infer` and in generated types; `x.ComplexOf` annotates the getter where a type holds an element it may be the type of. An element's `default` and `fixed` are read, and compared, as the type selected reads them, so each of its `types` needs `text`. An `xsi:type` naming a type the element doesn't list is a `XeneverValidationError`, and an element of an abstract type needs one. `loadXsd` and the CLI name every global complex type, read `abstract` instead of throwing `XeneverUnsupportedError`, and give each element the types derived from its own, honouring `block`. Elements whose type nothing derives from keep their shape; generated files gain the `name` of each named type. `xsi:type` on an element of a simple type, or naming another type on an element of `xs:anyType`, is still unsupported.
