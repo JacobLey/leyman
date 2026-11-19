@@ -1,5 +1,20 @@
 # xenever
 
+## 0.4.0
+
+### Minor Changes
+
+- df0c15d: Support `default` and `fixed` on an element with mixed content, which `loadXsd` and the CLI used to reject with `XeneverUnsupportedError`. The content must be able to be empty, or the schema is invalid. An empty element reads as a list of one `#text` entry holding the value, and with `fixed` the element may have no child elements and its text must be the value exactly, compared as written. An element with a `default` or `fixed` may now list types without `text` in `types`: an empty element read as one is checked as though it held the value as text, so it is invalid unless the type can hold it (mixed content, or whitespace in content that allows only elements).
+  
+  Support wildcards that allow no namespace. `namespace: []` on `x.any` or `x.anyAttribute`, which was an invalid schema, now allows nothing: an element wildcard never matches, and an attribute wildcard allows no undeclared attribute. `loadXsd` and the CLI write an XSD wildcard with an empty `namespace` list, or attribute wildcards with nothing in common, this way instead of throwing `XeneverUnsupportedError`.
+- ac29b42: Support `default` and `fixed` values of types that may be a QName. Element and attribute declarations take a new `namespaces` option, the prefixes their `default` or `fixed` may use (prefix to namespace name, `''` for the default namespace), and a QName in the value resolves against it rather than against the document. A `fixed` QName is compared by namespace name and local name, whatever prefix the document writes it with, and a prefix `namespaces` doesn't bind is a `XeneverInvalidSchemaError`. `loadXsd` and the CLI fill `namespaces` in from the namespaces in scope where the value is written, instead of throwing `XeneverUnsupportedError`. They also now compare the fixed value of an attribute reference with its declaration's as values, as they already did for a restriction, so `fixed="01"` keeps an integer attribute fixed to `1`.
+
+### Patch Changes
+
+- 7e5c32f: Elements nested deeper than 256 are now caught by parse-xml's own depth limit instead of a separate scan of the document. The `XeneverXmlError` keeps its message and location, now has parse-xml's error as its `cause`, and a document with an earlier well-formedness error reports that one first.
+- 85b7a2e: `loadXsd` and the CLI reject four more invalid schemas with `XeneverInvalidSchemaError`, as XML Schema requires: an `xml:lang` on an XSD element that is neither a language nor empty (such as `xml:lang=" "` on `xs:documentation`), a local attribute qualified by the `xsi` namespace, a `mixed` extension of an element-only type that adds no particle, and facets in a simple content restriction whose base type's text is `xs:anySimpleType`.
+- 5137376: Update dependencies: @rgrove/parse-xml@5.2.0. An XML declaration with no whitespace before `standalone`, or with an empty or incomplete `encoding` or `standalone`, is now a `XeneverXmlError`, as XML 1.0 requires, and text with many carriage returns no longer parses in quadratic time.
+
 ## 0.3.0
 
 ### Minor Changes
