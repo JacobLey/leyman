@@ -1,6 +1,6 @@
 {
   "name": "xenever",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Parse XML into typed objects, validated against a schema written in TypeScript or generated from an XSD.",
   "engines": {
     "node": ">=24"
