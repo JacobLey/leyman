@@ -11,8 +11,6 @@ Every night, a [workflow](https://github.com/JacobLey/leyman/blob/main/.github/w
 
 Each [scenario](https://github.com/JacobLey/leyman/blob/main/e2e/xenever-comparison/src/scenarios.ts) is a schema, a few documents, and probes. A probe checks that a document is accepted or rejected, that its parsed value has a property, that an error gives the right line, or that the tool's type accepts the parsed value and rejects a changed copy of it, checked with the TypeScript compiler. Values are looked up by local name anywhere in the result, since every tool shapes them differently. Only xenever's results are tested; the rest are what each tool did in this run, at the version shown.
 
-The scenarios include an XSD feature xenever doesn't support yet (`xsi:type`), so the report shows where it falls short too.
-
 To run the comparison yourself, from a checkout of the repository:
 
 ```sh

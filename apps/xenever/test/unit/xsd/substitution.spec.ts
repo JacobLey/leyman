@@ -75,9 +75,12 @@ suite('loadXsd substitution groups', () => {
         ).to.deep.equal({
             attributes: {},
             children: {
-                shape: [{ attributes: { id: 'a' } }],
-                big: [{ attributes: {} }],
-                circle: [{ attributes: { r: 1 } }, { attributes: {} }],
+                shape: [{ type: 'Shape', attributes: { id: 'a' } }],
+                big: [{ type: 'Circle', attributes: {} }],
+                circle: [
+                    { type: 'Circle', attributes: { r: 1 } },
+                    { type: 'Circle', attributes: {} },
+                ],
             },
         });
     });
@@ -121,7 +124,7 @@ suite('loadXsd substitution groups', () => {
         });
         expect(parse('<drawing xmlns="urn:t"><circle/></drawing>', root)).to.deep.equal({
             attributes: {},
-            children: { circle: [{ attributes: {} }] },
+            children: { circle: [{ type: 'Circle', attributes: {} }] },
         });
     });
 

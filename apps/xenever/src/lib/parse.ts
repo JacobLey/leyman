@@ -3,9 +3,10 @@ import type {
     CompiledAttribute,
     CompiledComplex,
     CompiledElement,
+    CompiledType,
     CompiledWildcard,
 } from './schema/compile.js';
-import type { Infer, XmlAttribute, XmlNode } from './schema/infer.js';
+import type { Infer, QNameValue, XmlAttribute, XmlNode } from './schema/infer.js';
 import type { Element, ProcessContents } from './schema/ir.js';
 import type { CompiledSimple } from './simple/compile-simple.js';
 import type { StandardSchemaV1 } from './standard-schema.js';
@@ -25,18 +26,26 @@ import { readXml } from './xml/read-xml.js';
 const xsiNamespace = 'http://www.w3.org/2001/XMLSchema-instance';
 
 /**
- * `xsi` attributes `readAttributes` skips: hints for finding a schema, and `nil`, which `isNil` reads.
+ * Namespace name of XML Schema's built-in types.
+ */
+const xsdNamespace = 'http://www.w3.org/2001/XMLSchema';
+
+/**
+ * `xsi` attributes `readAttributes` skips: hints for finding a schema, `nil`, which `isNil` reads, and `type`,
+ * which `selectType` reads.
  */
 const xsiAttributes: ReadonlySet<string> = new Set([
     'schemaLocation',
     'noNamespaceSchemaLocation',
     'nil',
+    'type',
 ]);
 
 /**
- * Type of `xsi:nil`.
+ * Types of `xsi:nil` and `xsi:type`.
  */
 const nilType = compileSimple({ kind: 'boolean' }, '/');
+const typeNameType = compileSimple({ kind: 'QName' }, '/');
 
 /**
  * Key of text entries in ordered `children`.
@@ -366,23 +375,73 @@ const readAttributes = (
 };
 
 /**
- * Rejects `xsi:type`, before anything else about the element is read: the type it selects decides what is
- * valid, so any other error would be about the wrong type.
+ * The `xsi:type` attribute of an element.
  *
  * @param node - node of the XML tree
- * @throws {XeneverUnsupportedError} on `xsi:type`
+ * @returns the attribute, if it has one
  */
-const rejectXsiType = (node: XmlElementNode): void => {
-    const xsiType = node.attributes.find(
+const xsiTypeOf = (node: XmlElementNode): XmlAttributeNode | undefined =>
+    node.attributes.find(
         attribute => attribute.namespace === xsiNamespace && attribute.localName === 'type'
     );
-    if (xsiType) {
-        // Polymorphism, which xsi:type selects, is for a later version.
-        throw new XeneverUnsupportedError(
-            `\`xsi:type\` is not supported (line ${xsiType.location.line}, column ${xsiType.location.column})`,
-            { path: xsiType.path }
-        );
+
+/**
+ * Throws that an `xsi:type` is one xenever doesn't support.
+ *
+ * @param xsiType - the attribute
+ * @param where - which elements it isn't supported on
+ * @throws {XeneverUnsupportedError} always
+ */
+const unsupportedXsiType = (xsiType: XmlAttributeNode, where: string): never => {
+    throw new XeneverUnsupportedError(
+        `\`xsi:type\` on ${where} is not supported (line ${xsiType.location.line}, column ${xsiType.location.column})`,
+        { path: xsiType.path }
+    );
+};
+
+/**
+ * The type an element's `xsi:type` selects, before anything else about the element is read: it decides what is
+ * valid ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 4). It may name the
+ * declared type, or one of the declaration's `types`.
+ *
+ * @param node - node of the XML tree
+ * @param xsiType - its `xsi:type` attribute
+ * @param declaration - what declares it
+ * @returns the type to read the element as
+ * @throws {XeneverValidationError} when it isn't a QName, or names a type the declaration doesn't allow
+ * @throws {XeneverUnsupportedError} on an element of a simple type, and when it names another type on an
+ * element of `xs:anyType`, which every type derives from
+ */
+const selectType = (
+    node: XmlElementNode,
+    xsiType: XmlAttributeNode,
+    declaration: CompiledElement
+): CompiledComplex => {
+    const { type } = declaration;
+    if (type.kind === 'simple') {
+        return unsupportedXsiType(xsiType, 'an element of a simple type');
     }
+    const { namespace, localName } = readValue(
+        typeNameType,
+        xsiType.value,
+        node,
+        at(xsiType),
+        null
+    ) as QNameValue;
+    if (type.name === localName && type.namespace === namespace) {
+        return type;
+    }
+    const selected = declaration.types?.get(expandedName(namespace, localName));
+    if (selected) {
+        return selected;
+    }
+    if (type.name === 'anyType' && type.namespace === xsdNamespace) {
+        return unsupportedXsiType(xsiType, 'an element of `xs:anyType`');
+    }
+    throw new XeneverValidationError(
+        `\`xsi:type\` names ${describeName(namespace, localName)}, which is not a type ${written(node)} may have`,
+        at(xsiType)
+    );
 };
 
 /**
@@ -400,7 +459,7 @@ const processStrength: Readonly<Record<ProcessContents, number>> = { skip: 0, la
  * @param wildcards - the wildcards that may have matched it, in model order
  * @param state - what reading the document keeps track of
  * @throws {XeneverValidationError} when it isn't valid for its declaration, or a strict wildcard has none
- * @throws {XeneverUnsupportedError} on `xsi:type` where the element is validated
+ * @throws {XeneverUnsupportedError} on `xsi:type` where the element has no declaration and isn't skipped
  */
 const checkWildcardElement = (
     child: XmlElementNode,
@@ -427,7 +486,10 @@ const checkWildcardElement = (
         return;
     }
     // Without a declaration, `xsi:type` would give the type to validate against.
-    rejectXsiType(child);
+    const xsiType = xsiTypeOf(child);
+    if (xsiType) {
+        unsupportedXsiType(xsiType, 'an element a wildcard matched that has no declaration');
+    }
     if (processContents === 'strict') {
         throw new XeneverValidationError(
             `Element ${written(child)} is not declared, which the strict wildcard matching it needs`,
@@ -614,7 +676,7 @@ const readText = (
  * @param state - what reading the document keeps track of
  * @returns its value
  * @throws {XeneverValidationError} when it doesn't match the declaration
- * @throws {XeneverUnsupportedError} on `xsi:type`
+ * @throws {XeneverUnsupportedError} on an `xsi:type` xenever doesn't support
  */
 const readDeclared = (
     node: XmlElementNode,
@@ -628,12 +690,21 @@ const readDeclared = (
             at(node)
         );
     }
-    rejectXsiType(node);
+    const xsiType = xsiTypeOf(node);
+    const type: CompiledType = xsiType ? selectType(node, xsiType, declaration) : declaration.type;
+    if (type.kind === 'complex' && type.abstract) {
+        // Cvc-type.2: also when `xsi:type` names the declared type itself, or the element is nil.
+        throw new XeneverValidationError(
+            xsiType
+                ? `\`xsi:type\` names the type of ${written(node)}, which is abstract`
+                : `The type of ${written(node)} is abstract, so it needs an \`xsi:type\` naming the type it has`,
+            at(xsiType ?? node)
+        );
+    }
     const { ids } = state;
-    const { type } = declaration;
     const complex = type.kind === 'complex' ? type : null;
     const isNilled = isNil(node, declaration);
-    state.identity?.record(node, declaration, isNilled);
+    state.identity?.record(node, declaration, type, isNilled);
     if (isNilled) {
         // Validated, but a nil element's value is `null` alone.
         readAttributes(node, complex, ids);
@@ -643,7 +714,11 @@ const readDeclared = (
         readAttributes(node, null, ids);
         return readText(node, declaration, type.simple, ids);
     }
-    const value: Record<string, unknown> = { attributes: readAttributes(node, type, ids) };
+    const attributes = readAttributes(node, type, ids);
+    // An element that `xsi:type` may select the type of says which it was read as.
+    const value: Record<string, unknown> = declaration.types
+        ? { type: type.key, attributes }
+        : { attributes };
     if (type.content) {
         value.children = readChildren(node, type, state);
     } else if (type.text) {
@@ -670,7 +745,7 @@ const readDeclared = (
  * @param state - what reading the document keeps track of
  * @returns its value
  * @throws {XeneverValidationError} when it doesn't match the declaration, or breaks an identity constraint
- * @throws {XeneverUnsupportedError} on `xsi:type`
+ * @throws {XeneverUnsupportedError} on an `xsi:type` xenever doesn't support
  */
 const readElement = (
     node: XmlElementNode,
@@ -735,7 +810,7 @@ const readDocument = (xml: string, root: CompiledElement): unknown => {
  * @throws {XeneverValidationError} when the document doesn't match the declaration
  * @throws {XeneverInvalidSchemaError} when the declaration is not a valid schema value
  * @throws {XeneverUnsupportedError} when the declaration or the document uses something xenever doesn't
- * support, such as `xsi:type`
+ * support, such as `xsi:type` on an element of a simple type
  */
 export const parse = <const E extends Element>(xml: string, element: E): Infer<E> =>
     readDocument(xml, compileRoot(element)) as Infer<E>;

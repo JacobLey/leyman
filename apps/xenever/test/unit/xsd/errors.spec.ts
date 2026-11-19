@@ -900,12 +900,6 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
 
     // Complex types.
     [
-        'an abstract type',
-        '<xs:complexType name="C" abstract="1"/>',
-        XeneverUnsupportedError,
-        /^Abstract types are not supported/v,
-    ],
-    [
         'a bad final on a type',
         '<xs:complexType name="C" final="list"/>',
         XeneverInvalidSchemaError,

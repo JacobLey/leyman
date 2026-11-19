@@ -174,6 +174,7 @@ export interface Order {
     children: { item: string[] };
 }
 export const Order = x.complex({
+    name: 'Order',
     attributes: [x.attribute('id', x.token(), { use: 'required' })],
     content: x.sequence([x.element('item', x.string(), { maxOccurs: 'unbounded' })]),
 });

@@ -4,6 +4,7 @@ import type {
     AtomicType,
     Attribute,
     BigIntegerKind,
+    ComplexOf,
     ComplexType,
     DateKind,
     ElementOf,
@@ -602,8 +603,32 @@ export type ComplexValue<T extends ComplexType> = Simplify<
 >;
 
 /**
+ * Brand of {@link ComplexOf}.
+ */
+type ComplexOfBrand = symbol & keyof ComplexOf<string, unknown>;
+
+/**
+ * Value of an element read as one of the complex types its `xsi:type` may select: the type's value (the one
+ * its `x.ComplexOf` annotation gives, if any), with the type's key as `type`. An abstract type is never what
+ * an element is read as.
+ *
+ * @template T - the declared type and those of `types`, as a union
+ */
+export type TypedValue<T> = T extends ComplexType
+    ? ComplexOfBrand extends keyof T
+        ? NonNullable<T[ComplexOfBrand]> extends { readonly key: infer K; readonly value: infer V }
+            ? V & { type: K }
+            : never
+        : T extends { readonly abstract: true }
+          ? never
+          : ComplexValue<T> & { type: DeclarationKey<T> }
+    : never;
+
+/**
  * What `parse` returns for an element: its simple value, or an object of attributes and content; `null`
- * too when nillable. An abstract element is never in a document, so has no value.
+ * too when nillable. With `types`, a union over its type and each of them, told apart by `type`. An abstract
+ * element is never in a document, and an element of an abstract type without `types` never valid, so they
+ * have no value.
  *
  * @template E - an element declaration
  */
@@ -612,11 +637,15 @@ export type ElementValue<E> = E extends { readonly abstract: true }
     : E extends { readonly type: infer T }
       ?
             | (E extends { readonly nillable: infer N } ? (true extends N ? null : never) : never)
-            | (T extends ComplexType
-                  ? ComplexValue<T>
-                  : T extends SimpleType
-                    ? SimpleValue<T>
-                    : never)
+            | (E extends { readonly types: () => infer A extends readonly ComplexType[] }
+                  ? TypedValue<A[number] | T>
+                  : T extends ComplexType
+                    ? T extends { readonly abstract: true }
+                        ? never
+                        : ComplexValue<T>
+                    : T extends SimpleType
+                      ? SimpleValue<T>
+                      : never)
       : never;
 
 /**

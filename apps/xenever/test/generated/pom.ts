@@ -8,6 +8,8 @@ export interface Parent {
     children: { groupId?: string; artifactId?: string; version?: string; relativePath?: string };
 }
 export const Parent = x.complex({
+    name: 'Parent',
+    namespace: 'http://maven.apache.org/POM/4.0.0',
     content: x.all([
         x.element('groupId', x.string(), {
             namespace: 'http://maven.apache.org/POM/4.0.0',
@@ -44,6 +46,8 @@ export interface Dependency {
     };
 }
 export const Dependency = x.complex({
+    name: 'Dependency',
+    namespace: 'http://maven.apache.org/POM/4.0.0',
     content: x.all([
         x.element('groupId', x.string(), {
             namespace: 'http://maven.apache.org/POM/4.0.0',
@@ -91,6 +95,8 @@ export interface Model {
     };
 }
 export const Model = x.complex({
+    name: 'Model',
+    namespace: 'http://maven.apache.org/POM/4.0.0',
     attributes: [x.attribute('child.project.url.inherit.append.path', x.string())],
     content: x.all([
         x.element('modelVersion', x.string(), {

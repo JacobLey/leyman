@@ -8,6 +8,8 @@ export interface Repeated {
     children: { a?: string[]; b?: number[] };
 }
 export const Repeated = x.complex({
+    name: 'Repeated',
+    namespace: 'urn:example:content',
     content: x.choice([x.element('a', x.string()), x.element('b', x.int())], {
         maxOccurs: 'unbounded',
     }),
@@ -57,6 +59,8 @@ export interface Shapes {
           };
 }
 export const Shapes = x.complex({
+    name: 'Shapes',
+    namespace: 'urn:example:content',
     attributes: [
         x.attribute('lang', x.union([x.language(), x.string({ enumeration: [''] })]), {
             namespace: 'http://www.w3.org/XML/1998/namespace',
@@ -94,6 +98,8 @@ export interface Branches {
     children: { same: Small[]; other?: never } | { same: Small[]; other: string };
 }
 export const Branches = x.complex({
+    name: 'Branches',
+    namespace: 'urn:example:content',
     content: x.choice([
         x.element('same', Small),
         x.sequence([x.element('same', Small, { maxOccurs: 2 }), x.element('other', x.string())]),
@@ -112,6 +118,8 @@ export interface Mixed {
     )[];
 }
 export const Mixed = x.complex({
+    name: 'Mixed',
+    namespace: 'urn:example:content',
     content: x.sequence([
         x.element('b', x.string(), { minOccurs: 0 }),
         x.any({
@@ -146,6 +154,8 @@ export interface Measure {
     text: string;
 }
 export const Measure = x.complex({
+    name: 'Measure',
+    namespace: 'urn:example:content',
     attributes: [x.attribute('unit', x.token(), { use: 'required' })],
     text: x.decimal(),
 });
@@ -158,6 +168,8 @@ export interface Length {
     text: string;
 }
 export const Length = x.complex({
+    name: 'Length',
+    namespace: 'urn:example:content',
     attributes: [x.attribute('unit', x.token(), { use: 'required' })],
     text: x.decimal({ maxInclusive: '10' }),
 });
@@ -178,6 +190,8 @@ export type Anything = {
 export const anything: x.ElementSchema<'anything', Anything> = x.element(
     'anything',
     x.complex({
+        name: 'anyType',
+        namespace: 'http://www.w3.org/2001/XMLSchema',
         mixed: true,
         attributes: [
             x.anyAttribute({

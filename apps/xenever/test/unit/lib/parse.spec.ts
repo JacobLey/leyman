@@ -839,20 +839,24 @@ suite('parse', () => {
             );
         });
 
-        test('Rejects xsi:type as unsupported', () => {
+        test('Rejects xsi:type on an element of a simple type as unsupported', () => {
             expect(() => parse(`<n ${xsi} xsi:type="x">1</n>`, x.element('n', x.int())))
-                .to.throw(XeneverUnsupportedError, /`xsi:type` is not supported \(line 1, column/v)
+                .to.throw(
+                    XeneverUnsupportedError,
+                    /^`xsi:type` on an element of a simple type is not supported \(line 1, column/v
+                )
                 .that.includes({ path: '/n/@xsi:type' });
         });
 
-        test('Rejects xsi:type before anything it would make valid', () => {
+        test('Rejects an unsupported xsi:type before anything it would make valid', () => {
             for (const document of [
                 `<n other="1" ${xsi} xsi:type="x">1</n>`,
                 `<n ${xsi} xsi:nil="true" xsi:type="x"/>`,
                 `<n ${xsi} xsi:type="x">not an int</n>`,
+                `<n ${xsi} xsi:type="un:bound">1</n>`,
             ]) {
                 expect(() => parse(document, x.element('n', x.int())))
-                    .to.throw(XeneverUnsupportedError, /`xsi:type` is not supported/v)
+                    .to.throw(XeneverUnsupportedError, /`xsi:type` on an element of a simple type/v)
                     .that.includes({ path: '/n/@xsi:type' });
             }
         });
@@ -865,6 +869,325 @@ suite('parse', () => {
                     path: '/n/@xsi:other',
                 }
             );
+        });
+    });
+
+    suite('xsi:type', () => {
+        const xsi = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
+        const shape = x.complex({
+            name: 'Shape',
+            attributes: [x.attribute('id', x.token())],
+        });
+        const circle = x.complex({
+            name: 'Circle',
+            namespace: 'urn:shapes',
+            attributes: [x.attribute('id', x.token()), x.attribute('radius', x.int())],
+            content: x.sequence([x.element('label', x.string(), { minOccurs: 0 })]),
+        });
+        const any = x.element('any', shape, { types: () => [circle] });
+
+        test('Reads an element with types as its declared type, saying which', () => {
+            expect(parse('<any id="a"/>', any)).to.deep.equal({
+                type: 'Shape',
+                attributes: { id: 'a' },
+            });
+        });
+
+        test('Reads an element as the type its xsi:type names', () => {
+            expect(
+                parse(
+                    `<any ${xsi} xmlns:s="urn:shapes" xsi:type="s:Circle" radius="02"><label>big</label></any>`,
+                    any
+                )
+            ).to.deep.equal({
+                type: 'Circle',
+                attributes: { radius: 2 },
+                children: { label: 'big' },
+            });
+        });
+
+        test('Puts the type before the attributes and content', () => {
+            const value = parse(
+                `<any ${xsi} xmlns="urn:shapes" xsi:type="Circle"/>`,
+                x.element('any', shape, { namespace: 'urn:shapes', types: () => [circle] })
+            );
+            expect(Object.keys(value)).to.deep.equal(['type', 'attributes', 'children']);
+        });
+
+        test('Resolves an unprefixed name against the default namespace', () => {
+            const inDefault = `<any ${xsi} xmlns="urn:shapes" xsi:type="Circle"/>`;
+            expect(
+                parse(
+                    inDefault,
+                    x.element('any', shape, { namespace: 'urn:shapes', types: () => [circle] })
+                )
+            ).to.include({ type: 'Circle' });
+            expectInvalid(
+                () => parse(`<any ${xsi} xsi:type="Circle"/>`, any),
+                /^`xsi:type` names `Circle`, which is not a type `any` may have/v,
+                { path: '/any/@xsi:type', line: 1 }
+            );
+        });
+
+        test('Accepts the declared type by name, on an element with or without types', () => {
+            expect(parse(`<any ${xsi} xsi:type="Shape" id="a"/>`, any)).to.deep.equal({
+                type: 'Shape',
+                attributes: { id: 'a' },
+            });
+            expect(
+                parse(`<one ${xsi} xsi:type="Shape" id="a"/>`, x.element('one', shape))
+            ).to.deep.equal({ attributes: { id: 'a' } });
+        });
+
+        test('Says the type by its key', () => {
+            const keyed = x.complex({ name: 'Shape', namespace: 'urn:other', key: 'OtherShape' });
+            const either = x.element('either', shape, { types: () => [keyed] });
+            expect(
+                parse(`<either ${xsi} xmlns:o="urn:other" xsi:type="o:Shape"/>`, either)
+            ).to.deep.equal({ type: 'OtherShape', attributes: {} });
+        });
+
+        test('Reads text content of the type selected', () => {
+            const text = x.complex({ name: 'Text', text: x.string() });
+            const count = x.complex({ name: 'Count', text: x.int({ maxInclusive: 5 }) });
+            const value = x.element('value', text, { types: () => [count], default: '4' });
+            expect(parse(`<value ${xsi} xsi:type="Count"> 3 </value>`, value)).to.deep.equal({
+                type: 'Count',
+                attributes: {},
+                text: 3,
+            });
+            expect(parse(`<value ${xsi} xsi:type="Count"/>`, value)).to.include({ text: 4 });
+            expect(parse('<value> 3 </value>', value)).to.include({ type: 'Text', text: ' 3 ' });
+        });
+
+        test('Rejects content the type selected does not allow', () => {
+            expectInvalid(
+                () =>
+                    parse(
+                        `<any ${xsi} xmlns:s="urn:shapes" xsi:type="s:Circle" radius="big"/>`,
+                        any
+                    ),
+                /not a valid int/v,
+                { path: '/any/@radius' }
+            );
+            expectInvalid(
+                () => parse('<any radius="1"/>', any),
+                /^Attribute `radius` is not declared on `any`/v,
+                { path: '/any/@radius' }
+            );
+        });
+
+        test('Rejects a type the element does not list', () => {
+            expectInvalid(
+                () =>
+                    parse(
+                        `<one ${xsi}\n  xmlns:s="urn:shapes" xsi:type="s:Circle"/>`,
+                        x.element('one', shape)
+                    ),
+                /^`xsi:type` names `Circle` in `urn:shapes`, which is not a type `one` may have/v,
+                { path: '/one/@xsi:type', line: 2, column: 24 }
+            );
+            expectInvalid(
+                () =>
+                    parse(
+                        `<one ${xsi} xsi:type="Shape"/>`,
+                        x.element('one', x.complex({ attributes: [] }))
+                    ),
+                /^`xsi:type` names `Shape`, which is not a type `one` may have/v,
+                { path: '/one/@xsi:type' }
+            );
+        });
+
+        test('Rejects a value that is not a QName, or whose prefix is not declared', () => {
+            expectInvalid(() => parse(`<any ${xsi} xsi:type="a b"/>`, any), /./v, {
+                path: '/any/@xsi:type',
+            });
+            expectInvalid(() => parse(`<any ${xsi} xsi:type="s:Circle"/>`, any), /prefix/v, {
+                path: '/any/@xsi:type',
+            });
+        });
+
+        test('Needs an xsi:type on an element of an abstract type', () => {
+            const base = x.complex({ name: 'Base', abstract: true });
+            const element = x.element('e', base, { types: () => [circle], nillable: true });
+            expectInvalid(
+                () => parse('<e/>', element),
+                /^The type of `e` is abstract, so it needs an `xsi:type` naming the type it has/v,
+                { path: '/e', line: 1, column: 1 }
+            );
+            expectInvalid(
+                () => parse(`<e ${xsi} xsi:nil="true"/>`, element),
+                /^The type of `e` is abstract/v,
+                { path: '/e' }
+            );
+            expectInvalid(
+                () => parse(`<e ${xsi} xsi:type="Base"/>`, element),
+                /^`xsi:type` names the type of `e`, which is abstract/v,
+                { path: '/e/@xsi:type' }
+            );
+            expect(
+                parse(`<e ${xsi} xmlns:s="urn:shapes" xsi:type="s:Circle"/>`, element)
+            ).to.include({ type: 'Circle' });
+            expectInvalid(
+                () => parse('<e/>', x.element('e', base)),
+                /^The type of `e` is abstract/v,
+                { path: '/e' }
+            );
+        });
+
+        test('Reads a nil element as null, validating attributes against the type selected', () => {
+            const nillable = x.element('any', shape, { types: () => [circle], nillable: true });
+            const document = (attributes: string): string =>
+                `<any ${xsi} xmlns:s="urn:shapes" xsi:nil="true" xsi:type="s:Circle" ${attributes}/>`;
+            expect(parse(document('radius="1"'), nillable)).to.equal(null);
+            expectInvalid(() => parse(document('radius="big"'), nillable), /./v, {
+                path: '/any/@radius',
+            });
+            expectInvalid(
+                () => parse(`<any ${xsi} xsi:nil="true" radius="1"/>`, nillable),
+                /^Attribute `radius` is not declared/v,
+                { path: '/any/@radius' }
+            );
+        });
+
+        test('Reads a child element with types', () => {
+            const list = x.element(
+                'list',
+                x.complex({
+                    content: x.sequence([
+                        x.element('shape', shape, {
+                            types: () => [circle],
+                            maxOccurs: 'unbounded',
+                        }),
+                    ]),
+                })
+            );
+            expect(
+                parse(
+                    `<list ${xsi} xmlns:s="urn:shapes"><shape/><shape xsi:type="s:Circle"/></list>`,
+                    list
+                )
+            ).to.deep.equal({
+                attributes: {},
+                children: {
+                    shape: [
+                        { type: 'Shape', attributes: {} },
+                        { type: 'Circle', attributes: {}, children: {} },
+                    ],
+                },
+            });
+        });
+
+        test('Reads a recursive type an xsi:type selects', () => {
+            const node = x.complex({ name: 'Node' });
+            const child: x.Element = x.element('node', node, {
+                types: (): x.ComplexType[] => [
+                    x.complex({
+                        name: 'Tree',
+                        content: x.sequence([
+                            x.lazy((): x.Element => child, {
+                                minOccurs: 0,
+                                maxOccurs: 'unbounded',
+                            }),
+                        ]),
+                    }),
+                ],
+            });
+            expect(
+                parse(
+                    `<node ${xsi} xsi:type="Tree"><node xsi:type="Tree"><node/></node></node>`,
+                    child
+                )
+            ).to.deep.equal({
+                type: 'Tree',
+                attributes: {},
+                children: {
+                    node: [
+                        {
+                            type: 'Tree',
+                            attributes: {},
+                            children: { node: [{ type: 'Node', attributes: {} }] },
+                        },
+                    ],
+                },
+            });
+        });
+
+        test('Compares identity constraint fields by the type selected', () => {
+            const list = x.element(
+                'list',
+                x.complex({
+                    content: x.sequence([
+                        x.element('shape', shape, {
+                            types: () => [circle],
+                            maxOccurs: 'unbounded',
+                        }),
+                    ]),
+                }),
+                { identity: [x.unique('radius', 'shape', ['@radius'])] }
+            );
+            const document = (radius: string): string =>
+                `<list ${xsi} xmlns:s="urn:shapes"><shape xsi:type="s:Circle" radius="1"/><shape xsi:type="s:Circle" radius="${radius}"/></list>`;
+            expect(parse(document('2'), list)).to.have.property('children');
+            expectInvalid(() => parse(document('01'), list), /radius/v, {
+                path: '/list/shape[2]',
+            });
+        });
+
+        test('Rejects another type on an element of xs:anyType as unsupported', () => {
+            const anyType = x.complex({
+                name: 'anyType',
+                namespace: 'http://www.w3.org/2001/XMLSchema',
+                mixed: true,
+                content: x.sequence([]),
+            });
+            const anything = x.element('anything', anyType);
+            const xs = 'xmlns:xs="http://www.w3.org/2001/XMLSchema"';
+            expect(parse(`<anything ${xsi} ${xs} xsi:type="xs:anyType">a</anything>`, anything))
+                .to.have.property('children')
+                .that.deep.equals([{ name: '#text', value: 'a' }]);
+            expect(() => parse(`<anything ${xsi} ${xs} xsi:type="xs:int">1</anything>`, anything))
+                .to.throw(
+                    XeneverUnsupportedError,
+                    /^`xsi:type` on an element of `xs:anyType` is not supported \(line 1, column/v
+                )
+                .that.includes({ path: '/anything/@xsi:type' });
+        });
+
+        test('Selects the type of an element a wildcard validates, and rejects one it has no declaration for as unsupported', () => {
+            const open = x.element(
+                'open',
+                x.complex({
+                    content: x.sequence([
+                        x.any({
+                            processContents: 'lax',
+                            declarations: () => [any],
+                            maxOccurs: 'unbounded',
+                        }),
+                    ]),
+                })
+            );
+            expect(
+                parse(
+                    `<open ${xsi} xmlns:s="urn:shapes"><any xsi:type="s:Circle" radius="1"/></open>`,
+                    open
+                )
+            ).to.have.nested.property('children.#any[0].localName', 'any');
+            expectInvalid(
+                () =>
+                    parse(
+                        `<open ${xsi} xmlns:s="urn:shapes"><any xsi:type="s:Circle" radius="big"/></open>`,
+                        open
+                    ),
+                /./v,
+                { path: '/open/any/@radius' }
+            );
+            expect(() => parse(`<open ${xsi}><other xsi:type="Shape"/></open>`, open))
+                .to.throw(
+                    XeneverUnsupportedError,
+                    /^`xsi:type` on an element a wildcard matched that has no declaration is not supported/v
+                )
+                .that.includes({ path: '/open/other/@xsi:type' });
         });
     });
 

@@ -32,6 +32,8 @@ export interface Address {
     children: { name: string; street: string[]; city: string; state: USState; zip: Zip };
 }
 export const Address = x.complex({
+    name: 'Address',
+    namespace: 'urn:example:order',
     attributes: [x.attribute('country', x.nmtoken(), { fixed: 'US' })],
     content: x.sequence([
         x.element('name', x.string(), { namespace: 'urn:example:order' }),
@@ -68,6 +70,8 @@ export interface Price {
     text: Amount;
 }
 export const Price = x.complex({
+    name: 'Price',
+    namespace: 'urn:example:order',
     attributes: [x.attribute('currency', Currency, { use: 'required' })],
     text: Amount,
 });
@@ -85,6 +89,8 @@ export interface Items {
     };
 }
 export const Items = x.complex({
+    name: 'Items',
+    namespace: 'urn:example:order',
     content: x.sequence([
         x.element(
             'item',
@@ -115,6 +121,8 @@ export interface Note {
     children: ({ name: '#text'; value: string } | { name: 'em'; value: string })[];
 }
 export const Note = x.complex({
+    name: 'Note',
+    namespace: 'urn:example:order',
     content: x.sequence([
         x.element('em', x.string(), {
             namespace: 'urn:example:order',
@@ -159,6 +167,8 @@ export interface PurchaseOrderType {
           };
 }
 export const PurchaseOrderType = x.complex({
+    name: 'PurchaseOrderType',
+    namespace: 'urn:example:order',
     attributes: [
         x.attribute('orderDate', x.date(), { use: 'required' }),
         x.attribute('status', Status, { default: 'open' }),

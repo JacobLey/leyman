@@ -23,7 +23,7 @@ export interface TestResult {
      */
     readonly expected: Validity;
     /**
-     * Constructs outside xenever's v1 subset that reading it independently found, empty when inside.
+     * Constructs outside xenever's subset that reading it independently found, empty when inside.
      */
     readonly outside: readonly OutsideReason[];
     /**

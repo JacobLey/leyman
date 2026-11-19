@@ -9,11 +9,6 @@ import { decodeXml } from './decode.js';
 const xsdNamespace = 'http://www.w3.org/2001/XMLSchema';
 
 /**
- * Namespace of the `xsi` attributes.
- */
-const xsiNamespace = 'http://www.w3.org/2001/XMLSchema-instance';
-
-/**
  * Namespace of the XSD 1.1 version control attributes (`vc:minVersion`...).
  */
 const versioningNamespace = 'https://www.w3.org/2007/XMLSchema-versioning';
@@ -228,24 +223,22 @@ export const readXsdTests = async (root: string): Promise<SchemaCase[]> => {
 };
 
 /**
- * Why a schema or instance is outside xenever's v1 subset, as found by reading it independently of xenever.
+ * Why a schema or instance is outside xenever's subset, as found by reading it independently of xenever.
  */
 export type OutsideReason =
-    | 'abstract'
     | 'chameleon include'
     | 'DTD'
     | 'multiple schema documents'
     | 'notation'
     | 'redefine'
-    | 'XSD 1.1'
-    | 'xsi:type';
+    | 'XSD 1.1';
 
 /**
  * What reading a schema's documents found.
  */
 export interface SchemaScan {
     /**
-     * Constructs outside the v1 subset, empty when it is inside.
+     * Constructs outside the subset, empty when it is inside.
      */
     readonly outside: ReadonlySet<OutsideReason>;
     /**
@@ -326,7 +319,7 @@ const hasDoctype = (text: string): boolean =>
 
 /**
  * Reads a schema's documents, and every document they include, import or redefine (by a local
- * `schemaLocation`), for constructs outside xenever's v1 subset.
+ * `schemaLocation`), for constructs outside xenever's subset.
  *
  * @param root - root of the suite
  * @param documents - the schema documents, from the root
@@ -403,12 +396,6 @@ export const scanSchema = async (
                 ) {
                     outside.add('XSD 1.1');
                 }
-                if (
-                    name === 'complexType' &&
-                    (attributes.abstract === 'true' || attributes.abstract === '1')
-                ) {
-                    outside.add('abstract');
-                }
                 for (const attribute of ['type', 'base', 'itemType']) {
                     const value = attributes[attribute]?.trim();
                     if (
@@ -471,7 +458,7 @@ export const scanSchema = async (
  */
 export interface InstanceScan {
     /**
-     * Constructs outside the v1 subset, empty when it is inside.
+     * Constructs outside the subset, empty when it is inside.
      */
     readonly outside: ReadonlySet<OutsideReason>;
     /**
@@ -481,8 +468,8 @@ export interface InstanceScan {
 }
 
 /**
- * Reads an instance document for its root element and what xenever's v1 subset leaves out: `xsi:type`
- * (polymorphism, v2) and a DTD (always rejected).
+ * Reads an instance document for its root element and what xenever's subset leaves out: a DTD (always
+ * rejected).
  *
  * @param text - the document
  * @returns what it found
@@ -498,23 +485,6 @@ export const scanInstance = (text: string): InstanceScan => {
     } catch {
         return { outside, root: null };
     }
-    const walk = (element: XmlElement, parentScope: ReadonlyMap<string, string>): void => {
-        const scope = scopeOf(element, parentScope);
-        for (const attribute of Object.keys(element.attributes)) {
-            if (
-                localName(attribute) === 'type' &&
-                namespaceOf(attribute, scope, false) === xsiNamespace
-            ) {
-                outside.add('xsi:type');
-            }
-        }
-        for (const child of element.children) {
-            if (child instanceof XmlElement) {
-                walk(child, scope);
-            }
-        }
-    };
-    walk(document, new Map());
     const namespace = namespaceOf(document.name, scopeOf(document, new Map()), true);
     return {
         outside,

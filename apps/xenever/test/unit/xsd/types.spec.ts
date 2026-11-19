@@ -261,9 +261,9 @@ suite('loadXsd types', () => {
             });
             expect(filled).to.include({ mixed: true });
             expect(filled!.attributes).to.deep.equal(empty!.attributes);
-            expect(stillEmpty).to.deep.equal(empty);
+            expect(stillEmpty).to.deep.equal({ ...empty, name: 'StillEmpty' });
             expect(anyExtended).to.include({ mixed: true });
-            expect(bareExtended).to.deep.equal(bare);
+            expect(bareExtended).to.deep.equal({ ...bare, name: 'BareExtended' });
         });
 
         test('A restriction replaces the content, and restricts or inherits the attributes', async () => {
@@ -293,6 +293,8 @@ suite('loadXsd types', () => {
             const [, restricted, mixedRestricted] = types.map(({ type }) => type as x.ComplexType);
             expect(restricted).to.deep.equal({
                 kind: 'complex',
+                name: 'Restricted',
+                namespace: 'urn:t',
                 attributes: [
                     { kind: 'attribute', name: 'keep', type: { kind: 'string' } },
                     { kind: 'attribute', name: 'narrow', type: { kind: 'token' } },
@@ -332,6 +334,8 @@ suite('loadXsd types', () => {
             );
             expect(types[0]!.type).to.deep.equal({
                 kind: 'complex',
+                name: 'Money',
+                namespace: 'urn:t',
                 attributes: [
                     {
                         kind: 'attribute',
@@ -369,6 +373,8 @@ suite('loadXsd types', () => {
             const [money, small, whole, same] = types.map(({ type }) => type as x.ComplexType);
             expect(small).to.deep.equal({
                 kind: 'complex',
+                name: 'Small',
+                namespace: 'urn:t',
                 attributes: [
                     {
                         kind: 'attribute',

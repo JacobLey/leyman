@@ -8,6 +8,8 @@ export interface LineItem {
     children: ({ name: 'sku'; value: string } | { name: 'note'; value: string })[];
 }
 export const LineItem = x.complex({
+    name: 'line-item',
+    namespace: 'urn:example:names',
     content: x.choice([x.element('sku', x.token()), x.element('note', x.string())], {
         maxOccurs: 'unbounded',
     }),
@@ -34,6 +36,8 @@ export interface Catalog {
     children: { 'line-item': LineItem[]; default?: Default; other?: LineItem_3; count: bigint };
 }
 export const Catalog = x.complex({
+    name: 'catalog',
+    namespace: 'urn:example:names',
     content: x.sequence([
         x.element('line-item', LineItem, { maxOccurs: 'unbounded' }),
         x.element('default', Default, { minOccurs: 0 }),

@@ -313,6 +313,19 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
         ids: ['ElemDecl/targetns00101m/targetNS00101m1_p'],
     },
     {
+        name: 'undeclared-root',
+        kind: 'strictness',
+        reason: 'The root has no element declaration and is valid by the type its xsi:type names alone; `parse` takes the declaration of the root, so there is none to read it by, and xmllint rejects it too',
+        spec: 'https://www.w3.org/TR/xmlschema-1/#cvc-assess-elt',
+        ids: [
+            'CType/targetns00101m/targetNS00101m1_p',
+            'SType/st_name00401m/ST_name00401m1_p',
+            'SType/st_targetns00101m/ST_targetNS00101m1_p',
+            'SType/st_targetns00101m/ST_targetNS00101m2_p',
+            'SType/st_targetns00201m/ST_targetNS00201m1_p',
+        ],
+    },
+    {
         name: 'xsd11-datatypes',
         kind: 'xsd 1.1',
         reason: 'xenever reads XSD 1.1 lexical spaces: year 0000, `+INF`, and any string as an anyURI',
@@ -742,6 +755,19 @@ export const limits: readonly Limit[] = [
         pattern:
             /^A reference in `xs:all` to an element with a substitution group is not supported/v,
         reason: 'A substitution group head in an `xs:all`, which holds elements only, not the choice of members the reference becomes',
+    },
+    {
+        pattern: /^`xsi:type` on an element of a simple type is not supported/v,
+        reason: 'An `xsi:type` on an element of a simple type: simple types have no names in the IR, so not even the declared one can be told from another',
+    },
+    {
+        pattern: /^`xsi:type` on an element of `xs:anyType` is not supported/v,
+        reason: 'An `xsi:type` naming another type on an element of `xs:anyType`, which every type derives from, so `types` would list them all',
+    },
+    {
+        pattern:
+            /^`xsi:type` on an element a wildcard matched that has no declaration is not supported/v,
+        reason: 'An `xsi:type` on an element a lax or strict wildcard matched without a declaration, where the type named would be all there is to validate against',
     },
     {
         pattern: /^`minOccurs` past \d+ is not supported/v,

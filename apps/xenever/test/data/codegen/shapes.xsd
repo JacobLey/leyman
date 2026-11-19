@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Polymorphism: an abstract head and a concrete one, each with a substitution group. -->
+<!-- Polymorphism: an abstract head and a concrete one, each with a substitution group, and elements of an
+     abstract type and of a type others derive from, which an xsi:type selects. A group holds shapes, itself
+     one of them. -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:s="urn:example:shapes"
            targetNamespace="urn:example:shapes"
@@ -9,6 +11,8 @@
       <xs:sequence>
         <xs:element ref="s:label"/>
         <xs:element ref="s:shape" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="outline" type="s:Shape" minOccurs="0"/>
+        <xs:element name="hole" type="s:Circle" block="restriction" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -18,15 +22,47 @@
 
   <xs:element name="shape" type="s:Shape" abstract="true"/>
   <xs:element name="circle" type="s:Circle" substitutionGroup="s:shape"/>
-  <xs:element name="square" substitutionGroup="s:shape"/>
+  <xs:element name="square" type="s:Square" substitutionGroup="s:shape"/>
 
-  <xs:complexType name="Shape">
+  <xs:complexType name="Shape" abstract="true">
     <xs:attribute name="id" type="xs:ID" use="required"/>
   </xs:complexType>
   <xs:complexType name="Circle">
     <xs:complexContent>
       <xs:extension base="s:Shape">
         <xs:attribute name="radius" type="xs:decimal" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Ring">
+    <xs:complexContent>
+      <xs:extension base="s:Circle">
+        <xs:sequence>
+          <xs:element name="inner" type="xs:decimal"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Dot">
+    <xs:complexContent>
+      <xs:restriction base="s:Circle">
+        <xs:attribute name="radius" type="xs:decimal" use="required" fixed="0"/>
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Group">
+    <xs:complexContent>
+      <xs:extension base="s:Shape">
+        <xs:sequence>
+          <xs:element name="member" type="s:Shape" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Square">
+    <xs:complexContent>
+      <xs:extension base="s:Shape">
+        <xs:attribute name="side" type="xs:decimal" use="required"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

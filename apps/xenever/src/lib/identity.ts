@@ -1,5 +1,10 @@
 import type { XmlErrorLocation } from './errors.js';
-import type { CompiledAttribute, CompiledComplex, CompiledElement } from './schema/compile.js';
+import type {
+    CompiledAttribute,
+    CompiledComplex,
+    CompiledElement,
+    CompiledType,
+} from './schema/compile.js';
 import type { CompiledField, CompiledIdentity, IdentityPath, NameTest } from './schema/identity.js';
 import type { CompiledSimple } from './simple/compile-simple.js';
 import type { XmlElementNode } from './xml/nodes.js';
@@ -82,6 +87,10 @@ const mergeTables = (a: Tables | null, b: Tables | null): Tables | null => {
  */
 interface ReadElement {
     readonly declaration: CompiledElement;
+    /**
+     * The type it was read as: the declared one, or the one its `xsi:type` selected.
+     */
+    readonly type: CompiledType;
     readonly isNilled: boolean;
 }
 
@@ -279,10 +288,16 @@ export class IdentityScope {
      *
      * @param node - the element
      * @param declaration - what declares it
+     * @param type - the type it is read as: the declared one, or the one its `xsi:type` selects
      * @param isNilled - whether it is `xsi:nil`
      */
-    public record(node: XmlElementNode, declaration: CompiledElement, isNilled: boolean): void {
-        this.#read.set(node, { declaration, isNilled });
+    public record(
+        node: XmlElementNode,
+        declaration: CompiledElement,
+        type: CompiledType,
+        isNilled: boolean
+    ): void {
+        this.#read.set(node, { declaration, type, isNilled });
     }
 
     /**
@@ -575,7 +590,7 @@ export class IdentityScope {
      */
     #element(element: XmlElementNode): Selected {
         const read = this.#read.get(element);
-        const type = read?.declaration.type;
+        const type = read?.type;
         let simple: CompiledSimple | null = null;
         if (type !== undefined) {
             simple = type.kind === 'simple' ? type.simple : type.text;
@@ -611,7 +626,7 @@ export class IdentityScope {
      * @returns them, with their types and texts
      */
     #attributes(element: XmlElementNode, test: NameTest): Selected[] {
-        const type = this.#read.get(element)?.declaration.type;
+        const type = this.#read.get(element)?.type;
         const complex: CompiledComplex | null = type?.kind === 'complex' ? type : null;
         const selected: Selected[] = [];
         const present = new Set<string>();

@@ -1,6 +1,7 @@
 import type { Attribute, ComplexType, Element, SimpleType } from '#internal/lib/schema/ir.js';
 import { builtins } from '#internal/lib/simple/builtins.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
+import { xsdNamespace } from './located.js';
 
 /**
  * Built-in types the IR has as a kind of its own, by local name in the XML Schema namespace.
@@ -73,7 +74,8 @@ export const xsd11Types: ReadonlySet<string> = new Set([
 /**
  * Builds `xs:anyType`, the type of an element declared without one: any attributes, and mixed content of any
  * elements, kept as nodes and validated laxly, against the global declarations of their names when there are
- * any ([XSD 1.1 Part 1 §3.4.7](https://www.w3.org/TR/xmlschema11-1/#builtin-ctd)).
+ * any ([XSD 1.1 Part 1 §3.4.7](https://www.w3.org/TR/xmlschema11-1/#builtin-ctd)). It has its name, which
+ * `parse` knows it by: every type derives from it, so an `xsi:type` naming another is unsupported, not invalid.
  *
  * @param elements - the global element declarations of the schema set
  * @param attributes - its global attribute declarations
@@ -84,6 +86,8 @@ export const createAnyType = (
     attributes: () => readonly Attribute[]
 ): ComplexType => ({
     kind: 'complex',
+    name: 'anyType',
+    namespace: xsdNamespace,
     mixed: true,
     attributes: [{ kind: 'anyAttribute', processContents: 'lax', declarations: attributes }],
     content: {

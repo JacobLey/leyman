@@ -105,6 +105,16 @@ export interface CompiledContent {
 export interface CompiledComplex {
     readonly kind: 'complex';
     /**
+     * Its name, `null` for a type without one, which `xsi:type` can't name.
+     */
+    readonly name: string | null;
+    readonly namespace: string | null;
+    /**
+     * The `type` of a value read as it, `null` without a name.
+     */
+    readonly key: string | null;
+    readonly abstract: boolean;
+    /**
      * Attribute declarations by expanded name, in declaration order.
      */
     readonly attributes: ReadonlyMap<string, CompiledAttribute>;
@@ -148,6 +158,11 @@ export interface CompiledElement {
      * Whether it can never occur in a document.
      */
     readonly abstract: boolean;
+    /**
+     * The types `xsi:type` may select besides the declared one, by expanded name; `null` without `types`, when
+     * its value has no `type`.
+     */
+    readonly types: ReadonlyMap<string, CompiledComplex> | null;
 }
 
 /**
@@ -166,6 +181,7 @@ const elementProperties = [
     'fixed',
     'identity',
     'abstract',
+    'types',
 ];
 
 /**
@@ -354,6 +370,7 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         fixed: null,
         identity: compileIdentities(record.identity, childPath(path, 'identity'), describeName),
         abstract: isFlagged(record.abstract, childPath(path, 'abstract')),
+        types: null,
     };
     compiledElements.set(record, compiled);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
@@ -372,6 +389,10 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
     );
     compiled.empty = fallback;
     compiled.fixed = fixed;
+    if (record.types !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
+        compiled.types = compileTypes(record, type, path);
+    }
     return compiled;
 };
 
@@ -577,9 +598,26 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     }
     const record = checkObject(
         type,
-        ['kind', 'attributes', 'content', 'text', 'mixed', 'ordered'],
+        [
+            'kind',
+            'name',
+            'namespace',
+            'key',
+            'abstract',
+            'attributes',
+            'content',
+            'text',
+            'mixed',
+            'ordered',
+        ],
         path
     );
+    const typeName = record.name === undefined ? null : checkName(record.name, path);
+    for (const property of ['namespace', 'key']) {
+        if (typeName === null && record[property] !== undefined) {
+            invalidSchema(`\`${property}\` needs a \`name\``, childPath(path, property));
+        }
+    }
 
     const attributesPath = childPath(path, 'attributes');
     const attributes = new Map<string, CompiledAttribute>();
@@ -650,6 +688,10 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
         attributes,
         anyAttribute,
         kind: 'complex',
+        name: typeName,
+        namespace: checkNamespace(record.namespace, path),
+        key: typeName === null ? null : checkKey(record.key, typeName, path),
+        abstract: isFlagged(record.abstract, childPath(path, 'abstract')),
         mixed: isMixed,
         ordered: isMixed || isOrdered,
         content:
@@ -662,6 +704,72 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
     };
     compiledComplexTypes.set(type, compiled);
     return compiled;
+};
+
+/**
+ * Checks and compiles the `types` of an element declaration: named complex types that aren't abstract, each
+ * with a name and a key of its own among them and the declared type.
+ *
+ * @param record - the declaration, which has `types`
+ * @param declared - its compiled type
+ * @param path - path to the declaration
+ * @returns the types by expanded name
+ * @throws {XeneverInvalidSchemaError} when the declared type isn't a named complex type, or a listed type is
+ * unnamed, abstract or named as another is
+ */
+const compileTypes = (
+    record: Readonly<Record<string, unknown>>,
+    declared: CompiledType,
+    path: string
+): ReadonlyMap<string, CompiledComplex> => {
+    const getterPath = childPath(path, 'types');
+    if (typeof record.types !== 'function') {
+        invalidSchema('Expected `types` to be a function', getterPath);
+    }
+    if (declared.kind !== 'complex' || declared.name === null) {
+        return invalidSchema(
+            '`types` needs the element to have a complex type with a `name`',
+            getterPath
+        );
+    }
+    const listPath = `${getterPath}()`;
+    const list = checkArray(getterResult(record, record.types as () => unknown), listPath);
+    const names = new Set([expandedName(declared.namespace, declared.name)]);
+    const keys = new Set([declared.key]);
+    const types = new Map<string, CompiledComplex>();
+    for (const [index, type] of list.entries()) {
+        const typePath = childPath(listPath, index);
+        if ((type as { readonly kind?: unknown } | null)?.kind !== 'complex') {
+            invalidSchema('Expected a complex type', typePath);
+        }
+        const compiled = compileComplex(type as object, typePath);
+        if (compiled.name === null) {
+            return invalidSchema('A type `xsi:type` may select needs a `name`', typePath);
+        }
+        if (compiled.abstract) {
+            invalidSchema(
+                'An abstract type can not be selected by `xsi:type`, so can not be listed',
+                typePath
+            );
+        }
+        const name = expandedName(compiled.namespace, compiled.name);
+        if (names.has(name)) {
+            invalidSchema(
+                `Type ${describeName(compiled.namespace, compiled.name)} is listed twice, or is the type of the element`,
+                typePath
+            );
+        }
+        if (keys.has(compiled.key)) {
+            shapeConflict(
+                `Type key \`${compiled.key!}\` is used by two types of one element; set \`key\` on one`,
+                typePath
+            );
+        }
+        names.add(name);
+        keys.add(compiled.key);
+        types.set(name, compiled);
+    }
+    return types;
 };
 
 /**

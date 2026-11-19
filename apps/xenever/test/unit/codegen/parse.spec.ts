@@ -26,8 +26,8 @@ const loadFixture = async (name: string): Promise<XsdSchemaSet> => {
 };
 
 /**
- * Copies a value of the IR with each wildcard's `declarations` getter replaced by the names of what it returns,
- * which a deep equality can compare.
+ * Copies a value of the IR with each wildcard's `declarations` getter, and each element's `types` getter,
+ * replaced by the names of what it returns, which a deep equality can compare.
  *
  * @param value - a value of the IR
  * @returns the copy
@@ -42,10 +42,13 @@ const resolved = (value: unknown): unknown => {
     return Object.fromEntries(
         Object.entries(value).map(([key, item]) => [
             key,
-            key === 'declarations'
-                ? (item as () => readonly x.Attribute[] | readonly x.Element[])().map(
-                      declaration => [declaration.namespace, declaration.name]
-                  )
+            key === 'declarations' || key === 'types'
+                ? (
+                      item as () =>
+                          | readonly x.Attribute[]
+                          | readonly x.ComplexType[]
+                          | readonly x.Element[]
+                  )().map(named => [named.namespace, named.name])
                 : resolved(item),
         ])
     );
@@ -110,21 +113,38 @@ suite('Generated consts', () => {
         expect(() => parse(broken, set.elements[0]!)).to.throw(XeneverValidationError, reason);
     });
 
-    test('Parse substitution groups as the loaded schema does', async () => {
+    test('Parse substitution groups and xsi:type as the loaded schema does', async () => {
         await expectSameParse('shapes', shapes.drawing, 'test/data/codegen/shapes.xml');
     });
 
-    test('Parse substitution groups into their printed type', async () => {
+    test('Parse substitution groups and xsi:type into their printed type', async () => {
         const value: shapes.Drawing = parse(
             await readFile('test/data/codegen/shapes.xml', 'utf8'),
             shapes.drawing
         );
-        expect(value.children.title).to.equal('Two shapes');
-        expect(value.children.circle?.map(circle => circle.attributes.radius)).to.deep.equal([
-            '2.5',
-            '1',
-        ]);
-        expect(value.children.square).to.deep.equal([{ attributes: { id: 's1' } }]);
+        const { title, circle = [], square, outline, hole = [] } = value.children;
+        expect(title).to.equal('Two shapes');
+        expect(circle.map(({ type }) => type)).to.deep.equal(['Circle', 'Ring', 'Dot']);
+        const rings = circle.filter(shape => shape.type === 'Ring');
+        expect(rings.map(ring => ring.children.inner)).to.deep.equal(['1']);
+        expect(square).to.deep.equal([{ attributes: { id: 's1', side: '2' } }]);
+        expect(outline).to.deep.equal({
+            type: 'Group',
+            attributes: { id: 'o1' },
+            children: {
+                member: [
+                    { type: 'Square', attributes: { id: 'o2', side: '4' } },
+                    {
+                        type: 'Group',
+                        attributes: { id: 'o3' },
+                        children: {
+                            member: [{ type: 'Circle', attributes: { id: 'o4', radius: '1' } }],
+                        },
+                    },
+                ],
+            },
+        });
+        expect(hole.map(({ type }) => type)).to.deep.equal(['Circle', 'Ring']);
     });
 
     test('Reject the abstract head of a substitution group as the loaded schema does', async () => {
@@ -132,7 +152,7 @@ suite('Generated consts', () => {
             loadFixture('shapes'),
             readFile('test/data/codegen/shapes.xml', 'utf8'),
         ]);
-        const broken = xml.replace('<square id="s1"/>', '<shape id="s1"/>');
+        const broken = xml.replace('<square id="s1" side="2"/>', '<shape id="s1"/>');
         const reason = /^Element `shape` is not expected here; expected `circle`/v;
         expect(() => parse(broken, shapes.drawing)).to.throw(XeneverValidationError, reason);
         expect(() => parse(broken, set.elements[0]!)).to.throw(XeneverValidationError, reason);
@@ -140,6 +160,25 @@ suite('Generated consts', () => {
             XeneverValidationError,
             /^Element `shape` is abstract/v
         );
+    });
+
+    test('Reject a missing or blocked xsi:type as the loaded schema does', async () => {
+        const [set, xml] = await Promise.all([
+            loadFixture('shapes'),
+            readFile('test/data/codegen/shapes.xml', 'utf8'),
+        ]);
+        const untyped = xml.replace('<outline xsi:type="s:Group"', '<outline');
+        const abstract = /^The type of `outline` is abstract, so it needs an `xsi:type`/v;
+        expect(() => parse(untyped, shapes.drawing)).to.throw(XeneverValidationError, abstract);
+        expect(() => parse(untyped, set.elements[0]!)).to.throw(XeneverValidationError, abstract);
+        const blocked = xml.replace(
+            '<hole id="h1" radius="1"/>',
+            '<hole id="h1" radius="0" xsi:type="s:Dot"/>'
+        );
+        const unlisted =
+            /^`xsi:type` names `Dot` in `urn:example:shapes`, which is not a type `hole` may have/v;
+        expect(() => parse(blocked, shapes.drawing)).to.throw(XeneverValidationError, unlisted);
+        expect(() => parse(blocked, set.elements[0]!)).to.throw(XeneverValidationError, unlisted);
     });
 
     test('Build the same schema values as the loader, without recursion', async () => {

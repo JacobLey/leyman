@@ -10,7 +10,7 @@ The report also bundles what each tool needs at runtime to parse a document (wit
 
 A nightly workflow runs `nx run @leyman/e2e-xenever-comparison:comparison-report`, which writes `report/xenever.json`. It never gates anything: it isn't part of `verify`, and doesn't run on pull requests or pushes. Times are from a shared CI runner, so compare tools within one run, rather than across runs.
 
-Tests only assert xenever's own results, including the probes it fails because of its known gaps: closing one fails the test until the list in [`report.spec.ts`](./test/integration/report.spec.ts) is updated. Another tool's results are what the report shows: one failing a probe, or crashing, is a result, and doesn't fail anything.
+Tests only assert xenever's own results: it passes every probe. Another tool's results are what the report shows: one failing a probe, or crashing, is a result, and doesn't fail anything.
 
 Add a tool in [`src/tools.ts`](./src/tools.ts), and a scenario in [`src/scenarios.ts`](./src/scenarios.ts) (with a hand-written setup for `fast-xml-parser` unless it is `xsdOnly`).
 

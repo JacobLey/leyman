@@ -395,7 +395,8 @@ suite('Content', () => {
                 x.complex({ attributes: [x.anyAttribute({ processContents: 'skip' })] })
             );
             expect(() => parse(`<r ${xsi} xsi:type="t"/>`, anything)).to.throw(
-                XeneverUnsupportedError
+                XeneverValidationError,
+                /^`xsi:type` names `t`, which is not a type `r` may have/v
             );
             expect(
                 parse(`<r ${xsi} xsi:schemaLocation="a b"/>`, anything).attributes
@@ -457,7 +458,10 @@ suite('Content', () => {
             for (const processContents of ['lax', 'strict'] as const) {
                 expect(() =>
                     parse(`<r ${xsi}><other xsi:type="t"/></r>`, wrap(x.any({ processContents })))
-                ).to.throw(XeneverUnsupportedError, /`xsi:type` is not supported/v);
+                ).to.throw(
+                    XeneverUnsupportedError,
+                    /^`xsi:type` on an element a wildcard matched that has no declaration is not supported/v
+                );
             }
         });
 

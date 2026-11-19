@@ -453,6 +453,124 @@ suite('Infer', () => {
         });
     });
 
+    suite('Types an xsi:type may select', () => {
+        const shape = x.complex({ name: 'Shape', attributes: [x.attribute('id', x.token())] });
+        const circle = x.complex({
+            name: 'Circle',
+            namespace: 'urn:shapes',
+            content: x.sequence([x.element('radius', x.int())]),
+        });
+        const label = x.complex({
+            name: 'Shape',
+            namespace: 'urn:other',
+            key: 'Label',
+            text: x.string(),
+        });
+        const base = x.complex({ name: 'Base', abstract: true });
+
+        test('An element with types is a union told apart by type', () => {
+            const element = x.element('e', shape, { types: () => [circle, label] });
+            expectTypeOf(inferred(element)).toEqualTypeOf<
+                | ({
+                      attributes: x.NoProperties;
+                      children: { radius: number };
+                  } & { type: 'Circle' })
+                | ({ attributes: x.NoProperties; text: string } & { type: 'Label' })
+                | ({ attributes: { id?: string } } & { type: 'Shape' })
+            >();
+            const value = inferred(element);
+            if (value.type === 'Circle') {
+                expectTypeOf(value.children).toEqualTypeOf<{ radius: number }>();
+            }
+        });
+
+        test('An element with an empty list of types still says its type', () => {
+            expectTypeOf(inferred(x.element('e', shape, { types: () => [] }))).toEqualTypeOf<
+                { attributes: { id?: string } } & { type: 'Shape' }
+            >();
+        });
+
+        test('An element without types keeps the value of its type', () => {
+            expectTypeOf(inferred(x.element('e', shape))).toEqualTypeOf<{
+                attributes: { id?: string };
+            }>();
+            expectTypeOf(inferred(shape)).toEqualTypeOf<{ attributes: { id?: string } }>();
+        });
+
+        test('An abstract declared type is left out of the union', () => {
+            expectTypeOf(inferred(x.element('e', base, { types: () => [circle] }))).toEqualTypeOf<
+                { attributes: x.NoProperties; children: { radius: number } } & { type: 'Circle' }
+            >();
+            expectTypeOf(inferred(x.element('e', base, { types: () => [] }))).toBeNever();
+        });
+
+        test('An element of an abstract type without types has no value', () => {
+            expectTypeOf(inferred(x.element('e', base))).toBeNever();
+            expectTypeOf(inferred(x.element('e', base, { nillable: true }))).toEqualTypeOf<null>();
+        });
+
+        test('A nillable element with types may be null', () => {
+            expectTypeOf(
+                inferred(x.element('e', base, { types: () => [circle], nillable: true }))
+            ).toEqualTypeOf<
+                | ({
+                      attributes: x.NoProperties;
+                      children: { radius: number };
+                  } & { type: 'Circle' })
+                | null
+            >();
+        });
+
+        test('A child with types is the union', () => {
+            const parent = x.complex({
+                content: x.sequence([
+                    x.element('e', shape, { types: () => [circle], maxOccurs: 'unbounded' }),
+                ]),
+            });
+            expectTypeOf(inferred(parent)).toHaveProperty('children');
+            expectTypeOf<x.Infer<typeof parent>['children']['e']>().toEqualTypeOf<
+                (
+                    | ({
+                          attributes: x.NoProperties;
+                          children: { radius: number };
+                      } & { type: 'Circle' })
+                    | ({ attributes: { id?: string } } & { type: 'Shape' })
+                )[]
+            >();
+        });
+
+        test('A type annotated with x.ComplexOf takes the key and value it gives', () => {
+            interface Group {
+                attributes: x.NoProperties;
+                children: { item?: Item[] };
+            }
+            type Item =
+                | (Group & { type: 'Group' })
+                | ({ attributes: x.NoProperties } & { type: 'Item' });
+            const item = x.complex({ name: 'Item' });
+            const group = x.complex({
+                name: 'Group',
+                content: x.sequence([
+                    x.element('item', item, {
+                        types: (): [x.ComplexOf<'Group', Group>] => [group],
+                        minOccurs: 0,
+                        maxOccurs: 'unbounded',
+                    }),
+                ]),
+            });
+            expectTypeOf(inferred(group)).toEqualTypeOf<Group>();
+            expectTypeOf<x.TypedValue<x.ComplexOf<'Other', { text: string }>>>().toEqualTypeOf<
+                { text: string } & { type: 'Other' }
+            >();
+        });
+
+        test('The value type is exported as x.TypedValue', () => {
+            expectTypeOf<x.TypedValue<typeof base | typeof shape>>().toEqualTypeOf<
+                { attributes: { id?: string } } & { type: 'Shape' }
+            >();
+        });
+    });
+
     suite('Abstract elements', () => {
         test('An abstract element has no value', () => {
             expectTypeOf(inferred(x.element('a', x.int(), { abstract: true }))).toBeNever();

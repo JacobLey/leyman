@@ -664,6 +664,20 @@ export class SchemaBuilder {
         { readonly at: Located; readonly head: Located; readonly attribute: XmlAttributeNode }
     >();
     readonly #substitutes = new Map<XmlElementNode, readonly XsdElement[]>();
+    /**
+     * Each element declaration built, with the `xs:element` whose `block` applies to it: its own, or that of
+     * the global declaration a reference copies.
+     */
+    readonly #declarations = new Map<Element, Located>();
+    /**
+     * The `types` getter of each named complex type, by the derivations blocked for the element, `null` when
+     * `xsi:type` may select no other type: one function per type and block, as declarations of one name in a
+     * content model must be the same.
+     */
+    readonly #typeGetters = new Map<
+        ComplexType,
+        Map<string, (() => readonly ComplexType[]) | null>
+    >();
     readonly #xmlAttributes = createXmlAttributes();
     readonly #globalElements = new Map<XmlElementNode, XsdElement>();
     /**
@@ -758,6 +772,7 @@ export class SchemaBuilder {
         }
         this.#checkRefers();
         this.#checkSubstitutionGroups();
+        this.#assignTypes(types);
         for (const [node, name] of this.#options.ordered) {
             if (!this.#complexTypes.get(node)!.content) {
                 throw new TypeError(
@@ -810,13 +825,7 @@ export class SchemaBuilder {
             case 'complexType': {
                 const { targetNamespace } = at.doc;
                 types.push({
-                    name: readNcName(
-                        at,
-                        at.node.attributes.find(
-                            attribute =>
-                                attribute.namespace === null && attribute.localName === 'name'
-                        )!
-                    ),
+                    name: readNcName(at, attributeNamed(at.node, 'name')!),
                     ...(targetNamespace !== null && { namespace: targetNamespace }),
                     type:
                         localName === 'simpleType'
@@ -1178,6 +1187,55 @@ export class SchemaBuilder {
     }
 
     /**
+     * Gives each element declaration built its `types`: the named complex types an `xsi:type` may select for
+     * it, in document order, when there are any. They are those derived from its type that aren't abstract,
+     * by no method that its `block` or its type's lists
+     * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 4.3). Done once every type
+     * is filled in, as a type may be derived from one defined after the elements using it.
+     *
+     * @param named - the named types, in document order
+     */
+    #assignTypes(named: readonly XsdNamedType[]): void {
+        const candidates = named
+            .map(({ type }) => type)
+            .filter(
+                (type): type is ComplexType => type.kind === 'complex' && type.abstract !== true
+            );
+        for (const [declaration, at] of this.#declarations) {
+            const { type } = declaration;
+            const origin = type.kind === 'complex' ? this.#origins.get(type) : undefined;
+            // Only a named type has types derived from it; `xs:anyType`, which all derive from, has no origin.
+            if (!origin || type.kind !== 'complex' || type.name === undefined) {
+                continue;
+            }
+            const block = new Set([
+                ...readDerivationSet(at, 'block', typeDerivations),
+                ...readDerivationSet(origin, 'block', typeDerivations),
+            ]);
+            const blockKey = [...block].toSorted((a, b) => a.localeCompare(b)).join(' ');
+            let getters = this.#typeGetters.get(type);
+            if (!getters) {
+                getters = new Map();
+                this.#typeGetters.set(type, getters);
+            }
+            let getter = getters.get(blockKey);
+            if (getter === undefined) {
+                const types = candidates.filter(
+                    candidate =>
+                        candidate !== type &&
+                        this.#derivationPath(candidate, type)?.methods.isDisjointFrom(block) ===
+                            true
+                );
+                getter = types.length === 0 ? null : () => types;
+                getters.set(blockKey, getter);
+            }
+            if (getter) {
+                (declaration as Mutable<Element>).types = getter;
+            }
+        }
+    }
+
+    /**
      * Checks each member of a substitution group has a type that derives from its head's, by no method the
      * head's `final` lists ([XSD 1.0 Part 1 §3.3.6](https://www.w3.org/TR/xmlschema-1/#e-props-correct),
      * clause 4).
@@ -1305,7 +1363,8 @@ export class SchemaBuilder {
     }
 
     /**
-     * The object of a complex type, created empty the first time and queued to be filled in.
+     * The object of a complex type, created the first time with only its name, if it has one, and queued to be
+     * filled in.
      *
      * @param at - its `xs:complexType` element
      * @param isGlobal - whether it is named
@@ -1314,7 +1373,17 @@ export class SchemaBuilder {
     #complexType(at: Located, isGlobal: boolean): ComplexType {
         let type = this.#complexTypes.get(at.node);
         if (!type) {
-            type = this.#record<Mutable<ComplexType>>({ kind: 'complex' }, at);
+            const { targetNamespace } = at.doc;
+            type = this.#record<Mutable<ComplexType>>(
+                {
+                    kind: 'complex',
+                    ...(isGlobal && {
+                        name: readNcName(at, attributeNamed(at.node, 'name')!),
+                        ...(targetNamespace !== null && { namespace: targetNamespace }),
+                    }),
+                },
+                at
+            );
             this.#complexTypes.set(at.node, type);
             this.#queue.push({ at, isGlobal });
         }
@@ -1397,6 +1466,7 @@ export class SchemaBuilder {
         this.#record(declaration, at);
         this.#globalOf.set(declaration, declaration);
         this.#globalElements.set(at.node, declaration);
+        this.#declarations.set(declaration, at);
         return declaration;
     }
 
@@ -1472,6 +1542,7 @@ export class SchemaBuilder {
         }
         const declaration = this.#record({ ...global, ...occurs }, at);
         this.#globalOf.set(declaration, global);
+        this.#declarations.set(declaration, this.#declarations.get(global)!);
         return declaration;
     }
 
@@ -1496,7 +1567,7 @@ export class SchemaBuilder {
             readKeyword(at, construct.attributes.get('form'), ['qualified', 'unqualified']) ??
             (at.doc.qualifiedElements ? 'qualified' : 'unqualified');
         const namespace = form === 'qualified' ? at.doc.targetNamespace : null;
-        return this.#record<Element>(
+        const declaration = this.#record<Element>(
             {
                 kind: 'element',
                 name,
@@ -1509,6 +1580,8 @@ export class SchemaBuilder {
             },
             at
         );
+        this.#declarations.set(declaration, at);
+        return declaration;
     }
 
     /**
@@ -2171,10 +2244,7 @@ export class SchemaBuilder {
             at,
             isGlobal ? grammars.globalComplexType : grammars.localComplexType
         );
-        const abstract = construct.attributes.get('abstract');
-        if (isTrue(at, abstract)) {
-            unsupported(at, 'Abstract types are not supported', abstract);
-        }
+        const abstract = isTrue(at, construct.attributes.get('abstract')) && { abstract: true };
         checkDerivationSet(at, construct.attributes.get('block'), typeDerivations);
         checkDerivationSet(at, construct.attributes.get('final'), typeDerivations);
         const mixedAttribute = construct.attributes.get('mixed');
@@ -2186,16 +2256,16 @@ export class SchemaBuilder {
                 invalid(second, `${written(second.node)} can not follow ${written(first!.node)}`);
             }
             if (localName === 'complexContent') {
-                return this.#complexContent(first!, isMixed);
+                return { ...abstract, ...this.#complexContent(first!, isMixed) };
             }
             if (isMixed) {
                 invalid(at, 'A type with simple content can not be mixed', mixedAttribute);
             }
-            return this.#simpleContent(first!);
+            return { ...abstract, ...this.#simpleContent(first!) };
         }
         // Without a derivation, the type restricts `xs:anyType`, which has no attributes to inherit.
         const { particle, uses } = this.#ownContent(construct.children);
-        return this.#fields(particle, isMixed, uses, at);
+        return { ...abstract, ...this.#fields(particle, isMixed, uses, at) };
     }
 
     /**

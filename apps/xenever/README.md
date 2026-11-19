@@ -21,7 +21,7 @@ Ideally the schema decides the shape. A repeatable element is always an array, a
 - `xs:decimal` is a string, and `xs:integer` and the other big integer types are a `number` only within the safe range, or `bigint` when you ask for it. Nothing is rounded.
 - A document that breaks the schema throws with the line, column and path of the problem. DTDs are rejected, so entities are never expanded.
 
-It doesn't write XML yet, and some XSD constructs are not supported: abstract types and `xsi:type` among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
+It doesn't write XML yet, and some XSD constructs are not supported: `xs:redefine` and XSD 1.1 among them. Those fail when the schema is loaded, with the construct's location. See [Limits](#limits).
 
 Guides and the comparison with other XML tools are on the [docs site](https://jacobley.github.io/leyman/packages/xenever/).
 
@@ -113,6 +113,37 @@ const extensible = x.element(
 
 `declarations` is a function, so it can name elements declared further down.
 
+### Types the document chooses
+
+In XSD, a document may give an element a type derived from its own, with an `xsi:type` attribute. An element's `types` lists the named complex types it may be given, besides its own. Its value then has a `type`, the name of the type it was read as, and is typed as a union to narrow on:
+
+```ts
+const Shape = x.complex({ name: 'Shape', attributes: [x.attribute('id', x.token())] });
+const Circle = x.complex({
+    name: 'Circle',
+    attributes: [x.attribute('id', x.token()), x.attribute('radius', x.decimal())],
+});
+const shape = x.element('shape', Shape, { types: () => [Circle] });
+
+parse('<shape id="a"/>', shape);
+// { type: 'Shape', attributes: { id: 'a' } }
+
+const value = parse(
+    '<shape xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="Circle" radius="2.50"/>',
+    shape
+);
+// { type: 'Circle', attributes: { radius: '2.5' } }
+if (value.type === 'Circle') {
+    value.attributes.radius; // string | undefined
+}
+```
+
+An element without `types` keeps the shapes above, with no `type`. An `xsi:type` may always name the element's own type. Any other type must be one of its `types`, or the document is invalid. The name is a QName, resolved against the namespaces in scope where it is written, so a type with a `namespace` needs its prefix, or to be in the default namespace.
+
+A type with `abstract: true` is never what an element is read as: an element of that type needs an `xsi:type` naming one of its `types`, and the abstract type is left out of the union. When two types an element may have differ only by namespace, give one a `key`, which is then its `type`.
+
+`types` is a function, so it can list types declared further down. A type that holds an element it may itself be the type of, such as a group of shapes that is a shape, can't be inferred from its own initializer: annotate the getter's return type with `x.ComplexOf<Key, Value>`, as `x.ElementOf` does for `x.lazy`. Generated files always do.
+
 Each element built with `x.element` also implements [Standard Schema](https://standardschema.dev/) (`StandardSchemaV1<string, T>`), so a library that takes one can validate an XML string with it.
 
 ## Identity constraints
@@ -153,7 +184,7 @@ Every error extends `XeneverError`:
 - `XeneverXmlError`: the document isn't well-formed XML, has a DTD, or uses an undeclared prefix.
 - `XeneverValidationError`: the document doesn't match the schema.
 - `XeneverInvalidSchemaError`: the schema value or XSD breaks the XML Schema rules.
-- `XeneverUnsupportedError`: the XSD uses a construct xenever doesn't support.
+- `XeneverUnsupportedError`: the XSD uses a construct xenever doesn't support, or the document an `xsi:type` where it doesn't (see [Limits](#limits)).
 - `XeneverLoadError`: an XSD file couldn't be read.
 
 Document errors have `line`, `column`, `offset` and `path` (such as `/order/item[2]/quantity`), also repeated at the end of the message. `parse` throws the first problem it finds.
@@ -176,6 +207,8 @@ Elements and types come back in document order. The first file comes first, then
 
 A reference to the head of a substitution group becomes an `x.choice`, with the reference's `minOccurs` and `maxOccurs`, of the head and every member of its group that may stand for it, in document order. An abstract head or member is left out, as are the members its `block` rules out. Each member keeps its own name as its key in `children`, so the value says which element the document used. A member must have a type derived from its head's, by a method the head's `final` allows.
 
+Each named complex type keeps its `name` and `namespace`, and `abstract` when it is. An element whose type has other types derived from it gets them as its [`types`](#types-the-document-chooses), in document order, so its value has a `type`. Abstract types are left out, as are those derived by a method that the element's `block`, or its type's, rules out.
+
 Files are only ever read from local paths, through `readFile`, which defaults to the file system. A `schemaLocation` that is a URL needs a `catalog` entry, and nothing is fetched. The XML namespace (`xml:lang` and the rest) is built in.
 
 The options:
@@ -186,7 +219,7 @@ The options:
 - `bigint`: makes `xs:integer`, `xs:long` and the other big integer types `bigint`.
 - `ordered`: lists the complex types, or elements with an anonymous type, whose children keep their order. Names use Clark notation, `{namespace}local`.
 
-The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include abstract types, `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
+The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
 
 ## Generating TypeScript
 
@@ -218,6 +251,7 @@ export interface Order {
     children: { item: string[] };
 }
 export const Order = x.complex({
+    name: 'Order',
     attributes: [x.attribute('id', x.token(), { use: 'required' })],
     content: x.sequence([x.element('item', x.string(), { maxOccurs: 'unbounded' })]),
 });
@@ -246,12 +280,18 @@ The same is available as an API, from `xenever/xsd`: `xeneverFile(path, options)
 
 Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at the construct, rather than reading documents more loosely:
 
-- Abstract types. `xsi:type` in a document fails the same way, when it is parsed.
-- A reference inside `xs:all` to an element whose substitution group has members, as `xs:all` holds elements only. Two members of one group whose names differ only by namespace, as they would share a key.
+- A reference inside `xs:all` to an element whose substitution group has members, as `xs:all` holds elements only.
+- Two members of one substitution group, or two types one element may be given by `xsi:type`, whose names differ only by namespace, as they would share a key.
 - An identity constraint whose selector and fields bind one prefix to different namespaces.
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Enumerations of binary values, QNames and unions, and of lists of them, whose values xenever has no equality for; length facets on QNames.
 
+And these fail with `XeneverUnsupportedError` when a document is parsed, at the `xsi:type` attribute:
+
+- `xsi:type` on an element of a simple type, even one naming that type: simple types have no names in the schema value.
+- `xsi:type` naming another type on an element of `xs:anyType`, which every type derives from.
+- `xsi:type` on an element that a lax or strict wildcard matched and no declaration declares.
+
 ## Compared to alternatives
 
-The [comparison](https://jacobley.github.io/leyman/packages/xenever/comparison) runs xenever, `@abapify/ts-xsd`, `xml-xsd-engine` and `fast-xml-parser` (with hand-written types) through the same schemas and documents every night, including the features above that xenever doesn't support.
+The [comparison](https://jacobley.github.io/leyman/packages/xenever/comparison) runs xenever, `@abapify/ts-xsd`, `xml-xsd-engine` and `fast-xml-parser` (with hand-written types) through the same schemas and documents every night.

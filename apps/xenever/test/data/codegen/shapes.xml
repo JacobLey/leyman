@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<drawing xmlns="urn:example:shapes">
+<drawing xmlns="urn:example:shapes"
+         xmlns:s="urn:example:shapes"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <title> Two  shapes </title>
   <circle id="c1" radius="2.50"/>
-  <square id="s1"/>
-  <circle id="c2" radius="1"/>
+  <square id="s1" side="2"/>
+  <circle id="c2" radius="3" xsi:type="s:Ring">
+    <inner>1</inner>
+  </circle>
+  <circle id="c3" radius="0" xsi:type="Dot"/>
+  <outline xsi:type="s:Group" id="o1">
+    <member xsi:type="s:Square" id="o2" side="4"/>
+    <member xsi:type="s:Group" id="o3">
+      <member xsi:type="s:Circle" id="o4" radius="1"/>
+    </member>
+  </outline>
+  <hole id="h1" radius="1"/>
+  <hole id="h2" radius="1" xsi:type="s:Ring">
+    <inner>0.5</inner>
+  </hole>
 </drawing>

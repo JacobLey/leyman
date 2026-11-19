@@ -51,6 +51,8 @@ suite('loadXsd elements and attributes', () => {
             const { elements } = await loadSchema('<xs:element name="anything"/>');
             expect(withoutDeclarations(elements[0]!.type)).to.deep.equal({
                 kind: 'complex',
+                name: 'anyType',
+                namespace: 'http://www.w3.org/2001/XMLSchema',
                 mixed: true,
                 attributes: [{ kind: 'anyAttribute', processContents: 'lax' }],
                 content: {

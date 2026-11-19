@@ -2,12 +2,12 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type * as names from '#test/generated/names.js';
 import type * as order from '#test/generated/order.js';
 import type * as pom from '#test/generated/pom.js';
-import type * as shapes from '#test/generated/shapes.js';
 import type * as tree from '#test/generated/tree.js';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-chain';
 import { x } from 'xenever';
 import * as content from '#test/generated/content.js';
+import * as shapes from '#test/generated/shapes.js';
 
 /**
  * Types a declaration's value, to assert on it.
@@ -100,6 +100,8 @@ suite('Generated types', () => {
         const anything = x.element(
             'anything',
             x.complex({
+                name: 'anyType',
+                namespace: 'http://www.w3.org/2001/XMLSchema',
                 mixed: true,
                 attributes: [x.anyAttribute()],
                 content: x.sequence([x.any({ minOccurs: 0, maxOccurs: 'unbounded' })]),
@@ -143,15 +145,8 @@ suite('Generated types', () => {
         expectTypeOf(inferred(outline)).toEqualTypeOf<tree.Outline>();
     });
 
-    test('Are what parse returns for references to the heads of substitution groups', () => {
+    test('Are what parse returns for substitution groups and types an xsi:type selects', () => {
         const namespace = 'urn:example:shapes';
-        const shape = x.complex({ attributes: [x.attribute('id', x.id(), { use: 'required' })] });
-        const circle = x.complex({
-            attributes: [
-                x.attribute('id', x.id(), { use: 'required' }),
-                x.attribute('radius', x.decimal(), { use: 'required' }),
-            ],
-        });
         const drawing = x.element(
             'drawing',
             x.complex({
@@ -162,20 +157,62 @@ suite('Generated types', () => {
                     ]),
                     x.choice(
                         [
-                            x.element('circle', circle, { namespace }),
-                            x.element('square', shape, { namespace }),
+                            x.element('circle', shapes.Circle, {
+                                namespace,
+                                types: () => [shapes.Ring, shapes.Dot],
+                            }),
+                            x.element('square', shapes.Square, { namespace }),
                         ],
                         { minOccurs: 0, maxOccurs: 'unbounded' }
                     ),
+                    x.element('outline', shapes.Shape, {
+                        namespace,
+                        minOccurs: 0,
+                        types: () => [
+                            shapes.Circle,
+                            shapes.Ring,
+                            shapes.Dot,
+                            shapes.Group,
+                            shapes.Square,
+                        ],
+                    }),
+                    x.element('hole', shapes.Circle, {
+                        namespace,
+                        minOccurs: 0,
+                        maxOccurs: 'unbounded',
+                        types: () => [shapes.Ring],
+                    }),
                 ]),
             }),
             { namespace }
         );
         expectTypeOf(inferred(drawing)).toEqualTypeOf<shapes.Drawing>();
         expectTypeOf(
-            inferred(x.element('shape', shape, { namespace, abstract: true }))
+            inferred(
+                x.element('circle', shapes.Circle, {
+                    namespace,
+                    types: () => [shapes.Ring, shapes.Dot],
+                })
+            )
+        ).toEqualTypeOf<shapes.Circle_2>();
+        expectTypeOf(
+            inferred(
+                x.element('shape', shapes.Shape, {
+                    namespace,
+                    abstract: true,
+                    types: () => [shapes.Circle],
+                })
+            )
         ).toEqualTypeOf<shapes.Shape_2>();
         expectTypeOf<shapes.Shape_2>().toBeNever();
+    });
+
+    test('Are what x.Infer gives for the shapes fixture', () => {
+        expectTypeOf<x.Infer<typeof shapes.Shape>>().toEqualTypeOf<shapes.Shape>();
+        expectTypeOf<x.Infer<typeof shapes.Ring>>().toEqualTypeOf<shapes.Ring>();
+        expectTypeOf<x.Infer<typeof shapes.Dot>>().toEqualTypeOf<shapes.Dot>();
+        // A group holds shapes, a group among them: its const reads the value of each from the annotation.
+        expectTypeOf<x.Infer<typeof shapes.Group>>().toEqualTypeOf<shapes.Group>();
     });
 
     test('Read their printed type back from the annotation', () => {

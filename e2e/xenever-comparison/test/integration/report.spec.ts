@@ -23,16 +23,6 @@ const options = {
 };
 
 /**
- * Probes xenever fails, each for a gap the report should show until it is closed. A probe that starts passing fails the
- * test, so the list stays true.
- */
-const xeneverGaps = [
-    // Abstract types and xsi:type wait for the rest of polymorphism
-    'XSD: xsi:type: accepts a derived type named by xsi:type',
-    'XSD: xsi:type: rejects invalid content of the derived type',
-];
-
-/**
  * A tool that wraps xenever, changing one part of it.
  *
  * @param overrides - what it changes
@@ -42,7 +32,7 @@ const fake = (overrides: Partial<Tool>): Tool => ({ ...xeneverTool, name: 'fake'
 
 suite('createReport', () => {
     // Only xenever is asserted: its results are what we can guarantee, and another tool's are the report's to show
-    test('xenever passes every probe but its known gaps', async function (this: Context) {
+    test('xenever passes every probe', async function (this: Context) {
         this.timeout(120_000);
         const { probes, tools } = await createReport({ ...options, tools: [xeneverTool] });
         const [{ probes: results, bundle, parse }] = tools as [(typeof tools)[number]];
@@ -51,7 +41,7 @@ suite('createReport', () => {
             probes
                 .filter((_, index) => results[index]!.outcome !== 'pass')
                 .map(({ feature, description }) => `${feature}: ${description}`)
-        ).to.deep.equal(xeneverGaps);
+        ).to.deep.equal([]);
         expect(bundle).to.have.property('nodeBuiltins').that.deep.equals([]);
         expect(parse).to.have.property('ms').that.is.a('number');
     });

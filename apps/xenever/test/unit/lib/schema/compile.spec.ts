@@ -160,6 +160,141 @@ suite('Schema checks', () => {
         });
     });
 
+    suite('Types an xsi:type may select', () => {
+        const named = { kind: 'complex', name: 'Base' };
+
+        /**
+         * A root `a` of a type named `Base`, with `types`.
+         *
+         * @param types - the `types` property
+         * @param type - its type
+         * @returns the declaration
+         */
+        const withTypes = (types: unknown, type: unknown = named): unknown => ({
+            kind: 'element',
+            name: 'a',
+            type,
+            types,
+        });
+
+        test('Rejects types that are not a getter of an array', () => {
+            expectInvalidSchema(withTypes([]), /Expected `types` to be a function/v, '/types');
+            expectInvalidSchema(
+                withTypes(() => 'no'),
+                /Expected an array/v,
+                '/types()'
+            );
+        });
+
+        test('Rejects types on an element whose type is simple or has no name', () => {
+            const reason = /`types` needs the element to have a complex type with a `name`/v;
+            expectInvalidSchema(
+                withTypes(() => [], { kind: 'string' }),
+                reason,
+                '/types'
+            );
+            expectInvalidSchema(
+                withTypes(() => [], { kind: 'complex' }),
+                reason,
+                '/types'
+            );
+        });
+
+        test('Rejects a listed type that is not a complex type, or is invalid', () => {
+            expectInvalidSchema(
+                withTypes(() => [{ kind: 'string' }]),
+                /Expected a complex type/v,
+                '/types()/0'
+            );
+            expectInvalidSchema(
+                withTypes(() => [null]),
+                /Expected a complex type/v,
+                '/types()/0'
+            );
+            expectInvalidSchema(
+                withTypes(() => [{ kind: 'complex', name: 'D', other: 1 }]),
+                /other/v,
+                '/types()/0'
+            );
+        });
+
+        test('Rejects a listed type without a name, or abstract', () => {
+            expectInvalidSchema(
+                withTypes(() => [{ kind: 'complex' }]),
+                /A type `xsi:type` may select needs a `name`/v,
+                '/types()/0'
+            );
+            expectInvalidSchema(
+                withTypes(() => [{ kind: 'complex', name: 'D', abstract: true }]),
+                /An abstract type can not be selected by `xsi:type`/v,
+                '/types()/0'
+            );
+        });
+
+        test('Rejects a type listed twice, or that is the type of the element', () => {
+            expectInvalidSchema(
+                withTypes(() => [
+                    { kind: 'complex', name: 'D' },
+                    { kind: 'complex', name: 'D' },
+                ]),
+                /Type `D` is listed twice, or is the type of the element/v,
+                '/types()/1'
+            );
+            expectInvalidSchema(
+                withTypes(() => [named]),
+                /Type `Base` is listed twice, or is the type of the element/v,
+                '/types()/0'
+            );
+        });
+
+        test('Rejects a key used by two types', () => {
+            expectInvalidSchema(
+                withTypes(() => [{ kind: 'complex', name: 'Base', namespace: 'urn:b' }]),
+                /Type key `Base` is used by two types of one element; set `key` on one/v,
+                '/types()/0'
+            );
+            expect(() =>
+                parse(
+                    '<a/>',
+                    withTypes(() => [
+                        { kind: 'complex', name: 'Base', namespace: 'urn:b', key: 'Other' },
+                    ]) as x.Element
+                )
+            ).not.to.throw();
+        });
+
+        test('Rejects a type name that is not an NCName, or a key that is empty', () => {
+            expectInvalidSchema(
+                root({ name: 'a:b' }),
+                /Name "a:b" is not an NCName/v,
+                '/type/name'
+            );
+            expectInvalidSchema(
+                root({ name: 'T', key: '' }),
+                /A key must not be empty/v,
+                '/type/key'
+            );
+            expectInvalidSchema(
+                root({ name: 'T', namespace: '' }),
+                /A namespace name must not be empty/v,
+                '/type/namespace'
+            );
+        });
+
+        test('Rejects a namespace or key on a type without a name', () => {
+            expectInvalidSchema(
+                root({ namespace: 'urn:a' }),
+                /`namespace` needs a `name`/v,
+                '/type/namespace'
+            );
+            expectInvalidSchema(root({ key: 'K' }), /`key` needs a `name`/v, '/type/key');
+        });
+
+        test('Rejects abstract that is not a boolean', () => {
+            expectInvalidSchema(root({ abstract: 1 }), /Expected a boolean/v, '/type/abstract');
+        });
+    });
+
     suite('Complex types', () => {
         test('Rejects an unknown property', () => {
             expectInvalidSchema(root({ mixd: true }), /Unknown property `mixd`/v, '/type');

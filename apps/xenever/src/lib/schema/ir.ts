@@ -464,6 +464,15 @@ export interface Element extends Occurs {
      * nothing ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 2).
      */
     readonly abstract?: boolean;
+    /**
+     * The further named complex types an `xsi:type` attribute may select for the element, besides its own
+     * `type`, which must then be a named complex type
+     * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 4). With `types`, even an
+     * empty list, the element's value has a `type` property: the `key`, else the `name`, of the type it was
+     * read as. A getter, read when the schema is first used, as `x.lazy`'s is, so it may name types defined
+     * later.
+     */
+    readonly types?: () => readonly ComplexType[];
 }
 
 /**
@@ -608,6 +617,27 @@ export type Particle = Any | Element | Lazy | ModelGroup;
 export interface ComplexType {
     readonly kind: 'complex';
     /**
+     * Local name, an NCName: what `xsi:type` names the type by, and the `type` of a value read as it where an
+     * element has `types`.
+     */
+    readonly name?: string;
+    /**
+     * Namespace name of `name`. Absent for a type in no namespace.
+     */
+    readonly namespace?: string;
+    /**
+     * The `type` of a value read as this type, instead of the local name: for two types an element allows
+     * whose names differ only by namespace.
+     */
+    readonly key?: string;
+    /**
+     * Whether no element can be read as this type itself, only as a type listed in its `types`: an element
+     * of an abstract type needs an `xsi:type`
+     * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5 and
+     * [§3.4.4](https://www.w3.org/TR/xmlschema-1/#cvc-type), clause 2).
+     */
+    readonly abstract?: boolean;
+    /**
      * Attribute declarations, and at most one attribute wildcard.
      */
     readonly attributes?: readonly (AnyAttribute | Attribute)[];
@@ -624,6 +654,40 @@ export interface ComplexType {
      */
     readonly ordered?: boolean;
 }
+
+/**
+ * Brand of {@link ComplexOf}, never present at runtime.
+ */
+declare const complexOf: unique symbol;
+
+/**
+ * A complex type with the key and value it has where an element's `types` lists it, to annotate that getter:
+ * TypeScript can't infer the type of a value referenced in its own initializer, as a type that contains an
+ * element it may itself be the type of is.
+ *
+ * @example
+ * ```ts
+ * interface Group { attributes: x.NoProperties; children: { item?: Item[] } }
+ * type Item = ({ attributes: x.NoProperties } & { type: 'Item' }) | (Group & { type: 'Group' });
+ * const Item = x.complex({ name: 'Item' });
+ * const Group = x.complex({
+ *     name: 'Group',
+ *     content: x.sequence([
+ *         x.element('item', Item, {
+ *             types: (): [x.ComplexOf<'Group', Group>] => [Group],
+ *             minOccurs: 0,
+ *             maxOccurs: 'unbounded',
+ *         }),
+ *     ]),
+ * });
+ * ```
+ *
+ * @template Key - the `type` of a value read as it: its `key`, else its `name`
+ * @template Value - that value, without its `type`
+ */
+export type ComplexOf<Key extends string, Value> = ComplexType & {
+    readonly [complexOf]?: { readonly key: Key; readonly value: Value };
+} & ({ readonly key: Key } | { readonly key?: never; readonly name: Key });
 
 /**
  * The type of an element.

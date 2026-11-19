@@ -8,6 +8,7 @@ export interface Node {
     children: { node?: Node[] };
 }
 export const Node = x.complex({
+    name: 'Node',
     attributes: [x.attribute('label', x.string(), { use: 'required' })],
     content: x.sequence([
         x.lazy((): x.ElementOf<'node', Node> => x.element('node', Node), {

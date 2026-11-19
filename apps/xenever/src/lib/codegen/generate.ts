@@ -206,22 +206,39 @@ const identityCode = (constraint: IdentityConstraint): string =>
 
 /**
  * The options object of an element builder, in the order the IR has them, its identity constraints built by
- * their builders.
+ * their builders, and its `types` getter as an arrow function returning them. The getter's return type is
+ * annotated with the key and printed value of each type, as a lazy reference's is: a type may contain an
+ * element it is itself one of the `types` of, and TypeScript can't infer a const from its own initializer.
  *
  * @param element - an element declaration
+ * @param typeCode - prints one of its `types`, naming its const
+ * @param typeValue - prints the TypeScript type of the value of one of its `types`
  * @returns `{ ... }`, or `null` when it has no options
  */
-const elementOptions = (element: Element): string | null => {
+const elementOptions = (
+    element: Element,
+    typeCode: (type: ComplexType) => string,
+    typeValue: (type: ComplexType) => string
+): string | null => {
     const entries = Object.entries(element)
         .filter(([key]) => !['kind', 'name', 'type'].includes(key))
-        .map(
-            ([key, value]) =>
-                `${property(key)}: ${
-                    key === 'identity'
-                        ? `[${(value as readonly IdentityConstraint[]).map(constraint => identityCode(constraint)).join(', ')}]`
-                        : literal(value)
-                }`
-        );
+        .map(([key, value]) => {
+            if (key === 'identity') {
+                const constraints = (value as readonly IdentityConstraint[]).map(constraint =>
+                    identityCode(constraint)
+                );
+                return `identity: [${constraints.join(', ')}]`;
+            }
+            if (key === 'types') {
+                const types = (value as NonNullable<Element['types']>)();
+                const annotations = types.map(
+                    type =>
+                        `x.ComplexOf<${JSON.stringify(type.key ?? type.name)}, ${typeValue(type)}>`
+                );
+                return `types: (): [${annotations.join(', ')}] => [${types.map(type => typeCode(type)).join(', ')}]`;
+            }
+            return `${property(key)}: ${literal(value)}`;
+        });
     return entries.length === 0 ? null : `{ ${entries.join(', ')} }`;
 };
 
@@ -483,6 +500,14 @@ const atomicCode = (type: AtomicType): string => {
 };
 
 /**
+ * Whether an element may be read as a type.
+ *
+ * @param type - a simple or complex type
+ * @returns whether it isn't an abstract complex type
+ */
+const isConcrete = (type: Type): boolean => type.kind !== 'complex' || type.abstract !== true;
+
+/**
  * Types a type's const uses directly: the types of its attributes, text, list items, union members and
  * elements, but not those behind lazy references.
  *
@@ -737,7 +762,11 @@ class Printer {
         return call('element', [
             JSON.stringify(element.name),
             this.#typeCode(element.type, true),
-            elementOptions(element),
+            elementOptions(
+                element,
+                type => this.#typeCode(type, true),
+                type => this.#typeValue(type)
+            ),
         ]);
     }
 
@@ -785,8 +814,9 @@ class Printer {
     }
 
     /**
-     * TypeScript type of an element's value (`ElementValue` in `infer.ts`): `null` too when it is nillable, and
-     * `never` when it is abstract.
+     * TypeScript type of an element's value (`ElementValue` in `infer.ts`): `null` too when it is nillable. With
+     * `types`, a union over its type and each of them, each with its key as `type`. An abstract element has no
+     * value, and an abstract type is no part of one.
      *
      * @param element - a global or local element declaration
      * @returns the TypeScript type
@@ -795,8 +825,18 @@ class Printer {
         if (element.abstract === true) {
             return 'never';
         }
-        const value = this.#typeValue(element.type);
-        return element.nillable === true ? `${value} | null` : value;
+        let values: string[];
+        if (element.types) {
+            values = [element.type as ComplexType, ...element.types()]
+                .filter(type => isConcrete(type))
+                .map(
+                    type =>
+                        `(${this.#typeValue(type)} & { type: ${JSON.stringify(type.key ?? type.name)} })`
+                );
+        } else {
+            values = isConcrete(element.type) ? [this.#typeValue(element.type)] : [];
+        }
+        return unionOf(element.nillable === true ? [...values, 'null'] : values);
     }
 
     /**

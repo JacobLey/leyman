@@ -45,12 +45,13 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 - A document that breaks the schema throws an error with the line, column and path of the problem, such as `/order/item[2]/quantity`.
 - A document with a DTD is rejected, so no entity is expanded and no external file is read.
 - The `xenever` CLI turns an XSD, with the files it includes and imports, into a TypeScript file of `x` builders and named types. The same XSD always gives the same file, and `--ci` fails in CI when it is out of date.
+- Substitution groups, abstract types and `xsi:type` are read from the XSD. An element whose type the document may choose has a `type` in its value, to narrow its union on.
 - An XSD construct xenever doesn't support fails when the schema is loaded, with its file, line and column, so a schema is never read more loosely than it says.
 - Elements implement [Standard Schema](https://standardschema.dev/), with an XML string as the input.
 
 ## Limits
 
-xenever doesn't write XML yet. Abstract types, `xsi:type`, `xs:redefine` and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded.
+xenever doesn't write XML yet. `xs:redefine`, XSD 1.1 and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded. `xsi:type` is not supported on an element of a simple type or of `xs:anyType`, and fails when the document is parsed.
 
 ## Compared to
 

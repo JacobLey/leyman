@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { x, XeneverUnsupportedError } from 'xenever';
+import { parse, x, XeneverUnsupportedError } from 'xenever';
 import { generate } from 'xenever/xsd';
 import * as names from '#test/generated/names.js';
 import { loadSchema } from '#test/unit/xsd/helpers.js';
@@ -66,7 +66,6 @@ suite('generate', () => {
             'parse',
             '<xs:element name="greeting" type="xs:token"/>'
         );
-        const { parse } = await import('xenever');
         expect(parse('<greeting> hi </greeting>', generated.greeting as never)).to.equal('hi');
     });
 
@@ -82,6 +81,31 @@ suite('generate', () => {
             Record<string, unknown>
         >;
         expect(generated.Empty).to.deep.equal(type);
+    });
+
+    test('Builds the types an xsi:type may select, saying one by its key', async () => {
+        const filePath = Path.join(tmpDirectory, 'types.ts');
+        const base = x.complex({ name: 'Base', abstract: true });
+        const keyed = x.complex({ name: 'Base', namespace: 'urn:other', key: 'Other' });
+        const element = x.element('e', base, { types: () => [keyed] });
+        const invalid = x.element('never', base);
+        await mkdir(tmpDirectory, { recursive: true });
+        await writeFile(
+            filePath,
+            generate({ elements: [element, invalid], types: [{ name: 'Base', type: base }] }).text
+        );
+        const generated = (await import(pathToFileURL(filePath).href)) as {
+            readonly e: typeof element;
+            readonly never: typeof invalid;
+        };
+        expect(generated.never).to.deep.equal(invalid);
+        expect(generated.e.types()).to.deep.equal([keyed]);
+        expect(
+            parse(
+                '<e xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:o="urn:other" xsi:type="o:Base"/>',
+                generated.e
+            )
+        ).to.deep.equal({ type: 'Other', attributes: {} });
     });
 
     test('Rejects an anonymous complex type that contains itself through a group', async () => {
