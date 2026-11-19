@@ -646,7 +646,8 @@ const isNil = (node: XmlElementNode, declaration: CompiledElement): boolean => {
 
 /**
  * Reads the text of an element with a simple type or text content, checking a `fixed` value: an empty
- * element reads as its `default` or `fixed` text.
+ * element reads as its `default` or `fixed` text, a `QName` in it resolved against the declaration's
+ * `namespaces`.
  *
  * @param node - node of the XML tree
  * @param declaration - what declares it
@@ -675,6 +676,59 @@ const readText = (
         );
     }
     return value;
+};
+
+/**
+ * An element of a complex type without text as it is validated: an empty one holds its `default` or `fixed`
+ * text, checked against the type it is read as
+ * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.1.2), so mixed content reads
+ * it as one text. `readText` fills in the text of the other types itself, as it reads the value against the
+ * namespaces the declaration gives it.
+ *
+ * @param node - node of the XML tree
+ * @param declaration - what declares it
+ * @returns the node, with the text as its child when it is empty and the declaration has a non-empty one
+ */
+const withFallback = (node: XmlElementNode, declaration: CompiledElement): XmlElementNode =>
+    declaration.empty === null || declaration.empty === '' || node.children.length > 0
+        ? node
+        : {
+              ...node,
+              children: [{ kind: 'text', text: declaration.empty, location: node.location }],
+          };
+
+/**
+ * Checks the content of an element with content against its declaration's `fixed` value: it has no child
+ * elements, and with mixed content its text is the value as written, not compared as a value
+ * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.2.2). Element-only content
+ * compares no text, as all it may hold is whitespace.
+ *
+ * @param node - node of the XML tree, with its `fixed` text when empty (see {@link withFallback})
+ * @param type - its complex type, which has content
+ * @param fixed - the declaration's `fixed` value
+ * @throws {XeneverValidationError} when it has a child element, or mixed content with other text
+ */
+const checkContentFixed = (
+    node: XmlElementNode,
+    type: CompiledComplex,
+    fixed: FixedValue
+): void => {
+    let text = '';
+    for (const child of node.children) {
+        if (child.kind === 'element') {
+            throw new XeneverValidationError(
+                `Element ${written(child)} is not allowed: ${written(node)} has a fixed value`,
+                at(child)
+            );
+        }
+        text += child.text;
+    }
+    if (type.mixed && text !== fixed.lexical) {
+        throw new XeneverValidationError(
+            `Element ${written(node)} must be ${JSON.stringify(fixed.lexical)}`,
+            at(node)
+        );
+    }
 };
 
 /**
@@ -728,8 +782,12 @@ const readDeclared = (
     const value: Record<string, unknown> = declaration.types
         ? { type: type.key, attributes }
         : { attributes };
+    const content = withFallback(node, declaration);
     if (type.content) {
-        value.children = readChildren(node, type, state);
+        if (declaration.fixed) {
+            checkContentFixed(content, type, declaration.fixed);
+        }
+        value.children = readChildren(content, type, state);
     } else if (type.text) {
         // Compared in the value space of the type the element was read as, as `xsi:type` may select another.
         value.text = readText(
@@ -743,7 +801,7 @@ const readDeclared = (
         );
     } else {
         // Cvc-complex-type.2.1: empty content allows no children at all, not even whitespace.
-        const [first] = node.children;
+        const [first] = content.children;
         if (first) {
             throw new XeneverValidationError(
                 `${written(node)} must be empty`,

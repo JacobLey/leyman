@@ -452,12 +452,14 @@ export interface Element extends Occurs {
     readonly nillable?: boolean;
     /**
      * Value, as written in XML, of the element when it is empty (no text or children at all, so `<a> </a>`
-     * isn't). Only for a simple type or a complex type with `text`; not with `fixed`.
+     * isn't). Only for a simple type, a complex type with `text`, or mixed content that may be empty, which then
+     * reads as one text; not with `fixed`.
      */
     readonly default?: string;
     /**
-     * Value, as written in XML, the element must have (compared as values), and has when empty. Only for a
-     * simple type or a complex type with `text`; not with `default`.
+     * Value, as written in XML, the element must have, and has when empty. Compared as values, except in mixed
+     * content, which must have no child elements and exactly this text. Only where `default` may be; not with
+     * `default`.
      */
     readonly fixed?: string;
     /**

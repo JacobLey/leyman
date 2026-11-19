@@ -999,6 +999,83 @@ suite('parse', () => {
             });
         });
 
+        suite('Default and fixed values of content in the type selected', () => {
+            const optional = x.choice([x.element('b', x.string())], { minOccurs: 0 });
+            const mixed = x.complex({ name: 'Mixed', mixed: true, content: optional });
+            const moreMixed = x.complex({
+                name: 'MoreMixed',
+                mixed: true,
+                content: x.sequence([optional, x.element('c', x.string(), { minOccurs: 0 })]),
+            });
+            const elements = x.complex({ name: 'Elements', content: optional });
+            const empty = x.complex({ name: 'Empty' });
+            const number = x.complex({ name: 'Number', text: x.int() });
+            const types = () => [moreMixed, elements, empty, number];
+            const defaulted = x.element('v', mixed, { types, default: '1' });
+            const fixed = x.element('v', mixed, { types, fixed: '1' });
+
+            test('Reads an empty element as the type selected holds its default', () => {
+                expect(parse(`<v ${xsi} xsi:type="MoreMixed"/>`, defaulted)).to.deep.equal({
+                    type: 'MoreMixed',
+                    attributes: {},
+                    children: [{ name: '#text', value: '1' }],
+                });
+                expect(parse(`<v ${xsi} xsi:type="Number"/>`, defaulted)).to.include({ text: 1 });
+                expect(
+                    parse(
+                        `<v ${xsi} xsi:type="Elements"/>`,
+                        x.element('v', mixed, { types, default: ' ' })
+                    )
+                ).to.deep.equal({ type: 'Elements', attributes: {}, children: {} });
+                expect(
+                    parse(
+                        `<v ${xsi} xsi:type="Empty"/>`,
+                        x.element('v', mixed, { types, default: '' })
+                    )
+                ).to.deep.equal({ type: 'Empty', attributes: {} });
+            });
+
+            test('Rejects an empty element when the type selected can not hold its default', () => {
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Elements"/>`, defaulted),
+                    /^Text is not allowed in `v`, which has element-only content/v,
+                    { path: '/v' }
+                );
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Empty"/>`, defaulted),
+                    /^`v` must be empty/v,
+                    { path: '/v' }
+                );
+            });
+
+            test('Compares a fixed value of mixed content as written, and of text as a value', () => {
+                expect(parse(`<v ${xsi} xsi:type="MoreMixed">1</v>`, fixed)).to.deep.equal({
+                    type: 'MoreMixed',
+                    attributes: {},
+                    children: [{ name: '#text', value: '1' }],
+                });
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="MoreMixed">01</v>`, fixed),
+                    /^Element `v` must be "1"/v,
+                    { path: '/v' }
+                );
+                expect(parse(`<v ${xsi} xsi:type="Number">01</v>`, fixed)).to.include({ text: 1 });
+            });
+
+            test('Allows no child elements, and compares no text of element-only content', () => {
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Elements"><b>1</b></v>`, fixed),
+                    /^Element `b` is not allowed: `v` has a fixed value/v,
+                    { path: '/v/b' }
+                );
+                expect(parse(`<v ${xsi} xsi:type="Elements"> </v>`, fixed)).to.deep.equal({
+                    type: 'Elements',
+                    attributes: {},
+                    children: {},
+                });
+            });
+        });
+
         test('Rejects content the type selected does not allow', () => {
             expectInvalid(
                 () =>

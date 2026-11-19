@@ -157,6 +157,17 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
         ],
     },
     {
+        name: 'libxml2-mixed-fixed-values',
+        kind: 'libxml2',
+        reason: 'libxml2 lets an element with mixed content and a fixed value have child elements, comparing only its text',
+        spec: 'https://www.w3.org/TR/xmlschema-1/#cvc-elt',
+        ids: [
+            'ElemDecl/valueconstraint00701m1/Negative',
+            'MS-ComplexType2006-07-15/ctZ013c/ctZ013c.i',
+            'MS-ComplexType2006-07-15/ctZ013d/ctZ013d.i',
+        ],
+    },
+    {
         name: 'libxml2-xml-attributes',
         kind: 'libxml2',
         reason: 'libxml2 has no built-in declarations of `xml:base` and `xml:space` to refer to',
@@ -728,10 +739,6 @@ export const limits: readonly Limit[] = [
     {
         pattern: /uses the block escape `\\[Pp]\{Is/v,
         reason: 'Unicode block escapes, which need a table of blocks JavaScript does not have',
-    },
-    {
-        pattern: /^`default` and `fixed` of an element with mixed content are not supported/v,
-        reason: 'Value constraints on mixed content, which has no single text to compare',
     },
     {
         pattern: /^A wildcard that allows no namespace is not supported/v,

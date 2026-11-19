@@ -1,12 +1,6 @@
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import {
-    parse,
-    x,
-    XeneverInvalidSchemaError,
-    XeneverUnsupportedError,
-    XeneverValidationError,
-} from 'xenever';
+import { parse, x, XeneverInvalidSchemaError, XeneverValidationError } from 'xenever';
 
 /**
  * Asserts a root declaration is an invalid schema value.
@@ -272,22 +266,17 @@ suite('Schema checks', () => {
         suite('On an element with a default or fixed value', () => {
             const textual = { kind: 'complex', name: 'Base', text: { kind: 'string' } };
 
-            test('Rejects a listed type without text', () => {
+            test('Accepts a listed type without text, which decides whether it can be empty', () => {
                 for (const constraint of ['default', 'fixed']) {
-                    expectInvalidSchema(
-                        {
+                    expect(() =>
+                        parse('<a>a</a>', {
                             ...(withTypes(
                                 () => [{ kind: 'complex', name: 'D' }],
                                 textual
                             ) as object),
                             [constraint]: 'a',
-                        },
-                        new RegExp(
-                            `An element with a \`${constraint}\` can only be given types with \`text\``,
-                            'v'
-                        ),
-                        '/types()/0'
-                    );
+                        } as unknown as x.Element)
+                    ).not.to.throw();
                 }
             });
 
@@ -839,27 +828,26 @@ suite('Schema checks', () => {
             );
         });
 
-        test('Rejects a value of an element with mixed content as unsupported', () => {
-            expect(() =>
-                parse(
-                    '<a/>',
-                    x.element('a', x.complex({ mixed: true, content: x.sequence([]) }), {
-                        fixed: 'x',
-                    })
-                )
-            )
-                .to.throw(XeneverUnsupportedError, /mixed content/v)
-                .that.includes({ path: '/fixed' });
-            expect(() =>
-                parse(
-                    '<a/>',
-                    x.element('a', x.complex({ mixed: true, content: x.sequence([]) }), {
-                        default: 'x',
-                    })
-                )
-            )
-                .to.throw(XeneverUnsupportedError, /mixed content/v)
-                .that.includes({ path: '/default' });
+        test('Rejects a value of mixed content that can not be empty', () => {
+            const required = x.complex({
+                mixed: true,
+                content: x.sequence([x.element('b', x.string())]),
+            });
+            for (const constraint of ['default', 'fixed']) {
+                expectInvalidSchema(
+                    x.element('a', required, { [constraint]: 'x' }),
+                    new RegExp(
+                        `^\`${constraint}\` of an element with mixed content needs content that may be empty`,
+                        'v'
+                    ),
+                    `/${constraint}`
+                );
+            }
+            expectInvalidSchema(
+                x.element('a', required, { default: 'x', fixed: 'x' }),
+                /either `default` or `fixed`, not both/v,
+                '/'
+            );
         });
     });
 });

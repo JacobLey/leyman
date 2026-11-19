@@ -159,6 +159,9 @@ export interface CompiledElement {
      * Namespaces `empty` is read with: its `namespaces`.
      */
     readonly emptyNamespaces: Namespaces;
+    /**
+     * Its `fixed` value as its type reads it, or as written for mixed content.
+     */
     readonly fixed: FixedValue | null;
     /**
      * Its identity constraints, `null` when it has none, so reading an element costs nothing for them.
@@ -176,7 +179,8 @@ export interface CompiledElement {
     /**
      * Its `fixed` value as each of `types` reads it, compared in that type's value space
      * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.2.2). A type the value
-     * isn't valid for has no entry, and no value it reads matches. `null` without `fixed` or `types`.
+     * isn't valid for has no entry, and no value it reads matches. A type without `text` has no entry either, as
+     * content compares no value. `null` without `fixed` or `types`.
      */
     readonly typesFixed: ReadonlyMap<CompiledComplex, FixedValue> | null;
 }
@@ -239,6 +243,29 @@ const compileValueNamespaces = (
 };
 
 /**
+ * Reads a declaration's `default` or `fixed`, of which it has at most one.
+ *
+ * @param record - the declaration
+ * @param path - path to the declaration
+ * @returns the value as written and the property holding it, `null` without either
+ * @throws {XeneverInvalidSchemaError} when both are given, or one isn't a string
+ */
+const readValueConstraint = (
+    record: Readonly<Record<string, unknown>>,
+    path: string
+): { readonly lexical: string; readonly property: 'default' | 'fixed' } | null => {
+    const defaultValue = checkString(record.default, childPath(path, 'default'));
+    const fixedValue = checkString(record.fixed, childPath(path, 'fixed'));
+    if (defaultValue === undefined) {
+        return fixedValue === undefined ? null : { lexical: fixedValue, property: 'fixed' };
+    }
+    if (fixedValue !== undefined) {
+        invalidSchema('A declaration has either `default` or `fixed`, not both', path);
+    }
+    return { lexical: defaultValue, property: 'default' };
+};
+
+/**
  * Checks a declaration's `default` and `fixed`, which must be valid for its type, a `QName` in them resolved
  * against its `namespaces`.
  *
@@ -258,18 +285,13 @@ const compileValueConstraint = (
     readonly namespaces: Namespaces;
     readonly fixed: FixedValue | null;
 } => {
-    const defaultValue = checkString(record.default, childPath(path, 'default'));
-    const fixedValue = checkString(record.fixed, childPath(path, 'fixed'));
+    const constraint = readValueConstraint(record, path);
     const namespaces = compileValueNamespaces(record, path);
-    const lexical = defaultValue ?? fixedValue;
-    if (lexical === undefined) {
+    if (constraint === null) {
         return { fallback: null, fixed: null, namespaces };
     }
-    const property = defaultValue === undefined ? 'fixed' : 'default';
+    const { lexical, property } = constraint;
     const constraintPath = childPath(path, property);
-    if (defaultValue !== undefined && fixedValue !== undefined) {
-        invalidSchema('A declaration has either `default` or `fixed`, not both', path);
-    }
     if (type === null) {
         return invalidSchema(
             `\`${property}\` needs a simple type or a complex type with \`text\``,
@@ -299,7 +321,50 @@ const compileValueConstraint = (
     return {
         namespaces,
         fallback: lexical,
-        fixed: fixedValue === undefined ? null : { lexical, value },
+        fixed: property === 'fixed' ? { lexical, value } : null,
+    };
+};
+
+/**
+ * Checks the `default` or `fixed` of an element with mixed content. Its value is text, which an empty element
+ * reads as, so the content must be able to be empty
+ * ([XSD 1.0 Part 1 §3.3.6](https://www.w3.org/TR/xmlschema-1/#cos-valid-default), clause 2.2.2), and a
+ * `fixed` value is compared as written, not as a value
+ * ([§3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.2.2.2.1).
+ *
+ * @param record - the declaration
+ * @param content - the content of its type
+ * @param path - path to the declaration
+ * @returns the text read when empty, the fixed value, which is that text, and the declaration's `namespaces`,
+ * which the text never needs
+ * @throws {XeneverInvalidSchemaError} when both are given, the content can't be empty, or `namespaces` is
+ * invalid
+ */
+const compileMixedConstraint = (
+    record: Readonly<Record<string, unknown>>,
+    content: CompiledContent,
+    path: string
+): {
+    readonly fallback: string | null;
+    readonly namespaces: Namespaces;
+    readonly fixed: FixedValue | null;
+} => {
+    const constraint = readValueConstraint(record, path);
+    const namespaces = compileValueNamespaces(record, path);
+    if (constraint === null) {
+        return { fallback: null, fixed: null, namespaces };
+    }
+    const { lexical, property } = constraint;
+    if (!content.model.start.nullable) {
+        invalidSchema(
+            `\`${property}\` of an element with mixed content needs content that may be empty, which is what reads as it`,
+            childPath(path, property)
+        );
+    }
+    return {
+        namespaces,
+        fallback: lexical,
+        fixed: property === 'fixed' ? { lexical, value: lexical } : null,
     };
 };
 
@@ -429,17 +494,11 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
     const type = compileType(record.type, childPath(path, 'type'));
     compiled.type = type;
-    if (type.kind === 'complex' && type.mixed && (record.default ?? record.fixed) !== undefined) {
-        throw new XeneverUnsupportedError(
-            '`default` and `fixed` of an element with mixed content are not supported',
-            { path: childPath(path, record.default === undefined ? 'fixed' : 'default') }
-        );
-    }
-    const { fallback, namespaces, fixed } = compileValueConstraint(
-        record,
-        type.kind === 'simple' ? type.simple : type.text,
-        path
-    );
+    const text = type.kind === 'simple' ? type.simple : type.text;
+    const { fallback, namespaces, fixed } =
+        type.kind === 'complex' && type.mixed
+            ? compileMixedConstraint(record, type.content!, path)
+            : compileValueConstraint(record, text, path);
     compiled.empty = fallback;
     compiled.emptyNamespaces = namespaces;
     compiled.fixed = fixed;
@@ -764,41 +823,30 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
 };
 
 /**
- * Checks a type `xsi:type` may select for a declaration with `default` or `fixed`, and reads its `fixed` value
- * as the type does.
+ * Reads a declaration's `fixed` value as a type `xsi:type` may select reads it. A type without `text` compares
+ * no value: mixed content compares `fixed` as written, and element-only or empty content holds no text but
+ * whitespace ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.2.2.2). An empty
+ * element is still read as its `default` or `fixed` text (clause 5.1.2), which such content decides whether it
+ * can hold.
  *
- * @param record - the declaration
- * @param constraint - which of `default` and `fixed` it has
- * @param namespaces - the namespaces its value is read with
- * @param type - a type it lists
+ * @param lexical - the `fixed` value as written
+ * @param namespaces - the namespaces it is read with
+ * @param type - a type the declaration lists
  * @param fixed - the `fixed` value as each type before it reads it, `null` for none yet
- * @param path - path to the type
- * @returns `fixed`, with this type's value added when it is valid for the type
- * @throws {XeneverInvalidSchemaError} when the type has no `text`
+ * @returns `fixed`, with this type's value added when the type has `text` the value is valid for
+ * @throws {Error} unreachable: what reading a value throws besides an invalid value
  */
-const readConstraintAs = (
-    record: Readonly<Record<string, unknown>>,
-    constraint: 'default' | 'fixed',
+const readFixedAs = (
+    lexical: string,
     namespaces: Namespaces,
     type: CompiledComplex,
-    fixed: Map<CompiledComplex, FixedValue> | null,
-    path: string
+    fixed: Map<CompiledComplex, FixedValue> | null
 ): Map<CompiledComplex, FixedValue> | null => {
     const { text } = type;
     if (text === null) {
-        // An empty element of such a type can't be valid, as its `default` or `fixed` is text
-        // ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.1.2), and in XSD no
-        // type derived from one with simple content is without it.
-        return invalidSchema(
-            `An element with a \`${constraint}\` can only be given types with \`text\``,
-            path
-        );
-    }
-    if (constraint === 'default') {
         return fixed;
     }
     const values = fixed ?? new Map<CompiledComplex, FixedValue>();
-    const lexical = record.fixed as string;
     try {
         values.set(type, { lexical, value: text.parse(lexical, namespaces) });
     } catch (error) {
@@ -823,7 +871,7 @@ const readConstraintAs = (
  * @returns the types by expanded name, and the declaration's `fixed` value as each reads it (see
  * `typesFixed`), `null` without one
  * @throws {XeneverInvalidSchemaError} when the declared type isn't a named complex type, or a listed type is
- * unnamed, abstract or named as another is, or has no `text` on a declaration with `default` or `fixed`
+ * unnamed, abstract or named as another is
  */
 const compileTypes = (
     record: Readonly<Record<string, unknown>>,
@@ -846,9 +894,6 @@ const compileTypes = (
     }
     const listPath = `${getterPath}()`;
     const list = checkArray(getterResult(record, record.types as () => unknown), listPath);
-    const constraint = (['default', 'fixed'] as const).find(
-        property => record[property] !== undefined
-    );
     let fixed: Map<CompiledComplex, FixedValue> | null = null;
     const names = new Set([expandedName(declared.namespace, declared.name)]);
     const keys = new Set([declared.key]);
@@ -868,8 +913,8 @@ const compileTypes = (
                 typePath
             );
         }
-        if (constraint !== undefined) {
-            fixed = readConstraintAs(record, constraint, namespaces, compiled, fixed, typePath);
+        if (record.fixed !== undefined) {
+            fixed = readFixedAs(record.fixed as string, namespaces, compiled, fixed);
         }
         const name = expandedName(compiled.namespace, compiled.name);
         if (names.has(name)) {

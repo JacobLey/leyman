@@ -779,5 +779,69 @@ suite('Content', () => {
             expect(parse('<v>1.00</v>', version)).to.equal('1');
             expectInvalid(() => parse('<v>2</v>', version), /`v` must be "1.0"/v, { path: '/v' });
         });
+
+        suite('Of an element with mixed content', () => {
+            const mixed = x.complex({
+                mixed: true,
+                content: x.choice([x.element('b', x.string())], {
+                    minOccurs: 0,
+                    maxOccurs: 'unbounded',
+                }),
+            });
+
+            test('Reads an empty element as one text holding its default', () => {
+                const note = x.element('note', mixed, { default: 'none' });
+                expect(parse('<note/>', note)).to.deep.equal({
+                    attributes: {},
+                    children: [{ name: '#text', value: 'none' }],
+                });
+                expect(parse('<note><!-- empty --></note>', note).children).to.deep.equal([
+                    { name: '#text', value: 'none' },
+                ]);
+                expect(parse('<note> </note>', note).children).to.deep.equal([
+                    { name: '#text', value: ' ' },
+                ]);
+                expect(parse('<note>a<b>c</b></note>', note).children).to.deep.equal([
+                    { name: '#text', value: 'a' },
+                    { name: 'b', value: 'c' },
+                ]);
+                expect(
+                    parse('<note/>', x.element('note', mixed, { default: '' })).children
+                ).to.deep.equal([]);
+            });
+
+            test('Compares a fixed value as written, with no child elements', () => {
+                const note = x.element('note', mixed, { fixed: ' 1 ' });
+                expect(parse('<note/>', note).children).to.deep.equal([
+                    { name: '#text', value: ' 1 ' },
+                ]);
+                expect(parse('<note> 1 </note>', note).children).to.deep.equal([
+                    { name: '#text', value: ' 1 ' },
+                ]);
+                expect(parse('<note> <![CDATA[1]]> </note>', note).children).to.deep.equal([
+                    { name: '#text', value: ' 1 ' },
+                ]);
+                expectInvalid(
+                    () => parse('<note>1</note>', note),
+                    /^Element `note` must be " 1 "/v,
+                    {
+                        path: '/note',
+                    }
+                );
+                expectInvalid(
+                    () => parse('<note> 1 <b/></note>', note),
+                    /^Element `b` is not allowed: `note` has a fixed value/v,
+                    { path: '/note/b' }
+                );
+                expect(
+                    parse('<note/>', x.element('note', mixed, { fixed: '' })).children
+                ).to.deep.equal([]);
+                expectInvalid(
+                    () => parse('<note> </note>', x.element('note', mixed, { fixed: '' })),
+                    /^Element `note` must be ""/v,
+                    { path: '/note' }
+                );
+            });
+        });
     });
 });

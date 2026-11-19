@@ -41,6 +41,21 @@ suite('loadXsd elements and attributes', () => {
             expect(elements[0]).not.to.have.property('namespace');
         });
 
+        test('Takes a default of mixed content, which an empty element reads as', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="note" default="none">
+                    <xs:complexType mixed="true">
+                        <xs:sequence><xs:element name="b" type="xs:string" minOccurs="0"/></xs:sequence>
+                    </xs:complexType>
+                </xs:element>`
+            );
+            expect(elements[0]).to.deep.include({ default: 'none' });
+            expect(parse('<note/>', elements[0]!)).to.deep.equal({
+                attributes: {},
+                children: [{ name: '#text', value: 'none' }],
+            });
+        });
+
         test('Implements Standard Schema', async () => {
             const { elements } = await loadSchema('<xs:element name="n" type="xs:int"/>');
             const result = await elements[0]!['~standard'].validate('<n>4</n>');
