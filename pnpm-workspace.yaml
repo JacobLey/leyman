@@ -232,7 +232,7 @@ catalog:
   openapi3-ts: ^4.6.2
   p-defer: ^4.0.1
   p-queue: ^10.0.0
-  '@rgrove/parse-xml': ^5.1.0
+  '@rgrove/parse-xml': ^5.2.0
   pg: ^8.23.1
   # Pinned: browser builds are tied to this version, so keep `PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` and
   # `dagger/main.go` in sync.

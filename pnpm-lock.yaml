@@ -56,8 +56,8 @@ catalogs:
       specifier: ^24.0.5
       version: 24.0.5
     '@rgrove/parse-xml':
-      specifier: ^5.1.0
-      version: 5.1.0
+      specifier: ^5.2.0
+      version: 5.2.0
     '@shikijs/vitepress-twoslash':
       specifier: ^4.5.0
       version: 4.5.0
@@ -1435,7 +1435,7 @@ importers:
     dependencies:
       '@rgrove/parse-xml':
         specifier: 'catalog:'
-        version: 5.1.0
+        version: 5.2.0
       ci-info:
         specifier: 'catalog:'
         version: 4.4.0
@@ -3464,7 +3464,7 @@ importers:
         version: file:leyman/expect
       '@rgrove/parse-xml':
         specifier: 'catalog:'
-        version: 5.1.0
+        version: 5.2.0
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
@@ -7421,8 +7421,8 @@ packages:
     resolution: {integrity: sha512-dEyx4uHh6Pc6ZkdU9Xe8rA4h12Odq6QKU/fqseBn07xwVwskhHiF3KHhqmw5BR+jAiFTvKTmwCafFql/k1pSzA==}
     engines: {node: '>=18.17.0', npm: '>=9.5.0'}
 
-  '@rgrove/parse-xml@5.1.0':
-    resolution: {integrity: sha512-ExwK7gowU5XT/WFC81o/Ou7Zvi9zQwW4SmxqFM6UaADOr7gC44BGwKSpGe20OyRD9EjwnT3d8n4qMbnAdlt8PQ==}
+  '@rgrove/parse-xml@5.2.0':
+    resolution: {integrity: sha512-UDu4Ha/ZAEI0O/Vw869KWwMM0gksSO6GY217cPO9MsEeAq9Nkj3ISB5gVZZimoUAy0NOPurf4zTMNJg4njEz2w==}
     engines: {node: '>=22.12.0'}
 
   '@rolldown/binding-android-arm-eabi@1.2.14':
@@ -15601,7 +15601,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rgrove/parse-xml@5.1.0': {}
+  '@rgrove/parse-xml@5.2.0': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.14':
     optional: true
@@ -21674,7 +21674,7 @@ snapshots:
 
   xenever@file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@10.2.2))(prettier@3.9.10):
     dependencies:
-      '@rgrove/parse-xml': 5.1.0
+      '@rgrove/parse-xml': 5.2.0
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
@@ -21689,7 +21689,7 @@ snapshots:
 
   xenever@file:apps/xenever(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
-      '@rgrove/parse-xml': 5.1.0
+      '@rgrove/parse-xml': 5.2.0
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)

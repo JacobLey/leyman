@@ -304,6 +304,21 @@ suite('readXml', () => {
             });
         });
 
+        for (const [description, declaration] of [
+            [
+                'no space before `standalone`',
+                '<?xml version="1.0" encoding="UTF-8"standalone="yes"?>',
+            ],
+            ['an empty encoding', '<?xml version="1.0" encoding=""?>'],
+        ] as const) {
+            test(`An XML declaration with ${description} is an error`, () => {
+                expect(() => readXml(`${declaration}<a/>`)).to.throw(
+                    XeneverXmlError,
+                    /^Not well-formed XML/v
+                );
+            });
+        }
+
         test('An empty document is an error', () => {
             expectXmlError('', /Root element is missing/v, {
                 line: 1,
