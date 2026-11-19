@@ -52,7 +52,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 
 ## Limits
 
-xenever doesn't write XML yet. `xs:redefine`, XSD 1.1 and enumerations of binary values and QNames are not supported, and fail when the XSD is loaded. `xsi:type` is not supported on an element of a simple type or of `xs:anyType`, and fails when the document is parsed.
+xenever doesn't write XML yet. `xs:redefine`, XSD 1.1, enumerations of binary values and QNames, Unicode block escapes in patterns and occurrence bounds past `Number.MAX_SAFE_INTEGER` are not supported, and fail when the XSD is loaded. `xsi:type` is not supported on an element of a simple type or of `xs:anyType`, and fails when the document is parsed. The [README](https://github.com/JacobLey/leyman/blob/main/apps/xenever/README.md#limits) lists every limit.
 
 ## Compared to
 

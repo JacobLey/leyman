@@ -729,7 +729,8 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
 ];
 
 /**
- * What xenever reports as unsupported inside its subset: limits of this version, each a plan item.
+ * What xenever reports as unsupported inside its subset: limits of this version, each listed in the README's
+ * `## Limits`.
  */
 export const limits: readonly Limit[] = [
     {

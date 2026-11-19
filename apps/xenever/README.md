@@ -292,16 +292,22 @@ The same is available as an API, from `xenever/xsd`: `xeneverFile(path, options)
 Each of these fails with `XeneverUnsupportedError` when the XSD is loaded, at the construct, rather than reading documents more loosely:
 
 - A reference inside `xs:all` to an element whose substitution group has members, as `xs:all` holds elements only.
-- Two members of one substitution group, or two types one element may be given by `xsi:type`, whose names differ only by namespace, as they would share a key.
+- Two declarations whose values would share a key, which the XSD gives no way to rename: elements of one content model (members of a substitution group included), attributes of one type, or types one element may be given by `xsi:type`, whose names differ only by namespace; and an element declared twice in one content model with the same type but a different `default`, `fixed` or `nillable`.
 - An identity constraint whose selector and fields bind one prefix to different namespaces.
 - `xs:redefine` and `xs:override`, notations, chameleon includes and XSD 1.1.
 - Enumerations of binary values, QNames and unions, and of lists of them, whose values xenever has no equality for; length facets on QNames.
+- Unicode block escapes in patterns, such as `\p{IsBasicLatin}`, as JavaScript regular expressions have no Unicode blocks.
+- `minOccurs` or `maxOccurs` past `Number.MAX_SAFE_INTEGER`, which a number can't count exactly.
 
 And these fail with `XeneverUnsupportedError` when a document is parsed, at the `xsi:type` attribute:
 
 - `xsi:type` on an element of a simple type, even one naming that type: simple types have no names in the schema value.
 - `xsi:type` naming another type on an element of `xs:anyType`, which every type derives from.
 - `xsi:type` on an element that a lax or strict wildcard matched and no declaration declares.
+
+And this fails with `XeneverUnsupportedError` when generating TypeScript:
+
+- An anonymous complex type that contains itself through a named group, as its TypeScript type would have no name to refer to. Name the type.
 
 ## Compared to alternatives
 
