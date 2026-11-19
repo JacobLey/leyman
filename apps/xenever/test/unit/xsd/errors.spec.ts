@@ -104,6 +104,18 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^The id "i" is used twice in the file/v,
     ],
     [
+        'documentation with an xml:lang that is only spaces',
+        '<xs:annotation><xs:documentation xml:lang=" "/></xs:annotation>',
+        XeneverInvalidSchemaError,
+        /^" " is not a valid `xml:lang`/v,
+    ],
+    [
+        'an xml:lang that is not a language, on an element not otherwise read',
+        '<xs:element name="a"><xs:annotation xml:lang="1 2"/></xs:element>',
+        XeneverInvalidSchemaError,
+        /^"1 2" is not a valid `xml:lang`/v,
+    ],
+    [
         'elements of one name and type but different defaults in one content model',
         withParticles(
             '<xs:element name="a" type="xs:int" default="1"/><xs:element name="a" type="xs:int" default="2"/>'
@@ -791,6 +803,20 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         'targetNamespace="http://www.w3.org/2001/XMLSchema-instance"',
     ],
     [
+        'a qualified local attribute in the xsi namespace',
+        '<xs:attributeGroup name="g"><xs:attribute name="a"/></xs:attributeGroup>',
+        XeneverInvalidSchemaError,
+        /^The `xsi` namespace has no attributes but those XML Schema defines/v,
+        'targetNamespace="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="qualified"',
+    ],
+    [
+        'a local attribute in the xsi namespace by its form',
+        withAttributes('<xs:attribute name="a" form="qualified"/>'),
+        XeneverInvalidSchemaError,
+        /^The `xsi` namespace has no attributes but those XML Schema defines/v,
+        'targetNamespace="http://www.w3.org/2001/XMLSchema-instance"',
+    ],
+    [
         'an undefined attribute group',
         withAttributes('<xs:attributeGroup ref="t:missing"/>'),
         XeneverInvalidSchemaError,
@@ -1053,6 +1079,12 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^An extension of a type with content is mixed exactly when its base type is/v,
     ],
     [
+        'a mixed extension of an element-only type adding nothing',
+        derive('extension', '<xs:attribute name="y"/>', 'mixed="true"'),
+        XeneverInvalidSchemaError,
+        /^An extension of a type with content is mixed exactly when its base type is/v,
+    ],
+    [
         'an extension adding an xs:all',
         derive('extension', '<xs:all><xs:element name="b"/></xs:all>'),
         XeneverInvalidSchemaError,
@@ -1075,6 +1107,13 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         `${base}<xs:complexType name="C"><xs:simpleContent><xs:restriction base="t:Base"/></xs:simpleContent></xs:complexType>`,
         XeneverInvalidSchemaError,
         /^A simple content restriction derives from a type with simple content/v,
+    ],
+    [
+        'a facet on the anySimpleType text of a simple content restriction',
+        `<xs:complexType name="A"><xs:simpleContent><xs:extension base="xs:anySimpleType"/></xs:simpleContent></xs:complexType>
+        <xs:complexType name="C"><xs:simpleContent><xs:restriction base="t:A"><xs:minLength value="1"/></xs:restriction></xs:simpleContent></xs:complexType>`,
+        XeneverInvalidSchemaError,
+        /^Only a built-in type may restrict `xs:anySimpleType`, the text of the base type/v,
     ],
 ];
 

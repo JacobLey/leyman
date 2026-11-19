@@ -12,10 +12,13 @@ import {
     XeneverLoadError,
     XeneverXmlError,
 } from '#internal/lib/errors.js';
+import { InvalidValueError } from '#internal/lib/simple/builtins.js';
+import { compileSimple } from '#internal/lib/simple/compile-simple.js';
 import { ncNamePattern } from '#internal/lib/simple/names.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
 import { readXml } from '#internal/lib/xml/read-xml.js';
 import { SchemaBuilder } from './build.js';
+import { createXmlAttributes } from './builtins.js';
 import {
     checkDerivationSet,
     clark,
@@ -122,25 +125,37 @@ const describeNamespace = (namespace: string | null): string =>
     namespace === null ? 'no namespace' : `\`${namespace}\``;
 
 /**
- * Checks the `id` attributes of a file's XSD elements: each is an `xs:ID` in the schema for schemas, so an
- * NCName unique in the file ([XSD 1.1 Part 2 §3.4.8](https://www.w3.org/TR/xmlschema11-2/#ID)), whether or
- * not the element is otherwise read. The content of `xs:appinfo` and `xs:documentation` is not schema markup.
+ * The type of `xml:lang`, as `xml.xsd` declares it: a language, or the empty string.
+ */
+const xmlLang = compileSimple(createXmlAttributes().get('lang')!.type, '/');
+
+/**
+ * Checks the `id` and `xml:lang` attributes of a file's XSD elements, whether or not the element is
+ * otherwise read. Each `id` is an `xs:ID` in the schema for schemas, so an NCName unique in the file
+ * ([XSD 1.1 Part 2 §3.4.8](https://www.w3.org/TR/xmlschema11-2/#ID)). Each `xml:lang` is of the type
+ * `xml.xsd` declares, which the schema for schemas imports: `xs:documentation` and `xs:schema` declare it
+ * ([XSD 1.0 Part 1 §3.13.2](https://www.w3.org/TR/xmlschema-1/#declare-annotation),
+ * [§3.15.2](https://www.w3.org/TR/xmlschema-1/#declare-schema)), and the other elements take it through
+ * their lax wildcard for attributes of other namespaces, which checks one it has a declaration for
+ * ([Appendix A](https://www.w3.org/TR/xmlschema-1/#normative-schemaSchema), `xs:openAttrs`).
+ * The content of `xs:appinfo` and `xs:documentation` is not schema markup.
  *
  * @param doc - the file
- * @throws {XeneverInvalidSchemaError} for an `id` that is not an NCName, or is repeated
+ * @throws {XeneverInvalidSchemaError} for an `id` that is not an NCName, or is repeated, or an `xml:lang`
+ * that is neither a language nor empty
  */
-const checkIds = (doc: SchemaDocument): void => {
+const checkAttributes = (doc: SchemaDocument): void => {
     const ids = new Set<string>();
     const visit = (node: XmlElementNode): void => {
         if (node.namespace !== xsdNamespace) {
             return;
         }
+        const at = { doc, node };
         const attribute = node.attributes.find(
             candidate => candidate.namespace === null && candidate.localName === 'id'
         );
         if (attribute) {
             const id = collapsed(attribute);
-            const at = { doc, node };
             if (!ncNamePattern.test(id)) {
                 invalid(at, `The id "${id}" is not an NCName`, attribute);
             }
@@ -148,6 +163,21 @@ const checkIds = (doc: SchemaDocument): void => {
                 invalid(at, `The id "${id}" is used twice in the file`, attribute);
             }
             ids.add(id);
+        }
+        const lang = node.attributes.find(
+            candidate => candidate.namespace === xmlNamespace && candidate.localName === 'lang'
+        );
+        if (lang) {
+            try {
+                xmlLang.parse(lang.value, new Map());
+            } catch (error) {
+                // Unreachable: reading a value throws only invalid values.
+                /* c8 ignore next 3 */
+                if (!(error instanceof InvalidValueError)) {
+                    throw error;
+                }
+                invalid(at, `${JSON.stringify(lang.value)} is not a valid \`xml:lang\``, lang);
+            }
         }
         if (node.localName === 'appinfo' || node.localName === 'documentation') {
             return;
@@ -255,7 +285,7 @@ const readDocument = (
         child => child.node.localName === 'include' || child.node.localName === 'import'
     );
     components.push(...construct.children.slice(directives.length));
-    checkIds(doc);
+    checkAttributes(doc);
     return { doc, directives };
 };
 

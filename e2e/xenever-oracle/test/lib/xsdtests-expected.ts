@@ -709,17 +709,11 @@ export const expectedDisagreements: readonly ExpectedDisagreement[] = [
         ids: ['suntest/idc006.nogen/idc006.nogen.v00'],
     },
     {
-        name: 'schema-constraint-gaps',
+        name: 'xml-lang-empty',
         kind: 'gap',
-        reason: 'Small schema constraints not checked yet: `xml:lang` on documentation, a qualified local attribute in the xsi namespace, `mixed` on an extension that adds nothing, and a local type named anySimpleType',
-        spec: 'https://www.w3.org/TR/xmlschema-1/#coss-ct',
-        ids: [
-            'MS-Annotations2006-07-15/annotF001',
-            'MS-Annotations2006-07-15/annotF003',
-            'MS-Attribute2006-07-15/attKb018a',
-            'MS-ComplexType2006-07-15/ctF008',
-            'MS-SimpleType2006-07-15/stZ010',
-        ],
+        reason: "XSD's representation of `xs:documentation` types `xml:lang` as `xs:language`, as libxml2 checks it, but the schema for schemas refers to the declaration of `xml.xsd`, which since 2009 also allows the empty string, as xenever's `xml:lang` does",
+        spec: 'https://www.w3.org/TR/xmlschema-1/#declare-annotation',
+        ids: ['MS-Annotations2006-07-15/annotF001'],
     },
 ];
 

@@ -1809,6 +1809,10 @@ export class SchemaBuilder {
                 readKeyword(at, construct.attributes.get('form'), ['qualified', 'unqualified']) ??
                 (at.doc.qualifiedAttributes ? 'qualified' : 'unqualified');
             const namespace = form === 'qualified' ? at.doc.targetNamespace : null;
+            if (namespace === xsiNamespace) {
+                // Local declarations too ([XSD 1.0 Part 1 §3.2.6](https://www.w3.org/TR/xmlschema-1/#no-xsi)).
+                invalid(at, 'The `xsi` namespace has no attributes but those XML Schema defines');
+            }
             declaration = this.#record<Attribute>(
                 {
                     kind: 'attribute',
@@ -2343,6 +2347,16 @@ export class SchemaBuilder {
         }
         const attributes = extendAttributes(derivation, inherited, uses);
         if (isEmptyParticle(particle)) {
+            if (isMixed && !isBaseMixed && baseType.content) {
+                // Mixed, it adds text: its content is mixed, which an element-only base's is not
+                // ([XSD 1.0 Part 1 §3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type), {content type}
+                // clauses 2.1.4 and 3.2.3; [§3.4.6](https://www.w3.org/TR/xmlschema-1/#cos-ct-extends), clause
+                // 1.4.3.2.2.1).
+                invalid(
+                    derivation,
+                    'An extension of a type with content is mixed exactly when its base type is'
+                );
+            }
             // Nothing added: the base's content, mixed as it is.
             return this.#fields(
                 baseType.content ?? null,
@@ -2416,6 +2430,18 @@ export class SchemaBuilder {
         const inline = first?.node.localName === 'simpleType' ? first : null;
         const rest = derivationConstruct.children.slice(inline ? 1 : 0);
         const facets = rest.filter(child => facetNames.includes(child.node.localName));
+        if (!inline && facets.length > 0 && this.#builtinNames.get(base.text) === 'anySimpleType') {
+            // The facets restrict the base's text ([XSD 1.0 Part 1 §3.4.2](https://www.w3.org/TR/xmlschema-1/#declare-type),
+            // {content type} clause 1), and only the primitive types restrict `xs:anySimpleType`
+            // ([§3.14.1](https://www.w3.org/TR/xmlschema-1/#Simple_Type_Definition_details)). Without facets
+            // the text is the base's: the suite holds that valid in XSD 1.0, though not in 1.1
+            // ([W3C bug 14559](https://www.w3.org/Bugs/Public/show_bug.cgi?id=14559)).
+            invalid(
+                derivation,
+                'Only a built-in type may restrict `xs:anySimpleType`, the text of the base type',
+                attribute
+            );
+        }
         const textBase = inline ? this.#simpleType(inline, false) : base.text;
         const uses = this.#attributeUses(rest.slice(facets.length));
         return {

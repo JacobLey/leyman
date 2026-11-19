@@ -266,6 +266,24 @@ suite('loadXsd types', () => {
             expect(bareExtended).to.deep.equal({ ...bare, name: 'BareExtended' });
         });
 
+        test('A mixed extension without a particle keeps mixed content, or makes empty content text only', async () => {
+            const { types } = await loadSchema(
+                `<xs:complexType name="Mixed" mixed="true"><xs:sequence><xs:element name="a"/></xs:sequence></xs:complexType>
+                <xs:complexType name="StillMixed"><xs:complexContent mixed="true"><xs:extension base="t:Mixed"/></xs:complexContent></xs:complexType>
+                <xs:complexType name="Empty"><xs:attribute name="id" type="xs:ID"/></xs:complexType>
+                <xs:complexType name="Text" mixed="true"><xs:complexContent><xs:extension base="t:Empty"/></xs:complexContent></xs:complexType>`,
+                tns
+            );
+            const [mixed, stillMixed, empty, text] = types.map(({ type }) => type as x.ComplexType);
+            expect(stillMixed).to.deep.equal({ ...mixed, name: 'StillMixed' });
+            expect(text).to.deep.equal({
+                ...empty,
+                name: 'Text',
+                mixed: true,
+                content: { kind: 'sequence', particles: [] },
+            });
+        });
+
         test('A restriction replaces the content, and restricts or inherits the attributes', async () => {
             const { types } = await loadSchema(
                 `<xs:complexType name="Base" mixed="true">
@@ -387,6 +405,30 @@ suite('loadXsd types', () => {
             });
             expect(whole!.text).to.deep.equal({ kind: 'integer', facets: { totalDigits: 3 } });
             expect(same!.text).to.equal(money!.text);
+        });
+
+        test('A restriction of anySimpleType text keeps it, or narrows it with an anonymous type', async () => {
+            const { types } = await loadSchema(
+                `<xs:complexType name="Any"><xs:simpleContent><xs:extension base="xs:anySimpleType">
+                    <xs:attribute name="a"/>
+                </xs:extension></xs:simpleContent></xs:complexType>
+                <xs:complexType name="Same"><xs:simpleContent><xs:restriction base="t:Any">
+                    <xs:attribute name="a" use="prohibited"/>
+                </xs:restriction></xs:simpleContent></xs:complexType>
+                <xs:complexType name="Short"><xs:simpleContent><xs:restriction base="t:Any">
+                    <xs:simpleType><xs:restriction base="xs:string"/></xs:simpleType>
+                    <xs:maxLength value="3"/>
+                </xs:restriction></xs:simpleContent></xs:complexType>`,
+                tns
+            );
+            const [any, same, short] = types.map(({ type }) => type as x.ComplexType);
+            expect(same).to.deep.equal({
+                kind: 'complex',
+                name: 'Same',
+                namespace: 'urn:t',
+                text: any!.text,
+            });
+            expect(short!.text).to.deep.equal({ kind: 'string', facets: { maxLength: 3 } });
         });
     });
 

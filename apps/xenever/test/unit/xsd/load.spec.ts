@@ -333,6 +333,20 @@ suite('loadXsd files', () => {
             expect(elements).to.have.length(1);
         });
 
+        test('Check `xml:lang` on XSD elements, not in documentation', async () => {
+            const { elements } = await loadSchema(
+                `<xs:annotation><xs:documentation xml:lang="en-US"><p xml:lang="not a language"/></xs:documentation></xs:annotation>
+                <xs:element name="a" xml:lang=""><xs:annotation><xs:documentation xml:lang=" en "/></xs:annotation></xs:element>`,
+                'xml:lang="EN"'
+            );
+            expect(elements).to.have.length(1);
+            await expectSchemaError(
+                loadSchema('', 'xml:lang="en_US"'),
+                XeneverInvalidSchemaError,
+                /"en_US" is not a valid `xml:lang`/v
+            );
+        });
+
         test('Put includes and imports first', async () => {
             await expectSchemaError(
                 loadSchema('<xs:element name="a"/><xs:import namespace="urn:x"/>'),
