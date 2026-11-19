@@ -92,30 +92,10 @@ const scriptFiles = {
     'biome-format': 'biome-format.sh',
     'clean-dist': 'clean-dist.sh',
     'coverage-report': 'coverage-report.sh',
+    'portable-coverage': 'portable-coverage.mjs',
     'swc-compile': 'swc-compile.sh',
     'sync-injected': 'sync-injected.mjs',
 } as const;
-
-const coverageDirectory = `$NX_WORKSPACE_ROOT/.coverage/project/${projectName}/tmp`;
-
-/**
- * A test target, run under c8 so `coverage-report` can check the coverage of all of them together.
- *
- * @param kind - `unit` or `integration`, the directory of the tests and of their coverage
- * @param command - the runner's command
- * @returns the target, cached by the tests and builds it runs
- */
-const testTarget = (kind: string, command: string): TargetConfiguration => ({
-    ...runCommands(
-        [
-            `rm -rf ${coverageDirectory}/${kind} && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=${coverageDirectory}/${kind} --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none ${command}`,
-        ],
-        { parallel: true }
-    ),
-    cache: true,
-    inputs: ['test-source', '^dependency-files'],
-    outputs: [`${workspaceRoot}/.coverage/project/${projectName}/tmp/${kind}`],
-});
 
 /**
  * How each target runs, without when: the lifecycle's `dependsOn` is nx-lifecycle's to add.
@@ -129,6 +109,31 @@ export const targetConfigurations = (
     const { checkPackage, configs, coverage, scripts } = options;
     const script = (name: keyof typeof scriptFiles): string =>
         scripts === undefined ? `leyman-${name}` : `${scripts}/${scriptFiles[name]}`;
+    /**
+     * A test target, run under c8 so `coverage-report` can check the coverage of all of them together.
+     *
+     * The coverage is stored with the workspace root replaced by a placeholder, since the task hash doesn't
+     * include the workspace's path: a result cached elsewhere then still matches the files here, once
+     * `coverage-report` restores the root.
+     *
+     * @param kind - `unit` or `integration`, the directory of the tests and of their coverage
+     * @param command - the runner's command
+     * @returns the target, cached by the tests and builds it runs
+     */
+    const testTarget = (kind: string, command: string): TargetConfiguration => {
+        const directory = `$NX_WORKSPACE_ROOT/.coverage/project/${projectName}/tmp/${kind}`;
+        return {
+            ...runCommands(
+                [
+                    `rm -rf ${directory} && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=${directory} --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none ${command} && ${script('portable-coverage')} store ${directory}`,
+                ],
+                { parallel: true }
+            ),
+            cache: true,
+            inputs: ['test-source', '^dependency-files'],
+            outputs: [`${workspaceRoot}/.coverage/project/${projectName}/tmp/${kind}`],
+        };
+    };
     const thresholds = (['branches', 'functions', 'lines', 'statements'] as const)
         .map(metric => {
             const threshold = coverage[metric];

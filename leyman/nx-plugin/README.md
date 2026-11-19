@@ -79,31 +79,34 @@ Anything in `project.json` is merged over the inferred target, key by key, so a 
 
 ## Targets
 
-| Target                   | Inferred when                                                   | Runs                                                                                                              |
-| ------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `biome`                  | Always                                                          | `biome format --write .`, or only checks in CI. `-c check` only checks.                                           |
-| `eslint`                 | `eslint.config.js`                                              | `eslint` on the project. `-c fix` fixes.                                                                          |
-| `check-package`          | `package.json` isn't `private`                                  | `check-package`, on the package as it would be published.                                                         |
-| `update-ts-references`   | `tsconfig.json`                                                 | Nx's TypeScript sync generator, which keeps `references` in step with dependencies.                               |
-| `tsc`                    | `tsconfig.json` and `src/`                                      | Clears `dist/`, compiles `src/` with SWC, then `tsc` for types and declarations.                                  |
-| `tsc-test`               | `test/tsconfig.json`                                            | Compiles `test/` into `dist-test/` with SWC, then type-checks it with `tsc -p ./test`.                            |
-| `mocha-unit-test`        | `test/unit/`, and `mocha` in `devDependencies`                  | Mocha on `dist-test/unit/**/*.spec.*js`, under c8.                                                                |
-| `mocha-integration-test` | `test/integration/`, and `mocha` in `devDependencies`           | Mocha on `dist-test/integration/**/*.spec.*js`, under c8, with a 10 second timeout.                               |
-| `vitest-unit-test`       | `test/unit/`, and `vitest` but not `mocha` in `devDependencies` | Vitest on the compiled tests, under c8.                                                                           |
-| `coverage-report`        | `tsc` and a test target are                                     | Checks the coverage the test targets wrote, together, against the c8 config's thresholds.                         |
-| `sync-injected`          | Another project's `package.json` depends on this one            | Mirrors the package into the copies pnpm injected into its dependents (`injectWorkspacePackages`), after a build. |
+| Target                   | Inferred when                                                   | Runs                                                                                                                         |
+| ------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `biome`                  | Always                                                          | `biome format --write .`, or only checks in CI. `-c check` only checks.                                                      |
+| `eslint`                 | `eslint.config.js`                                              | `eslint` on the project. `-c fix` fixes.                                                                                     |
+| `check-package`          | `package.json` isn't `private`                                  | `check-package`, on the package as it would be published.                                                                    |
+| `update-ts-references`   | `tsconfig.json`                                                 | Nx's TypeScript sync generator, which keeps `references` in step with dependencies.                                          |
+| `tsc`                    | `tsconfig.json` and `src/`                                      | Clears `dist/`, compiles `src/` with SWC, then `tsc` for types and declarations.                                             |
+| `tsc-test`               | `test/tsconfig.json`                                            | Compiles `test/` into `dist-test/` with SWC, then type-checks it with `tsc -p ./test`.                                       |
+| `mocha-unit-test`        | `test/unit/`, and `mocha` in `devDependencies`                  | Mocha on `dist-test/unit/**/*.spec.*js`, under c8, storing the coverage independent of the workspace path.                   |
+| `mocha-integration-test` | `test/integration/`, and `mocha` in `devDependencies`           | Mocha on `dist-test/integration/**/*.spec.*js`, under c8, with a 10 second timeout, storing coverage like `mocha-unit-test`. |
+| `vitest-unit-test`       | `test/unit/`, and `vitest` but not `mocha` in `devDependencies` | Vitest on the compiled tests, under c8, storing coverage like `mocha-unit-test`.                                             |
+| `coverage-report`        | `tsc` and a test target are                                     | Checks the coverage the test targets wrote, together, against the c8 config's thresholds.                                    |
+| `sync-injected`          | Another project's `package.json` depends on this one            | Mirrors the package into the copies pnpm injected into its dependents (`injectWorkspacePackages`), after a build.            |
 
-`tsc`, `tsc-test`, `coverage-report`, `biome` and `sync-injected` run the package's scripts, as its bins:
+`tsc`, `tsc-test`, the test targets, `coverage-report`, `biome` and `sync-injected` run the package's scripts, as its bins:
 
-| Bin                      | Usage                                                                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `leyman-clean-dist`      | Clears `dist/`, keeping `tsc`'s build info and declarations while they are exactly those of the current sources, so `tsc` stays fast. |
-| `leyman-swc-compile`     | `leyman-swc-compile <source> <output> <swcrc>`: compiles with SWC, to the ES year of the package's support floor.                     |
-| `leyman-coverage-report` | `leyman-coverage-report <c8rc> [c8 options...]`                                                                                       |
-| `leyman-biome-format`    | Formats with Biome; only checks in CI.                                                                                                |
-| `leyman-sync-injected`   | Mirrors the package into its injected copies, and writes the fields of `package.json` that dependents hash.                           |
+| Bin                        | Usage                                                                                                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `leyman-clean-dist`        | Clears `dist/`, keeping `tsc`'s build info and declarations while they are exactly those of the current sources, so `tsc` stays fast.                             |
+| `leyman-swc-compile`       | `leyman-swc-compile <source> <output> <swcrc>`: compiles with SWC, to the ES year of the package's support floor.                                                 |
+| `leyman-coverage-report`   | `leyman-coverage-report <c8rc> [c8 options...]`                                                                                                                   |
+| `leyman-portable-coverage` | `leyman-portable-coverage store <dir>`, or `restore <dir>`: in the V8 coverage files in `<dir>`, replaces `$NX_WORKSPACE_ROOT` with a fixed placeholder, or back. |
+| `leyman-biome-format`      | Formats with Biome; only checks in CI.                                                                                                                            |
+| `leyman-sync-injected`     | Mirrors the package into its injected copies, and writes the fields of `package.json` that dependents hash.                                                       |
 
 Each prints its usage with `--help`, and fails without doing anything on an argument it doesn't take.
+
+V8 coverage records absolute paths, and Nx's task hash doesn't include the workspace's path, so a test result cached at another path (in CI, or another checkout) wouldn't match the files here. So the test targets store their coverage with a placeholder for the workspace root, and `leyman-coverage-report` puts the current root back before checking it.
 
 The targets also define the named inputs `dependency-files`, `package-files`, `eslint-input`, `ts-source`, `dependency-builds` and `test-source` on each project.
 

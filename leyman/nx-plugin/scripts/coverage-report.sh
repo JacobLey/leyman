@@ -36,6 +36,11 @@ rm -rf "$COVERAGE_TMP"
 mkdir -p "$COVERAGE_TMP"
 find "$COVERAGE_DIR/tmp" -maxdepth 2 -name "*.json" -exec cp {} "$COVERAGE_TMP/" \;
 
+# The test targets store their coverage with a placeholder for the workspace root, so a result cached at another
+# path still applies here: put this workspace's root back for c8. The sibling script is found from this file's
+# real location, since this may run through a `node_modules/.bin` link.
+"$(dirname "$(realpath "${BASH_SOURCE[0]}")")/portable-coverage.mjs" restore "$COVERAGE_TMP"
+
 # A project nested inside this one (a directory with its own project.json) has its own coverage, and `--all` would
 # count its files here too. c8 replaces the config's `exclude` with any given on the command line, so those go too.
 nested=()

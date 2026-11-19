@@ -22,9 +22,12 @@ suite('targetConfigurations', () => {
         expect(commands(targets['check-package'])).to.deep.equal([
             'check-package --floor-tsconfig @leyman/configs/tsconfig.node-{major}.json',
         ]);
-        expect(commands(targets['vitest-unit-test'])[0]).to.include(
-            'vitest run --config node_modules/@leyman/configs/vitest.config.js --root .'
-        );
+        expect(commands(targets['mocha-unit-test'])).to.deep.equal([
+            'rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive "$PWD/dist-test/unit/**/*.spec.*js" && leyman-portable-coverage store $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit',
+        ]);
+        expect(commands(targets['vitest-unit-test'])).to.deep.equal([
+            'rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config node_modules/@leyman/configs/vitest.config.js --root . && leyman-portable-coverage store $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit',
+        ]);
         expect(commands(targets['sync-injected'])).to.deep.equal(['leyman-sync-injected']);
         expect(targets['sync-injected']).to.not.have.property('dependsOn');
     });
@@ -52,6 +55,9 @@ suite('targetConfigurations', () => {
         ]);
         expect(commands(targets['sync-injected'])).to.deep.equal([
             '$ROOT/scripts/sync-injected.mjs',
+        ]);
+        expect(commands(targets['mocha-integration-test'])).to.deep.equal([
+            'rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --timeout 10000 --recursive "$PWD/dist-test/integration/**/*.spec.*js" && $ROOT/scripts/portable-coverage.mjs store $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration',
         ]);
     });
 });

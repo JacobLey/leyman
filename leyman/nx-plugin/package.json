@@ -41,6 +41,7 @@
     "leyman-biome-format": "./scripts/biome-format.sh",
     "leyman-clean-dist": "./scripts/clean-dist.sh",
     "leyman-coverage-report": "./scripts/coverage-report.sh",
+    "leyman-portable-coverage": "./scripts/portable-coverage.mjs",
     "leyman-swc-compile": "./scripts/swc-compile.sh",
     "leyman-sync-injected": "./scripts/sync-injected.mjs"
   },
