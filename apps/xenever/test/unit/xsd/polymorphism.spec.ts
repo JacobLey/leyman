@@ -231,6 +231,30 @@ suite('loadXsd polymorphism', () => {
             expect(() => parse(document('11'), price!)).to.throw(XeneverValidationError);
         });
 
+        test('Compares a fixed value, and fills in an empty element, as the type selected reads it', async () => {
+            const { elements } = await loadSchema(
+                `<xs:complexType name="T1"><xs:simpleContent><xs:extension base="xs:decimal"/></xs:simpleContent></xs:complexType>
+                <xs:complexType name="T2"><xs:simpleContent><xs:restriction base="t:T1">
+                    <xs:simpleType><xs:restriction base="xs:integer"/></xs:simpleType>
+                </xs:restriction></xs:simpleContent></xs:complexType>
+                <xs:element name="v" type="t:T1" fixed="1"/>`,
+                tns
+            );
+            const [v] = elements;
+            const document = (text: string): string =>
+                `<t:v ${xsi} xmlns:t="urn:t" xsi:type="t:T2">${text}</t:v>`;
+            expect(parse(document('1'), v!)).to.deep.equal({
+                type: 'T2',
+                attributes: {},
+                text: 1,
+            });
+            expect(parse(document(''), v!)).to.include({ type: 'T2', text: 1 });
+            expect(() => parse(document('2'), v!)).to.throw(
+                XeneverValidationError,
+                /^Element `t:v` must be "1"/v
+            );
+        });
+
         test('Lets a recursive type be selected where its base is declared', async () => {
             const { elements } = await loadSchema(
                 `<xs:element name="node" type="t:Node"/>

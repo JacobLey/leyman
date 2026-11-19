@@ -163,6 +163,12 @@ export interface CompiledElement {
      * its value has no `type`.
      */
     readonly types: ReadonlyMap<string, CompiledComplex> | null;
+    /**
+     * Its `fixed` value as each of `types` reads it, compared in that type's value space
+     * ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.2.2). A type the value
+     * isn't valid for has no entry, and no value it reads matches. `null` without `fixed` or `types`.
+     */
+    readonly typesFixed: ReadonlyMap<CompiledComplex, FixedValue> | null;
 }
 
 /**
@@ -371,6 +377,7 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         identity: compileIdentities(record.identity, childPath(path, 'identity'), describeName),
         abstract: isFlagged(record.abstract, childPath(path, 'abstract')),
         types: null,
+        typesFixed: null,
     };
     compiledElements.set(record, compiled);
     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
@@ -391,7 +398,9 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
     compiled.fixed = fixed;
     if (record.types !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
-        compiled.types = compileTypes(record, type, path);
+        const types = compileTypes(record, type, path);
+        compiled.types = types.types;
+        compiled.typesFixed = types.fixed;
     }
     return compiled;
 };
@@ -707,21 +716,82 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
 };
 
 /**
+ * Checks a type `xsi:type` may select for a declaration with `default` or `fixed`, and reads its `fixed` value
+ * as the type does.
+ *
+ * @param record - the declaration
+ * @param constraint - which of `default` and `fixed` it has
+ * @param type - a type it lists
+ * @param fixed - the `fixed` value as each type before it reads it, `null` for none yet
+ * @param path - path to the type
+ * @returns `fixed`, with this type's value added when it is valid for the type
+ * @throws {XeneverInvalidSchemaError} when the type has no `text`
+ * @throws {XeneverUnsupportedError} when its text may be a `QName`, which a value written in the schema can't
+ * resolve
+ */
+const readConstraintAs = (
+    record: Readonly<Record<string, unknown>>,
+    constraint: 'default' | 'fixed',
+    type: CompiledComplex,
+    fixed: Map<CompiledComplex, FixedValue> | null,
+    path: string
+): Map<CompiledComplex, FixedValue> | null => {
+    const { text } = type;
+    if (text === null) {
+        // An empty element of such a type can't be valid, as its `default` or `fixed` is text
+        // ([XSD 1.0 Part 1 §3.3.4](https://www.w3.org/TR/xmlschema-1/#cvc-elt), clause 5.1.2), and in XSD no
+        // type derived from one with simple content is without it.
+        return invalidSchema(
+            `An element with a \`${constraint}\` can only be given types with \`text\``,
+            path
+        );
+    }
+    if (text.hasQName) {
+        throw new XeneverUnsupportedError(
+            `\`${constraint}\` of a type that may be a QName is not supported: the schema has no namespaces to resolve it`,
+            { path }
+        );
+    }
+    if (constraint === 'default') {
+        return fixed;
+    }
+    const values = fixed ?? new Map<CompiledComplex, FixedValue>();
+    const lexical = record.fixed as string;
+    try {
+        values.set(type, { lexical, value: text.parse(lexical, noNamespaces) });
+    } catch (error) {
+        // Unreachable: reading a value throws only invalid values.
+        /* c8 ignore next 3 */
+        if (!(error instanceof InvalidValueError)) {
+            throw error;
+        }
+        // Not valid for this type, so no value of it matches: the document decides whether one occurs.
+    }
+    return values;
+};
+
+/**
  * Checks and compiles the `types` of an element declaration: named complex types that aren't abstract, each
  * with a name and a key of its own among them and the declared type.
  *
  * @param record - the declaration, which has `types`
  * @param declared - its compiled type
  * @param path - path to the declaration
- * @returns the types by expanded name
+ * @returns the types by expanded name, and the declaration's `fixed` value as each reads it (see
+ * `typesFixed`), `null` without one
  * @throws {XeneverInvalidSchemaError} when the declared type isn't a named complex type, or a listed type is
- * unnamed, abstract or named as another is
+ * unnamed, abstract or named as another is, or has no `text` on a declaration with `default` or `fixed`
+ * @throws {XeneverUnsupportedError} when a listed type's text may be a `QName` on a declaration with `default`
+ * or `fixed`
  */
 const compileTypes = (
     record: Readonly<Record<string, unknown>>,
     declared: CompiledType,
     path: string
-): ReadonlyMap<string, CompiledComplex> => {
+): {
+    readonly types: ReadonlyMap<string, CompiledComplex>;
+    readonly fixed: ReadonlyMap<CompiledComplex, FixedValue> | null;
+} => {
     const getterPath = childPath(path, 'types');
     if (typeof record.types !== 'function') {
         invalidSchema('Expected `types` to be a function', getterPath);
@@ -734,6 +804,10 @@ const compileTypes = (
     }
     const listPath = `${getterPath}()`;
     const list = checkArray(getterResult(record, record.types as () => unknown), listPath);
+    const constraint = (['default', 'fixed'] as const).find(
+        property => record[property] !== undefined
+    );
+    let fixed: Map<CompiledComplex, FixedValue> | null = null;
     const names = new Set([expandedName(declared.namespace, declared.name)]);
     const keys = new Set([declared.key]);
     const types = new Map<string, CompiledComplex>();
@@ -752,6 +826,9 @@ const compileTypes = (
                 typePath
             );
         }
+        if (constraint !== undefined) {
+            fixed = readConstraintAs(record, constraint, compiled, fixed, typePath);
+        }
         const name = expandedName(compiled.namespace, compiled.name);
         if (names.has(name)) {
             invalidSchema(
@@ -769,7 +846,7 @@ const compileTypes = (
         keys.add(compiled.key);
         types.set(name, compiled);
     }
-    return types;
+    return { types, fixed };
 };
 
 /**

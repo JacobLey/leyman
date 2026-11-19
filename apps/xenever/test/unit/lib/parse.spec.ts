@@ -960,6 +960,45 @@ suite('parse', () => {
             expect(parse('<value> 3 </value>', value)).to.include({ type: 'Text', text: ' 3 ' });
         });
 
+        suite('Fixed values in the type selected', () => {
+            const decimal = x.complex({ name: 'Decimal', text: x.decimal() });
+            const integer = x.complex({ name: 'Integer', text: x.integer() });
+            const small = x.complex({ name: 'Small', text: x.integer({ maxInclusive: 5 }) });
+            const fixed = x.element('v', decimal, { types: () => [integer, small], fixed: '1' });
+            const seven = x.element('v', decimal, { types: () => [small], fixed: '7' });
+
+            test('Compares a fixed value as the type selected reads it', () => {
+                expect(parse(`<v ${xsi} xsi:type="Integer">1</v>`, fixed)).to.deep.equal({
+                    type: 'Integer',
+                    attributes: {},
+                    text: 1,
+                });
+                expect(parse(`<v ${xsi} xsi:type="Integer"/>`, fixed)).to.include({ text: 1 });
+                expect(parse('<v>1.00</v>', fixed)).to.include({ type: 'Decimal', text: '1' });
+            });
+
+            test('Rejects another value of the type selected', () => {
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Integer">2</v>`, fixed),
+                    /^Element `v` must be "1"/v,
+                    { path: '/v' }
+                );
+            });
+
+            test('Rejects every value of a type the fixed value is not valid for', () => {
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Small">5</v>`, seven),
+                    /^Element `v` must be "7"/v,
+                    { path: '/v' }
+                );
+                expectInvalid(
+                    () => parse(`<v ${xsi} xsi:type="Small"/>`, seven),
+                    /^"7" is outside `maxInclusive` 5/v,
+                    { path: '/v' }
+                );
+            });
+        });
+
         test('Rejects content the type selected does not allow', () => {
             expectInvalid(
                 () =>

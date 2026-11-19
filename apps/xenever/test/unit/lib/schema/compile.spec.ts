@@ -263,6 +263,43 @@ suite('Schema checks', () => {
             ).not.to.throw();
         });
 
+        suite('On an element with a default or fixed value', () => {
+            const textual = { kind: 'complex', name: 'Base', text: { kind: 'string' } };
+
+            test('Rejects a listed type without text', () => {
+                for (const constraint of ['default', 'fixed']) {
+                    expectInvalidSchema(
+                        {
+                            ...(withTypes(
+                                () => [{ kind: 'complex', name: 'D' }],
+                                textual
+                            ) as object),
+                            [constraint]: 'a',
+                        },
+                        new RegExp(
+                            `An element with a \`${constraint}\` can only be given types with \`text\``,
+                            'v'
+                        ),
+                        '/types()/0'
+                    );
+                }
+            });
+
+            test('Rejects a listed type whose text may be a QName as unsupported', () => {
+                expect(() =>
+                    parse('<a/>', {
+                        ...(withTypes(
+                            () => [{ kind: 'complex', name: 'D', text: { kind: 'QName' } }],
+                            textual
+                        ) as object),
+                        default: 'a',
+                    } as x.Element)
+                )
+                    .to.throw(XeneverUnsupportedError, /`default` of a type that may be a QName/v)
+                    .that.includes({ path: '/types()/0' });
+            });
+        });
+
         test('Rejects a type name that is not an NCName, or a key that is empty', () => {
             expectInvalidSchema(
                 root({ name: 'a:b' }),

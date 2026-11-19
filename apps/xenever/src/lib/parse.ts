@@ -5,6 +5,7 @@ import type {
     CompiledElement,
     CompiledType,
     CompiledWildcard,
+    FixedValue,
 } from './schema/compile.js';
 import type { Infer, QNameValue, XmlAttribute, XmlNode } from './schema/infer.js';
 import type { Element, ProcessContents } from './schema/ir.js';
@@ -646,6 +647,8 @@ const isNil = (node: XmlElementNode, declaration: CompiledElement): boolean => {
  * @param node - node of the XML tree
  * @param declaration - what declares it
  * @param type - its simple type, or the type of its text
+ * @param fixed - the declaration's `fixed` value as `type` reads it, `null` when it has none or it isn't valid
+ * for `type`, which no value then matches
  * @param ids - the document's `ID`s and `IDREF`s
  * @returns the value
  * @throws {XeneverValidationError} when the text isn't valid, or isn't the fixed value
@@ -654,12 +657,13 @@ const readText = (
     node: XmlElementNode,
     declaration: CompiledElement,
     type: CompiledSimple,
+    fixed: FixedValue | null,
     ids: IdTable
 ): unknown => {
     const text =
         declaration.empty !== null && node.children.length === 0 ? declaration.empty : textOf(node);
     const value = readValue(type, text, node, at(node), ids);
-    if (declaration.fixed && !type.isEqual(value, declaration.fixed.value)) {
+    if (declaration.fixed && (fixed === null || !type.isEqual(value, fixed.value))) {
         throw new XeneverValidationError(
             `Element ${written(node)} must be ${JSON.stringify(declaration.fixed.lexical)}`,
             at(node)
@@ -712,7 +716,7 @@ const readDeclared = (
     }
     if (type.kind === 'simple') {
         readAttributes(node, null, ids);
-        return readText(node, declaration, type.simple, ids);
+        return readText(node, declaration, type.simple, declaration.fixed, ids);
     }
     const attributes = readAttributes(node, type, ids);
     // An element that `xsi:type` may select the type of says which it was read as.
@@ -722,7 +726,16 @@ const readDeclared = (
     if (type.content) {
         value.children = readChildren(node, type, state);
     } else if (type.text) {
-        value.text = readText(node, declaration, type.text, ids);
+        // Compared in the value space of the type the element was read as, as `xsi:type` may select another.
+        value.text = readText(
+            node,
+            declaration,
+            type.text,
+            type === declaration.type
+                ? declaration.fixed
+                : (declaration.typesFixed?.get(type) ?? null),
+            ids
+        );
     } else {
         // Cvc-complex-type.2.1: empty content allows no children at all, not even whitespace.
         const [first] = node.children;

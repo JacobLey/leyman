@@ -140,6 +140,8 @@ if (value.type === 'Circle') {
 
 An element without `types` keeps the shapes above, with no `type`. An `xsi:type` may always name the element's own type. Any other type must be one of its `types`, or the document is invalid. The name is a QName, resolved against the namespaces in scope where it is written, so a type with a `namespace` needs its prefix, or to be in the default namespace.
 
+An element's `default` or `fixed` value is read by the type the element is read as. With `fixed: '1'` on an element of decimal text, an `xsi:type` of integer text reads `1` as the number `1`, which matches. So each of its `types` needs `text`, and a `fixed` value that isn't valid for the type selected matches nothing.
+
 A type with `abstract: true` is never what an element is read as: an element of that type needs an `xsi:type` naming one of its `types`, and the abstract type is left out of the union. When two types an element may have differ only by namespace, give one a `key`, which is then its `type`.
 
 `types` is a function, so it can list types declared further down. A type that holds an element it may itself be the type of, such as a group of shapes that is a shape, can't be inferred from its own initializer: annotate the getter's return type with `x.ComplexOf<Key, Value>`, as `x.ElementOf` does for `x.lazy`. Generated files always do.
