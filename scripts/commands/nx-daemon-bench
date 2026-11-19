@@ -19,8 +19,8 @@
 #
 # Memory is the resident set (RSS) of the daemon process, then of the daemon with its child processes (Nx runs plugins
 # in workers spawned by the daemon), read 3 times a minute apart after the timed runs and once more after an uncached
-# `nx run-many -t build`, followed by `docker stats` for every container of this worktree's compose project. Leaves the
-# daemon running, as the devcontainer has it.
+# `nx run-many -t build`, followed by `docker stats` for every container of this worktree's compose project. Stops the
+# daemon at the end, as the devcontainer runs without it.
 
 set -euo pipefail
 
@@ -155,6 +155,7 @@ docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}' \
         usage[1] ~ /KiB/ { mib /= 1024 }
         { printf "| %s | %.0f MiB |\n", $1, mib; total += mib }
         END { printf "| **total** | **%.0f MiB** |\n", total }' >"$out/docker.md"
+nx daemon --stop >/dev/null
 
 echo
 echo "hyperfine JSON in $out"
