@@ -116,11 +116,13 @@ suite('bins', () => {
             expect(await snapshot(dir)).to.deep.equal(files);
         });
 
-        withDir.test('needs an absolute workspace root', async ({ dir }) => {
-            for (const root of [undefined, '', 'a/b']) {
+        withDir.test('needs an absolute workspace root other than /', async ({ dir }) => {
+            for (const root of [undefined, '', 'a/b', '/', '//']) {
                 const result = await run(file, ['store', '.'], dir, { NX_WORKSPACE_ROOT: root });
                 expect(result).to.include({ code: 2 });
-                expect(result.stderr).to.include('NX_WORKSPACE_ROOT must be an absolute path');
+                expect(result.stderr).to.include(
+                    'NX_WORKSPACE_ROOT must be an absolute path other than /'
+                );
             }
             expect(await snapshot(dir)).to.deep.equal(files);
         });

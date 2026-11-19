@@ -44,10 +44,11 @@ if (args.length !== 2) {
 }
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
-if (!workspaceRoot || !path.isAbsolute(workspaceRoot)) {
-    fail(`NX_WORKSPACE_ROOT must be an absolute path, not "${workspaceRoot ?? ''}"`);
+const localRoot = workspaceRoot ? path.join(path.resolve(workspaceRoot), '/') : '';
+// `/` would match the start of every path, and the `//` of every `file://` URL
+if (localRoot === '/' || !workspaceRoot || !path.isAbsolute(workspaceRoot)) {
+    fail(`NX_WORKSPACE_ROOT must be an absolute path other than /, not "${workspaceRoot ?? ''}"`);
 }
-const localRoot = path.join(path.resolve(workspaceRoot), '/');
 // Not a path any workspace would be at, so restoring can't touch a real one
 const placeholderRoot = '/__leyman_workspace_root__/';
 
