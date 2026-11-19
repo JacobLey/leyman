@@ -85,7 +85,7 @@ const value = parse(
 
 ## Values
 
-The type of an element decides the shape of its value, whatever the document holds:
+The schema decides the shape of a value, whatever the document holds:
 
 - An element of a simple type is its value: `string`, `number`, `boolean`, a literal union for an enumeration, an array for a list.
 - An element of a complex type is `{ attributes }`, plus `children` when it has child elements or `text` when it has simple content. `attributes` is always there, `{}` when the type has none, so adding an attribute to a type doesn't change its shape.
@@ -211,7 +211,7 @@ const order = parse(xml, elements[0]);
 
 Elements and types come back in document order. The first file comes first, then the files it includes and imports, depth first. An element whose type contains itself becomes an `x.lazy` reference. Groups and attribute groups are inlined.
 
-A reference to the head of a substitution group becomes an `x.choice`, with the reference's `minOccurs` and `maxOccurs`, of the head and every member of its group that may stand for it, in document order. An abstract head or member is left out, as are the members its `block` rules out. Each member keeps its own name as its key in `children`, so the value says which element the document used. A member must have a type derived from its head's, by a method the head's `final` allows.
+A reference to the head of a substitution group becomes an `x.choice`, with the reference's `minOccurs` and `maxOccurs`, of the head and every member of its group that may stand for it, in document order. An abstract head or member is left out, as are the members its `block` rules out. Each member keeps its own name as its key in `children`, so the value says which element the document used. As with any repeated `choice`, keyed `children` don't keep how members interleave: `<circle/><square/><circle/>` reads as two `circle`s and a `square`. When the order matters, list the type holding them in the `ordered` option (`--ordered` in the CLI), and its children are a list in document order. A member must have a type derived from its head's, by a method the head's `final` allows.
 
 Each named complex type keeps its `name` and `namespace`, and `abstract` when it is. An element whose type has other types derived from it gets them as its [`types`](#types-the-document-chooses), in document order, so its value has a `type`. Abstract types are left out, as are those derived by a method that the element's `block`, or its type's, rules out.
 

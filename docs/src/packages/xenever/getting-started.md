@@ -101,7 +101,7 @@ const [first] = value.children.item;
 //     ^?
 ```
 
-A complex type's value is `{ attributes, children }`, and attributes and children are keyed by local name. `item` is an array because `maxOccurs` allows more than one, and `note` is an optional key, missing here. `x.int()` reads as a `number`, and `x.decimal()` as a string, so no digit is lost. `x.Infer<typeof order>` is the type of the value.
+A complex type's value is `{ attributes, children }`, and attributes and children are keyed by local name. `item` is an array because `maxOccurs` allows more than one, and `note` is an optional key, missing here. `x.int()` reads as a `number`, and `x.decimal()` as a string, so no digit is lost. `x.Infer<typeof order>` is the type of the value. An element whose type has types derived from it, which a document may choose with `xsi:type`, also has a `type`, the name of the one it was read as (see the [README](https://github.com/JacobLey/leyman/blob/main/apps/xenever/README.md#types-the-document-chooses)).
 
 Elements of a type marked `ordered: true`, or `mixed: true`, are a list in document order instead, with text as `#text` entries:
 

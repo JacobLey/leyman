@@ -37,7 +37,7 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 
 ## Features
 
-- The shape of a value depends only on the element's type. `maxOccurs` above 1 is always an array, `minOccurs="0"` is an optional key, and attributes are kept in `attributes`, apart from child elements in `children`, so the two never collide.
+- The schema decides the shape of a value, not the document. `maxOccurs` above 1 is always an array, `minOccurs="0"` is an optional key, and attributes are kept in `attributes`, apart from child elements in `children`, so the two never collide. An element whose type has types derived from it also has a `type`, saying which of them it was read as.
 - Elements match on namespace and local name, so the same document with other prefixes reads the same.
 - Children are keyed by name. Mixed content, and any type you mark `ordered`, keep text and elements in document order as a list.
 - `xs:decimal` is a string that keeps every digit. `xs:integer`, `xs:long` and the other big integer types are a `number` within the safe range and an error past it, or a `bigint` when you ask for one.
@@ -45,7 +45,8 @@ const value = parse('<order id="A-17"><price>9.50</price></order>', order);
 - A document that breaks the schema throws an error with the line, column and path of the problem, such as `/order/item[2]/quantity`.
 - A document with a DTD is rejected, so no entity is expanded and no external file is read.
 - The `xenever` CLI turns an XSD, with the files it includes and imports, into a TypeScript file of `x` builders and named types. The same XSD always gives the same file, and `--ci` fails in CI when it is out of date.
-- Substitution groups, abstract types and `xsi:type` are read from the XSD. An element whose type the document may choose has a `type` in its value, to narrow its union on.
+- In XSD, a document can give an element a type derived from its own with an `xsi:type` attribute. xenever checks the element may have the type it names, reads the element as that type, and puts its name in the value's `type`, so the value is a union to narrow on. Abstract types and substitution groups are read from the XSD too.
+- An XSD can declare keys with `xs:key`, `xs:unique` and `xs:keyref`, such as every order line naming an item the order lists. xenever checks them as it reads the document, comparing values by their type, so `01` and `1` are the same `xs:int`, and `x.key`, `x.unique` and `x.keyref` declare them in TypeScript.
 - An XSD construct xenever doesn't support fails when the schema is loaded, with its file, line and column, so a schema is never read more loosely than it says.
 - Elements implement [Standard Schema](https://standardschema.dev/), with an XML string as the input.
 
