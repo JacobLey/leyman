@@ -514,6 +514,11 @@ export default async function makeEslintConfigForPackage({
         'import-x/newline-after-import': ['error', { count: 1 }],
         // Config files (e.g. `eslint.config.js`) and fixtures export a value directly
         'import-x/no-anonymous-default-export': 'off',
+        // An installed package can't import this package's files, so no cycle passes through one, and
+        // following imports into them parses all they import (all of TypeScript, for a package that
+        // imports it): 2.9 GB and 15 s to lint 17 files. Workspace packages, which `internal-regex` marks
+        // internal, are still followed
+        'import-x/no-cycle': ['error', { ignoreExternal: true }],
         // Allowed where a tool expects one, e.g. `eslint.config.js`
         'import-x/no-default-export': 'off',
         // Every imported package must be declared, including workspace packages (which `internal-regex`

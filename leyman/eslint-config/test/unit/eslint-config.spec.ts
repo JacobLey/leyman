@@ -134,9 +134,11 @@ suite('configGenerator import resolution', () => {
             ),
         ]);
         const config = await configOf({});
-        // The generated config's own parser and settings, with only the rule that needs resolving
+        // The generated config's own parser, settings and options, with only the rule that needs resolving
         const { parser } = config.find(block => block.languageOptions?.parser !== undefined)
             ?.languageOptions as { parser: Linter.Parser };
+        const noCycle = config.findLast(block => block.rules?.['import-x/no-cycle'] !== undefined)
+            ?.rules?.['import-x/no-cycle'];
         const eslint = new ESLint({
             cwd: directory,
             overrideConfigFile: true,
@@ -148,7 +150,7 @@ suite('configGenerator import resolution', () => {
                     string,
                     unknown
                 >,
-                rules: { 'import-x/no-cycle': 'error' },
+                rules: { 'import-x/no-cycle': noCycle },
             },
         });
         const results = await eslint.lintFiles(['a.ts']);
