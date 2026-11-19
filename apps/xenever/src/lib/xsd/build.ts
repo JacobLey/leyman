@@ -138,6 +138,10 @@ export interface BuildOptions {
      * `xs:complexType` elements whose children are ordered, with the name the `ordered` option gave.
      */
     readonly ordered: ReadonlyMap<XmlElementNode, string>;
+    /**
+     * Whether to give elements no `types` (`unsafeIgnoreDerivedTypes`).
+     */
+    readonly ignoreDerivedTypes: boolean;
 }
 
 /**
@@ -772,7 +776,9 @@ export class SchemaBuilder {
         }
         this.#checkRefers();
         this.#checkSubstitutionGroups();
-        this.#assignTypes(types);
+        if (!this.#options.ignoreDerivedTypes) {
+            this.#assignTypes(types);
+        }
         for (const [node, name] of this.#options.ordered) {
             if (!this.#complexTypes.get(node)!.content) {
                 throw new TypeError(

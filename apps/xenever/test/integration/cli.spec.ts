@@ -71,6 +71,34 @@ suite('cli', () => {
             );
         });
 
+        withTmpDir.test('--unsafe-ignore-derived-types', async ctx => {
+            await ctx.write(
+                'shapes.xsd',
+                `<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                    <xs:complexType name="Shape"/>
+                    <xs:complexType name="Circle"><xs:complexContent><xs:extension base="Shape"/></xs:complexContent></xs:complexType>
+                    <xs:element name="shape" type="Shape"/>
+                </xs:schema>`
+            );
+
+            await execAsync(
+                `./bin.mjs shapes.xsd --unsafe-ignore-derived-types --check=false --cwd ${ctx.tmpDir.path}`
+            );
+
+            const written = await ctx.read('shapes.ts');
+            expect(written).not.to.contain('types:');
+            expect(written).to.equal(
+                await formatText(
+                    generate(
+                        await loadXsd(ctx.resolve('shapes.xsd'), {
+                            unsafeIgnoreDerivedTypes: true,
+                        })
+                    ).text,
+                    { ext: '.ts' }
+                )
+            );
+        });
+
         withTmpDir.test('--catalog', async ctx => {
             await ctx.edit('main.xsd', 'common.xsd', 'https://example.test/c.xsd?v=1');
             await ctx.write('schemas/common.xsd', await ctx.read('common.xsd'));

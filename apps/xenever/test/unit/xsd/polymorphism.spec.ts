@@ -113,6 +113,45 @@ suite('loadXsd polymorphism', () => {
             ]);
         });
 
+        suite('unsafeIgnoreDerivedTypes', () => {
+            const ignoring = async (): Promise<x.Element> => {
+                const { elements } = await loadSchema(
+                    `<xs:element name="e" type="t:Base"/>${family}`,
+                    tns,
+                    { unsafeIgnoreDerivedTypes: true }
+                );
+                return elements[0]!;
+            };
+
+            test('Gives no element types, so values have no type', async () => {
+                const element = await ignoring();
+                expect(typesOf(element)).to.equal(null);
+                expect(parse('<t:e xmlns:t="urn:t"/>', element)).to.deep.equal({ attributes: {} });
+            });
+
+            test('Lets an xsi:type name only the declared type', async () => {
+                const element = await ignoring();
+                const document = (name: string): string =>
+                    `<t:e ${xsi} xmlns:t="urn:t" xsi:type="t:${name}"/>`;
+                expect(parse(document('Base'), element)).to.deep.equal({ attributes: {} });
+                expect(() => parse(document('Derived'), element)).to.throw(
+                    XeneverValidationError,
+                    /^`xsi:type` names `Derived` in `urn:t`, which is not a type `t:e` may have/v
+                );
+            });
+
+            test('Keeps the names of types', async () => {
+                const { types } = await loadSchema(type('Base'), tns, {
+                    unsafeIgnoreDerivedTypes: true,
+                });
+                expect(types[0]!.type).to.deep.equal({
+                    kind: 'complex',
+                    name: 'Base',
+                    namespace: 'urn:t',
+                });
+            });
+        });
+
         test('Leaves out types derived by a method the element blocks', async () => {
             const { elements } = await loadSchema(
                 `${family}

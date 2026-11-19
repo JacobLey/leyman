@@ -224,6 +224,7 @@ The options:
 - `catalog`: maps a location or namespace to a local path.
 - `bigint`: makes `xs:integer`, `xs:long` and the other big integer types `bigint`.
 - `ordered`: lists the complex types, or elements with an anonymous type, whose children keep their order. Names use Clark notation, `{namespace}local`.
+- `unsafeIgnoreDerivedTypes`: gives no element `types`, so values keep the shape they had in xenever 0.2.0, with no `type`, and an `xsi:type` may name only the element's own type. Named types keep their names, and substitution groups and abstract declarations load as without it.
 
 The loader is strict. A construct outside the supported subset throws `XeneverUnsupportedError`. Unsupported constructs include `xs:redefine`, notations, chameleon includes and XSD 1.1. A schema that breaks the XML Schema rules throws `XeneverInvalidSchemaError`. Both errors carry the `filePath`, `line`, `column` and `path` of the construct. Each wildcard keeps its `processContents`, with the schema set's global declarations as its `declarations`, so a lax or strict wildcard validates what it matches. An element declared without a type is `xs:anyType`, whose content is lax. Identity constraints keep the prefixes their paths use, from where they are written, in `namespaces`.
 
@@ -278,6 +279,7 @@ The options:
 - `--signed`: sign the file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), and refuse to overwrite it once someone edits it. `--force` overwrites it anyway.
 - `--manifest <path>`: record the file in a manifest, with a hash of every XSD read.
 - `--bigint` and `--ordered <name>`: the `loadXsd` options of the same name. Repeat `--ordered` for each type.
+- `--unsafe-ignore-derived-types`: the `loadXsd` option `unsafeIgnoreDerivedTypes`.
 - `--catalog <location>=<path>`: a local path for a `schemaLocation` or import namespace. Repeat it for each one.
 
 The same is available as an API, from `xenever/xsd`: `xeneverFile(path, options)` writes the file, and `generate(set)` returns the TypeScript for a schema set without touching the disk.

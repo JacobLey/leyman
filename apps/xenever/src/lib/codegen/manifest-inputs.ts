@@ -10,6 +10,7 @@ export interface OutputOptions {
     readonly catalog: Readonly<Record<string, string>>;
     readonly ordered: readonly string[];
     readonly signed: boolean;
+    readonly unsafeIgnoreDerivedTypes: boolean;
 }
 
 /**

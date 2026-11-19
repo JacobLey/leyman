@@ -64,6 +64,12 @@ export interface LoadXsdOptions {
      * anonymous; a type of that name takes precedence.
      */
     readonly ordered?: readonly string[];
+    /**
+     * Gives no element `types`, so values keep the shape they had in xenever 0.2.0, with no `type`, and an
+     * `xsi:type` may name only the element's declared type. Named complex types still keep their names, and
+     * substitution groups and abstract declarations load as they do without it.
+     */
+    readonly unsafeIgnoreDerivedTypes?: boolean;
 }
 
 /**
@@ -540,6 +546,7 @@ export const loadXsd = async (
     const builder = new SchemaBuilder(loader.tables, {
         bigint: options.bigint === true,
         ordered: orderedTypes(options.ordered ?? [], loader.tables),
+        ignoreDerivedTypes: options.unsafeIgnoreDerivedTypes === true,
     });
     return builder.build(loader.docs);
 };

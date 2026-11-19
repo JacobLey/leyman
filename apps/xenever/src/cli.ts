@@ -125,6 +125,13 @@ export default class Cli extends EntryScript {
                                 type: 'string',
                                 array: true,
                             },
+                            unsafeIgnoreDerivedTypes: {
+                                alias: 'unsafe-ignore-derived-types',
+                                describe:
+                                    'Give elements no types derived from their own, so values keep the shape of xenever 0.2.0, without `type`, and xsi:type can name only the declared type',
+                                type: 'boolean',
+                                default: false,
+                            },
                             catalog: {
                                 describe:
                                     'A local path for a schemaLocation or import namespace, as <location>=<path>. Repeat for more',
@@ -155,6 +162,7 @@ export default class Cli extends EntryScript {
                         ordered: options.ordered ?? [],
                         ...(options.output !== undefined && { output: options.output }),
                         signed: options.signed,
+                        unsafeIgnoreDerivedTypes: options.unsafeIgnoreDerivedTypes,
                     });
 
                     if (updated) {

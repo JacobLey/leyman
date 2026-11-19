@@ -16,7 +16,8 @@ import { recordInputs } from './manifest-inputs.js';
 /**
  * Options for {@link xeneverFile}.
  */
-export interface XeneverFileOptions extends Pick<LoadXsdOptions, 'bigint' | 'ordered'> {
+export interface XeneverFileOptions
+    extends Pick<LoadXsdOptions, 'bigint' | 'ordered' | 'unsafeIgnoreDerivedTypes'> {
     /**
      * Local paths of schemas, by the `schemaLocation` of an include or import as written, or by the namespace
      * of an import (see `loadXsd`). Paths are relative to `cwd`.
@@ -99,6 +100,7 @@ export const xeneverFile = async (
         catalog,
         bigint: options.bigint ?? false,
         ordered: options.ordered ?? [],
+        unsafeIgnoreDerivedTypes: options.unsafeIgnoreDerivedTypes ?? false,
         onRead: (path, text) => {
             sources.set(path, text);
         },
@@ -119,6 +121,7 @@ export const xeneverFile = async (
                           catalog: options.catalog ?? {},
                           ordered: options.ordered ?? [],
                           signed: options.signed ?? false,
+                          unsafeIgnoreDerivedTypes: options.unsafeIgnoreDerivedTypes ?? false,
                       },
                   }),
               };
