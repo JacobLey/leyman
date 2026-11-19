@@ -108,6 +108,27 @@ suite('generate', () => {
         ).to.deep.equal({ type: 'Other', attributes: {} });
     });
 
+    test('Builds the namespaces a QName default or fixed value uses', async () => {
+        const set = await loadSchema(
+            `<xs:element name="name" type="xs:QName" default="p:a" xmlns:p="urn:p"/>
+            <xs:element name="names" fixed="b p:c" xmlns="urn:d" xmlns:p="urn:p">
+                <xs:simpleType><xs:list itemType="xs:QName"/></xs:simpleType>
+            </xs:element>`
+        );
+        const { text } = generate(set);
+        expect(text).to.include('{ default: "p:a", namespaces: { p: "urn:p" } }');
+        expect(text).to.include('namespaces: { "": "urn:d", p: "urn:p" }');
+        const generated = await importGenerated(
+            'qname-values',
+            `<xs:element name="name" type="xs:QName" default="p:a" xmlns:p="urn:p"/>`
+        );
+        expect(generated.name).to.deep.equal(set.elements[0]);
+        expect(parse('<name xmlns:p="urn:other"/>', generated.name as never)).to.deep.equal({
+            namespace: 'urn:p',
+            localName: 'a',
+        });
+    });
+
     test('Rejects an anonymous complex type that contains itself through a group', async () => {
         const set = await loadSchema(
             `<xs:group name="G"><xs:sequence>

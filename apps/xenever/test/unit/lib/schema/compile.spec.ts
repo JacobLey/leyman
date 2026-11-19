@@ -1,6 +1,12 @@
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { parse, x, XeneverInvalidSchemaError, XeneverUnsupportedError } from 'xenever';
+import {
+    parse,
+    x,
+    XeneverInvalidSchemaError,
+    XeneverUnsupportedError,
+    XeneverValidationError,
+} from 'xenever';
 
 /**
  * Asserts a root declaration is an invalid schema value.
@@ -285,18 +291,24 @@ suite('Schema checks', () => {
                 }
             });
 
-            test('Rejects a listed type whose text may be a QName as unsupported', () => {
-                expect(() =>
-                    parse('<a/>', {
-                        ...(withTypes(
-                            () => [{ kind: 'complex', name: 'D', text: { kind: 'QName' } }],
-                            textual
-                        ) as object),
-                        default: 'a',
-                    } as x.Element)
-                )
-                    .to.throw(XeneverUnsupportedError, /`default` of a type that may be a QName/v)
-                    .that.includes({ path: '/types()/0' });
+            test('Reads the value as a listed type with QName text, against its namespaces', () => {
+                const declaration = {
+                    ...(withTypes(
+                        () => [{ kind: 'complex', name: 'D', text: { kind: 'QName' } }],
+                        textual
+                    ) as object),
+                    fixed: 'p:v',
+                    namespaces: { p: 'urn:p' },
+                } as unknown as x.Element;
+                const xsi = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="D"';
+                expect(parse(`<a ${xsi} xmlns:q="urn:p">q:v</a>`, declaration)).to.deep.equal({
+                    type: 'D',
+                    attributes: {},
+                    text: { namespace: 'urn:p', localName: 'v' },
+                });
+                expect(() => parse(`<a ${xsi} xmlns:p="urn:other">p:v</a>`, declaration))
+                    .to.throw(XeneverValidationError, /^Element `a` must be "p:v"/v)
+                    .that.includes({ path: '/a' });
             });
         });
 
@@ -778,10 +790,56 @@ suite('Schema checks', () => {
             );
         });
 
-        test('Rejects a value of a type that may be a QName as unsupported', () => {
-            expect(() => parse('<a/>', x.element('a', x.qname(), { default: 'p:q' })))
-                .to.throw(XeneverUnsupportedError, /QName/v)
-                .that.includes({ path: '/default' });
+        test('Rejects a QName value whose prefix `namespaces` does not bind', () => {
+            expectInvalidSchema(
+                x.element('a', x.qname(), { default: 'p:q' }),
+                /^`default` is not valid for the type: The prefix of QName "p:q" is not declared/v,
+                '/default'
+            );
+            expectInvalidSchema(
+                root({
+                    attributes: [
+                        x.attribute('b', x.list(x.qname()), {
+                            fixed: 'p:q r:s',
+                            namespaces: { p: 'urn:p' },
+                        }),
+                    ],
+                }),
+                /^`fixed` is not valid for the type: The prefix of QName "r:s"/v,
+                '/type/attributes/0/fixed'
+            );
+        });
+
+        test('Rejects namespaces that do not bind NCNames or the default to namespace names', () => {
+            const reason =
+                /^Expected an NCName prefix, or `''` for the default namespace, bound to a namespace name/v;
+            expectInvalidSchema(
+                { ...x.element('a', x.qname(), { default: 'q' }), namespaces: ['urn:p'] },
+                /^Expected an object/v,
+                '/namespaces'
+            );
+            expectInvalidSchema(
+                x.element('a', x.qname(), { default: 'q', namespaces: { 'p:q': 'urn:p' } }),
+                reason,
+                '/namespaces/p:q'
+            );
+            expectInvalidSchema(
+                root({
+                    attributes: [
+                        x.attribute('b', x.qname(), { default: 'q', namespaces: { '': '' } }),
+                    ],
+                }),
+                reason,
+                '/type/attributes/0/namespaces/'
+            );
+            expectInvalidSchema(
+                { ...x.element('a', x.qname()), namespaces: { p: 1 } },
+                reason,
+                '/namespaces/p'
+            );
+        });
+
+        test('Rejects a value of an element with mixed content as unsupported', () => {
             expect(() =>
                 parse(
                     '<a/>',

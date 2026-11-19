@@ -401,6 +401,56 @@ const valueConstraint = (
 };
 
 /**
+ * Whether the values of a simple type may be `QName`s: a `QName`, or a list or union with one.
+ *
+ * @param type - a simple type of the IR
+ * @returns whether they may be
+ */
+const canBeQName = (type: SimpleType): boolean => {
+    if (type.kind === 'list') {
+        return canBeQName(type.item);
+    }
+    if (type.kind === 'union') {
+        return type.members.some(member => canBeQName(member));
+    }
+    return type.kind === 'QName';
+};
+
+/**
+ * The `namespaces` of a declaration whose `default` or `fixed` may hold a `QName`: from the namespaces in
+ * scope at its XSD element, those the value's `QName`s may use (the prefix of each whitespace-separated
+ * token, the default namespace for a token without one), in order of use, as identity constraints record
+ * theirs. A prefix not in scope is left out, so reading the value reports it.
+ *
+ * @param at - the `xs:element` or `xs:attribute` that has the value
+ * @param types - the simple types the value may be read as
+ * @param constraint - its `default` and `fixed`
+ * @param constraint.default - its `default`
+ * @param constraint.fixed - its `fixed`
+ * @returns the IR property, absent when no type may be a `QName` or the value uses no namespace
+ */
+const valueNamespaces = (
+    at: Located,
+    types: readonly SimpleType[],
+    { default: defaultValue, fixed }: { readonly default?: string; readonly fixed?: string }
+): { readonly namespaces?: Readonly<Record<string, string>> } => {
+    const lexical = defaultValue ?? fixed;
+    if (lexical === undefined || types.every(type => !canBeQName(type))) {
+        return {};
+    }
+    const namespaces: Record<string, string> = {};
+    for (const token of lexical.split(/[\t\n\r ]+/v)) {
+        const colon = token.indexOf(':');
+        const prefix = colon === -1 ? '' : token.slice(0, colon);
+        const namespace = at.node.inScopeNamespaces.get(prefix);
+        if (token !== '' && namespace !== undefined) {
+            namespaces[prefix] = namespace;
+        }
+    }
+    return Object.keys(namespaces).length === 0 ? {} : { namespaces };
+};
+
+/**
  * Checks an attribute's name: `xmlns` is a namespace declaration, never an attribute
  * ([XSD 1.1 Part 1 §3.2.6.3](https://www.w3.org/TR/xmlschema11-1/#no-xmlns)).
  *
@@ -533,36 +583,35 @@ const extendAttributes = (at: Located, inherited: Inherited, uses: AttributeUses
 };
 
 /**
- * No namespaces: a value written in the schema can't name a `QName`'s.
+ * The namespaces a declaration's `default` or `fixed` is read with.
+ *
+ * @param declaration - an attribute declaration
+ * @returns its `namespaces`, as a map
  */
-const noNamespaces: ReadonlyMap<string, string> = new Map();
+const namespacesOf = (declaration: Attribute): ReadonlyMap<string, string> =>
+    new Map(Object.entries(declaration.namespaces ?? {}));
 
 /**
- * Whether a restriction keeps a fixed value: the same value of the base's type, however it is written
- * ([XSD 1.0 Part 1 §3.4.6](https://www.w3.org/TR/xmlschema-1/#derivation-ok-restriction), clause 2.1.3).
+ * Whether an attribute keeps a fixed value: the same value of its type, however each declaration writes it
+ * ([XSD 1.0 Part 1 §3.4.6](https://www.w3.org/TR/xmlschema-1/#derivation-ok-restriction), clause 2.1.3, and
+ * [§3.5.6](https://www.w3.org/TR/xmlschema-1/#au-props-correct), clause 2), a `QName` in each resolved
+ * against its own `namespaces`.
  *
- * @param at - the restriction
- * @param type - the type of the base's attribute
- * @param fixed - the base's fixed value
- * @param redeclared - the restriction's fixed value, if any
+ * @param type - the type of the attribute
+ * @param fixed - the declaration with the fixed value
+ * @param redeclared - the declaration that must keep it
  * @returns whether it is the same value
- * @throws {XeneverUnsupportedError} when the type may be a `QName`, which a value written in the schema can't
- * resolve
+ * @throws {Error} unreachable: what reading a value throws besides an invalid value
  */
-const isSameFixed = (
-    at: Located,
-    type: CompiledSimple,
-    fixed: string,
-    redeclared: string | undefined
-): boolean => {
-    if (redeclared === undefined) {
+const isSameFixed = (type: CompiledSimple, fixed: Attribute, redeclared: Attribute): boolean => {
+    if (redeclared.fixed === undefined) {
         return false;
     }
-    if (type.hasQName) {
-        unsupported(at, '`fixed` of a type that may be a QName is not supported');
-    }
     try {
-        return type.isEqual(type.parse(fixed, noNamespaces), type.parse(redeclared, noNamespaces));
+        return type.isEqual(
+            type.parse(fixed.fixed!, namespacesOf(fixed)),
+            type.parse(redeclared.fixed, namespacesOf(redeclared))
+        );
     } catch (error) {
         // Unreachable: reading a value throws only invalid values.
         /* c8 ignore next 3 */
@@ -604,7 +653,7 @@ const restrictAttributes = (
         if (redeclared) {
             if (
                 attribute.fixed !== undefined &&
-                !isSameFixed(at, compile(attribute.type), attribute.fixed, redeclared.fixed)
+                !isSameFixed(compile(attribute.type), attribute, redeclared)
             ) {
                 invalid(
                     at,
@@ -779,6 +828,7 @@ export class SchemaBuilder {
         if (!this.#options.ignoreDerivedTypes) {
             this.#assignTypes(types);
         }
+        this.#assignValueNamespaces();
         for (const [node, name] of this.#options.ordered) {
             if (!this.#complexTypes.get(node)!.content) {
                 throw new TypeError(
@@ -1238,6 +1288,24 @@ export class SchemaBuilder {
             if (getter) {
                 (declaration as Mutable<Element>).types = getter;
             }
+        }
+    }
+
+    /**
+     * Gives each element declaration built whose `default` or `fixed` may hold a `QName` the `namespaces` it
+     * uses, from the scope of its `xs:element` (that of the global declaration, for a reference). Done once
+     * every type is filled in and each declaration has its `types`, as only then is the type of its text
+     * known.
+     */
+    #assignValueNamespaces(): void {
+        for (const [declaration, at] of this.#declarations) {
+            const texts = [declaration.type, ...(declaration.types?.() ?? [])].flatMap(type => {
+                if (type.kind !== 'complex') {
+                    return [type];
+                }
+                return type.text ? [type.text] : [];
+            });
+            Object.assign(declaration, valueNamespaces(at, texts, declaration));
         }
     }
 
@@ -1763,13 +1831,16 @@ export class SchemaBuilder {
             if (targetNamespace === xsiNamespace) {
                 invalid(at, 'The `xsi` namespace has no attributes but those XML Schema defines');
             }
+            const type = this.#attributeType(at, construct);
+            const constraint = valueConstraint(at, construct);
             declaration = this.#record<Attribute>(
                 {
                     kind: 'attribute',
                     name,
-                    type: this.#attributeType(at, construct),
+                    type,
                     ...(targetNamespace !== null && { namespace: targetNamespace }),
-                    ...valueConstraint(at, construct),
+                    ...constraint,
+                    ...valueNamespaces(at, [type], constraint),
                 },
                 at
             );
@@ -1813,14 +1884,16 @@ export class SchemaBuilder {
                 // Local declarations too ([XSD 1.0 Part 1 §3.2.6](https://www.w3.org/TR/xmlschema-1/#no-xsi)).
                 invalid(at, 'The `xsi` namespace has no attributes but those XML Schema defines');
             }
+            const type = this.#attributeType(at, construct);
             declaration = this.#record<Attribute>(
                 {
                     kind: 'attribute',
                     name,
-                    type: this.#attributeType(at, construct),
+                    type,
                     ...(namespace !== null && { namespace }),
                     ...requiredUse,
                     ...constraint,
+                    ...valueNamespaces(at, [type], constraint),
                 },
                 at
             );
@@ -1866,10 +1939,30 @@ export class SchemaBuilder {
             (namespace === xmlNamespace ? this.#xmlAttributes.get(localName) : undefined) ??
             invalid(at, `Attribute ${name} is not declared`, ref);
         const hasOwn = constraint.default !== undefined || constraint.fixed !== undefined;
+        if (!hasOwn && requiredUse.use === undefined) {
+            return global;
+        }
+        // The reference's value constraint, and the namespaces it is read with, replace the declaration's.
+        const inherited = Object.fromEntries(
+            Object.entries(global).filter(
+                ([key]) => !hasOwn || !['default', 'fixed', 'namespaces'].includes(key)
+            )
+        ) as unknown as Attribute;
+        const declaration: Attribute = {
+            ...inherited,
+            ...requiredUse,
+            ...constraint,
+            ...valueNamespaces(at, [global.type], constraint),
+        };
         if (
             hasOwn &&
             global.fixed !== undefined &&
-            (constraint.default !== undefined || constraint.fixed !== global.fixed)
+            (constraint.default !== undefined ||
+                !isSameFixed(
+                    this.#checked(global.type, at, () => compileSimple(global.type, '/')),
+                    global,
+                    declaration
+                ))
         ) {
             invalid(
                 at,
@@ -1877,16 +1970,7 @@ export class SchemaBuilder {
                 ref
             );
         }
-        if (!hasOwn && requiredUse.use === undefined) {
-            return global;
-        }
-        // The reference's value constraint replaces the declaration's.
-        const inherited = Object.fromEntries(
-            Object.entries(global).filter(
-                ([key]) => !hasOwn || (key !== 'default' && key !== 'fixed')
-            )
-        ) as unknown as Attribute;
-        return this.#record<Attribute>({ ...inherited, ...requiredUse, ...constraint }, at);
+        return this.#record(declaration, at);
     }
 
     /**

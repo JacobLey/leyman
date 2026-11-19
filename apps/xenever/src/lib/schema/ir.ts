@@ -361,6 +361,12 @@ export interface Attribute {
      * for an integer), and has when absent. Not with `default`.
      */
     readonly fixed?: string;
+    /**
+     * The prefixes `default` and `fixed` may use, to resolve a `QName` in them as a document's are: prefix to
+     * namespace name, the default namespace under `''`, which an unprefixed `QName` takes. Read for nothing
+     * else.
+     */
+    readonly namespaces?: Readonly<Record<string, string>>;
 }
 
 /**
@@ -454,6 +460,12 @@ export interface Element extends Occurs {
      * simple type or a complex type with `text`; not with `default`.
      */
     readonly fixed?: string;
+    /**
+     * The prefixes `default` and `fixed` may use, to resolve a `QName` in them as a document's are: prefix to
+     * namespace name, the default namespace under `''`, which an unprefixed `QName` takes. Read for nothing
+     * else.
+     */
+    readonly namespaces?: Readonly<Record<string, string>>;
     /**
      * Identity constraints, checked over each element this declares and its descendants once they are read.
      */

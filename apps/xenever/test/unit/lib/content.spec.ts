@@ -702,6 +702,77 @@ suite('Content', () => {
             });
         });
 
+        test('Reads a default QName against the namespaces of its declaration', () => {
+            const declaration = x.element(
+                'r',
+                x.complex({
+                    attributes: [
+                        x.attribute('a', x.qname(), {
+                            default: 'p:a',
+                            namespaces: { p: 'urn:p' },
+                        }),
+                    ],
+                    text: x.list(x.qname()),
+                }),
+                { default: 'p:b c', namespaces: { p: 'urn:p', '': 'urn:d' } }
+            );
+            // The document binds `p` to another namespace and has no default one: neither applies.
+            expect(parse('<r xmlns:p="urn:other"/>', declaration)).to.deep.equal({
+                attributes: { a: { namespace: 'urn:p', localName: 'a' } },
+                text: [
+                    { namespace: 'urn:p', localName: 'b' },
+                    { namespace: 'urn:d', localName: 'c' },
+                ],
+            });
+            // A value the document writes resolves against the document.
+            expect(parse('<r xmlns:p="urn:other" a="p:a">c</r>', declaration)).to.deep.equal({
+                attributes: { a: { namespace: 'urn:other', localName: 'a' } },
+                text: [{ namespace: null, localName: 'c' }],
+            });
+        });
+
+        test('Compares a fixed QName by namespace name and local name, whatever the prefix', () => {
+            const declaration = x.element(
+                'r',
+                x.complex({
+                    attributes: [
+                        x.attribute('a', x.qname(), { fixed: 'p:a', namespaces: { p: 'urn:p' } }),
+                    ],
+                    text: x.qname(),
+                }),
+                { fixed: 'b', namespaces: { '': 'urn:p' } }
+            );
+            expect(parse('<r xmlns:q="urn:p" a="q:a">q:b</r>', declaration)).to.deep.equal({
+                attributes: { a: { namespace: 'urn:p', localName: 'a' } },
+                text: { namespace: 'urn:p', localName: 'b' },
+            });
+            expect(parse('<r/>', declaration)).to.deep.equal({
+                attributes: { a: { namespace: 'urn:p', localName: 'a' } },
+                text: { namespace: 'urn:p', localName: 'b' },
+            });
+            expectInvalid(
+                () => parse('<r xmlns:p="urn:other" a="p:a"/>', declaration),
+                /^Attribute `a` must be "p:a"/v,
+                { path: '/r/@a' }
+            );
+            expectInvalid(
+                () => parse('<r xmlns:q="urn:p" a="q:other"/>', declaration),
+                /^Attribute `a` must be "p:a"/v,
+                { path: '/r/@a' }
+            );
+            expectInvalid(() => parse('<r>b</r>', declaration), /^Element `r` must be "b"/v, {
+                path: '/r',
+            });
+        });
+
+        test('Compares a fixed union value of a QName and another member', () => {
+            const either = x.element('e', x.union([x.qname(), x.int()]), { fixed: '1' });
+            expect(parse('<e>01</e>', either)).to.equal(1);
+            expectInvalid(() => parse('<e>a</e>', either), /must be "1"/v, { path: '/e' });
+            const name = x.element('e', x.union([x.qname(), x.int()]), { fixed: 'a' });
+            expectInvalid(() => parse('<e>1</e>', name), /must be "a"/v, { path: '/e' });
+        });
+
         test('Reads an empty element as its fixed value, and compares a present one', () => {
             const version = x.element('v', x.decimal(), { fixed: '1.0' });
             expect(parse('<v/>', version)).to.equal('1');

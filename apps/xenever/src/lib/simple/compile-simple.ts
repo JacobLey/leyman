@@ -85,17 +85,32 @@ export interface CompiledSimple {
 }
 
 /**
+ * Whether a value read from text is a `QName`'s, the only object a built-in type reads.
+ *
+ * @param value - a value
+ * @returns whether it is a {@link QNameValue}
+ */
+const isQName = (value: unknown): value is QNameValue =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
  * Whether two values read from text are the same, for a `fixed` value: equal, or both `NaN` (identical in
- * XSD 1.1, [Part 2 §2.2.2](https://www.w3.org/TR/xmlschema11-2/#identity)), and lists item by item.
+ * XSD 1.1, [Part 2 §2.2.2](https://www.w3.org/TR/xmlschema11-2/#identity)), `QName`s by namespace name and
+ * local name, and lists item by item.
  *
  * @param a - one value
  * @param b - another
  * @returns whether they are the same
  */
-const isSameValue = (a: unknown, b: unknown): boolean =>
-    Array.isArray(a) && Array.isArray(b)
-        ? a.length === b.length && a.every((item, index) => isSameValue(item, b[index]))
-        : a === b || (Number.isNaN(a) && Number.isNaN(b));
+const isSameValue = (a: unknown, b: unknown): boolean => {
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return a.length === b.length && a.every((item, index) => isSameValue(item, b[index]));
+    }
+    if (isQName(a) && isQName(b)) {
+        return a.namespace === b.namespace && a.localName === b.localName;
+    }
+    return a === b || (Number.isNaN(a) && Number.isNaN(b));
+};
 
 /**
  * Families of built-in types, which take the same facets.

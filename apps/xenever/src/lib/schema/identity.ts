@@ -1,7 +1,14 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
 import { ncNamePattern } from '#internal/lib/simple/names.js';
 import { xmlNamespace } from '#internal/lib/xml/nodes.js';
-import { checkArray, checkObject, checkString, childPath, invalidSchema } from './check.js';
+import {
+    checkArray,
+    checkObject,
+    checkString,
+    childPath,
+    invalidSchema,
+    propertiesOf,
+} from './check.js';
 
 /**
  * A name test of a path step: absent `namespace` matches any namespace (`*`), and absent `localName` any local
@@ -375,15 +382,6 @@ const checkIdentityName = (
     const name = record.name as string;
     return { id: JSON.stringify([namespace, name]), label: describe(namespace, name) };
 };
-
-/**
- * Lists the properties of an object, to accept any of them.
- *
- * @param value - an object, or something else
- * @returns its properties, none when it isn't an object
- */
-const propertiesOf = (value: unknown): readonly string[] =>
-    typeof value === 'object' && value !== null ? Object.keys(value) : [];
 
 /**
  * Checks and compiles the identity constraints of an element declaration. The first problem found throws a

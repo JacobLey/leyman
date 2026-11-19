@@ -115,6 +115,11 @@ interface Selected {
      */
     readonly text: string | null;
     /**
+     * The namespaces a `QName` in its text resolves against: those in scope at the element, or those of the
+     * declaration whose `default` or `fixed` filled it in.
+     */
+    readonly namespaces: ReadonlyMap<string, string>;
+    /**
      * Where it is: an attribute filled in by its `default` or `fixed` is at its element.
      */
     readonly location: XmlErrorLocation;
@@ -577,7 +582,7 @@ export class IdentityScope {
             return null;
         }
         return {
-            key: found.type.identityKey(found.text, found.element.inScopeNamespaces),
+            key: found.type.identityKey(found.text, found.namespaces),
             text: found.text,
         };
     }
@@ -596,20 +601,24 @@ export class IdentityScope {
             simple = type.kind === 'simple' ? type.simple : type.text;
         }
         let text: string | null = null;
+        let namespaces = element.inScopeNamespaces;
         if (simple !== null && !read!.isNilled) {
-            const { empty } = read!.declaration;
-            // A simple type or text content holds no elements.
-            text =
-                empty !== null && element.children.length === 0
-                    ? empty
-                    : element.children
-                          .filter(child => child.kind === 'text')
-                          .map(child => child.text)
-                          .join('');
+            const { empty, emptyNamespaces } = read!.declaration;
+            if (empty !== null && element.children.length === 0) {
+                text = empty;
+                namespaces = emptyNamespaces;
+            } else {
+                // A simple type or text content holds no elements.
+                text = element.children
+                    .filter(child => child.kind === 'text')
+                    .map(child => child.text)
+                    .join('');
+            }
         }
         return {
             element,
             text,
+            namespaces,
             attribute: null,
             type: simple,
             location: at(element),
@@ -641,6 +650,7 @@ export class IdentityScope {
                 attribute: name,
                 type: attributeType(complex, attribute.namespace, attribute.localName, name),
                 text: attribute.value,
+                namespaces: element.inScopeNamespaces,
                 location: at(attribute),
                 written: `\`${attribute.path}\``,
                 nillable: false,
@@ -658,6 +668,7 @@ export class IdentityScope {
                     attribute: name,
                     type: declaration.type,
                     text: declaration.absent,
+                    namespaces: declaration.absentNamespaces,
                     location: at(element),
                     written: `attribute ${describeName(declaration.namespace, declaration.name)} of \`${element.path}\``,
                     nillable: false,

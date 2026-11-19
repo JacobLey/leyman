@@ -734,10 +734,6 @@ export const limits: readonly Limit[] = [
         reason: 'Value constraints on mixed content, which has no single text to compare',
     },
     {
-        pattern: /of a type that may be a QName is not supported/v,
-        reason: 'A QName value written in the schema, which the IR has no namespaces to resolve',
-    },
-    {
         pattern: /^A wildcard that allows no namespace is not supported/v,
         reason: 'A wildcard allowing nothing, which the IR can not express',
     },

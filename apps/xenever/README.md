@@ -97,6 +97,8 @@ The schema decides the shape of a value, whatever the document holds:
 
 Unknown elements and attributes are errors. Comments and processing instructions are skipped, and whitespace between child elements is ignored. No two elements may have the same `xs:ID`, and each `xs:IDREF`, including each item of an `xs:IDREFS`, must be the ID of an element somewhere in the document.
 
+A `default` or `fixed` value is written as text, as in an XSD, and a `fixed` value is compared as a value, so `01` matches `1` for an integer. A QName in one resolves against the declaration's `namespaces` option rather than the document: `x.attribute('kind', x.qname(), { default: 'p:item', namespaces: { p: 'urn:shop' } })` reads as `urn:shop`'s `item` whatever the document binds `p` to, with `''` for the default namespace. The XSD importer fills it in from the namespaces in scope where the value is written.
+
 A wildcard validates what it matches as its `processContents` says, as XSD does, while the value keeps its untyped shape. The default is `'strict'`: each element needs one of the wildcard's `declarations`, the global declarations it may match by name, and is validated against it. `'lax'` validates only the elements that have a declaration, and `'skip'` validates nothing:
 
 ```ts

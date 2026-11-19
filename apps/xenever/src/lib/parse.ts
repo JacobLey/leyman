@@ -161,6 +161,8 @@ interface DocumentState {
  * @param node - the element whose text or attribute it is
  * @param location - where the text is
  * @param ids - the document's `ID`s and `IDREF`s, or `null` for a value that has none (`xsi:nil`)
+ * @param namespaces - namespaces a `QName` in it resolves against: those in scope at the element, or those of
+ * the declaration for its `default` or `fixed`
  * @returns its value
  * @throws {XeneverValidationError} when the text isn't valid, or holds an `ID` another element has
  */
@@ -169,14 +171,15 @@ const readValue = (
     text: string,
     node: XmlElementNode,
     location: XmlErrorLocation,
-    ids: IdTable | null
+    ids: IdTable | null,
+    namespaces: ReadonlyMap<string, string> = node.inScopeNamespaces
 ): unknown => {
     const found: [kind: 'ID' | 'IDREF', id: string][] = [];
     let value: unknown;
     try {
         value = type.parse(
             text,
-            node.inScopeNamespaces,
+            namespaces,
             ids && type.hasIds
                 ? (kind, id) => {
                       found.push([kind, id]);
@@ -365,7 +368,8 @@ const readAttributes = (
                 declaration.absent,
                 node,
                 at(node),
-                ids
+                ids,
+                declaration.absentNamespaces
             );
         }
     }
@@ -660,9 +664,10 @@ const readText = (
     fixed: FixedValue | null,
     ids: IdTable
 ): unknown => {
-    const text =
-        declaration.empty !== null && node.children.length === 0 ? declaration.empty : textOf(node);
-    const value = readValue(type, text, node, at(node), ids);
+    const isFilled = declaration.empty !== null && node.children.length === 0;
+    const value = isFilled
+        ? readValue(type, declaration.empty, node, at(node), ids, declaration.emptyNamespaces)
+        : readValue(type, textOf(node), node, at(node), ids);
     if (declaration.fixed && (fixed === null || !type.isEqual(value, fixed.value))) {
         throw new XeneverValidationError(
             `Element ${written(node)} must be ${JSON.stringify(declaration.fixed.lexical)}`,

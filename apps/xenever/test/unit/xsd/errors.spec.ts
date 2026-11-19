@@ -777,6 +777,18 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^Attribute \{urn:t\}a is fixed to "1" by its declaration/v,
     ],
     [
+        'a reference fixing a QName attribute to another namespace',
+        `<xs:attribute name="a" type="xs:QName" fixed="t:v"/>${withAttributes('<xs:attribute ref="t:a" fixed="v"/>')}`,
+        XeneverInvalidSchemaError,
+        /^Attribute \{urn:t\}a is fixed to "t:v" by its declaration/v,
+    ],
+    [
+        'a QName value with an undeclared prefix',
+        '<xs:element name="a" type="xs:QName" fixed="p:v"/>',
+        XeneverInvalidSchemaError,
+        /^`fixed` is not valid for the type: The prefix of QName "p:v" is not declared/v,
+    ],
+    [
         'a reference giving a fixed attribute a default',
         `<xs:attribute name="a" fixed="1"/>${withAttributes('<xs:attribute ref="t:a" default="1"/>')}`,
         XeneverInvalidSchemaError,
@@ -1039,13 +1051,16 @@ const cases: readonly (readonly [string, string, ErrorClass, RegExp, string?])[]
         /^Attribute same is fixed to "v" by the base type/v,
     ],
     [
-        'a restriction of a fixed QName attribute',
+        'a restriction fixing a QName attribute to the same text in another namespace',
         derive(
             'restriction',
-            `${required}<xs:attribute name="same" type="xs:QName" fixed="v"/>`
-        ).replace('name="same" type="xs:string"', 'name="same" type="xs:QName"'),
-        XeneverUnsupportedError,
-        /^`fixed` of a type that may be a QName is not supported/v,
+            `${required}<xs:attribute name="same" type="xs:QName" fixed="t:v" xmlns:t="urn:u"/>`
+        ).replace(
+            'name="same" type="xs:string" fixed="v"',
+            'name="same" type="xs:QName" fixed="t:v"'
+        ),
+        XeneverInvalidSchemaError,
+        /^Attribute same is fixed to "t:v" by the base type/v,
     ],
     [
         'a restriction adding an attribute without a wildcard',

@@ -1,4 +1,5 @@
 import type { XeneverInvalidSchemaError } from '#internal/lib/errors.js';
+import type { Namespaces } from '#internal/lib/simple/builtins.js';
 import type { CompiledSimple } from '#internal/lib/simple/compile-simple.js';
 import type { AllPart, ModelSymbol, Pattern } from './content.js';
 import type { CompiledIdentity } from './identity.js';
@@ -15,6 +16,7 @@ import {
     childPath,
     invalidSchema,
     isFlagged,
+    propertiesOf,
     shapeConflict,
 } from './check.js';
 import { ContentModel } from './content.js';
@@ -61,6 +63,10 @@ export interface CompiledAttribute {
      * Text read when the attribute is absent: its `default` or `fixed`.
      */
     readonly absent: string | null;
+    /**
+     * Namespaces `absent` is read with: its `namespaces`.
+     */
+    readonly absentNamespaces: Namespaces;
     readonly fixed: FixedValue | null;
 }
 
@@ -149,6 +155,10 @@ export interface CompiledElement {
      * Text read when the element is empty: its `default` or `fixed`.
      */
     readonly empty: string | null;
+    /**
+     * Namespaces `empty` is read with: its `namespaces`.
+     */
+    readonly emptyNamespaces: Namespaces;
     readonly fixed: FixedValue | null;
     /**
      * Its identity constraints, `null` when it has none, so reading an element costs nothing for them.
@@ -185,38 +195,75 @@ const elementProperties = [
     'nillable',
     'default',
     'fixed',
+    'namespaces',
     'identity',
     'abstract',
     'types',
 ];
 
 /**
- * Namespaces in scope for a value written in the schema: none, so a `QName` value is unsupported there.
+ * Checks a declaration's `namespaces`, the prefixes its `default` and `fixed` may use.
+ *
+ * @param record - the declaration
+ * @param path - path to the declaration
+ * @returns prefix to namespace name, the default namespace under `''`
+ * @throws {XeneverInvalidSchemaError} when it isn't an object binding NCNames (or `''`) to namespace names
  */
-const noNamespaces: ReadonlyMap<string, string> = new Map();
+const compileValueNamespaces = (
+    record: Readonly<Record<string, unknown>>,
+    path: string
+): Namespaces => {
+    if (record.namespaces === undefined) {
+        return new Map();
+    }
+    const namespacesPath = childPath(path, 'namespaces');
+    // Any prefix is a property; only the values are checked.
+    const namespaces = checkObject(
+        record.namespaces,
+        propertiesOf(record.namespaces),
+        namespacesPath
+    );
+    for (const [prefix, namespace] of Object.entries(namespaces)) {
+        if (
+            typeof namespace !== 'string' ||
+            namespace === '' ||
+            (prefix !== '' && !ncNamePattern.test(prefix))
+        ) {
+            invalidSchema(
+                "Expected an NCName prefix, or `''` for the default namespace, bound to a namespace name",
+                childPath(namespacesPath, prefix)
+            );
+        }
+    }
+    return new Map(Object.entries(namespaces as Readonly<Record<string, string>>));
+};
 
 /**
- * Checks a declaration's `default` and `fixed`, which must be valid for its type.
+ * Checks a declaration's `default` and `fixed`, which must be valid for its type, a `QName` in them resolved
+ * against its `namespaces`.
  *
  * @param record - the declaration
  * @param type - its simple type, or the simple type of its text
  * @param path - path to the declaration
- * @returns the text read when absent or empty, and the fixed value
- * @throws {XeneverInvalidSchemaError} when both are given, one isn't valid for the type, or the type is an
- * `ID`
- * @throws {XeneverUnsupportedError} when the type may be a `QName`, which a value written in the schema can't
- * resolve
+ * @returns the text read when absent or empty, the namespaces it is read with, and the fixed value
+ * @throws {XeneverInvalidSchemaError} when both are given, one isn't valid for the type (a prefix
+ * `namespaces` doesn't bind included), the type is an `ID`, or `namespaces` is invalid
  */
 const compileValueConstraint = (
     record: Readonly<Record<string, unknown>>,
     type: CompiledSimple | null,
     path: string
-): { readonly fallback: string | null; readonly fixed: FixedValue | null } => {
+): {
+    readonly fallback: string | null;
+    readonly namespaces: Namespaces;
+    readonly fixed: FixedValue | null;
+} => {
     const defaultValue = checkString(record.default, childPath(path, 'default'));
     const fixedValue = checkString(record.fixed, childPath(path, 'fixed'));
+    const namespaces = compileValueNamespaces(record, path);
     const lexical = defaultValue ?? fixedValue;
     if (lexical === undefined) {
-        return { fallback: null, fixed: null };
+        return { fallback: null, fixed: null, namespaces };
     }
     const property = defaultValue === undefined ? 'fixed' : 'default';
     const constraintPath = childPath(path, property);
@@ -235,15 +282,9 @@ const compileValueConstraint = (
         // [§3.3.6](https://www.w3.org/TR/xmlschema-1/#e-props-correct), clause 5).
         invalidSchema(`An \`ID\` can not have a \`${property}\``, constraintPath);
     }
-    if (type.hasQName) {
-        throw new XeneverUnsupportedError(
-            `\`${property}\` of a type that may be a QName is not supported: the schema has no namespaces to resolve it`,
-            { path: constraintPath }
-        );
-    }
     let value: unknown;
     try {
-        value = type.parse(lexical, noNamespaces);
+        value = type.parse(lexical, namespaces);
     } catch (error) {
         // Unreachable: reading a value throws only invalid values.
         /* c8 ignore next 3 */
@@ -255,7 +296,11 @@ const compileValueConstraint = (
             constraintPath
         );
     }
-    return { fallback: lexical, fixed: fixedValue === undefined ? null : { lexical, value } };
+    return {
+        namespaces,
+        fallback: lexical,
+        fixed: fixedValue === undefined ? null : { lexical, value },
+    };
 };
 
 /**
@@ -373,6 +418,7 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
         // Set below, once the declaration is cached for recursive references to find.
         type: undefined as unknown as CompiledType,
         empty: null,
+        emptyNamespaces: new Map(),
         fixed: null,
         identity: compileIdentities(record.identity, childPath(path, 'identity'), describeName),
         abstract: isFlagged(record.abstract, childPath(path, 'abstract')),
@@ -389,16 +435,17 @@ export const compileElement = (declaration: unknown, path: string): CompiledElem
             { path: childPath(path, record.default === undefined ? 'fixed' : 'default') }
         );
     }
-    const { fallback, fixed } = compileValueConstraint(
+    const { fallback, namespaces, fixed } = compileValueConstraint(
         record,
         type.kind === 'simple' ? type.simple : type.text,
         path
     );
     compiled.empty = fallback;
+    compiled.emptyNamespaces = namespaces;
     compiled.fixed = fixed;
     if (record.types !== undefined) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define -- Types and elements nest each other
-        const types = compileTypes(record, type, path);
+        const types = compileTypes(record, type, namespaces, path);
         compiled.types = types.types;
         compiled.typesFixed = types.fixed;
     }
@@ -428,7 +475,7 @@ const compileType = (type: unknown, path: string): CompiledType =>
 const compileAttribute = (declaration: unknown, path: string): CompiledAttribute => {
     const record = checkObject(
         declaration,
-        ['kind', 'name', 'type', 'namespace', 'use', 'key', 'default', 'fixed'],
+        ['kind', 'name', 'type', 'namespace', 'use', 'key', 'default', 'fixed', 'namespaces'],
         path
     );
     if (record.kind !== 'attribute') {
@@ -442,7 +489,7 @@ const compileAttribute = (declaration: unknown, path: string): CompiledAttribute
         invalidSchema('`use` must be `optional` or `required`', childPath(path, 'use'));
     }
     const type = compileSimple(record.type, childPath(path, 'type'));
-    const { fallback, fixed } = compileValueConstraint(record, type, path);
+    const { fallback, namespaces, fixed } = compileValueConstraint(record, type, path);
     if (record.default !== undefined && record.use === 'required') {
         invalidSchema(
             'An attribute with a `default` is never missing, so it must not be required',
@@ -457,6 +504,7 @@ const compileAttribute = (declaration: unknown, path: string): CompiledAttribute
         key: checkKey(record.key, name, path),
         required: record.use === 'required',
         absent: fallback,
+        absentNamespaces: namespaces,
     };
 };
 
@@ -721,17 +769,17 @@ const compileComplex = (type: object, path: string): CompiledComplex => {
  *
  * @param record - the declaration
  * @param constraint - which of `default` and `fixed` it has
+ * @param namespaces - the namespaces its value is read with
  * @param type - a type it lists
  * @param fixed - the `fixed` value as each type before it reads it, `null` for none yet
  * @param path - path to the type
  * @returns `fixed`, with this type's value added when it is valid for the type
  * @throws {XeneverInvalidSchemaError} when the type has no `text`
- * @throws {XeneverUnsupportedError} when its text may be a `QName`, which a value written in the schema can't
- * resolve
  */
 const readConstraintAs = (
     record: Readonly<Record<string, unknown>>,
     constraint: 'default' | 'fixed',
+    namespaces: Namespaces,
     type: CompiledComplex,
     fixed: Map<CompiledComplex, FixedValue> | null,
     path: string
@@ -746,19 +794,13 @@ const readConstraintAs = (
             path
         );
     }
-    if (text.hasQName) {
-        throw new XeneverUnsupportedError(
-            `\`${constraint}\` of a type that may be a QName is not supported: the schema has no namespaces to resolve it`,
-            { path }
-        );
-    }
     if (constraint === 'default') {
         return fixed;
     }
     const values = fixed ?? new Map<CompiledComplex, FixedValue>();
     const lexical = record.fixed as string;
     try {
-        values.set(type, { lexical, value: text.parse(lexical, noNamespaces) });
+        values.set(type, { lexical, value: text.parse(lexical, namespaces) });
     } catch (error) {
         // Unreachable: reading a value throws only invalid values.
         /* c8 ignore next 3 */
@@ -776,17 +818,17 @@ const readConstraintAs = (
  *
  * @param record - the declaration, which has `types`
  * @param declared - its compiled type
+ * @param namespaces - the namespaces its `default` or `fixed` is read with
  * @param path - path to the declaration
  * @returns the types by expanded name, and the declaration's `fixed` value as each reads it (see
  * `typesFixed`), `null` without one
  * @throws {XeneverInvalidSchemaError} when the declared type isn't a named complex type, or a listed type is
  * unnamed, abstract or named as another is, or has no `text` on a declaration with `default` or `fixed`
- * @throws {XeneverUnsupportedError} when a listed type's text may be a `QName` on a declaration with `default`
- * or `fixed`
  */
 const compileTypes = (
     record: Readonly<Record<string, unknown>>,
     declared: CompiledType,
+    namespaces: Namespaces,
     path: string
 ): {
     readonly types: ReadonlyMap<string, CompiledComplex>;
@@ -827,7 +869,7 @@ const compileTypes = (
             );
         }
         if (constraint !== undefined) {
-            fixed = readConstraintAs(record, constraint, compiled, fixed, typePath);
+            fixed = readConstraintAs(record, constraint, namespaces, compiled, fixed, typePath);
         }
         const name = expandedName(compiled.namespace, compiled.name);
         if (names.has(name)) {

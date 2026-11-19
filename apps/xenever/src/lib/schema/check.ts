@@ -69,6 +69,15 @@ export const checkObject = (
 };
 
 /**
+ * Lists the properties of an object, to accept any of them.
+ *
+ * @param value - an object, or something else
+ * @returns its properties, none when it isn't an object
+ */
+export const propertiesOf = (value: unknown): readonly string[] =>
+    typeof value === 'object' && value !== null ? Object.keys(value) : [];
+
+/**
  * Checks that a property, when present, is a non-negative integer.
  *
  * @param value - the property

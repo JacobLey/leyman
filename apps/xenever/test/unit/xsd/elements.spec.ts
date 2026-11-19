@@ -140,6 +140,103 @@ suite('loadXsd elements and attributes', () => {
             ]);
         });
 
+        test('Records the prefixes a QName default or fixed value uses, from its scope', async () => {
+            const { elements } = await loadSchema(
+                `<xs:element name="names" fixed=" t:a b  p:c" xmlns="urn:d" xmlns:p="urn:p" xmlns:u="urn:u">
+                    <xs:simpleType><xs:list itemType="xs:QName"/></xs:simpleType>
+                </xs:element>
+                <xs:element name="plain" type="xs:string" default="t:a"/>
+                <xs:element name="text" type="t:Text" fixed="t:x"/>
+                <xs:complexType name="Text"><xs:simpleContent><xs:extension base="xs:QName">
+                    <xs:attribute name="kind" type="xs:QName" default="kind"/>
+                    <xs:attribute name="either" default="t:u">
+                        <xs:simpleType><xs:union memberTypes="xs:int xs:QName"/></xs:simpleType>
+                    </xs:attribute>
+                </xs:extension></xs:simpleContent></xs:complexType>
+                <xs:element name="list"><xs:complexType><xs:sequence>
+                    <xs:element ref="t:names" minOccurs="0"/>
+                </xs:sequence></xs:complexType></xs:element>`,
+                tns
+            );
+            const [names, plain, text, list] = elements;
+            const namespaces = { t: 'urn:t', '': 'urn:d', p: 'urn:p' };
+            expect(names).to.deep.include({ fixed: ' t:a b  p:c', namespaces });
+            expect(Object.keys(names!.namespaces!)).to.deep.equal(['t', '', 'p']);
+            expect(plain).not.to.have.property('namespaces');
+            expect(text).to.deep.include({ fixed: 't:x', namespaces: { t: 'urn:t' } });
+            const { attributes } = text!.type as x.ComplexType;
+            expect(attributes![0]).not.to.have.property('namespaces');
+            expect(attributes![1]).to.deep.include({ namespaces: { t: 'urn:t' } });
+            const [reference] = ((list!.type as x.ComplexType).content as x.Sequence).particles;
+            expect(reference).to.deep.include({ minOccurs: 0, namespaces });
+            expect(parse('<names xmlns="urn:t"/>', names!)).to.deep.equal([
+                { namespace: 'urn:t', localName: 'a' },
+                { namespace: 'urn:d', localName: 'b' },
+                { namespace: 'urn:p', localName: 'c' },
+            ]);
+            expect(parse('<text xmlns="urn:t" xmlns:q="urn:t">q:x</text>', text!)).to.deep.equal({
+                attributes: {
+                    kind: { namespace: null, localName: 'kind' },
+                    either: { namespace: 'urn:t', localName: 'u' },
+                },
+                text: { namespace: 'urn:t', localName: 'x' },
+            });
+        });
+
+        test('Keeps a fixed QName attribute that another prefix writes in its scope', async () => {
+            const { elements } = await loadSchema(
+                `<xs:attribute name="at" type="xs:QName" fixed="t:v"/>
+                <xs:complexType name="Base">
+                    <xs:attribute ref="t:at"/>
+                    <xs:attribute name="local" type="xs:QName" fixed="t:w"/>
+                </xs:complexType>
+                <xs:element name="e"><xs:complexType><xs:complexContent>
+                    <xs:restriction base="t:Base">
+                        <xs:attribute ref="q:at" fixed="q:v" xmlns:q="urn:t"/>
+                        <xs:attribute name="local" type="xs:QName" fixed="w" xmlns="urn:t"/>
+                    </xs:restriction>
+                </xs:complexContent></xs:complexType></xs:element>`,
+                tns
+            );
+            const { attributes } = elements[0]!.type as x.ComplexType;
+            expect(attributes).to.deep.equal([
+                {
+                    kind: 'attribute',
+                    name: 'at',
+                    type: { kind: 'QName' },
+                    namespace: 'urn:t',
+                    fixed: 'q:v',
+                    namespaces: { q: 'urn:t' },
+                },
+                {
+                    kind: 'attribute',
+                    name: 'local',
+                    type: { kind: 'QName' },
+                    fixed: 'w',
+                    namespaces: { '': 'urn:t' },
+                },
+            ]);
+            expect(parse('<e xmlns="urn:t"/>', elements[0]!)).to.deep.equal({
+                attributes: {
+                    at: { namespace: 'urn:t', localName: 'v' },
+                    local: { namespace: 'urn:t', localName: 'w' },
+                },
+            });
+        });
+
+        test('Keeps the fixed value of an attribute a reference writes differently', async () => {
+            const { elements } = await loadSchema(
+                `<xs:attribute name="n" type="xs:int" fixed="1"/>
+                <xs:element name="e"><xs:complexType>
+                    <xs:attribute ref="t:n" fixed="01"/>
+                </xs:complexType></xs:element>`,
+                tns
+            );
+            expect(parse('<e xmlns="urn:t"/>', elements[0]!)).to.deep.equal({
+                attributes: { n: 1 },
+            });
+        });
+
         test('Ignores attributes in other namespaces', async () => {
             const { elements } = await loadSchema(
                 '<xs:element name="a" type="xs:string" ext:note="x" xmlns:ext="urn:ext"/>'

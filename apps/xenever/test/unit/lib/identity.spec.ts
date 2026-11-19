@@ -372,6 +372,48 @@ suite('Identity constraints', () => {
             });
         });
 
+        test('Reads a filled-in QName against the namespaces of its declaration', () => {
+            const root = x.element(
+                'r',
+                x.complex({
+                    content: x.sequence([
+                        x.element(
+                            'i',
+                            x.complex({
+                                attributes: [
+                                    x.attribute('k', x.qname(), {
+                                        default: 'p:a',
+                                        namespaces: { p: 'urn:p' },
+                                    }),
+                                ],
+                            }),
+                            { minOccurs: 0, maxOccurs: 'unbounded' }
+                        ),
+                        x.element('e', x.qname(), {
+                            default: 'a',
+                            namespaces: { '': 'urn:p' },
+                            minOccurs: 0,
+                            maxOccurs: 'unbounded',
+                        }),
+                    ]),
+                }),
+                { identity: [x.unique('u', 'i', ['@k']), x.unique('v', 'e', ['.'])] }
+            );
+            expectInvalid(
+                () => parse('<r xmlns:p="urn:other" xmlns:q="urn:p"><i k="q:a"/><i/></r>', root),
+                /^Element `i` has the values \("p:a"\) of `\/r\/i\[1\]` too/v,
+                { path: '/r/i[2]' }
+            );
+            expectInvalid(
+                () => parse('<r xmlns:q="urn:p"><e>q:a</e><e/></r>', root),
+                /^Element `e` has the values \("a"\) of `\/r\/e\[1\]` too/v,
+                { path: '/r/e[2]' }
+            );
+            expect(() =>
+                parse('<r xmlns:p="urn:other"><i k="p:a"/><i/><e>a</e><e/></r>', root)
+            ).not.to.throw();
+        });
+
         test('Leaves out a nil element, as having no value', () => {
             const root = x.element(
                 'r',
