@@ -109,6 +109,14 @@ RUN wget "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VE
     && tar -C /opt/gh --strip-components=1 -xzf /tmp/gh.tar.gz \
     && rm /tmp/gh.tar.gz
 
+# hyperfine, for local benchmarks such as `scripts/commands/nx-daemon-bench` (not mirrored in Dagger). Only the binary is
+# kept from the release's package. Only bump to a release at least 7 days old
+FROM base AS hyperfine
+ARG HYPERFINE_VERSION=2.0.0
+RUN wget "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/hyperfine_${HYPERFINE_VERSION}_$(dpkg --print-architecture).deb" -O /tmp/hyperfine.deb \
+    && dpkg-deb --extract /tmp/hyperfine.deb /opt/hyperfine \
+    && rm /tmp/hyperfine.deb
+
 # fork-manifest:when go
 # Only bump to a release at least 7 days old
 # fork-manifest:when dagger
@@ -199,6 +207,7 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
 
 # The tools, last. No npm: pnpm only
 COPY --from=gh /opt/gh/bin/gh /usr/local/bin/gh
+COPY --from=hyperfine /opt/hyperfine/usr/bin/hyperfine /usr/local/bin/hyperfine
 # fork-manifest:when go
 COPY --from=golangci-lint /opt/golangci-lint/golangci-lint /usr/local/bin/golangci-lint
 # fork-manifest:end

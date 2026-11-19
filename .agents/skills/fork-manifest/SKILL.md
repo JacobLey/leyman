@@ -104,6 +104,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/package.json` | the global tools |
 | `leyman/main/project.json` | the lifecycle targets of the tools package |
 | `patches/fast-check@4.10.2.patch` | fast-check's first Unicode or web string fills a Map of every code point (~0.5s), timing out property tests |
+| `scripts/commands/nx-daemon-bench` | measures the Nx daemon's time and memory |
 | `scripts/commands/test-and-fix` | verify with auto-fix |
 | `scripts/commands/test-ci` | verify |
 | `scripts/commands/test-only` | test |

@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# Measures what the Nx daemon costs and saves in this container: one project's uncached `build` timed by hyperfine with
+# and without a warm daemon, then the daemon's memory.
+#
+#   nx-daemon-bench <project> [runs] [warmup]     (defaults: 10 runs after 3 warmups, per side and round)
+#
+# Builds skip the Nx cache (`--skip-nx-cache`) so they time the tasks, not a cache hit. `nx show projects` times what
+# the daemon keeps in memory (the project graph) without any tasks. Worktree containers share the host's cores, so load
+# drifts during a run: each command is timed in two rounds, in the order no daemon, daemon, daemon, no daemon, and each
+# side's runs are pooled, so a steady drift lands on both sides equally.
+#
+# Memory is the resident set (RSS) of the daemon process, then of the daemon with its child processes (Nx runs plugins
+# in workers spawned by the daemon), read 3 times a minute apart after the timed runs and once more after an uncached
+# `nx run-many -t build`, followed by `docker stats` for every container of this worktree's compose project. Leaves the
+# daemon running, as the devcontainer has it.
+
+set -euo pipefail
+
+project="${1:?usage: nx-daemon-bench <project> [runs] [warmup]}"
+runs="${2:-10}"
+warmup="${3:-3}"
+out="$(mktemp -d)"
+
+daemon_pid() {
+    nx daemon | sed -n 's/.*Process ID: //p'
+}
+
+# RSS in MB of the daemon alone, then summed with every process below it.
+memory() {
+    local pid tree rss total
+    pid="$(daemon_pid)"
+    tree="$(ps -e -o pid=,ppid= | awk -v root="$pid" '
+        { parent[$1] = $2 }
+        END { for (p in parent) { q = p; while (q && q != root) q = parent[q]; if (q == root) print p } }')"
+    rss="$(ps -o rss= -p "$pid")"
+    # shellcheck disable=SC2086 # one PID per word
+    total="$(ps -o rss= -p "$(echo $tree | tr ' ' ,)" | awk '{ s += $1 } END { print s }')"
+    printf '%s  daemon %4d MB  with children %4d MB (%d processes)\n' \
+        "$(date -u +%H:%M:%S)" $((rss / 1024)) $((total / 1024)) "$(echo "$tree" | wc -l)"
+}
+
+# One hyperfine set of `$2` on side `$3` (no-daemon or daemon), saved as `$1-$3-<round>.json`.
+measure() {
+    local name="$1" command="$2" side="$3" round="$4"
+    if [ "$side" = daemon ]; then nx daemon --start >/dev/null; else nx daemon --stop >/dev/null; fi
+    hyperfine --style basic --warmup "$warmup" --runs "$runs" --export-json "$out/$name-$side-$round.json" \
+        --env "NX_DAEMON=$([ "$side" = daemon ] && echo true || echo false)" \
+        --command-name "$name, $side, round $round" "$command"
+}
+
+# Median and range of every pooled run per command and side.
+summary() {
+    node --input-type=module - "$out" <<'EOF'
+import { readdirSync, readFileSync } from 'node:fs';
+const [dir] = process.argv.slice(2);
+const pooled = new Map();
+for (const file of readdirSync(dir).sort()) {
+    const key = file.replace(/-\d+\.json$/u, '');
+    const { results } = JSON.parse(readFileSync(`${dir}/${file}`, 'utf8'));
+    const times = results[0].measurements.map(({ time_wall_clock }) => time_wall_clock.value);
+    pooled.set(key, [...(pooled.get(key) ?? []), ...times]);
+}
+for (const [key, times] of pooled) {
+    times.sort((a, b) => a - b);
+    const mid = times.length / 2;
+    const median = times.length % 2 ? times[Math.floor(mid)] : (times[mid - 1] + times[mid]) / 2;
+    const range = `${times[0].toFixed(2)}–${times.at(-1).toFixed(2)}`;
+    console.log(`${key.padEnd(20)} median ${median.toFixed(2)} s, range ${range} s, ${times.length} runs`);
+}
+EOF
+}
+
+echo "Nx $(nx --version | sed -n 's/.*Local: v//p'), hyperfine $(hyperfine --version | cut -d' ' -f2)"
+echo "$(nproc) cores, $(free -m | awk '/^Mem:/ { print $2 }') MB RAM visible, project ${project}"
+echo "load average at start: $(cut -d' ' -f1-3 /proc/loadavg)"
+
+for name in graph build; do
+    if [ "$name" = graph ]; then command='nx show projects'; else command="nx run ${project}:build --skip-nx-cache"; fi
+    measure "$name" "$command" no-daemon 1
+    measure "$name" "$command" daemon 1
+    measure "$name" "$command" daemon 2
+    measure "$name" "$command" no-daemon 2
+done
+echo "load average at end: $(cut -d' ' -f1-3 /proc/loadavg)"
+
+nx daemon --start >/dev/null
+echo
+echo "Daemon memory, PID $(daemon_pid):"
+for reading in 1 2 3; do
+    memory
+    if [ "$reading" -lt 3 ]; then sleep 60; fi
+done
+NX_DAEMON=true nx run-many -t build --skip-nx-cache >/dev/null
+echo "after nx run-many -t build --skip-nx-cache:"
+memory
+
+# Every container of this worktree's compose project, found by the label on this one, with the daemon still warm.
+compose_project="$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$(hostname)")"
+echo
+echo "Compose project ${compose_project}:"
+# shellcheck disable=SC2046 # one container ID per word
+docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}' \
+    $(docker ps --quiet --filter "label=com.docker.compose.project=${compose_project}") |
+    awk -F'\t' '
+        { split($2, usage, " / "); mib = usage[1] + 0 }
+        usage[1] ~ /GiB/ { mib *= 1024 }
+        usage[1] ~ /KiB/ { mib /= 1024 }
+        { printf "  %-40s %6.0f MiB\n", $1, mib; total += mib }
+        END { printf "  %-40s %6.0f MiB\n", "total", total }'
+
+echo
+summary
+echo "hyperfine JSON in $out"
